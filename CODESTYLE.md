@@ -288,7 +288,10 @@ experimental feature and are not used (see [`APPENDIX.md#sdk-floor`](./APPENDIX.
 Public symbols carry `///` dartdoc that explains *why* and *what guarantee*, not the mechanical
 *what*: the type already says that. `public_member_api_docs` is on (see
 [hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)). For every type, document its
-normalisation and the exact standard it enforces (with the clause/edition where it helps).
+normalisation and **link** the standard it enforces (with the clause or edition where it helps),
+preferring a freely-readable URL (an RFC); where the standard is paywalled (ISO), link a reliable
+free reference. The link lives in the dartdoc, which renders on pub.dev and travels with the type,
+not a central table.
 
 ### `@docImport` for dartdoc-only references
 

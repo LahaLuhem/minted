@@ -1,8 +1,12 @@
-/// Support for doing something awesome.
+/// Well-modelled value types (domain primitives) for entities usually left as a
+/// raw `String`: email, IBAN, and more.
 ///
-/// More dartdocs go here.
+/// Every type is built on "parse, don't validate": build it through `tryParse`
+/// (returns `null` on invalid input) or `parse` (throws a
+/// `MintedFormatException`), never a public constructor, so any instance that
+/// exists is guaranteed well-formed.
 library;
 
-export 'src/minted_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/email.dart';
+export 'src/iban.dart';
+export 'src/shared/minted_format_exception.dart';
