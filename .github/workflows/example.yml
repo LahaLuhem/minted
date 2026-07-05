@@ -1,0 +1,24 @@
+name: Example checks
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.ref }}-example
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# The example is a single file resolved against the root package (no example
+# pubspec). `analyze` already covers it via package.yml's `dart analyze .`; this
+# workflow smoke-runs it so a broken snippet in the docs can't merge green.
+jobs:
+  run:
+    name: Run example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-dart
+      - run: dart run example/minted_example.dart

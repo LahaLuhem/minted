@@ -1,0 +1,29 @@
+{
+  "url": "https://context7.com/lahaluhem/minted",
+  "public_key": "pk_zRQqaALefsVNkJ7uS6fVf",
+  "projectTitle": "minted",
+  "description": "Well-modelled Dart value types (domain primitives) for entities usually left as raw String/int — email, IBAN, and other ISO/RFC/GS1-standardised identifiers. Parse, don't validate: every instance is guaranteed well-formed.",
+  "folders": [],
+  "excludeFolders": [
+    "build",
+    "test",
+    "scripts",
+    ".github",
+    ".idea",
+    ".dart_tool"
+  ],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CODESTYLE.md"
+  ],
+  "rules": [
+    "Parse, don't validate: construct every type through its `tryParse` (returns null on invalid) or `parse` (throws a typed FormatException) factory. There is no public constructor, so a value that exists is guaranteed well-formed — the same guarantee `Uri` gives for URLs.",
+    "Single-primitive types (Email, Iban, ...) are zero-cost extension types over String; multi-part types (coordinates, ...) are immutable classes. Both expose value equality, hashCode, and a canonical string form.",
+    "Types normalise on parse, so equality is canonical: `Iban.parse('gb82 west …') == Iban.parse('GB82WEST…')`. Compare parsed values, never the raw strings you parsed them from.",
+    "Check-digit types validate the real standard, not a regex shape: IBAN mod-97, card numbers Luhn, ISBN/EAN/ISSN check digits. A value that parses has passed its checksum.",
+    "Pure Dart, minimal deps — runs in CLI, server, web, and Flutter. Opinionated integrations (JSON, fpdart, Hive, Flutter form validators) are opt-in and never forced on core consumers."
+  ],
+  "previousVersions": []
+}

@@ -1,0 +1,5 @@
+# `dependency_validator` config. The example is a single-file demo that imports the
+# package itself (`package:minted/minted.dart`); it declares no deps of its own, so
+# scope the validator to the published surface (lib/) and skip the example.
+exclude:
+  - "example/**"

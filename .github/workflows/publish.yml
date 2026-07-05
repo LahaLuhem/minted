@@ -1,0 +1,25 @@
+name: Publish to pub.dev
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+' # tag-pattern on pub.dev: '{{version}}'
+
+# Inlined rather than reusing dart-lang/setup-dart/.github/workflows/publish.yml@v1
+# so the publish steps stay visible and easy to tweak. The example is a single
+# .dart file with no pubspec of its own, so a plain `dart pub get` at the root
+# resolves everything and leaves no example lockfile for the dry-run to trip on.
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC auth to pub.dev (handled by dart-lang/setup-dart).
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+      - name: Install dependencies
+        run: dart pub get
+      - name: Publish dry-run
+        run: dart pub publish --dry-run
+      - name: Publish to pub.dev
+        run: dart pub publish --force

@@ -1,0 +1,35 @@
+name: Setup Dart
+description: >-
+  Install the Dart SDK, restore the pub cache keyed on the resolved pubspec.lock,
+  and run `dart pub get`. The caller is responsible for `actions/checkout`
+  beforehand because local composite actions are only discoverable after checkout.
+
+inputs:
+  sdk:
+    description: Dart SDK channel or version. Defaults to `stable`.
+    required: false
+    default: stable
+  working-directory:
+    description: Directory containing the `pubspec.yaml` to resolve. Defaults to the repo root.
+    required: false
+    default: '.'
+
+runs:
+  using: composite
+  steps:
+    - uses: dart-lang/setup-dart@v1
+      with:
+        sdk: ${{ inputs.sdk }}
+
+    - name: Cache .pub-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: pub-dart-${{ runner.os }}-${{ hashFiles(format('{0}/pubspec.lock', inputs.working-directory)) }}
+        restore-keys: |
+          pub-dart-${{ runner.os }}-
+
+    - name: dart pub get
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: dart pub get

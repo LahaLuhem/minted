@@ -1,0 +1,51 @@
+name: Repo-wide checks
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}-repo
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Lint tooling lives in this image (shellcheck + actionlint), pulled at job time
+# instead of installed on the runner. Bump the tag (or pin a digest) here in one
+# place. https://github.com/LahaLuhem/linterpol
+env:
+  LINTERPOL_IMAGE: ghcr.io/lahaluhem/linterpol:latest
+
+jobs:
+  format:
+    name: Dart format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      # Format scans files in place; no pub-get needed. The setup-dart composite
+      # is reserved for jobs that need resolved dependencies — skipping it here
+      # saves ~10-30s per run.
+      - run: dart format --output=none --set-exit-if-changed .
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # shellcheck ships in the linterpol image, so run it from there instead of
+      # installing the binary on the runner. The checkout mounts read-only at the
+      # image's /work workdir. Same invocation as release.sh's preflight.
+      - run: docker run --rm -v "$PWD:/work:ro" "$LINTERPOL_IMAGE" shellcheck scripts/*.sh
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # actionlint (same image) auto-discovers .github/workflows from /work and
+      # shellchecks the run: blocks too (shellcheck is on PATH in the image).
+      - run: docker run --rm -v "$PWD:/work:ro" "$LINTERPOL_IMAGE" actionlint
