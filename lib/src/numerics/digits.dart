@@ -6,18 +6,18 @@ import 'package:meta/meta.dart';
 import '../shared/minted_format_exception.dart';
 import 'digit.dart';
 
-/// An immutable sequence of decimal digits, each a [Digit] (`0`-`9`).
+/// An immutable, iterable sequence of decimal digits, each a [Digit] (`0`-`9`).
 ///
 /// A digits-only identifier (a bank account number, a national phone number, a
 /// SKU) modelled as digits rather than a raw `String`, so letters and other junk
-/// are unrepresentable. It is validated once on construction; [digits],
-/// [asString] and indexing then read it back without re-checking.
+/// are unrepresentable. It is validated once on construction; after that you
+/// iterate it, index it, or read [asString], without re-checking.
 ///
 /// Backed by a `Uint8List` (one byte per digit, a real `Uint8Array` on the web),
 /// kept private so a denser packing can replace it behind this same interface.
 /// Equality is by value over the digits.
 @immutable
-final class Digits {
+final class Digits extends Iterable<Digit> {
   final Uint8List _bytes;
 
   const Digits._(this._bytes);
@@ -28,7 +28,7 @@ final class Digits {
     final codes = input.codeUnits;
 
     return codes.every(_isAsciiDigit)
-        ? Digits._(.fromList([for (final code in codes) code - _asciiZero]))
+        ? ._(.fromList([for (final code in codes) code - _asciiZero]))
         : null;
   }
 
@@ -40,7 +40,7 @@ final class Digits {
 
   /// The sequence of the given [values], or `null` unless every value is in `0`-`9`.
   static Digits? tryFrom(List<int> values) =>
-      values.every(_isDigitValue) ? Digits._(.fromList(values)) : null;
+      !values.every(_isDigitValue) ? null : ._(.fromList(values));
 
   /// The sequence of the given [values], throwing [MintedFormatException] unless
   /// every value is in `0`-`9`.
@@ -51,20 +51,14 @@ final class Digits {
   /// The sequence built from the given `digits` (each already a valid `0`-`9`).
   static Digits of(Iterable<Digit> digits) => from([for (final digit in digits) digit.value]);
 
-  /// The [Digit] at [index] (0-based).
-  Digit operator [](int index) => Digit.from(_bytes[index]);
+  @override
+  Iterator<Digit> get iterator => _bytes.map(Digit.from).iterator;
 
-  /// How many digits the sequence holds.
+  @override
   int get length => _bytes.length;
 
-  /// Whether the sequence holds no digits.
-  bool get isEmpty => _bytes.isEmpty;
-
-  /// First elem
-  Digit get first => this[0];
-
-  /// The digits in order, as a lazy iterable of [Digit].
-  Iterable<Digit> get digits => _bytes.map(Digit.from);
+  /// The [Digit] at [index] (0-based).
+  Digit operator [](int index) => Digit.from(_bytes[index]);
 
   /// The digits as a plain string, e.g. `'12345'` (the canonical form).
   String get asString => .fromCharCodes(_bytes.map((byte) => byte + _asciiZero));

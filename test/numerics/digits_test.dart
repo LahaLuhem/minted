@@ -38,12 +38,17 @@ void main() {
       check(parsedDigits.asString).equals('');
     });
 
-    scenario('indexing and the digits view agree', () {
+    scenario('indexing and iteration agree', () {
       final parsedDigits = Digits.parse('905');
 
       check(parsedDigits[0]).equals(Digit.from(9));
       check(parsedDigits[2]).equals(Digit.from(5));
-      check(parsedDigits.digits.toList()).deepEquals([Digit.from(9), Digit.from(0), Digit.from(5)]);
+      check(parsedDigits.toList()).deepEquals([Digit.from(9), Digit.from(0), Digit.from(5)]);
+    });
+
+    scenario('a Digits is an Iterable of its Digits', () {
+      check(Digits.parse('905').map((digit) => digit.value).toList()).deepEquals([9, 0, 5]);
+      check(Digits.parse('12321').where((digit) => digit == Digit.from(2)).length).equals(2);
     });
 
     scenario('equal sequences are equal by value and hash', () {

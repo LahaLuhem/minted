@@ -32,7 +32,7 @@ extension type const Digit._(int value) {
       (throw MintedFormatException.of('Digit', input, 'not a single decimal digit'));
 
   /// The [Digit] with numeric [value], or `null` unless it is in `0`-`9`.
-  static Digit? tryFrom(int value) => value >= 0 && value < _radix ? Digit._(value) : null;
+  static Digit? tryFrom(int value) => value >= 0 && value < _radix ? ._(value) : null;
 
   /// The [Digit] with numeric [value], throwing [MintedFormatException] unless
   /// it is in `0`-`9`.

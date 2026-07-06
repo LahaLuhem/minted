@@ -129,7 +129,7 @@ extension type's `==` delegates to its representation and can't be overridden, a
 *identity* equality, so `Digits.parse('12')` would never equal another `Digits.parse('12')`; the
 class hand-writes structural `==`/`hashCode` over the bytes (its first use of `package:meta`, for
 `@immutable`). Encapsulation: the `Uint8List` is private, so a denser backing (nibble-packed BCD at
-two digits per byte, or tighter) can replace it behind the same `operator []` / `digits` /
+two digits per byte, or tighter) can replace it behind the same `Iterable<Digit>` / `operator []` /
 `asString` interface without touching callers. Packing is deferred on purpose; it only pays off at
 a volume identifiers rarely reach, and the unpacked bytes read as the digits under a debugger.
 

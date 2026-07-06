@@ -35,7 +35,7 @@ extension type const Email._(String value) {
         '${trimmed.substring(0, atSign)}@'
         '${trimmed.substring(atSign + 1).toLowerCase()}';
 
-    return Email._(normalised);
+    return ._(normalised);
   }
 
   /// Parses [input] as an email address, throwing [MintedFormatException] when

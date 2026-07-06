@@ -36,7 +36,7 @@ extension type const PhoneNumber._(String value) {
     }
     if (!parsed.isValid()) return null;
 
-    return PhoneNumber._(parsed.international);
+    return ._(parsed.international);
   }
 
   /// Parses [input] as a phone number, throwing [MintedFormatException] when it is not valid.

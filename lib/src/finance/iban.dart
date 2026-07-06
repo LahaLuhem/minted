@@ -38,7 +38,7 @@ extension type const Iban._(String value) {
     final normalised = input.replaceAll(_whitespace, '').toUpperCase();
     if (!IbanValidator.isValid(normalised)) return null;
 
-    return Iban._(normalised);
+    return ._(normalised);
   }
 
   /// Parses [input] as an IBAN, throwing [MintedFormatException] when it fails any check.
