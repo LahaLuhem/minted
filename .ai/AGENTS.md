@@ -45,9 +45,10 @@ minted/
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   └── src/
-│       ├── email.dart               Email  (extension type)
-│       ├── iban.dart                Iban   (extension type + mod-97)
-│       ├── …                        One self-contained file per type
+│       ├── contact/                 Email, PhoneNumber
+│       ├── finance/                 Iban (+ Bic, CreditCardNumber, … as they land)
+│       ├── numerics/                Digit, Digits (numeric building blocks)
+│       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/
 │           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
 │           └── check_digits.dart              Luhn / mod-97 / mod-11 / GS1 helpers (private)
@@ -65,6 +66,11 @@ minted/
 ├── CODESTYLE.md                     Library-package code style
 └── .ai/                             This file + CLAUDE.md (symlinked to repo root)
 ```
+
+Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `commerce/`, …), with
+numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
+sector earns its own folder once it has a couple of members; the public API stays flat regardless,
+because `minted.dart` re-exports every type. `test/` mirrors this layout.
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
 or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping. `dart analyze .`

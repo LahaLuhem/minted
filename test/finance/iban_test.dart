@@ -1,7 +1,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
-import 'support/bdd.dart';
+import '../support/bdd.dart';
 
 void main() {
   feature('Iban', () {

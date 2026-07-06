@@ -11,16 +11,20 @@ import 'package:test/test.dart';
 
 /// Enforces the value-type contract structurally.
 ///
-/// Every value type (each public type declared directly under `lib/src/`, i.e.
-/// not in `lib/src/shared/`) must expose the shared spine: static `tryParse`
+/// Every value type (each public type declared anywhere under `lib/src/`
+/// except `lib/src/shared/`) must expose the shared spine: static `tryParse`
 /// and `parse` factories, and, for an extension type, a representation named
 /// `value`. Static factories can't be enforced by an abstract class in Dart
 /// (they're static and not inherited), so this test is that enforcement: a new
 /// type that forgets part of the contract fails the build.
 void main() {
-  final valueTypeFiles = Directory(
-    'lib/src',
-  ).listSync().whereType<File>().where((entity) => entity.path.endsWith('.dart')).toList();
+  final valueTypeFiles = Directory('lib/src')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where(
+        (entity) => entity.path.endsWith('.dart') && !entity.uri.pathSegments.contains('shared'),
+      )
+      .toList();
 
   test('there are value-type sources to check', () {
     check(valueTypeFiles).isNotEmpty();

@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
-import 'digits.dart';
-import 'shared/minted_format_exception.dart';
+import '../numerics/digits.dart';
+import '../shared/minted_format_exception.dart';
 
 /// A phone number, validated and stored in its canonical E.164 form (via `phone_numbers_parser`).
 /// Standard: [E.164](https://en.wikipedia.org/wiki/E.164).

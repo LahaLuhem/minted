@@ -3,7 +3,7 @@
 
 import 'package:email_validator/email_validator.dart';
 
-import 'shared/minted_format_exception.dart';
+import '../shared/minted_format_exception.dart';
 
 /// An email address, validated against the RFC 5322 grammar (via
 /// `email_validator`). Standard:

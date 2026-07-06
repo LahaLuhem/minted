@@ -5,9 +5,9 @@ import 'dart:math' as math;
 
 import 'package:iban_validator/iban_validator.dart';
 
-import 'digit.dart';
-import 'shared/check_digits.dart';
-import 'shared/minted_format_exception.dart';
+import '../numerics/digit.dart';
+import '../shared/check_digits.dart';
+import '../shared/minted_format_exception.dart';
 
 /// An IBAN: validated for structure, country-specific length, and the mod-97 checksum (via `iban_validator`).
 /// Standard: [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number).

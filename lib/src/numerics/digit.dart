@@ -1,9 +1,9 @@
+/// @docImport '../contact/phone_number.dart';
+/// @docImport '../finance/iban.dart';
 /// @docImport 'digits.dart';
-/// @docImport 'iban.dart';
-/// @docImport 'phone_number.dart';
 library;
 
-import 'shared/minted_format_exception.dart';
+import '../shared/minted_format_exception.dart';
 
 /// A single decimal digit, `0`-`9`.
 ///

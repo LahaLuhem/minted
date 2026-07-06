@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
+import '../shared/minted_format_exception.dart';
 import 'digit.dart';
-import 'shared/minted_format_exception.dart';
 
 /// An immutable sequence of decimal digits, each a [Digit] (`0`-`9`).
 ///
@@ -18,6 +18,8 @@ import 'shared/minted_format_exception.dart';
 /// Equality is by value over the digits.
 @immutable
 final class Digits {
+  final Uint8List _bytes;
+
   const Digits._(this._bytes);
 
   /// Parses [input] as a run of decimal digits, or returns `null` when any
@@ -48,8 +50,6 @@ final class Digits {
 
   /// The sequence built from the given `digits` (each already a valid `0`-`9`).
   static Digits of(Iterable<Digit> digits) => from([for (final digit in digits) digit.value]);
-
-  final Uint8List _bytes;
 
   /// The [Digit] at [index] (0-based).
   Digit operator [](int index) => Digit.from(_bytes[index]);

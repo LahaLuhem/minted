@@ -11,9 +11,9 @@ library;
 // underlying engine.
 export 'package:phone_numbers_parser/phone_numbers_parser.dart' show PhoneNumberType;
 
-export 'src/digit.dart';
-export 'src/digits.dart';
-export 'src/email.dart';
-export 'src/iban.dart';
-export 'src/phone_number.dart';
+export 'src/contact/email.dart';
+export 'src/contact/phone_number.dart';
+export 'src/finance/iban.dart';
+export 'src/numerics/digit.dart';
+export 'src/numerics/digits.dart';
 export 'src/shared/minted_format_exception.dart';
