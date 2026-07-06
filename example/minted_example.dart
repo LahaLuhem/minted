@@ -22,7 +22,7 @@ void main() {
   // `parse` throws a typed exception; `tryParse` would return null instead.
   try {
     Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
-  } on MintedFormatException catch (error) {
-    print(error.message); // Invalid Iban: failed IBAN structure or mod-97 check
+  } on MintedFormatException catch (ex) {
+    print(ex.message); // Invalid Iban: failed IBAN structure or mod-97 check
   }
 }

@@ -19,6 +19,7 @@ text, so renames don't break callers.
 - [Idioms](#idioms)
 - [Comments & dartdoc](#dartdoc)
 - [DCM rules (applied by hand)](#dcm-rules)
+- [Test style](#test-style)
 - [Documentation conventions (Markdown)](#documentation-conventions)
 - [Shell scripts](#shell-scripts)
 
@@ -317,6 +318,36 @@ library;
   statement with one blank line. Inline guards (`if (cond) return null;`) do not need it.
 - **`prefer-commenting-analyzer-ignores`** — every `// ignore:` needs an adjacent `//`
   explanation (dartdoc `///` does not count).
+
+---
+
+<a id="test-style"></a>
+## Test style
+
+- **`package:test` with `package:checks`.** Assertions use `checks` (`check(x).equals(…)`,
+  `.isNull()`, `.throws<…>()`), matching every suite in the package; not `package:matcher`'s
+  `expect`.
+- **Behavioural framing comes from a local helper, not a framework.**
+  [`test/support/bdd.dart`](./test/support/bdd.dart) is a small Gherkin vocabulary over
+  `package:test`: `feature` (a `group`), `scenario` (a single test), and `scenarioOutline` (one
+  test per example row). Why no BDD framework:
+  [`APPENDIX.md#behavioural-tests-helper`](./APPENDIX.md#behavioural-tests-helper).
+- **Prefer an examples table over scattered literals.** For parse / normalise behaviour, drive a
+  `scenarioOutline` from a `Map<String, Row>` where the key names the case and the record `Row`
+  groups the input parameters with the expected outcome. Keeping the values together, rather than
+  spread across separate tests and loop lists, is the whole point.
+- **Let the canonical form double as the outcome.** For a type that normalises on parse, have the
+  row carry the expected `.value` (or `null` for rejected input). One assertion,
+  `check(parsed?.value).equals(row.canonical)`, then covers acceptance, rejection, and
+  normalisation together.
+- **One case per row, named by what makes it interesting.** Each row becomes its own `test`, so its
+  name shows in the output and is selectable with `dart test -n`. Name rows `'the domain is
+  lower-cased'`, not by the raw input.
+- **Standard test vectors still apply.** The [value-type contract](#value-type-contract) is
+  unchanged: standardised types include the official valid vectors plus corrupted variants that
+  must be rejected.
+- **`conformance_test.dart` stays structural.** It enforces the contract via the analyzer AST, not
+  behaviour, so it stays plain `group` / `test`; don't wrap it in the behavioural helper.
 
 ---
 

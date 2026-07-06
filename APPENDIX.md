@@ -14,6 +14,7 @@ anchor, and keep anchors stable across renames.
 - [Why a typed `FormatException`](#why-typed-format-exception)
 - [Normalise on parse](#normalise-on-parse)
 - [Check the real standard, not a regex shape](#check-digits-not-regex)
+- [Behavioural tests: a helper, not a framework](#behavioural-tests-helper)
 - [Public API funnelled through `lib/minted.dart`](#public-api-via-single-export-file)
 - [Packaging: one core, companions for opinionated deps](#packaging-core-and-companions)
 - [British spelling in the public API](#spelling)
@@ -150,6 +151,46 @@ the standard hands us a real correctness test, not just a format.
 Tests for these types use the **official standard test vectors** (the IBAN registry examples, the
 Luhn worked examples, published ISBN/EAN check-digit cases), plus deliberately corrupted variants
 (one transposed digit, one wrong check digit) that must be rejected.
+
+---
+
+<a id="behavioural-tests-helper"></a>
+## Behavioural tests: a helper, not a framework
+
+Tests read as behaviour (Given/When/Then, one named case per row), but that framing comes from a
+tiny in-repo helper, not a BDD framework. [`test/support/bdd.dart`](./test/support/bdd.dart) is
+about 25 lines of `feature` / `scenario` / `scenarioOutline` over `package:test`, with the
+assertions still written in `package:checks`.
+
+A real Gherkin runner was on the table and was turned down on the merits. An earlier
+`bdd_framework` dev-dependency had already been dropped because it pulled in `flutter_test`, which
+breaks `dart test` off Flutter and clashes with the `analyzer` / `meta` pin. Its pure-Dart
+replacement, the `gherkin` package, was then evaluated properly: it *does* resolve against the full
+dependency set and runs Flutter-free under Dart 3.12 when wrapped in a `package:test` case. It was
+still rejected, for reasons independent of the version:
+
+- **No audience for the payoff.** Gherkin earns its keep when non-technical stakeholders read and
+  write `.feature` files. `minted`'s consumers are Dart developers; there is nobody here for whom
+  `Given the input "a@b.com" Then it is rejected` beats `check(Email.tryParse('a@b.com')).isNull()`.
+  The specification is the published standard (RFC 5322, ISO 13616) plus the dartdoc and the
+  structural [`test/conformance_test.dart`](./test/conformance_test.dart), all already executable.
+- **Ceremony over pure functions.** A value type is a single-call, stateless parse. Gherkin's
+  Given/When/Then and `World` context are built for stateful, multi-step flows; routing a pure
+  parse through them means inventing a stateful world just to carry the input across three steps.
+- **It degrades `dart test`.** The runner reports a whole feature as one opaque test; the
+  individual scenarios are printed by its own reporter and stay invisible to `dart test`'s test
+  counting, `-n` name filtering, and per-case failure attribution.
+- **Frozen.** `gherkin`'s last release was 2022 (Dart 2.15 era); it resolves under Dart 3 only
+  because pub relaxes the legacy `<3.0.0` SDK cap, and it holds `uuid` below 4.
+
+The helper keeps the readability that was actually wanted and drops all four costs. Every example
+row stays a genuine `dart test` case, so counting, `-n` filtering, and failure naming still work.
+The examples table is the point: each row groups its input parameters with the expected outcome
+under a descriptive name, so the cases read as a table instead of literals scattered across
+separate tests and loop lists. Where a type normalises on parse, the canonical form doubles as the
+outcome (a string means "accepted and normalised to this", `null` means "rejected"), folding
+acceptance, rejection, and normalisation into one table. The how-to is in
+[CODESTYLE test style](./CODESTYLE.md#test-style).
 
 ---
 

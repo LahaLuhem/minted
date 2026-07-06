@@ -1,68 +1,63 @@
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
-import 'package:test/test.dart';
+
+import 'support/bdd.dart';
 
 void main() {
-  // Registry-valid examples, including Oman (mandated 2024/2025) to show the
-  // country table tracks recent adoptions rather than a frozen snapshot.
-  const validIbans = [
-    'GB29NWBK60161331926819',
-    'DE75512108001245126199',
-    'OM040280000012345678901',
-  ];
+  feature('Iban', () {
+    // Acceptance and normalisation in one table: the canonical (compact,
+    // upper-cased) form doubles as the expected outcome. A String means
+    // "accepted and normalised to this"; null means "rejected". The valid rows
+    // are registry examples, including Oman (mandated 2024/2025) to show the
+    // country table tracks recent adoptions rather than a frozen snapshot.
+    scenarioOutline<({String input, String? canonical})>(
+      'Iban.tryParse normalises accepted input and rejects input that fails a check',
+      examples: {
+        'a valid UK IBAN': (input: 'GB29NWBK60161331926819', canonical: 'GB29NWBK60161331926819'),
+        'a valid German IBAN': (
+          input: 'DE75512108001245126199',
+          canonical: 'DE75512108001245126199',
+        ),
+        'Oman, mandated 2024/2025': (
+          input: 'OM040280000012345678901',
+          canonical: 'OM040280000012345678901',
+        ),
+        'grouped paper form is compacted and upper-cased': (
+          input: 'gb29 nwbk 6016 1331 9268 19',
+          canonical: 'GB29NWBK60161331926819',
+        ),
+        'a corrupted final check digit': (input: 'GB29NWBK60161331926818', canonical: null),
+        'too short for its country': (input: 'GB29NWBK6016133192681', canonical: null),
+        'an unknown country code': (input: 'ZZ00NWBK60161331926819', canonical: null),
+        'far too short': (input: 'GB29 NWBK', canonical: null),
+        'empty': (input: '', canonical: null),
+      },
+      outline: (example) {
+        // When the input is parsed as an IBAN ...
+        final parsedIban = Iban.tryParse(example.input);
 
-  group('Iban.tryParse', () {
-    for (final valid in validIbans) {
-      test('accepts $valid', () {
-        check(Iban.tryParse(valid)).isNotNull();
-      });
-    }
+        // Then it is normalised to the compact form, or rejected (null).
+        check(parsedIban?.value).equals(example.canonical);
+      },
+    );
 
-    test('strips spaces and upper-cases to the compact form', () {
-      check(Iban.parse('gb29 nwbk 6016 1331 9268 19').value).equals('GB29NWBK60161331926819');
-    });
-
-    for (final invalid in const [
-      'GB29NWBK60161331926818', // corrupted final digit: mod-97 fails
-      'GB29NWBK6016133192681', // too short for GB
-      'ZZ00NWBK60161331926819', // unknown country
-      'GB29 NWBK', // far too short
-      '',
-    ]) {
-      test('rejects "$invalid"', () {
-        check(Iban.tryParse(invalid)).isNull();
-      });
-    }
-  });
-
-  group('Iban equality and normalisation', () {
-    test('grouped and compact forms are equal', () {
+    scenario('grouped and compact forms are equal', () {
       check(Iban.parse('gb29 nwbk 6016 1331 9268 19')).equals(Iban.parse('GB29NWBK60161331926819'));
     });
-  });
 
-  group('Iban helpers', () {
-    final iban = Iban.parse('GB29NWBK60161331926819');
+    scenario('an IBAN exposes its country code, check digits, and BBAN', () {
+      final parsedIban = Iban.parse('GB29NWBK60161331926819');
 
-    test('exposes the country code', () {
-      check(iban.countryCode).equals('GB');
+      check(parsedIban.countryCode).equals('GB');
+      check(parsedIban.checkDigits).equals('29');
+      check(parsedIban.bban).equals('NWBK60161331926819');
     });
 
-    test('exposes the check digits', () {
-      check(iban.checkDigits).equals('29');
+    scenario('an IBAN rebuilds the grouped paper form', () {
+      check(Iban.parse('GB29NWBK60161331926819').formatted).equals('GB29 NWBK 6016 1331 9268 19');
     });
 
-    test('exposes the BBAN', () {
-      check(iban.bban).equals('NWBK60161331926819');
-    });
-
-    test('rebuilds the grouped paper form', () {
-      check(iban.formatted).equals('GB29 NWBK 6016 1331 9268 19');
-    });
-  });
-
-  group('Iban.parse', () {
-    test('throws MintedFormatException on a bad checksum', () {
+    scenario('Iban.parse throws MintedFormatException on a bad checksum', () {
       check(() => Iban.parse('GB29NWBK60161331926818')).throws<MintedFormatException>();
     });
   });
