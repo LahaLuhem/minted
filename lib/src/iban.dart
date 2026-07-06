@@ -24,7 +24,8 @@ extension type const Iban._(String value) {
     final assembled = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
 
     return tryParse(assembled) ??
-        (throw MintedFormatException.of<Iban>(
+        (throw MintedFormatException.of(
+          'Iban',
           '$countryCode + $bban',
           'those components do not form a valid IBAN',
         ));
@@ -42,7 +43,7 @@ extension type const Iban._(String value) {
   /// Parses [input] as an IBAN, throwing [MintedFormatException] when it fails any check.
   static Iban parse(String input) =>
       tryParse(input) ??
-      (throw MintedFormatException.of<Iban>(input, 'failed IBAN structure or mod-97 check'));
+      (throw MintedFormatException.of('Iban', input, 'failed IBAN structure or mod-97 check'));
 
   /// The ISO 3166-1 alpha-2 country code (the first two characters).
   String get countryCode => value.substring(0, _checkDigitsStart);

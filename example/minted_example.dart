@@ -19,7 +19,7 @@ void main() {
   print(iban.countryCode); // GB
   print(iban.formatted); // GB29 NWBK 6016 1331 9268 19
 
-  // `PhoneNumber` normalises to E.164. National-format input needs a region;
+  // `PhoneNumber` normalises to E.164. National-format input needs a region
   // `+`-international input does not.
   final phone = PhoneNumber.parse('0 655 5705 76', region: 'FR');
   print(phone.value); // +33655570576

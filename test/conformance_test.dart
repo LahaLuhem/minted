@@ -1,3 +1,6 @@
+// Test file
+// ignore_for_file: prefer-match-file-name
+
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/utilities.dart';

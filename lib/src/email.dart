@@ -42,7 +42,7 @@ extension type const Email._(String value) {
   /// it is not well-formed.
   static Email parse(String input) =>
       tryParse(input) ??
-      (throw MintedFormatException.of<Email>(input, 'not a well-formed email address'));
+      (throw MintedFormatException.of('Email', input, 'not a well-formed email address'));
 
   /// The local-part, before the last `@` (the mailbox name, often a username).
   /// Case is preserved from the input.

@@ -40,7 +40,7 @@ extension type const PhoneNumber._(String value) {
   /// See [tryParse] for the `region` hint.
   static PhoneNumber parse(String input, {String? region}) =>
       tryParse(input, region: region) ??
-      (throw MintedFormatException.of<PhoneNumber>(input, 'not a valid phone number'));
+      (throw MintedFormatException.of('PhoneNumber', input, 'not a valid phone number'));
 
   /// The country calling code, without the `+` (for example `44` for the UK).
   String get countryCode => _parsed.countryCode;
@@ -58,7 +58,8 @@ extension type const PhoneNumber._(String value) {
     );
   }
 
-  /// The number formatted for national display (for example `020 7946 0958`).
+  /// The national significant number, grouped for display per the country's
+  /// convention (for example `(202) 555-0119`), without the trunk prefix.
   String formatNational() => _parsed.formatNsn();
 
   /// A `tel:` URI for this number, per

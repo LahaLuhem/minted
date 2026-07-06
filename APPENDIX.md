@@ -112,7 +112,9 @@ goals at once:
 - **Discriminable.** Extending (rather than throwing the base type) lets a caller write
   `on MintedFormatException` to catch specifically this package's parse failures, and lets us
   attach a consistent, informative message (`'Invalid Iban: failed mod-97 check'`) via a shared
-  `MintedFormatException.of<T>(source, reason)` factory.
+  `MintedFormatException.of(typeName, source, reason)` factory. The type name is an explicit
+string, not a `<T>`, because the value types are extension types that erase to their representation
+at runtime, so a `'$T'` in the message would render `String`, not `Iban`.
 
 `tryParse` throws nothing and returns `null`; the throwing path is `parse` only. A failed parse
 is a runtime condition on untrusted input, so it is always a `throw`, never an `assert` (see
