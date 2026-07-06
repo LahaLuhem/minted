@@ -64,5 +64,23 @@ void main() {
     scenario('Email.parse throws MintedFormatException on malformed input', () {
       check(() => Email.parse('nope')).throws<MintedFormatException>();
     });
+
+    scenario('fromComponents assembles and normalises the address', () {
+      check(
+        Email.fromComponents(localPart: 'Jane.Doe', domain: 'Example.COM').value,
+      ).equals('Jane.Doe@example.com');
+    });
+
+    scenario('fromDomainLabels joins the labels with dots', () {
+      check(
+        Email.fromDomainLabels(localPart: 'jane', domainLabels: ['mail', 'example', 'com']).value,
+      ).equals('jane@mail.example.com');
+    });
+
+    scenario('fromComponents throws MintedFormatException on invalid parts', () {
+      check(
+        () => Email.fromComponents(localPart: 'a b', domain: 'example.com'),
+      ).throws<MintedFormatException>();
+    });
   });
 }

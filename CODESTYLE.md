@@ -181,8 +181,12 @@ consumer learns one shape and applies it everywhere. Rationale is in
 **Non-negotiable across both shapes:**
 
 1. **Private primary constructor** (`._`). There is no public way to build an instance except
-   through parsing, so any instance that exists is well-formed. Do not add a public constructor,
-   ever; it would break the guarantee the whole package sells.
+   through parsing, so any instance that exists is well-formed. Never add an *unvalidated* public
+   constructor; it would break the guarantee the whole package sells. A validated named factory
+   (`fromComponents`, `fromDomainLabels`) that assembles caller-supplied parts and runs the same
+   validation before `._` is fine, throwing [`MintedFormatException`](./APPENDIX.md#why-typed-format-exception)
+   on bad parts: it's a parsing entry point keyed on parts, not a raw constructor, so the guarantee
+   holds.
 2. **`static T? tryParse(String input)`** returns `null` on invalid input. No throwing.
 3. **`static T parse(String input)`** throws [`MintedFormatException`](./APPENDIX.md#why-typed-format-exception)
    (never a bare `Exception`, never `assert`). Implement it as `tryParse(input) ?? (throw …)` so
@@ -318,6 +322,10 @@ normalisation and **link** the standard it enforces (with the clause or edition 
 preferring a freely-readable URL (an RFC); where the standard is paywalled (ISO), link a reliable
 free reference. The link lives in the dartdoc, which renders on pub.dev and travels with the type,
 not a central table.
+
+Gloss a component whose standard term is jargon with its common-usage alias, so the getter is
+self-explaining: `Email.localPart` notes it's the mailbox name (often a username), `Iban.bban` the
+bank-specific part. Skip the gloss where the term is already plain (`domain`, `countryCode`).
 
 ### `@docImport` for dartdoc-only references
 

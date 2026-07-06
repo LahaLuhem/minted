@@ -56,5 +56,17 @@ void main() {
     scenario('PhoneNumber.parse throws MintedFormatException on invalid input', () {
       check(() => PhoneNumber.parse('not-a-number')).throws<MintedFormatException>();
     });
+
+    scenario('fromComponents assembles the E.164 form from calling code and number', () {
+      check(
+        PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '655570576').value,
+      ).equals('+33655570576');
+    });
+
+    scenario('fromComponents throws MintedFormatException on an invalid number', () {
+      check(
+        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '1'),
+      ).throws<MintedFormatException>();
+    });
   });
 }

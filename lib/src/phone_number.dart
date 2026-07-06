@@ -10,6 +10,13 @@ import 'shared/minted_format_exception.dart';
 /// so [value] is comparable and storable. National-format input needs a [tryParse] `region` hint
 /// (ISO 3166-1 alpha-2, e.g. `'GB'`); already-international input (`+…`) parses without one.
 extension type const PhoneNumber._(String value) {
+  /// Builds a [PhoneNumber] from its [countryCode] (the calling code without `+`, e.g. `44`) and [nationalNumber].Throws [MintedFormatException] if
+  /// they don't form a valid number. For assembling from a known-valid source.
+  static PhoneNumber fromComponents({
+    required String countryCode,
+    required String nationalNumber,
+  }) => parse('+$countryCode$nationalNumber');
+
   /// Parses [input] as a phone number, or returns `null` when it is not a valid number.
   ///
   /// Pass [region] (ISO 3166-1 alpha-2) to resolve national-format input; `+`-international input needs none.
@@ -38,7 +45,7 @@ extension type const PhoneNumber._(String value) {
   /// The country calling code, without the `+` (for example `44` for the UK).
   String get countryCode => _parsed.countryCode;
 
-  /// The national (significant) number, without the country calling code.
+  /// The national (significant) number, without the country calling code (the local number you'd dial within the country).
   String get nationalNumber => _parsed.nsn;
 
   /// The number's type (mobile, fixed line, VoIP, ...), or `null` if it matches no known type.

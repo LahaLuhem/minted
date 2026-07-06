@@ -13,6 +13,17 @@ import 'shared/minted_format_exception.dart';
 /// preserved (RFC 5321 leaves local-part case to the receiving host). So
 /// `a@Example.com == a@example.com` but `A@x.com != a@x.com`.
 extension type const Email._(String value) {
+  /// Builds an [Email] from its [localPart] and [domain], throwing
+  /// [MintedFormatException] if they don't form a valid address. For assembling
+  /// from a known-valid source.
+  static Email fromComponents({required String localPart, required String domain}) =>
+      parse('$localPart@$domain');
+
+  /// As [fromComponents], but takes the domain as its dot-separated labels
+  /// (`['example', 'com']`), joined with `.`.
+  static Email fromDomainLabels({required String localPart, required List<String> domainLabels}) =>
+      fromComponents(localPart: localPart, domain: domainLabels.join('.'));
+
   /// Parses [input] as an email address, or returns `null` when it is not well-formed.
   /// See the type docs for the normalisation applied.
   static Email? tryParse(String input) {
@@ -33,7 +44,8 @@ extension type const Email._(String value) {
       tryParse(input) ??
       (throw MintedFormatException.of<Email>(input, 'not a well-formed email address'));
 
-  /// The local-part, before the last `@`. Case is preserved from the input.
+  /// The local-part, before the last `@` (the mailbox name, often a username).
+  /// Case is preserved from the input.
   String get localPart => value.substring(0, value.lastIndexOf('@'));
 
   /// The domain, after the last `@`. Always lower-case.

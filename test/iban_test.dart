@@ -60,5 +60,17 @@ void main() {
     scenario('Iban.parse throws MintedFormatException on a bad checksum', () {
       check(() => Iban.parse('GB29NWBK60161331926818')).throws<MintedFormatException>();
     });
+
+    scenario('fromComponents computes the check digits and assembles a valid IBAN', () {
+      check(
+        Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819').value,
+      ).equals('GB29NWBK60161331926819');
+    });
+
+    scenario('fromComponents throws MintedFormatException on a wrong-length BBAN', () {
+      check(
+        () => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'),
+      ).throws<MintedFormatException>();
+    });
   });
 }

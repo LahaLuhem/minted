@@ -33,6 +33,11 @@ final phone = PhoneNumber.parse('0 655 5705 76', region: 'FR');
 phone.value;  // +33655570576   (E.164)
 phone.type;   // PhoneNumberType.mobile
 phone.telUri; // tel:+33655570576
+
+// Build from known-valid parts (throws if they don't form a valid whole):
+Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes check digits
+Email.fromComponents(localPart: 'jane', domain: 'example.com');
+PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '655570576');
 ```
 
 Types check the real standard, not just the shape: `Iban` runs the ISO 13616
