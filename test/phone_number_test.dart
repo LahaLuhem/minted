@@ -68,5 +68,30 @@ void main() {
         () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '1'),
       ).throws<MintedFormatException>();
     });
+
+    scenario('the region hint is case-insensitive', () {
+      check(PhoneNumber.tryParse('0 655 5705 76', region: 'fr')?.value).equals('+33655570576');
+    });
+
+    scenario('type finds a non-mobile classification', () {
+      check(PhoneNumber.parse('+33 1 42 68 53 00').type).equals(PhoneNumberType.fixedLine);
+    });
+
+    scenario('formatNational renders the local display form', () {
+      check(PhoneNumber.parse('+33 6 55 57 05 76').formatNational()).equals('6 55 57 05 76');
+    });
+
+    scenario('fromComponents tolerates spacing in the national number', () {
+      check(
+        PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '6 55 57 05 76').value,
+      ).equals('+33655570576');
+    });
+
+    scenario('parse error carries the offending input as its source', () {
+      check(() => PhoneNumber.parse('nope'))
+          .throws<MintedFormatException>()
+          .has((error) => error.source as String?, 'source')
+          .equals('nope');
+    });
   });
 }

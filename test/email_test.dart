@@ -82,5 +82,18 @@ void main() {
         () => Email.fromComponents(localPart: 'a b', domain: 'example.com'),
       ).throws<MintedFormatException>();
     });
+
+    scenario('fromDomainLabels throws MintedFormatException on empty labels', () {
+      check(
+        () => Email.fromDomainLabels(localPart: 'jane', domainLabels: []),
+      ).throws<MintedFormatException>();
+    });
+
+    scenario('parse error carries the offending input as its source', () {
+      check(() => Email.parse('nope'))
+          .throws<MintedFormatException>()
+          .has((error) => error.source as String?, 'source')
+          .equals('nope');
+    });
   });
 }

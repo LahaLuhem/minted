@@ -79,7 +79,9 @@ final cc = s.substring(0, 2);
 
 - **Wrap text-file content at 100 columns.** [`.editorconfig`](./.editorconfig) is authoritative;
   Markdown, Dart, and YAML share the same cap. The formatter's `page_width: 100` in
-  `analysis_options.yaml` matches it; keep them aligned if either moves.
+  `analysis_options.yaml` matches it; keep them aligned if either moves. Dartdoc `///` prose is the
+  exception: the formatter never reflows comments, so soft-wrap it roughly, for smooth break-less
+  reading, rather than hard-capping at 100.
 - **Blank lines separate logical chunks within a method.** Group the guard checks, the
   normalisation, the validation, and the return with one blank line between groups, so a reader
   can scan past chunks they don't need.
@@ -379,6 +381,12 @@ library;
 - **Standard test vectors still apply.** The [value-type contract](#value-type-contract) is
   unchanged: standardised types include the official valid vectors plus corrupted variants that
   must be rejected.
+- **Test what we built, not the dependencies.** Assume the wrapped validators (`email_validator`,
+  `iban_validator`, `phone_numbers_parser`) validate correctly; that's their job. Spend the tests on
+  our seams: normalisation, assembly, check-digit *generation*, the failure model (the exception's
+  message *and* `source`), and edge cases. Cover failure paths and messages, not just happy-path
+  acceptance: a positive-only suite once hid that every parse error read `Invalid String`
+  (extension-type erasure of `'$T'`).
 - **`conformance_test.dart` stays structural.** It enforces the contract via the analyzer AST, not
   behaviour, so it stays plain `group` / `test`; don't wrap it in the behavioural helper.
 

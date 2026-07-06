@@ -72,5 +72,48 @@ void main() {
         () => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'),
       ).throws<MintedFormatException>();
     });
+
+    // fromComponents runs our own mod-97-10 generator (check_digits.dart); check
+    // it reproduces the registry check digits across countries, letters and
+    // digits-only BBANs and different lengths. That is our code, not the
+    // validator's.
+    scenarioOutline<({String countryCode, String bban, String iban})>(
+      'fromComponents computes the check digits to match the registry IBAN',
+      examples: {
+        'UK, letters in the BBAN': (
+          countryCode: 'GB',
+          bban: 'NWBK60161331926819',
+          iban: 'GB29NWBK60161331926819',
+        ),
+        'Germany, digits only': (
+          countryCode: 'DE',
+          bban: '512108001245126199',
+          iban: 'DE75512108001245126199',
+        ),
+        'Oman, 23 characters': (
+          countryCode: 'OM',
+          bban: '0280000012345678901',
+          iban: 'OM040280000012345678901',
+        ),
+      },
+      outline: (example) {
+        check(
+          Iban.fromComponents(countryCode: example.countryCode, bban: example.bban).value,
+        ).equals(example.iban);
+      },
+    );
+
+    scenario('fromComponents normalises a lower-case, spaced input', () {
+      check(
+        Iban.fromComponents(countryCode: 'gb', bban: 'nwbk 6016 1331 9268 19').value,
+      ).equals('GB29NWBK60161331926819');
+    });
+
+    scenario('fromComponents error carries the components as its source', () {
+      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
+          .throws<MintedFormatException>()
+          .has((error) => error.source as String?, 'source')
+          .equals('GB + TOOSHORT');
+    });
   });
 }
