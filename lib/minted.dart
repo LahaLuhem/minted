@@ -12,6 +12,7 @@ library;
 export 'package:phone_numbers_parser/phone_numbers_parser.dart' show PhoneNumberType;
 
 export 'src/digit.dart';
+export 'src/digits.dart';
 export 'src/email.dart';
 export 'src/iban.dart';
 export 'src/phone_number.dart';

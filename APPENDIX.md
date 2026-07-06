@@ -11,7 +11,7 @@ anchor, and keep anchors stable across renames.
 - [Pure-Dart package, no Flutter dependency](#pure-dart-not-flutter)
 - [Parse, don't validate](#parse-dont-validate)
 - [Extension type vs immutable class](#extension-type-representation)
-- [Typed digit sub-parts (`Digit`)](#typed-digit-subparts)
+- [Typed digits: `Digit` and `Digits`](#typed-digit-subparts)
 - [Why a typed `FormatException`](#why-typed-format-exception)
 - [Normalise on parse](#normalise-on-parse)
 - [Check the real standard, not a regex shape](#check-digits-not-regex)
@@ -102,31 +102,36 @@ dependency: the core stays dependency-light, and hand-written equality is a few 
 ---
 
 <a id="typed-digit-subparts"></a>
-## Typed digit sub-parts (`Digit`)
+## Typed digits: `Digit` and `Digits`
 
 The parse-don't-validate guarantee normally stops at the whole value (`Iban`, `PhoneNumber`).
-Where a validated whole then exposes a part that is *only* decimal digits, that part is a `Digit`
-(or a `List<Digit>`, or a `(first, second)` record of them) rather than a raw `String`, so "these
-are digits" stays a fact of the type instead of an assumption each caller re-checks. `Digit` is a
-building block, not a domain entity from a standard: it is the one type here that models a
-primitive-of-a-primitive.
+Where a validated whole exposes a part that is *only* decimal digits, that part is typed as digits
+rather than a raw `String`, so "these are digits" is a fact of the type instead of an assumption
+each caller re-checks. Neither `Digit` nor `Digits` is a domain entity from a standard; they are
+the building blocks the standard types are cut from.
 
-`Digit` is backed by an `int`, not a one-character `String`. A digit *is* the number 0-9, so
-`.value` is that number and ordering reads naturally; the string form is `toString()` (the
-extension type erases to `int`, so `'$digit'` prints the digit). The two consumers differ by
-arity, so they differ by type. `Iban.checkDigits` is always exactly two, so it is a
-`({Digit first, Digit second})` record (structural value equality for free), while
-`PhoneNumber.nationalNumber` is variable-length, so a `List<Digit>`.
+`Digit` (a single `0`-`9`) is an `extension type` over `int`, so it erases at runtime and costs
+nothing per value; `.value` is the number. Arity decides how each consumer exposes its digits.
+`Iban.checkDigits` is always exactly two, so it is a `({Digit first, Digit second})` record (a
+record gives structural value equality for free). `PhoneNumber.nationalNumber` is variable-length,
+so it is a `Digits`.
 
-Storage does not change. Each whole stays its compact canonical `String`; the `Digit` views are
-built on demand by the getters and then collected, so there is no standing per-value cost. That is
-deliberate: a `List<Digit>` *is* a `List<int>` at runtime (extension types erase to their
-representation), roughly eight times the bytes of the Latin-1 string it derives from. The dense
-alternative, `Uint8List` at one byte per digit, cannot carry the `Digit` element type (it is a
-`List<int>`), and `dart:ffi`'s fixed-width types are not web-safe; a `Uint8List`-backed collection
-exposing `Digit` on access is possible but only pays off at high volume, so it is deferred until a
-consumer needs it. A `List<Digit>` has no readable literal, so `Digit.parseAll` turns a run of
-digits into the list, and also backs the `nationalNumber` getter.
+`Digits` (a sequence) is where the representation matters. The obvious `List<Digit>` is a trap:
+the element type erases, so `List<Digit>` *is* `List<int>` at runtime, one pointer-sized word per
+digit, roughly eight times the bytes of the string it came from. So `Digits` is backed by a
+`Uint8List`: one byte per digit, and a real `Uint8Array` on the web (where a `String` would be
+two-byte UTF-16). `dart:ffi`'s fixed-width types are not an option: they are native-ABI markers for
+C interop, not web-safe, and no C ABI has a sub-byte scalar, so there is nothing to pack against
+there.
+
+`Digits` is an `@immutable` class, not an extension type, for two reasons. Value equality: an
+extension type's `==` delegates to its representation and can't be overridden, and `Uint8List` uses
+*identity* equality, so `Digits.parse('12')` would never equal another `Digits.parse('12')`; the
+class hand-writes structural `==`/`hashCode` over the bytes (its first use of `package:meta`, for
+`@immutable`). Encapsulation: the `Uint8List` is private, so a denser backing (nibble-packed BCD at
+two digits per byte, or tighter) can replace it behind the same `operator []` / `digits` /
+`asString` interface without touching callers. Packing is deferred on purpose; it only pays off at
+a volume identifiers rarely reach, and the unpacked bytes read as the digits under a debugger.
 
 ---
 

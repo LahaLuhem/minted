@@ -33,12 +33,12 @@ final phone = PhoneNumber.parse('0 655 5705 76', region: 'FR');
 phone.value;          // +33655570576   (E.164)
 phone.type;           // PhoneNumberType.mobile
 phone.telUri;         // tel:+33655570576
-phone.nationalNumber; // [6, 5, 5, 5, 7, 0, 5, 7, 6]   (List<Digit>)
+phone.nationalNumber; // Digits(655570576)
 
 // Build from known-valid parts (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes check digits
 Email.fromComponents(localPart: 'jane', domain: 'example.com');
-PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digit.parseAll('655570576'));
+PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.parse('655570576'));
 ```
 
 Types check the real standard, not just the shape: `Iban` runs the ISO 13616
@@ -47,8 +47,8 @@ E.164 (national input takes a `region` hint, international input doesn't). They
 normalise on parse, so equality is canonical. Every type shares one surface:
 `tryParse` / `parse` / `.value` / value equality, plus type-specific getters.
 Digit-only parts are typed too: a `Digit` is a guaranteed single `0`-`9`, so
-`PhoneNumber.nationalNumber` is a `List<Digit>` and `Iban.checkDigits` a
-`(first, second)` record of them.
+`PhoneNumber.nationalNumber` is a `Digits` (a compact `Uint8List`-backed sequence
+with typed `Digit` access) and `Iban.checkDigits` a `(first, second)` record.
 
 ## Roadmap
 

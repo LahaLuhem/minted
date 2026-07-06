@@ -42,8 +42,9 @@ void main() {
       final parsedPhone = PhoneNumber.parse('+33 655 5705 76');
 
       check(parsedPhone.countryCode).equals('33');
+      check(parsedPhone.nationalNumber.length).equals(9);
       check(parsedPhone.nationalNumber.first).equals(Digit.from(6));
-      check(parsedPhone.nationalNumber.join()).equals('655570576');
+      check(parsedPhone.nationalNumber.asString).equals('655570576');
     });
 
     scenario('a French mobile is classified as mobile', () {
@@ -62,14 +63,14 @@ void main() {
       check(
         PhoneNumber.fromComponents(
           countryCode: '33',
-          nationalNumber: Digit.parseAll('655570576'),
+          nationalNumber: Digits.parse('655570576'),
         ).value,
       ).equals('+33655570576');
     });
 
     scenario('fromComponents throws MintedFormatException on an invalid number', () {
       check(
-        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digit.parseAll('1')),
+        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.parse('1')),
       ).throws<MintedFormatException>();
     });
 

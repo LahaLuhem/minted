@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
-import 'digit.dart';
+import 'digits.dart';
 import 'shared/minted_format_exception.dart';
 
 /// A phone number, validated and stored in its canonical E.164 form (via `phone_numbers_parser`).
@@ -17,8 +17,8 @@ extension type const PhoneNumber._(String value) {
   /// from a known-valid source.
   static PhoneNumber fromComponents({
     required String countryCode,
-    required List<Digit> nationalNumber,
-  }) => parse('+$countryCode${nationalNumber.join()}');
+    required Digits nationalNumber,
+  }) => parse('+$countryCode${nationalNumber.asString}');
 
   /// Parses [input] as a phone number, or returns `null` when it is not a valid number.
   ///
@@ -48,10 +48,10 @@ extension type const PhoneNumber._(String value) {
   /// The country calling code, without the `+` (for example `44` for the UK).
   String get countryCode => _parsed.countryCode;
 
-  /// The national (significant) number as its [Digit]s, without the country
-  /// calling code (the local number you'd dial within the country). Join them
-  /// (`nationalNumber.join()`) to recover the plain string.
-  List<Digit> get nationalNumber => Digit.parseAll(_parsed.nsn);
+  /// The national (significant) number as a [Digits] sequence, without the
+  /// country calling code (the local number you'd dial within the country).
+  /// Use [Digits.asString] for the plain string.
+  Digits get nationalNumber => Digits.parse(_parsed.nsn);
 
   /// The number's type (mobile, fixed line, VoIP, ...), or `null` if it matches no known type.
   /// When a number is valid as more than one type, the first match in enum-declaration order is returned.

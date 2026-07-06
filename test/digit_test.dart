@@ -48,14 +48,6 @@ void main() {
       check(Digit.from(7).toString()).equals('7');
     });
 
-    scenario('parseAll explodes a run of digits into a Digit each, preserving order', () {
-      check(Digit.parseAll('905').map((digit) => digit.value).toList()).deepEquals([9, 0, 5]);
-    });
-
-    scenario('parseAll round-trips through join', () {
-      check(Digit.parseAll('905').join()).equals('905');
-    });
-
     scenario('Digit.parse throws MintedFormatException, carrying the source', () {
       check(() => Digit.parse('x'))
           .throws<MintedFormatException>()
@@ -65,10 +57,6 @@ void main() {
 
     scenario('Digit.from throws MintedFormatException on an out-of-range value', () {
       check(() => Digit.from(10)).throws<MintedFormatException>();
-    });
-
-    scenario('parseAll throws on the first non-digit', () {
-      check(() => Digit.parseAll('90x')).throws<MintedFormatException>();
     });
   });
 }
