@@ -17,8 +17,10 @@ environment:
   sdk: ^3.12.0
 
 dependencies:
+  collection: ^1.19.1
   email_validator: ^3.0.0
   iban_validator: ^1.0.2
+  phone_numbers_parser: ^9.0.24
 
 dev_dependencies:
   analyzer: ^14.0.0

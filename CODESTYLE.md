@@ -252,6 +252,31 @@ When building a literal collection (an embedded code table, a set of test vector
 with embedded control flow reads as data and drops the `<T>` annotations the literal context
 already infers. Keep `.map(...)` for genuine pipelines.
 
+<a id="idioms-functional-pipelines"></a>
+### Functional pipelines over imperative loops for lookup and transform
+
+When the code *maps around data* (find one, select many, transform, reduce), prefer a functional
+pipeline (`firstWhereOrNull`, `where`, `map`, `fold`, `any` / `every`, several from
+[`package:collection`](https://pub.dev/packages/collection)) over a hand-written `for` loop. The
+pipeline reads as the data's journey, top to bottom; the loop hides it in accumulate-and-return
+bookkeeping.
+
+```dart
+// Prefer:
+return IsoCode.values.firstWhereOrNull((code) => code.name == upperRegion);
+
+// Over:
+for (final code in IsoCode.values) {
+  if (code.name == upperRegion) return code;
+}
+return null;
+```
+
+This complements, rather than contradicts, the two neighbouring rules: build a *literal*
+collection with a collection-`for` (not `map(…).toList()`), and do *side effects* with a plain
+`for` loop (never `forEach` with a closure, `avoid_function_literals_in_foreach_calls`). The
+pipeline is for the lookup / transform case, where it makes the types' path clearest.
+
 <a id="idioms-parts"></a>
 ### `part` / `part of` only when structurally needed
 
