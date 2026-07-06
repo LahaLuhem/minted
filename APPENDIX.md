@@ -11,6 +11,7 @@ anchor, and keep anchors stable across renames.
 - [Pure-Dart package, no Flutter dependency](#pure-dart-not-flutter)
 - [Parse, don't validate](#parse-dont-validate)
 - [Extension type vs immutable class](#extension-type-representation)
+- [Typed digit sub-parts (`Digit`)](#typed-digit-subparts)
 - [Why a typed `FormatException`](#why-typed-format-exception)
 - [Normalise on parse](#normalise-on-parse)
 - [Check the real standard, not a regex shape](#check-digits-not-regex)
@@ -97,6 +98,35 @@ email. The trade-offs are real and deliberate:
 latitude and longitude), an `@immutable final class` with a private constructor, hand-written
 `==` / `hashCode`, and a `ClassName(...)` `toString` is the right shape. No `Equatable`
 dependency: the core stays dependency-light, and hand-written equality is a few honest lines.
+
+---
+
+<a id="typed-digit-subparts"></a>
+## Typed digit sub-parts (`Digit`)
+
+The parse-don't-validate guarantee normally stops at the whole value (`Iban`, `PhoneNumber`).
+Where a validated whole then exposes a part that is *only* decimal digits, that part is a `Digit`
+(or a `List<Digit>`, or a `(first, second)` record of them) rather than a raw `String`, so "these
+are digits" stays a fact of the type instead of an assumption each caller re-checks. `Digit` is a
+building block, not a domain entity from a standard: it is the one type here that models a
+primitive-of-a-primitive.
+
+`Digit` is backed by an `int`, not a one-character `String`. A digit *is* the number 0-9, so
+`.value` is that number and ordering reads naturally; the string form is `toString()` (the
+extension type erases to `int`, so `'$digit'` prints the digit). The two consumers differ by
+arity, so they differ by type. `Iban.checkDigits` is always exactly two, so it is a
+`({Digit first, Digit second})` record (structural value equality for free), while
+`PhoneNumber.nationalNumber` is variable-length, so a `List<Digit>`.
+
+Storage does not change. Each whole stays its compact canonical `String`; the `Digit` views are
+built on demand by the getters and then collected, so there is no standing per-value cost. That is
+deliberate: a `List<Digit>` *is* a `List<int>` at runtime (extension types erase to their
+representation), roughly eight times the bytes of the Latin-1 string it derives from. The dense
+alternative, `Uint8List` at one byte per digit, cannot carry the `Digit` element type (it is a
+`List<int>`), and `dart:ffi`'s fixed-width types are not web-safe; a `Uint8List`-backed collection
+exposing `Digit` on access is possible but only pays off at high volume, so it is deferred until a
+consumer needs it. A `List<Digit>` has no readable literal, so `Digit.parseAll` turns a run of
+digits into the list, and also backs the `nationalNumber` getter.
 
 ---
 

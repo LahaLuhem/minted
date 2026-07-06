@@ -42,7 +42,8 @@ void main() {
       final parsedPhone = PhoneNumber.parse('+33 655 5705 76');
 
       check(parsedPhone.countryCode).equals('33');
-      check(parsedPhone.nationalNumber).equals('655570576');
+      check(parsedPhone.nationalNumber.first).equals(Digit.from(6));
+      check(parsedPhone.nationalNumber.join()).equals('655570576');
     });
 
     scenario('a French mobile is classified as mobile', () {
@@ -59,13 +60,16 @@ void main() {
 
     scenario('fromComponents assembles the E.164 form from calling code and number', () {
       check(
-        PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '655570576').value,
+        PhoneNumber.fromComponents(
+          countryCode: '33',
+          nationalNumber: Digit.parseAll('655570576'),
+        ).value,
       ).equals('+33655570576');
     });
 
     scenario('fromComponents throws MintedFormatException on an invalid number', () {
       check(
-        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '1'),
+        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digit.parseAll('1')),
       ).throws<MintedFormatException>();
     });
 
@@ -79,12 +83,6 @@ void main() {
 
     scenario('formatNational renders the local display form', () {
       check(PhoneNumber.parse('+33 6 55 57 05 76').formatNational()).equals('6 55 57 05 76');
-    });
-
-    scenario('fromComponents tolerates spacing in the national number', () {
-      check(
-        PhoneNumber.fromComponents(countryCode: '33', nationalNumber: '6 55 57 05 76').value,
-      ).equals('+33655570576');
     });
 
     scenario('parse error carries the offending input as its source', () {

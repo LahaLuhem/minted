@@ -49,7 +49,7 @@ void main() {
       final parsedIban = Iban.parse('GB29NWBK60161331926819');
 
       check(parsedIban.countryCode).equals('GB');
-      check(parsedIban.checkDigits).equals('29');
+      check(parsedIban.checkDigits).equals((first: Digit.from(2), second: Digit.from(9)));
       check(parsedIban.bban).equals('NWBK60161331926819');
     });
 

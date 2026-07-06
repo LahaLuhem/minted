@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:iban_validator/iban_validator.dart';
 
+import 'digit.dart';
 import 'shared/check_digits.dart';
 import 'shared/minted_format_exception.dart';
 
@@ -48,8 +49,12 @@ extension type const Iban._(String value) {
   /// The ISO 3166-1 alpha-2 country code (the first two characters).
   String get countryCode => value.substring(0, _checkDigitsStart);
 
-  /// The two check digits (the third and fourth characters).
-  String get checkDigits => value.substring(_checkDigitsStart, _bbanStart);
+  /// The two check digits (positions 3 and 4) as a `(first, second)` record of
+  /// [Digit]s; read `.first.value` / `.second.value` for their numeric values.
+  ({Digit first, Digit second}) get checkDigits => (
+    first: Digit.parse(value[_checkDigitsStart]),
+    second: Digit.parse(value[_checkDigitsStart + 1]),
+  );
 
   /// The Basic Bank Account Number: everything after the check digits (the bank-specific part,
   /// e.g. an account number plus a bank or branch code).
