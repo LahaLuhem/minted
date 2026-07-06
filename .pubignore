@@ -11,8 +11,9 @@ test/
 analysis_options.yaml
 dart_dependency_validator.yaml
 
-# Build / IDE artefacts.
+# Build / coverage / IDE artefacts.
 build/
+coverage/
 *.iml
 .idea/
 

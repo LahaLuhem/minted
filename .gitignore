@@ -6,6 +6,9 @@
 # FVM Version Cache
 .fvm/
 
+# Coverage output from `dart test --coverage`.
+coverage/
+
 # Created by https://www.toptal.com/developers/gitignore/api/linux,macos,windows,androidstudio,visualstudiocode,dart
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,macos,windows,androidstudio,visualstudiocode,dart
 
