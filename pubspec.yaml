@@ -2,7 +2,7 @@ name: minted
 description: >-
   Well-modelled Dart value types (email, IBAN, and more) built on
   parse-don't-validate, so every instance is guaranteed well-formed. Pure Dart.
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
 repository: https://github.com/LahaLuhem/minted
 
