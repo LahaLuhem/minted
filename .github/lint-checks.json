@@ -3,6 +3,8 @@
   "image": "ghcr.io/lahaluhem/linterpol:latest",
   "checks": [
     { "name": "ShellCheck", "cmd": "shellcheck scripts/*.sh" },
-    { "name": "actionlint", "cmd": "actionlint" }
+    { "name": "actionlint", "cmd": "actionlint" },
+    { "name": "rumdl", "cmd": "rumdl check ." },
+    { "name": "ryl", "cmd": "ryl ." }
   ]
 }

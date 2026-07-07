@@ -30,10 +30,12 @@ jobs:
         env:
           BRANCH: ${{ github.head_ref }}
         run: |
-          if ! echo "$BRANCH" | grep -Eq '^(feature|bugfix|chore|refactor|acceptance-test-issues|hotfix)/#[0-9]+-.+$'; then
+          pattern='^(feature|bugfix|chore|refactor|acceptance-test-issues|hotfix)/#[0-9]+-.+$'
+          if ! echo "$BRANCH" | grep -Eq "$pattern"; then
             echo "::error::Branch '$BRANCH' does not match required pattern."
             echo "Expected: <type>/#<issue-number>-<name>"
-            echo "Where <type> is one of: feature, bugfix, chore, refactor, acceptance-test-issues, hotfix"
+            types="feature, bugfix, chore, refactor, acceptance-test-issues, hotfix"
+            echo "Where <type> is one of: $types"
             echo "Example: chore/#4-tidy-readme"
             exit 1
           fi
@@ -74,7 +76,8 @@ jobs:
           fail=0
           while IFS= read -r subject; do
             if [ "${#subject}" -gt "$MAX_COMMIT_MESSAGE_LENGTH" ]; then
-              echo "::error::Commit subject exceeds ${MAX_COMMIT_MESSAGE_LENGTH} characters -> ${subject}"
+              msg="Commit subject exceeds ${MAX_COMMIT_MESSAGE_LENGTH} characters -> ${subject}"
+              echo "::error::$msg"
               fail=1
             fi
           done < <(git log "${BASE_SHA}..${HEAD_SHA}" --pretty=format:'%s')
@@ -91,7 +94,8 @@ jobs:
     steps:
       - name: Require exactly one sem-* label
         run: |
-          allowed='sem-add, sem-change, sem-deprecate, sem-remove, sem-bugfix, sem-security, sem-skip'
+          allowed='sem-add, sem-change, sem-deprecate, sem-remove,'
+          allowed="$allowed sem-bugfix, sem-security, sem-skip"
           count=$(echo "$LABELS" | jq '[.[] | select(startswith("sem-"))] | length')
           if [ "$count" -ne 1 ]; then
             echo "::error::PR must have exactly one sem-* label (found $count). Allowed: $allowed"
