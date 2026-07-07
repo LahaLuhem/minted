@@ -306,18 +306,67 @@ bump here, since it is breaking for anyone on the older SDK.
 
 ---
 
+<a id="date-value-type"></a>
+## Date: a calendar date, not an instant
+
+`DateTime` is the stdlib's time type, but it models an *instant*: a date, a time-of-day, and a
+zone, down to the microsecond. A birthday or an invoice date is none of those things below the
+day, yet `DateTime` is what everyone reaches for, so a plain date ends up carrying a stray
+`00:00:00` and a zone. That is where the bugs come from: two "equal" dates that differ by a time
+nobody set, or a date that slides across midnight when it crosses a zone. Dart has no date-only
+sibling to `DateTime` (no `LocalDate`), so `Date` is that missing value.
+
+**An immutable class, not an extension type.** A date is three fields (year, month, day), so it
+takes the [multi-part shape](#extension-type-representation), not an extension type. The
+zero-cost alternatives don't hold up: an extension type over `DateTime` can't override `toString`,
+so it would print `2026-07-07 00:00:00.000` instead of `2026-07-07`, and it would inherit
+`DateTime`'s rollover; an extension type over a packed `int` (days-since-epoch, or a `yyyymmdd`
+number) has an opaque canonical form and needs arithmetic to read a component back. Three honest
+`int` fields with hand-written equality read best and cost least in confusion.
+
+**A validating factory, not a raw constructor.** `Date(2026, 7, 7)` is a factory that validates
+and throws `MintedFormatException` on an impossible date, backed by a private `Date._`. It is not
+a plain public constructor, because the package's guarantee is that every instance is well-formed
+and a raw constructor can't promise that: a `const` constructor's `assert`s are stripped in release
+builds, so `Date(2026, 13, 40)` would leak an impossible date into production. The factory is the
+parts-keyed parsing entry point the [value-type contract](./CODESTYLE.md#value-type-contract)
+allows, so the guarantee holds. The cost is that `Date(...)` is not `const`; neither is
+`DateTime(...)`, and the type is new, so nothing downstream loses a `const` it had.
+
+**Reject, don't roll over.** Where `DateTime(2026, 13, 1)` silently becomes 2027-01-01, `Date`
+rejects it. Rolling an out-of-range part over is the opposite of parse-don't-validate: it invents
+a different value instead of refusing a bad one.
+
+**Local `toDateTime()`, UTC arithmetic.** `toDateTime()` returns local midnight, matching the
+`DateTime(year, month, day)` callers write today, so moving a value to `Date` and back preserves
+behaviour. Day arithmetic (`addDays`, `differenceInDays`) works in UTC internally, because a UTC
+day is always 24 hours and a local one is not (a daylight-saving transition makes a local day 23
+or 25 hours, which would skew the count).
+
+**Year `0000`-`9999`.** Parsing is the strict ISO 8601 calendar date `YYYY-MM-DD`, so the year is
+four digits and the canonical form is always well-defined; the factory holds the same range. The
+expanded ISO representation (a leading sign and more than four digits) is deliberately out of
+scope, and can be added later without breaking the four-digit forms.
+
+---
+
 <a id="what-not-covered"></a>
 ## What `minted` deliberately does not cover
 
 `minted` targets the gap where no clean Dart value type exists. It does not re-model things the
 Dart stdlib or a strong existing package already handles well:
 
-- **Stdlib already covers:** URLs/URIs (`Uri`), IP addresses (`InternetAddress`), time
-  (`DateTime` / `Duration`), big integers (`BigInt`); in Flutter, `Color`, `Locale`, `TimeOfDay`.
+- **Stdlib already covers:** URLs/URIs (`Uri`), IP addresses (`InternetAddress`), instants and
+  durations (`DateTime` / `Duration`), big integers (`BigInt`); in Flutter, `Color`, `Locale`,
+  `TimeOfDay`.
 - **Strong existing packages cover (wrap or reuse, don't reimplement):** phone numbers
   (`phone_numbers_parser`), money/decimals (`money2`, `decimal`, `rational`), UUIDs (`uuid`),
   SemVer (`pub_semver`), formatting and ISO code *lists* (`intl`), IANA time zones (`timezone`),
   hashes (`crypto`).
+
+The one apparent overlap is date-only values. `DateTime` models an *instant* (a date, a time,
+and a zone), not a plain calendar date, and Dart has no `LocalDate`, so [`Date`](#date-value-type)
+fills that gap rather than re-modelling `DateTime`.
 
 Where `minted` builds *on* such a package (a `Phone` type wrapping `phone_numbers_parser`, or
 `email_validator` for the email grammar, or `iban_validator` for the IBAN registry), it wraps rather

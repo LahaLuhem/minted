@@ -49,6 +49,7 @@ Email.tryParse('not-an-email');   // null, nothing thrown
 | `Email` | a well-formed address, domain lower-cased | [RFC 5322](https://www.rfc-editor.org/rfc/rfc5322) |
 | `Iban` | structure, country length, and the mod-97 checksum | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
 | `PhoneNumber` | a valid number, stored in E.164 | [ITU-T E.164](https://en.wikipedia.org/wiki/E.164) |
+| `Date` | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 | `Digit` / `Digits` | a single digit `0`-`9`, or an iterable sequence of them | building block |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
@@ -85,6 +86,16 @@ phone.telUri;         // tel:+33655570576
 
 // national-format input takes a region hint; international ('+…') input doesn't:
 PhoneNumber.tryParse('0 655 5705 76');   // null (no region given)
+
+// Date: the calendar date DateTime doesn't model (no time, no zone):
+final date = Date.parse('2026-07-07');   // strict ISO 8601 YYYY-MM-DD
+date.iso8601;      // '2026-07-07'   (canonical form)
+date.weekday;      // 2   (1 = Monday … 7 = Sunday)
+date.addDays(30);  // Date(2026-08-06)
+date < Date(2027); // true   (Date(2027) is 2027-01-01)
+
+// impossible dates are rejected, not rolled over the way DateTime does:
+Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-01-01)
 
 // build from parts you already trust (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
@@ -128,6 +139,7 @@ check a given country in its
 - [x] `Email` (RFC 5322)
 - [x] `Iban` (ISO 13616, mod-97)
 - [x] `PhoneNumber` (E.164)
+- [x] `Date` (ISO 8601 calendar date)
 - [x] `Digit` / `Digits` (numeric building blocks)
 - [ ] `Bic`, `CreditCardNumber` (Luhn), `Isbn`, `Ean` / `Gtin`
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
