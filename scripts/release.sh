@@ -59,10 +59,11 @@ fi
 
 MAIN_BRANCH="main"
 
-# Lint tooling (shellcheck + actionlint) ships in this image, so the preflight
-# needs only Docker locally, not hand-installed linters. Bump the tag (or pin a
-# digest) here in one place. https://github.com/LahaLuhem/linterpol
-LINTERPOL_IMAGE="ghcr.io/lahaluhem/linterpol:latest"
+# Container-based lint checks (tool + args) and the linterpol image tag live in
+# one manifest, shared with .github/workflows/repo.yml so this preflight and CI
+# run the identical set and can't drift. Add a linter = one entry there; the
+# preflight picks it up with no change here. https://github.com/LahaLuhem/linterpol
+LINT_MANIFEST="${REPO_ROOT}/.github/lint-checks.json"
 
 BUMP=""
 YES=0
@@ -90,11 +91,11 @@ Options:
 Preflight (all must pass):
   - `dart` resolvable (via `.fvm/flutter_sdk/bin/` if FVM is set up, else PATH)
   - cider on PATH
-  - docker on PATH + daemon running (lints scripts + workflows via linterpol)
+  - jq on PATH (reads the lint manifest, .github/lint-checks.json)
+  - docker on PATH + daemon running (runs the lint checks via linterpol)
   - working tree clean, on `main`, in sync with origin/main (fetches first)
   - CHANGELOG.md has a non-empty `## Unreleased` (or `## [Unreleased]`) section
-  - `shellcheck scripts/*.sh` clean (via linterpol image)
-  - `actionlint` clean on `.github/workflows/` (via linterpol image)
+  - every check in .github/lint-checks.json clean (via linterpol image)
   - `dart format --output=none --set-exit-if-changed .` clean
   - `dart --no-version-check analyze .` clean
   - `dart test` green
@@ -174,16 +175,22 @@ if ! command -v cider >/dev/null 2>&1; then
     exit 1
 fi
 log 'cider available.'
+if ! command -v jq >/dev/null 2>&1; then
+    err 'jq not on PATH. The preflight reads the lint manifest'
+    err '(.github/lint-checks.json) with jq. Install jq and retry.'
+    exit 1
+fi
+log 'jq available.'
 if ! command -v docker >/dev/null 2>&1; then
-    err 'docker not on PATH. The preflight lints scripts + workflows via'
-    err "the ${LINTERPOL_IMAGE} image. Install Docker and retry."
+    err 'docker not on PATH. The preflight runs the lint checks (from'
+    err '.github/lint-checks.json) via the linterpol image. Install Docker and retry.'
     exit 1
 fi
 if ! docker info >/dev/null 2>&1; then
     err 'docker is on PATH but the daemon is not responding. Start Docker and retry.'
     exit 1
 fi
-log 'docker available (shellcheck + actionlint run via linterpol).'
+log 'docker available (lint checks run via linterpol).'
 
 # ---------------------------------------------------------------------------
 # Preflight: git state
@@ -286,17 +293,26 @@ log "'## Unreleased' populated."
 # ---------------------------------------------------------------------------
 # Preflight: lint / format / analyze / test (cheapest → slowest)
 # ---------------------------------------------------------------------------
-step 'Preflight: shellcheck scripts/ (via linterpol)'
-if ! docker run --rm -v "${REPO_ROOT}:/work:ro" "$LINTERPOL_IMAGE" shellcheck scripts/*.sh; then
-    err 'shellcheck failed on one or more shell scripts.'
+step 'Preflight: lint checks (via linterpol)'
+# Image + checks come from the manifest shared with CI (repo.yml), so both gates
+# run the identical set. Validate it parses and is non-empty first: an unreadable
+# manifest must fail loudly here, not silently skip every lint.
+if ! jq -e '.image and (.checks | length > 0)' "$LINT_MANIFEST" >/dev/null 2>&1; then
+    err '.github/lint-checks.json is missing, malformed, or has no checks.'
     exit 1
 fi
-
-step 'Preflight: actionlint .github/workflows/ (via linterpol)'
-if ! docker run --rm -v "${REPO_ROOT}:/work:ro" "$LINTERPOL_IMAGE" actionlint; then
-    err 'actionlint failed on one or more workflows.'
-    exit 1
-fi
+lint_image="$(jq -r '.image' "$LINT_MANIFEST")"
+while IFS=$'\t' read -r lint_name lint_cmd; do
+    log "lint: ${lint_name}"
+    # $lint_cmd is intentionally unquoted so it word-splits into the tool + args
+    # and glob-expands (e.g. scripts/*.sh) against the checkout, matching how
+    # repo.yml's matrix invokes it.
+    # shellcheck disable=SC2086
+    if ! docker run --rm -v "${REPO_ROOT}:/work:ro" "$lint_image" $lint_cmd; then
+        err "${lint_name} failed (via linterpol)."
+        exit 1
+    fi
+done < <(jq -r '.checks[] | [.name, .cmd] | @tsv' "$LINT_MANIFEST")
 
 step 'Preflight: dart format'
 if ! dart format --output=none --set-exit-if-changed .; then
