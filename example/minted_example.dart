@@ -35,6 +35,14 @@ void main() {
   print(date.isBefore(Date(2027))); // true
   print(Date.tryParse('2026-13-01')); // null (no 13th month)
 
+  // `Uuid` types an existing UUID (the `uuid` package generates them). Case, a `urn:uuid:`
+  // prefix, and surrounding braces are normalised to the bare lowercase form.
+  final id = Uuid.parse('URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6');
+  print(id.value); // f81d4fae-7dec-11d0-a765-00a0c91e6bf6
+  print(id.version); // 1  (version and variant read back as fields)
+  print(id.variant); // UuidVariant.rfc9562
+  print(Uuid.tryParse('not-a-uuid')); // null
+
   // `parse` throws a typed exception; `tryParse` would return null instead.
   try {
     Iban.parse('GB29NWBK60161331926818'); // corrupted final digit

@@ -89,7 +89,11 @@ void main() {
       check(Date(2026, 7, 7).isBefore(Date(2026, 7, 8))).isTrue();
       check(Date(2026, 7, 7).isAfter(Date(2026, 7, 6))).isTrue();
       check(Date(2025, 12, 31) < Date(2026)).isTrue();
+      // Checking bounds
+      // ignore: avoid-self-compare
       check(Date(2026, 7, 7) <= Date(2026, 7, 7)).isTrue();
+      // Checking bounds
+      // ignore: avoid-self-compare
       check(Date(2026, 7, 7) >= Date(2026, 7, 7)).isTrue();
       check(Date(2026, 7, 8) > Date(2026, 7, 7)).isTrue();
     });

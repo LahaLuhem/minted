@@ -20,6 +20,8 @@ anchor, and keep anchors stable across renames.
 - [Packaging: one core, companions for opinionated deps](#packaging-core-and-companions)
 - [British spelling in the public API](#spelling)
 - [SDK floor](#sdk-floor)
+- [Date: a calendar date, not an instant](#date-value-type)
+- [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -360,6 +362,55 @@ scope, and can be added later without breaking the four-digit forms.
 
 ---
 
+<a id="uuid-value-type"></a>
+## Uuid: a typed identifier, not a generator
+
+A UUID is the textbook `String`-that-should-not-be-a-`String`: 36 characters a caller passes around,
+compares, and stores, trusting that whoever produced it wrote a well-formed one. `Uuid` makes
+well-formedness a fact of the type, the same bargain [`Email`](#parse-dont-validate) and `Iban`
+strike.
+
+**It types, it does not generate.** The `uuid` package already mints v1/v4/v7/… UUIDs, and does it
+well (a CSPRNG, the version-specific layouts). But it hands back a `String`, so the primitive
+obsession is untouched: the value is a bare `String` again the moment it leaves the generator. The
+division of labour is clean, so `Uuid` owns none of the generation: `uuid` generates, `Uuid` types
+the result. That also keeps the core dependency-free here (validation is a regex plus two nibble
+reads), matching [the packaging rule](#packaging-core-and-companions). It is the same shape as
+[`Date`](#date-value-type) filling the date-only gap `DateTime` leaves: minted adds the missing
+*value*, it does not re-implement the neighbouring tool. (Both are named `Uuid`; a consumer using
+both imports one with a prefix.)
+
+**An extension type over `String`.** The canonical form is a single string, so `Uuid` takes the
+[single-primitive shape](#extension-type-representation): a zero-cost `extension type const
+Uuid._(String value)` whose equality is canonical-string equality. Normalising on parse (lower-case
+the hex, strip a `urn:uuid:` prefix or surrounding `{…}`, trim) is what makes that equality behave,
+so `Uuid.parse('URN:UUID:F81D…') == Uuid.parse('f81d…')`.
+
+**Accept every well-formed UUID; classify, don't reject.** [Hard rule 3](./.ai/AGENTS.md#hard-rules)
+says validate the *real* standard, not a regex shape, because for an IBAN or a card number the
+standard hands us a checksum. A UUID has none. Its "more than shape" content is the version and
+variant fields, and RFC 9562 treats those as *classification*, not a validity gate: it defines the
+Nil and Max UUIDs (whose version and variant nibbles land in "reserved" buckets) as valid, and it
+defines four variants and versions `0` and `9`-`15` as reserved-but-legal. Rejecting on version or
+variant would refuse values the standard itself calls valid. So `Uuid` validates the structural
+grammar and exposes `version` and `variant` as read-back accessors, plus `isNil` / `isMax`, rather
+than gating on them. Validating the real standard here *means* parsing those fields correctly, not
+inventing a stricter rule the RFC does not have.
+
+**`version` is an `int`; `variant` is an enum.** The two fields take different types on purpose. The
+variant is a genuine finite classification (NCS, RFC 9562, Microsoft, future-reserved), so it is a
+`UuidVariant` enum: those four cases are the whole domain and each reads by name. The version is a
+raw 4-bit field, `0`-`15`, where `1`-`8` are defined and `0` and `9`-`15` are unused or reserved; an
+enum would either omit the reserved range (and then can't represent a valid UUID whose nibble lands
+there) or carry a catch-all member that lies about being one value. An `int` is the honest type for
+a bounded integer field with reserved holes. So the two fields land on opposite choices, each on its
+merits: the enum where the domain is a fixed set of names, the `int` where an enum would have to
+misrepresent the field. This is the balance minted is always weighing (stronger typing against
+honest representation and call-site ergonomics), resolved per field, not a reflex toward the
+strongest type.
+
+---
+
 <a id="what-not-covered"></a>
 ## What `minted` deliberately does not cover
 
@@ -370,13 +421,14 @@ Dart stdlib or a strong existing package already handles well:
   durations (`DateTime` / `Duration`), big integers (`BigInt`); in Flutter, `Color`, `Locale`,
   `TimeOfDay`.
 - **Strong existing packages cover (wrap or reuse, don't reimplement):** phone numbers
-  (`phone_numbers_parser`), money/decimals (`money2`, `decimal`, `rational`), UUIDs (`uuid`),
-  SemVer (`pub_semver`), formatting and ISO code *lists* (`intl`), IANA time zones (`timezone`),
-  hashes (`crypto`).
+  (`phone_numbers_parser`), money/decimals (`money2`, `decimal`, `rational`), SemVer (`pub_semver`),
+  formatting and ISO code *lists* (`intl`), IANA time zones (`timezone`), hashes (`crypto`).
 
-The one apparent overlap is date-only values. `DateTime` models an *instant* (a date, a time,
-and a zone), not a plain calendar date, and Dart has no `LocalDate`, so [`Date`](#date-value-type)
-fills that gap rather than re-modelling `DateTime`.
+Two apparent overlaps are actually gaps. `DateTime` models an *instant* (a date, a time, and a
+zone), not a plain calendar date, and Dart has no `LocalDate`, so [`Date`](#date-value-type) fills
+that gap. And the `uuid` package *generates* UUIDs into a `String`; it is not a value *type*, so
+[`Uuid`](#uuid-value-type) types an existing one rather than re-modelling the generator. Each adds
+the missing value; neither re-implements the neighbouring tool.
 
 Where `minted` builds *on* such a package (a `Phone` type wrapping `phone_numbers_parser`, or
 `email_validator` for the email grammar, or `iban_validator` for the IBAN registry), it wraps rather
