@@ -11,6 +11,7 @@ library;
 // underlying engine.
 export 'package:phone_numbers_parser/phone_numbers_parser.dart' show PhoneNumberType;
 
+export 'src/chronology/date.dart';
 export 'src/contact/email.dart';
 export 'src/contact/phone_number.dart';
 export 'src/finance/iban.dart';

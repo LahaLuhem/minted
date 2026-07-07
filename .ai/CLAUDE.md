@@ -1,8 +1,8 @@
 # CLAUDE.md — `minted`
 
 Claude-Code-specific guidance. Project facts, stack, hard rules, and AI-agent guidelines live in
-[AGENTS.md](./AGENTS.md); the full code-style guide lives in [`../CODESTYLE.md`](../CODESTYLE.md);
-design rationale lives in [`../APPENDIX.md`](../APPENDIX.md). Read AGENTS.md and CODESTYLE.md first.
+[AGENTS.md](./AGENTS.md); the full code-style guide lives in [`./CODESTYLE.md`](./CODESTYLE.md);
+design rationale lives in [`./APPENDIX.md`](./APPENDIX.md). Read AGENTS.md and CODESTYLE.md first.
 
 ## Role & context
 
@@ -105,7 +105,7 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 - `dart --no-version-check analyze .` clean (pedantic mode).
 - `dart format --output=none --set-exit-if-changed .` clean.
 - `dart test` green, including the official standard test vectors for any standardised type.
-- New / changed types honour the [value-type contract](../CODESTYLE.md#value-type-contract):
+- New / changed types honour the [value-type contract](CODESTYLE.md#value-type-contract):
   private constructor, `tryParse` + `parse`, `MintedFormatException`, value equality, canonical
   string form, documented normalisation.
 - DCM rules applied by hand (`dart analyze` doesn't run them): `no-empty-block`,

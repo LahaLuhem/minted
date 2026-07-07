@@ -82,12 +82,12 @@ and the release flow treat the whole tree uniformly.
    constructor ever; `static T? tryParse(String)` (null on invalid); `static T parse(String)`
    (throws `MintedFormatException`); value equality; a canonical string form; per-type render
    helpers. This is the package's identity, not a preference. Full spec:
-   [`CODESTYLE.md#value-type-contract`](../CODESTYLE.md#value-type-contract).
+   [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract).
 2. **The public API lives only in `lib/minted.dart`**, which re-exports from `lib/src/`. Don't make
    users import `package:minted/src/…`. Shared internals go in `lib/src/shared/`.
 3. **Validate the real standard, including check digits** (IBAN mod-97, Luhn, ISBN/EAN/ISSN). A
    regex that only checks the shape is a bug. See
-   [`APPENDIX.md#check-digits-not-regex`](../APPENDIX.md#check-digits-not-regex).
+   [`APPENDIX.md#check-digits-not-regex`](APPENDIX.md#check-digits-not-regex).
 4. **No `print()` in library code.** `avoid_print` is a warning in `analysis_options.yaml`.
 5. **No `dynamic` escape hatches.** `strict-casts`, `strict-inference`, `strict-raw-types` are all
    on. In particular, never `as T` a `tryParse` result to launder nullability.
@@ -131,7 +131,7 @@ Enforced by [`.github/workflows/pr-conventions.yml`](../.github/workflows/pr-con
 
 ## Style
 
-Full guide: [`../CODESTYLE.md`](../CODESTYLE.md). The lint posture is deliberately strict. Top
+Full guide: [`CODESTYLE.md`](CODESTYLE.md). The lint posture is deliberately strict. Top
 rules to keep in working memory:
 
 - Type-annotate every public symbol; `final` by default for fields and locals.
@@ -170,3 +170,10 @@ rules to keep in working memory:
   refactor as its own step before building on top. Public-API breakage is semver-significant and
   slow to walk back once published, so surface the refactor and get sign-off before anything that
   touches the public API or adds a dependency.
+- **The user manages git state; some tracked files won't show in `git status`.** The user may mark
+  tracked files so their local edits are hidden from `git status` (typically
+  `git update-index --skip-worktree` / `--assume-unchanged`). They are tracked, not gitignored, so
+  a file you just edited can be genuinely changed on disk yet absent from `git status` and from
+  `dart pub publish --dry-run`'s modified-files list. Don't be alarmed and don't try to re-stage or
+  "fix" it: the user handles staging and committing. Trust the file contents you wrote, not
+  `git status`, as the record of your change.

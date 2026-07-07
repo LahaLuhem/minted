@@ -26,6 +26,14 @@ void main() {
   print(phone.type); // PhoneNumberType.mobile
   print(phone.telUri); // tel:+33655570576
 
+  // `Date` is the calendar date `DateTime` doesn't model: no time, no zone. It
+  // rejects impossible dates instead of rolling them over the way `DateTime` does.
+  final date = Date.parse('2026-07-07');
+  print(date.iso8601); // 2026-07-07
+  print(date.addDays(30)); // Date(2026-08-06)
+  print(date.isBefore(Date(2027))); // true
+  print(Date.tryParse('2026-13-01')); // null (no 13th month)
+
   // `parse` throws a typed exception; `tryParse` would return null instead.
   try {
     Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
