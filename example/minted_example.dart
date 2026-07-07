@@ -30,6 +30,7 @@ void main() {
   // rejects impossible dates instead of rolling them over the way `DateTime` does.
   final date = Date.parse('2026-07-07');
   print(date.iso8601); // 2026-07-07
+  print(date.month.daysIn(2026)); // 31  (the month is a Month, and knows its length)
   print(date.addDays(30)); // Date(2026-08-06)
   print(date.isBefore(Date(2027))); // true
   print(Date.tryParse('2026-13-01')); // null (no 13th month)
