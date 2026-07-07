@@ -74,8 +74,9 @@ The script refuses to proceed unless every check passes:
 
 - `dart` resolvable (prefers `.fvm/flutter_sdk/bin/dart` if present, else PATH).
 - `cider` on PATH.
-- `docker` on PATH, daemon running (scripts + workflows are linted via the linterpol
-  image: `shellcheck` and `actionlint`, no local installs).
+- `jq` on PATH (reads the lint manifest, `.github/lint-checks.json`).
+- `docker` on PATH, daemon running (runs the checks from `.github/lint-checks.json`
+  via the linterpol image: `shellcheck`, `actionlint`, and any added later, no local installs).
 - Working tree clean, on `main`, in sync with `origin/main` (fetches first).
 - `CHANGELOG.md` has a non-empty `## Unreleased` (or `## [Unreleased]`) section.
 - `dart format`, `dart analyze`, and `dart test` all clean.
