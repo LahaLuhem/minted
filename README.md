@@ -56,34 +56,34 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Contact
 
-| Type | What it guarantees | Standard |
-| --- | --- | --- |
-| `Email` | a well-formed address, domain lower-cased | [RFC 5322](https://www.rfc-editor.org/rfc/rfc5322) |
-| `PhoneNumber` | a valid number, stored in E.164 | [ITU-T E.164](https://en.wikipedia.org/wiki/E.164) |
+| Type          | What it guarantees                        | Standard                                           |
+|---------------|-------------------------------------------|----------------------------------------------------|
+| `Email`       | a well-formed address, domain lower-cased | [RFC 5322](https://www.rfc-editor.org/rfc/rfc5322) |
+| `PhoneNumber` | a valid number, stored in E.164           | [ITU-T E.164](https://en.wikipedia.org/wiki/E.164) |
 
 ### Finance
 
-| Type | What it guarantees | Standard |
-| --- | --- | --- |
+| Type   | What it guarantees                                 | Standard                                                                     |
+|--------|----------------------------------------------------|------------------------------------------------------------------------------|
 | `Iban` | structure, country length, and the mod-97 checksum | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
 
 ### Chronology
 
-| Type | What it guarantees | Standard |
-| --- | --- | --- |
-| `Date` | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-| `Month` | a real month `1`-`12` that knows its own length (leap-aware) | building block |
+| Type    | What it guarantees                                                | Standard                                           |
+|---------|-------------------------------------------------------------------|----------------------------------------------------|
+| `Date`  | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Month` | a real month `1`-`12` that knows its own length (leap-aware)      | building block                                     |
 
 ### Identifiers
 
-| Type | What it guarantees | Standard |
-| --- | --- | --- |
+| Type   | What it guarantees                                                    | Standard                                           |
+|--------|-----------------------------------------------------------------------|----------------------------------------------------|
 | `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) |
 
 ### Numerics
 
-| Type | What it guarantees | Standard |
-| --- | --- | --- |
+| Type               | What it guarantees                                      | Standard       |
+|--------------------|---------------------------------------------------------|----------------|
 | `Digit` / `Digits` | a single digit `0`-`9`, or an iterable sequence of them | building block |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
