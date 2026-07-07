@@ -10,10 +10,13 @@
 - [Install](#install)
 - [A quick taste](#a-quick-taste)
 - [What's in the box](#whats-in-the-box)
+    * [Contact](#contact)
+    * [Finance](#finance)
+    * [Chronology](#chronology)
+    * [Numerics](#numerics)
 - [One shape, every type](#one-shape-every-type)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
-- [License](#license)
 
 <!-- TOC end -->
 
@@ -44,12 +47,32 @@ Email.tryParse('not-an-email');   // null, nothing thrown
 
 ## What's in the box
 
+Grouped by domain sector, the same way the source is laid out under `lib/src/`.
+
+### Contact
+
 | Type | What it guarantees | Standard |
 | --- | --- | --- |
 | `Email` | a well-formed address, domain lower-cased | [RFC 5322](https://www.rfc-editor.org/rfc/rfc5322) |
-| `Iban` | structure, country length, and the mod-97 checksum | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
 | `PhoneNumber` | a valid number, stored in E.164 | [ITU-T E.164](https://en.wikipedia.org/wiki/E.164) |
+
+### Finance
+
+| Type | What it guarantees | Standard |
+| --- | --- | --- |
+| `Iban` | structure, country length, and the mod-97 checksum | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
+
+### Chronology
+
+| Type | What it guarantees | Standard |
+| --- | --- | --- |
 | `Date` | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Month` | a real month `1`-`12` that knows its own length (leap-aware) | building block |
+
+### Numerics
+
+| Type | What it guarantees | Standard |
+| --- | --- | --- |
 | `Digit` / `Digits` | a single digit `0`-`9`, or an iterable sequence of them | building block |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
@@ -91,6 +114,7 @@ PhoneNumber.tryParse('0 655 5705 76');   // null (no region given)
 final date = Date.parse('2026-07-07');   // strict ISO 8601 YYYY-MM-DD
 date.iso8601;      // '2026-07-07'   (canonical form)
 date.weekday;      // 2   (1 = Monday … 7 = Sunday)
+date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
 date.addDays(30);  // Date(2026-08-06)
 date < Date(2027); // true   (Date(2027) is 2027-01-01)
 
@@ -139,7 +163,7 @@ check a given country in its
 - [x] `Email` (RFC 5322)
 - [x] `Iban` (ISO 13616, mod-97)
 - [x] `PhoneNumber` (E.164)
-- [x] `Date` (ISO 8601 calendar date)
+- [x] `Date` / `Month` (ISO 8601 calendar date, leap-aware month)
 - [x] `Digit` / `Digits` (numeric building blocks)
 - [ ] `Bic`, `CreditCardNumber` (Luhn), `Isbn`, `Ean` / `Gtin`
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
@@ -149,7 +173,3 @@ check a given country in its
 Issues and pull requests are welcome. If you're adding a type, hold it to the shared value-type
 contract (parse-don't-validate, a private constructor, `MintedFormatException`, value equality) and
 bring the official standard test vectors along.
-
-## License
-
-[BSD 3-Clause](./LICENSE).

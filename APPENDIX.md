@@ -321,8 +321,18 @@ takes the [multi-part shape](#extension-type-representation), not an extension t
 zero-cost alternatives don't hold up: an extension type over `DateTime` can't override `toString`,
 so it would print `2026-07-07 00:00:00.000` instead of `2026-07-07`, and it would inherit
 `DateTime`'s rollover; an extension type over a packed `int` (days-since-epoch, or a `yyyymmdd`
-number) has an opaque canonical form and needs arithmetic to read a component back. Three honest
-`int` fields with hand-written equality read best and cost least in confusion.
+number) has an opaque canonical form and needs arithmetic to read a component back. Plain fields
+with hand-written equality read best and cost least in confusion.
+
+**`Month` is a type; `day` and `year` are plain `int`.** A month is one of twelve regardless of
+context, so `Month` (an extension type on `int`, 1-12) is a clean building block, and it owns the
+calendar knowledge that hangs off the month: `Month.daysIn(year)` gives the length, leap-aware, so
+`Date` delegates to it instead of hand-rolling a month-length table. A *day*, by contrast, is only
+valid relative to a month and a year (is there a 30 February? a 31 April?), so a standalone
+`Day(1-31)` would be a shape check that still leaves `Date` to do the real validation, and a type
+named `Day` that accepts 31 February over-promises on its name. The meaningful notion of a valid
+day lives in `Date`, so `day` stays `int`; `year` would be only a thin bounded `int`, so it stays
+`int` too.
 
 **A validating factory, not a raw constructor.** `Date(2026, 7, 7)` is a factory that validates
 and throws `MintedFormatException` on an impossible date, backed by a private `Date._`. It is not

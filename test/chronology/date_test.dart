@@ -146,5 +146,10 @@ void main() {
         check(Date.parse(date.iso8601)).equals(date);
       }
     });
+
+    scenario('the month getter is a Month that knows its length', () {
+      check(Date(2026, 7, 7).month).equals(Month.july);
+      check(Date(2024, 2, 29).month.daysIn(2024)).equals(29);
+    });
   });
 }
