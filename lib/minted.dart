@@ -16,6 +16,7 @@ export 'src/chronology/month.dart';
 export 'src/contact/email.dart';
 export 'src/contact/phone_number.dart';
 export 'src/finance/iban.dart';
+export 'src/identifiers/uuid.dart';
 export 'src/numerics/digit.dart';
 export 'src/numerics/digits.dart';
 export 'src/shared/minted_format_exception.dart';

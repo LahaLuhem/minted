@@ -17,6 +17,7 @@
     * [Contact](#contact)
     * [Finance](#finance)
     * [Chronology](#chronology)
+    * [Identifiers](#identifiers)
     * [Numerics](#numerics)
 - [One shape, every type](#one-shape-every-type)
 - [Roadmap](#roadmap)
@@ -73,6 +74,12 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Date` | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 | `Month` | a real month `1`-`12` that knows its own length (leap-aware) | building block |
 
+### Identifiers
+
+| Type | What it guarantees | Standard |
+| --- | --- | --- |
+| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) |
+
 ### Numerics
 
 | Type | What it guarantees | Standard |
@@ -125,6 +132,14 @@ date < Date(2027); // true   (Date(2027) is 2027-01-01)
 // impossible dates are rejected, not rolled over the way DateTime does:
 Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-01-01)
 
+// Uuid: type an existing UUID (the `uuid` package generates them). Case, a urn:uuid: prefix,
+// and surrounding braces are all normalised away:
+final id = Uuid.parse('URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6');
+id.value;    // 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6'   (lower-cased, unwrapped)
+id.version;  // 1
+id.variant;  // UuidVariant.rfc9562
+Uuid.tryParse('not-a-uuid');   // null
+
 // build from parts you already trust (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
 Email.fromComponents(localPart: 'jane', domain: 'example.com');
@@ -151,9 +166,13 @@ parameters; `Email`, `PhoneNumber`, `PersonName` are not. (Named after Alexis Ki
 <summary><b>Scope: what minted covers, and what it doesn't</b></summary>
 
 `minted` fills the gap where no clean value type exists. It doesn't re-model what the SDK (`Uri`,
-`DateTime`, `BigInt`) or strong packages (`money2`, `uuid`, `intl`) already cover well. Where a good
+`DateTime`, `BigInt`) or strong packages (`money2`, `intl`) already cover well. Where a good
 package already solves a piece, minted wraps it rather than reinventing: the email grammar, the IBAN
 registry, and phone metadata all come from established packages.
+
+`Uuid` is a value type, not a generator. The `uuid` package mints new UUIDs and hands you a
+`String`; minted's `Uuid` types an existing one so it stops being a bare `String` a few functions
+deep. They pair up: generate with `uuid`, then `Uuid.parse` the result.
 
 IBAN country coverage comes from [`iban_validator`](https://pub.dev/packages/iban_validator), which
 tracks recent adoptions and includes some countries not yet in the formal ISO registry. You can
@@ -169,6 +188,7 @@ check a given country in its
 - [x] `PhoneNumber` (E.164)
 - [x] `Date` / `Month` (ISO 8601 calendar date, leap-aware month)
 - [x] `Digit` / `Digits` (numeric building blocks)
+- [x] `Uuid` (RFC 9562: parse, classify version/variant, Nil/Max sentinels)
 - [ ] `Bic`, `CreditCardNumber` (Luhn), `Isbn`, `Ean` / `Gtin`
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
 
