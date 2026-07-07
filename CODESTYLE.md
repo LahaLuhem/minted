@@ -283,6 +283,41 @@ collection with a collection-`for` (not `map(…).toList()`), and do *side effec
 `for` loop (never `forEach` with a closure, `avoid_function_literals_in_foreach_calls`). The
 pipeline is for the lookup / transform case, where it makes the types' path clearest.
 
+**Generate by index; reduce lazily.** Two shapes of this rule are worth naming, because the
+imperative version is the tempting default. For a value *derived by index*, reach for
+`Iterable.generate(count, (i) => …)` over a `for (var i = …; i++)` loop with a mutable cursor. For a
+*transform reduced to one result*, let `.map(…)` feed the reducer (`.join()`, `.fold(…)`, `.any(…)`)
+rather than filling a list and reducing that. Both stay lazy: no intermediate collection is
+allocated, there is no cursor or accumulator to track, and each element reads as a pure function of
+its input.
+
+```dart
+// Prefer (lazy, no intermediate list; each group is a pure function of its index):
+String _hyphenate(String hex) => Iterable.generate(
+  _groupHexBoundaries.length - 1,
+  (group) => hex.substring(_groupHexBoundaries[group], _groupHexBoundaries[group + 1]),
+).join('-');
+
+// Over (a mutable cursor and an accumulator list built only to be joined):
+String _hyphenate(String hex) {
+  final groups = <String>[];
+  var offset = 0;
+  for (final length in _groupHexLengths) {
+    groups.add(hex.substring(offset, offset + length));
+    offset += length;
+  }
+  return groups.join('-');
+}
+```
+
+The terminal decides it. When the pipeline ends in a *reduction* to one value (`join`, `fold`,
+`any`), it never materialises a collection, so it beats building one. When the result genuinely
+*is* a materialised collection (`Uint8List.fromList([for …])`, an embedded table), the
+collection-`for` stays: it is the direct literal form, and a `generate(…).toList()` /
+`map(…).toList()` only bolts on a `.toList()` that reads awkwardly and saves nothing (the collection
+is built either way). So `Uuid.bytes` (a `Uint8List`) keeps its collection-`for`, while `_hyphenate`
+and `Uuid.fromBytes` (both reduce to a `String`) use the lazy pipeline.
+
 <a id="idioms-parts"></a>
 ### `part` / `part of` only when structurally needed
 

@@ -62,10 +62,11 @@ extension type const Iban._(String value) {
 
   /// The IBAN in grouped "paper" form: space-separated blocks of four, for display.
   /// The stored [value] stays compact.
-  String get formatted => [
-    for (var offset = 0; offset < value.length; offset += _groupSize)
-      value.substring(offset, math.min(offset + _groupSize, value.length)),
-  ].join(' ');
+  String get formatted => Iterable.generate(
+    (value.length / _groupSize).ceil(),
+    (group) =>
+        value.substring(group * _groupSize, math.min((group + 1) * _groupSize, value.length)),
+  ).join(' ');
 
   static final _whitespace = RegExp(r'\s+');
   static const _checkDigitsStart = 2;
