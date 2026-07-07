@@ -24,7 +24,9 @@ jobs:
     # Skip merged bot PRs: they carry no sem-* label, so there's no cider type
     # to resolve. Dependabot bumps don't get an automatic CHANGELOG entry —
     # add one by hand if a root-package bump is user-visible.
-    if: github.event.pull_request.merged == true && github.event.pull_request.user.login != 'dependabot[bot]'
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Resolve sem-* label → cider type
@@ -43,7 +45,8 @@ jobs:
             sem-security)  echo 'type=security'   >> "$GITHUB_OUTPUT" ;;
             *)
               if [ -z "$sem" ]; then
-                echo "::error::PR has no sem-* label. pr-conventions should have blocked this — investigate."
+                msg="PR has no sem-* label. pr-conventions should have blocked this - investigate."
+                echo "::error::$msg"
               else
                 echo "::error::Unrecognized sem-* label: '$sem'."
               fi
@@ -98,7 +101,8 @@ jobs:
           # to the App's avatar in GitHub's UI. Look up via:
           # `curl -s https://api.github.com/users/<slug>%5Bbot%5D | jq .id`
           git config user.name  '${{ steps.app-token.outputs.app-slug }}[bot]'
-          git config user.email '287673903+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          email='287673903+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          git config user.email "$email"
           dart pub global run cider log "$TYPE" "$TITLE"
           git add CHANGELOG.md
           # [skip ci] now matters: App-token pushes DO trigger workflows

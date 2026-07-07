@@ -111,8 +111,9 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 - DCM rules applied by hand (`dart analyze` doesn't run them): `no-empty-block`,
   `newline-before-return`, `prefer-commenting-analyzer-ignores`, plus blank lines segmenting
   logical chunks in methods.
-- `shellcheck scripts/*.sh` clean (where shell scripts changed); `actionlint` clean when workflows
-  change. Both via the linterpol image.
+- Lint clean via the linterpol image for whatever changed: `shellcheck` (shell), `actionlint`
+  (workflows), `rumdl` (Markdown), `ryl` (YAML). The check set + per-tool config live in
+  `.github/lint-checks.json`, `.rumdl.toml`, and `.yamllint.yaml`.
 - `dart pub publish --dry-run` clean if the change is publish-relevant. Do not bump the version or
   edit the CHANGELOG to make it pass; `scripts/release.sh` owns those.
 - Public API additions carry `///` dartdoc and are reflected in the README.

@@ -25,7 +25,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.pub-cache
-        key: pub-dart-${{ runner.os }}-${{ hashFiles(format('{0}/pubspec.lock', inputs.working-directory)) }}
+        # Cache key is a single ${{ }}-composed value with no safe wrap point.
+        key: pub-dart-${{ runner.os }}-${{ hashFiles(format('{0}/pubspec.lock', inputs.working-directory)) }}  # yamllint disable-line rule:line-length
         restore-keys: |
           pub-dart-${{ runner.os }}-
 

@@ -1,5 +1,6 @@
 # Dependabot version updates.
-# Reference: https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+# Reference (options):
+# https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 #
 # Bot PRs branch as `dependabot/...` and carry no `sem-*` label. The
 # PR-convention and changelog workflows exempt `dependabot[bot]` from the

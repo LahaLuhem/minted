@@ -76,7 +76,7 @@ The script refuses to proceed unless every check passes:
 - `cider` on PATH.
 - `jq` on PATH (reads the lint manifest, `.github/lint-checks.json`).
 - `docker` on PATH, daemon running (runs the checks from `.github/lint-checks.json`
-  via the linterpol image: `shellcheck`, `actionlint`, and any added later, no local installs).
+  via the linterpol image: `shellcheck`, `actionlint`, `rumdl`, `ryl`, no local installs).
 - Working tree clean, on `main`, in sync with `origin/main` (fetches first).
 - `CHANGELOG.md` has a non-empty `## Unreleased` (or `## [Unreleased]`) section.
 - `dart format`, `dart analyze`, and `dart test` all clean.

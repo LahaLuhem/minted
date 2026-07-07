@@ -76,7 +76,8 @@ analyzer:
 
     # linter ignores
     # `todo` is `ignore` (not `info`) so CI's `flutter analyze --fatal-infos` does not fail on TODO
-    # comments — TODOs stay allowed in the code; --fatal-infos still fails on every other info-level lint.
+    # comments - TODOs stay allowed in the code; --fatal-infos still fails on
+    # every other info-level lint.
     todo: ignore
     lines_longer_than_80_chars: ignore
     always_use_package_imports: ignore
@@ -88,7 +89,8 @@ analyzer:
 linter:
   rules:
     always_declare_return_types: true
-    always_put_control_body_on_new_line: false  # Opinionated: trade-off for conciseness is acceptable here
+    # Opinionated: trade-off for conciseness is acceptable here
+    always_put_control_body_on_new_line: false
     always_put_required_named_parameters_first: true
     always_specify_types: false # Conflicts with avoid_types_on_closure_parameters
     always_use_package_imports: false # Conflicts with prefer_relative_imports
@@ -150,7 +152,8 @@ linter:
     depend_on_referenced_packages: true
     deprecated_consistency: true
     deprecated_member_use_from_same_package: true
-    diagnostic_describe_all_properties: false # Opinionated: a bit much for now. Better used at a package-level
+    # Opinionated: a bit much for now. Better used at a package-level
+    diagnostic_describe_all_properties: false
     directives_ordering: true
     discarded_futures: true
     do_not_use_environment: true
@@ -254,13 +257,15 @@ linter:
     sort_pub_dependencies: false
     sort_unnamed_constructors_first: true
     specify_nonobvious_local_variable_types: false  # Conflicts with omit_local_variable_types
-    specify_nonobvious_property_types: false  # Type inference by the plugin + IDE makes this obsolete
+    # Type inference by the plugin + IDE makes this obsolete
+    specify_nonobvious_property_types: false
     strict_top_level_inference: true
     switch_on_type: true
     test_types_in_equals: true
     throw_in_finally: true
     tighten_type_of_initializing_formals: true
-    type_annotate_public_apis: false  # Conflicts with omit_obvious_property_types. Type is inferred is usually correctly done
+    # Conflicts with omit_obvious_property_types. Type is inferred is usually correctly done
+    type_annotate_public_apis: false
     type_init_formals: true
     type_literal_in_constant_pattern: true
     unawaited_futures: true

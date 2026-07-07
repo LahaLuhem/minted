@@ -29,12 +29,13 @@ feature: identical method names and the same failure model across every type.
   (pedantic mode is intentional). No Flutter dependency, no platform channels.
 - **`dependency_validator`** guards the dependency set; `dart_dependency_validator.yaml` scopes it
   to the published surface and skips the example.
-- **Container-based linters** (`shellcheck` for shell scripts, `actionlint` for workflows, more as
-  languages land) run from the [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image,
-  not local installs, so only Docker (plus `jq`) is needed. The check set and image tag live in one
-  manifest, [`.github/lint-checks.json`](../.github/lint-checks.json); `repo.yml` fans a CI matrix
-  out over it and `scripts/release.sh`'s preflight loops the same file, so the two can't drift.
-  **Adding a linter is one entry in that manifest** — no workflow or script edit.
+- **Container-based linters** (`shellcheck` for shell scripts, `actionlint` for workflows, `rumdl`
+  for Markdown, `ryl` for YAML) run from the [`linterpol`](https://github.com/LahaLuhem/linterpol)
+  Docker image, not local installs, so only Docker (plus `jq`) is needed. The check set and image
+  tag live in one manifest, [`.github/lint-checks.json`](../.github/lint-checks.json); `repo.yml`
+  fans a CI matrix out over it and `scripts/release.sh`'s preflight loops the same file, so the two
+  can't drift. **Adding a linter is one entry in that manifest**, no workflow or script edit.
+  Per-tool config tuned to the repo lives in `.rumdl.toml` and `.yamllint.yaml`.
 - **CHANGELOG and the `version:` field are owned by [`scripts/release.sh`](../scripts/release.sh)**
   (via `cider`). Do not run `cider` by hand and do not edit `CHANGELOG.md` or `version:` directly.
   The `cider:` block in `pubspec.yaml` is static config (URLs, link templates) and is hand-editable.
@@ -43,7 +44,7 @@ feature: identical method names and the same failure model across every type.
 
 ## Repo layout
 
-```
+```text
 minted/
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
@@ -76,8 +77,8 @@ sector earns its own folder once it has a couple of members; the public API stay
 because `minted.dart` re-exports every type. `test/` mirrors this layout.
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
-or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping. `dart analyze .`
-and the release flow treat the whole tree uniformly.
+or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping.
+`dart analyze .` and the release flow treat the whole tree uniformly.
 
 ## Hard rules
 
