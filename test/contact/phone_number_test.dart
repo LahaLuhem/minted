@@ -55,15 +55,53 @@ void main() {
       check(PhoneNumber.parse('+33 655 5705 76').telUri.toString()).equals('tel:+33655570576');
     });
 
-    scenario('every door reports the one failure the type distinguishes so far', () {
-      check(() => PhoneNumber.parse('not-a-number'))
+    // Only unknownCountryCallingCode comes from the engine: notFound is the one code
+    // phone_numbers_parser actually throws, and everything else arrives as isValid() == false.
+    scenarioOutline<({String input, String? region, PhoneNumberFailure failure})>(
+      'parse reports which check the input failed',
+      examples: {
+        'a region hint that is not an ISO code': (
+          input: '0655570576',
+          region: 'ZZ',
+          failure: PhoneNumberFailure.unknownRegion,
+        ),
+        'text with no calling code to find': (
+          input: 'not-a-number',
+          region: null,
+          failure: PhoneNumberFailure.unknownCountryCallingCode,
+        ),
+        'national format with no region to resolve it': (
+          input: '0655570576',
+          region: null,
+          failure: PhoneNumberFailure.unknownCountryCallingCode,
+        ),
+        'an unassigned calling code': (
+          input: '+99912345678',
+          region: null,
+          failure: PhoneNumberFailure.unknownCountryCallingCode,
+        ),
+        'a known country but too few digits': (
+          input: '+44123',
+          region: null,
+          failure: PhoneNumberFailure.invalid,
+        ),
+        'letters where the region is known': (
+          input: 'abcdef',
+          region: 'GB',
+          failure: PhoneNumberFailure.invalid,
+        ),
+      },
+      outline: (example) => check(() => PhoneNumber.parse(example.input, region: example.region))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
-          .equals(PhoneNumberFailure.invalid);
-      check(() => PhoneNumber.parse('+44123', region: 'ZZ'))
+          .equals(example.failure),
+    );
+
+    scenario('an unknown region is distinguished from an unparseable number', () {
+      check(() => PhoneNumber.parse('0655570576', region: 'ZZ'))
           .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(PhoneNumberFailure.invalid);
+          .has((error) => error.message, 'message')
+          .equals('Invalid PhoneNumber: the region hint is not an ISO 3166-1 alpha-2 code');
     });
 
     scenario('PhoneNumber.parse throws MintedFormatException on invalid input', () {
