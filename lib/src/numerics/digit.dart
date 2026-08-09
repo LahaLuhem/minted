@@ -3,8 +3,8 @@
 /// @docImport 'digits.dart';
 library;
 
-import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
+import 'failures/digit_failure.dart';
 
 /// A single decimal digit, `0`-`9`.
 ///
@@ -40,18 +40,4 @@ extension type const Digit._(int value) {
       tryFrom(value) ?? (throw MintedFormatException.from(DigitFailure.notADigit, '$value'));
 
   static const _radix = 10;
-}
-
-/// Why a [Digit] refused its input. One variant: a one-character grammar has one way to fail.
-enum DigitFailure implements MintedFailure {
-  /// The input is not a decimal digit `0`-`9`.
-  notADigit('not a decimal digit 0-9');
-
-  const DigitFailure(this.message);
-
-  @override
-  final String message;
-
-  @override
-  String get typeName => 'Digit';
 }

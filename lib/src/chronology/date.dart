@@ -1,7 +1,8 @@
 import 'package:meta/meta.dart';
 
-import '../shared/minted_failure.dart';
+import '../shared/iso_date_format.dart';
 import '../shared/minted_format_exception.dart';
+import 'failures/date_failure.dart';
 import 'month.dart';
 
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.
@@ -61,16 +62,14 @@ final class Date implements Comparable<Date> {
       tryParse(input) ?? (throw MintedFormatException.from(_failureFor(input), input));
 
   /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
-  String get iso8601 =>
-      '${_pad(year, _yearWidth)}-${_pad(month.value, _fieldWidth)}-${_pad(day, _fieldWidth)}';
+  String get iso8601 => isoDate(year, month.value, day);
 
   /// The day of the week, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
   int get weekday => _utcMidnight.weekday;
 
   /// This date as a [DateTime] at local midnight.
   ///
-  /// Mirrors the `DateTime(year, month, day)` callers reach for today, so migrating a value to
-  /// [Date] and back preserves behaviour.
+  /// Mirrors the `DateTime(year, month, day)` callers reach for today, so migrating a value to [Date]
   DateTime toDateTime() => DateTime(year, month.value, day);
 
   /// The date [days] days after this one (pass a negative [days] to go back).
@@ -129,13 +128,14 @@ final class Date implements Comparable<Date> {
   // The parts of an ISO 8601 YYYY-MM-DD string, or null when the input isn't that shape.
   static ({int year, int month, int day})? _partsOf(String input) {
     final match = _iso8601.firstMatch(input);
-    if (match == null) return null;
 
-    return (
-      year: int.parse(match.group(1)!),
-      month: int.parse(match.group(2)!),
-      day: int.parse(match.group(3)!),
-    );
+    return match == null
+        ? null
+        : (
+            year: int.parse(match.group(1)!),
+            month: int.parse(match.group(2)!),
+            day: int.parse(match.group(3)!),
+          );
   }
 
   // The [Date] for these parts, or null when they don't form a real calendar date. The single
@@ -146,16 +146,17 @@ final class Date implements Comparable<Date> {
 
     final wellFormed = year >= 0 && year <= _maxYear && day >= 1 && day <= monthType.daysIn(year);
 
-    return wellFormed ? Date._(year, monthType, day) : null;
+    return !wellFormed ? null : Date._(year, monthType, day);
   }
 
   // Why text is not a date: the shape, or else whichever part is out of range. Reached only after
   // tryParse returns null, so the parts having matched means _tryFromParts rejected them.
   static DateFailure _failureFor(String input) {
     final parts = _partsOf(input);
-    if (parts == null) return const DateNotIso8601();
 
-    return _partsFailure(parts.year, parts.month, parts.day);
+    return parts == null
+        ? const DateNotIso8601()
+        : _partsFailure(parts.year, parts.month, parts.day);
   }
 
   // Which part of the given date is out of range. Reached only after _tryFromParts returns null,
@@ -164,130 +165,13 @@ final class Date implements Comparable<Date> {
     if (year < 0 || year > _maxYear) return DateYearOutOfRange(year);
 
     final monthType = Month.tryFrom(month);
-    if (monthType == null) return DateMonthOutOfRange(month);
 
-    return DateDayOutOfRange(year: year, month: month, day: day, maxDay: monthType.daysIn(year));
+    return monthType == null
+        ? DateMonthOutOfRange(month)
+        : DateDayOutOfRange(year: year, month: month, day: day, maxDay: monthType.daysIn(year));
   }
-
-  static String _pad(int value, int width) => value.toString().padLeft(width, _padChar);
 
   static final _iso8601 = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
 
   static const _maxYear = 9999;
-  static const _yearWidth = 4;
-  static const _fieldWidth = 2;
-  static const _padChar = '0';
-}
-
-/// Why a [Date] refused its input. Sealed, not an enum, because the variants report the offending
-/// number back. Two remedies: [DateNotIso8601] means fix the format, the rest mean fix a number.
-@immutable
-sealed class DateFailure implements MintedFailure {
-  const DateFailure();
-
-  @override
-  String get typeName => 'Date';
-}
-
-/// The text is not the ISO 8601 `YYYY-MM-DD` shape.
-final class DateNotIso8601 extends DateFailure {
-  /// The failure [Date.parse] reports for text of the wrong shape.
-  const DateNotIso8601();
-
-  @override
-  String get message => 'not an ISO 8601 YYYY-MM-DD calendar date';
-
-  @override
-  bool operator ==(Object other) => other is DateNotIso8601;
-
-  @override
-  int get hashCode => (DateNotIso8601).hashCode;
-
-  @override
-  String toString() => 'DateNotIso8601()';
-}
-
-/// The year falls outside `0000`-`9999`, the range a [Date] can hold.
-final class DateYearOutOfRange extends DateFailure {
-  /// The offending year.
-  final int year;
-
-  /// The failure reported for [year], which is outside `0000`-`9999`.
-  const DateYearOutOfRange(this.year);
-
-  @override
-  String get message => 'year $year is outside 0000-9999';
-
-  @override
-  bool operator ==(Object other) => other is DateYearOutOfRange && other.year == year;
-
-  @override
-  int get hashCode => Object.hash(DateYearOutOfRange, year);
-
-  @override
-  String toString() => 'DateYearOutOfRange($year)';
-}
-
-/// The month falls outside `1`-`12`.
-final class DateMonthOutOfRange extends DateFailure {
-  /// The offending month number.
-  final int month;
-
-  /// The failure reported for [month], which is outside `1`-`12`.
-  const DateMonthOutOfRange(this.month);
-
-  @override
-  String get message => 'month $month is outside 1-12';
-
-  @override
-  bool operator ==(Object other) => other is DateMonthOutOfRange && other.month == month;
-
-  @override
-  int get hashCode => Object.hash(DateMonthOutOfRange, month);
-
-  @override
-  String toString() => 'DateMonthOutOfRange($month)';
-}
-
-/// The day falls outside `1`-[maxDay]. The bound is leap-year aware, so 29 February is out of
-/// range in a common year and in range in a leap one.
-final class DateDayOutOfRange extends DateFailure {
-  /// The year the day was given for.
-  final int year;
-
-  /// The month number the day was given for.
-  final int month;
-
-  /// The offending day.
-  final int day;
-
-  /// The last day of [month] in [year], leap-year aware.
-  final int maxDay;
-
-  /// The failure reported for a [day] outside `1`-[maxDay].
-  const DateDayOutOfRange({
-    required this.year,
-    required this.month,
-    required this.day,
-    required this.maxDay,
-  });
-
-  @override
-  String get message =>
-      'day $day is outside 1-$maxDay for '
-      '${Date._pad(year, Date._yearWidth)}-${Date._pad(month, Date._fieldWidth)}';
-
-  @override
-  bool operator ==(Object other) =>
-      other is DateDayOutOfRange &&
-      other.year == year &&
-      other.month == month &&
-      other.day == day &&
-      other.maxDay == maxDay;
-
-  @override
-  int get hashCode => Object.hash(year, month, day, maxDay);
-
-  @override
-  String toString() => 'DateDayOutOfRange(year: $year, month: $month, day: $day, maxDay: $maxDay)';
 }

@@ -3,8 +3,8 @@
 
 import 'package:email_validator/email_validator.dart';
 
-import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
+import 'failures/email_failure.dart';
 
 /// An email address, validated against the RFC 5322 grammar (via
 /// `email_validator`). Standard:
@@ -53,19 +53,4 @@ extension type const Email._(String value) {
 
   /// A `mailto:` URI addressing this email.
   Uri get mailtoUri => Uri(scheme: 'mailto', path: value);
-}
-
-/// Why an [Email] refused its input. One variant, and that is the ceiling, not a shortcut:
-/// `email_validator` exposes a single `bool`, so a finer diagnosis would be a guess.
-enum EmailFailure implements MintedFailure {
-  /// The input is not a well-formed RFC 5322 address.
-  malformed('not a well-formed email address');
-
-  const EmailFailure(this.message);
-
-  @override
-  final String message;
-
-  @override
-  String get typeName => 'Email';
 }
