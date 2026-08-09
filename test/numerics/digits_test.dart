@@ -70,6 +70,12 @@ void main() {
       check(Digits.of([Digit.from(9), Digit.from(0), Digit.from(5)]).asString).equals('905');
     });
 
+    scenario('a Digits renders its digits, not Instance of', () {
+      // Digits is the one value type that hand-writes toString; the extension types inherit theirs.
+      check(Digits.tryParse('905')!.toString()).equals('Digits(905)');
+      check(Digits.tryParse('')!.toString()).equals('Digits()');
+    });
+
     scenario('parse reports the failure rather than throwing', () {
       check(Digits.parse('90x')).equals(const ParseFailure(DigitsFailure.notAllDigits));
     });

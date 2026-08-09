@@ -86,8 +86,10 @@ extension type const Iban._(String value) {
       ),
       .checksumFailed => const IbanChecksumFailed(),
       // countryMismatch needs the countryCca2 argument we never pass, and an invalid result always
-      // carries an error. Reaching either means the engine changed shape.
+      // carries an error. Reaching either means the engine changed shape, so no test can get here.
+      // coverage:ignore-start
       .countryMismatch || null => throw StateError('unreachable: no IBAN error'),
+      // coverage:ignore-end
     };
   }
 

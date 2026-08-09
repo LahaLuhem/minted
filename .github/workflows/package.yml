@@ -49,6 +49,11 @@ jobs:
         # `// coverage:ignore-line`, `ignore-start`/`ignore-end`, and
         # `ignore-file` pragmas in source files. Without it, the directives
         # are silently inert.
+        #
+        # `ignore-line` applies to the line the comment sits ON, so it only
+        # works as a trailing comment. To exempt a line too long to carry one,
+        # wrap it in `ignore-start`/`ignore-end` — a preceding `ignore-line`
+        # looks right and does nothing.
         run: |
           dart pub global run coverage:format_coverage \
             --lcov \

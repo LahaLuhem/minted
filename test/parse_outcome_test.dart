@@ -70,6 +70,9 @@ void main() {
       check(success).equals(const ParseSuccess<EmailFailure, int>(4));
       check(success.hashCode).equals(const ParseSuccess<EmailFailure, int>(4).hashCode);
       check(failure).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
+      check(
+        failure.hashCode,
+      ).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed).hashCode);
       check(success).not((it) => it.equals(const ParseSuccess<EmailFailure, int>(5)));
     });
 

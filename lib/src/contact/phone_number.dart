@@ -80,10 +80,14 @@ extension type const PhoneNumber._(String value) {
   phone_numbers.PhoneNumber get _parsed => phone_numbers.PhoneNumber.parse(value);
 
   // notFound is the only code 9.0.24 throws here; the rest are engine metadata misses that
-  // resolving the region against IsoCode.values already rules out.
+  // resolving the region against IsoCode.values already rules out, so no test can reach that arm.
+  // It stays enumerated so a new engine code breaks the build rather than silently mapping to
+  // `invalid`.
   static PhoneNumberFailure _failureForCode(phone_numbers.Code code) => switch (code) {
     .notFound => .unknownCountryCallingCode,
+    // coverage:ignore-start
     .invalid || .invalidCountryCallingCode || .invalidIsoCode || .inputIsTooLong => .invalid,
+    // coverage:ignore-end
   };
 }
 

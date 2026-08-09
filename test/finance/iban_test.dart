@@ -86,6 +86,15 @@ void main() {
       outline: (example) => check(Iban.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
+    scenario('the check-digit generator refuses a BBAN with characters outside A-Z and 0-9', () {
+      // Our own mod-97-10 generator maps an unknown character to -1 rather than guessing, so the
+      // assembled IBAN fails validation instead of getting plausible-looking check digits.
+      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'NWBK-6016133192681'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const IbanInvalidCharacters());
+    });
+
     scenario('fromComponents reports the same vocabulary as parse', () {
       check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
           .throws<MintedFormatException>()
