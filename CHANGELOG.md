@@ -1,3 +1,7 @@
+## [Unreleased]
+### Changed
+- \[#8\] Replace the throwing parse with ParseOutcome and per-type failures
+
 ## [0.0.2] - 2026-07-07
 ### Added
 - \#5 Date + Month
@@ -11,5 +15,6 @@
 - Digit
 - Digits
 
+[Unreleased]: https://github.com/LahaLuhem/minted/compare/0.0.2...HEAD
 [0.0.2]: https://github.com/LahaLuhem/minted/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/LahaLuhem/minted/releases/tag/0.0.1
