@@ -59,7 +59,7 @@ sealed class ParseOutcome<F extends MintedFailure, T> {
 
 /// A parse that produced [value].
 final class ParseSuccess<F extends MintedFailure, T> extends ParseOutcome<F, T> {
-  /// The parsed value. Its type still guarantees well-formedness; this only records the parse.
+  /// The parsed value.
   final T value;
 
   /// Wraps an already-parsed [value]. Public because there is no invariant to protect: you can

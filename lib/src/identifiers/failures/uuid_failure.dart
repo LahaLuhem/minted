@@ -17,7 +17,7 @@ sealed class UuidFailure implements MintedFailure {
 
 /// The text is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
 final class UuidMalformed extends UuidFailure {
-  /// The failure [Uuid.parse] reports for unrecognisable text.
+  /// Creates the failure.
   const UuidMalformed();
 
   @override
@@ -42,7 +42,7 @@ final class UuidWrongByteCount extends UuidFailure {
   /// How many bytes were supplied.
   final int actual;
 
-  /// The failure [Uuid.fromBytes] reports, carrying both counts.
+  /// Creates the failure.
   const UuidWrongByteCount({required this.expected, required this.actual});
 
   @override

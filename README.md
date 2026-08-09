@@ -47,6 +47,7 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
     * [Identifiers](#identifiers)
     * [Numerics](#numerics)
 - [One shape, every type](#one-shape-every-type)
+- [Handling failures](#handling-failures)
 - [Caveats](#caveats)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -189,6 +190,67 @@ IBAN country coverage comes from [`iban_validator`](https://pub.dev/packages/iba
 tracks recent adoptions and includes some countries not yet in the formal ISO registry. You can
 check a given country in its
 [data file](https://github.com/khrisbreezy/iban_validator/blob/main/lib/src/iban_data.dart).
+
+</details>
+
+## Handling failures
+
+`parse` doesn't throw. It hands back a `ParseOutcome`: either the value, or a typed failure from
+that type's own vocabulary. For a form field, `reasonOrNull` is the whole validator, because it's
+`null` exactly when the input was good:
+
+```dart
+String? ibanError(String input) => switch (Iban.parse(input).reasonOrNull) {
+  null => null,   // valid
+  IbanChecksumFailed()                    => 'Check the digits, one looks mistyped',
+  IbanUnknownCountry(:final countryCode)  => 'We do not support IBANs from $countryCode',
+  IbanInvalidLength(:final expected)      => 'An IBAN here is $expected characters',
+  _                                       => 'That does not look like an IBAN',
+};
+```
+
+The vocabulary is sized to what the standard can actually distinguish, so it varies by type: `Iban`
+has five variants, `Date` four, `Email` one. That last is the honest ceiling rather than a shortcut,
+since the underlying validator reports only pass or fail, and a guessed "invalid domain" would be
+worse than saying less. Switching is exhaustive per type, so adding a variant is a compile error at
+your call site, not a silent gap.
+
+Pattern-match the outcome itself when you want the value too:
+
+```dart
+switch (Iban.parse(input)) {
+  case ParseSuccess(:final value): send(value);
+  case ParseFailure(:final reason): log(reason.message);
+}
+```
+
+Three other doors, when you don't need the reason:
+
+| You want                                 | Use                                    | On failure                         |
+|------------------------------------------|----------------------------------------|------------------------------------|
+| The value or nothing                     | `Iban.tryParse(input)`                 | `null`                             |
+| The value or a fallback                  | `Iban.parse(input).getOrElse(() => …)` | the fallback                       |
+| To assemble from parts you already trust | `Iban.fromComponents(…)`               | **throws** `MintedFormatException` |
+
+That last row is the only thing in the package that throws, and deliberately: calling it is *you*
+asserting the parts are valid, so a failure is a bug in your code rather than bad input. The
+exception extends `FormatException` and carries the same typed `failure`.
+
+<details>
+<summary><b>Using an FP library? Three lines.</b></summary>
+
+`ParseOutcome` is `Either`-shaped on purpose, but minted doesn't depend on an FP package: that
+dependency would show up in every signature and force itself on everyone. Bridge it in your own app
+instead. With [`ribs_core`](https://pub.dev/packages/ribs_core):
+
+```dart
+extension RibsOutcome<F extends MintedFailure, T> on ParseOutcome<F, T> {
+  Either<F, T>       get either    => fold(Either.left, Either.right);
+  ValidatedNel<F, T> get validated => fold(Validated.invalidNel, Validated.validNel);
+}
+```
+
+The same shape works for any other FP library: `fold` is the exit.
 
 </details>
 

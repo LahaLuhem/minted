@@ -18,9 +18,10 @@ sealed class IbanFailure implements MintedFailure {
   String get typeName => 'Iban';
 }
 
-/// Under four characters, so the country and check digits aren't there to inspect yet. Keep typing.
+/// Under four characters (empty included), so the country and check digits aren't there to inspect
+/// yet. Keep typing.
 final class IbanTooShort extends IbanFailure {
-  /// The failure for input too short to analyse, empty included.
+  /// Creates the failure.
   const IbanTooShort();
 
   @override
@@ -38,7 +39,7 @@ final class IbanTooShort extends IbanFailure {
 
 /// Something outside `A`-`Z` and `0`-`9` survived normalisation (whitespace is stripped first).
 final class IbanInvalidCharacters extends IbanFailure {
-  /// The failure for input holding a character no IBAN may contain.
+  /// Creates the failure.
   const IbanInvalidCharacters();
 
   @override
@@ -59,7 +60,7 @@ final class IbanUnknownCountry extends IbanFailure {
   /// The unrecognised leading two characters.
   final String countryCode;
 
-  /// The failure for a country outside the registry, carrying the code that missed.
+  /// Creates the failure.
   const IbanUnknownCountry(this.countryCode);
 
   @override
@@ -83,7 +84,7 @@ final class IbanInvalidLength extends IbanFailure {
   /// The length actually supplied.
   final int actual;
 
-  /// The failure for a length the country's registry entry rules out.
+  /// Creates the failure.
   const IbanInvalidLength({required this.expected, required this.actual});
 
   @override
@@ -102,7 +103,7 @@ final class IbanInvalidLength extends IbanFailure {
 
 /// The mod-97 check digits disagree with the rest of the number: a character is mistyped.
 final class IbanChecksumFailed extends IbanFailure {
-  /// The failure for a structurally sound IBAN whose check digits don't match.
+  /// Creates the failure.
   const IbanChecksumFailed();
 
   @override

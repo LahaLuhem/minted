@@ -137,16 +137,15 @@ consumer learns one shape and applies it everywhere. Rationale is in
   ```dart
   extension type const Iban._(String value) {
     /// null when [input] is not a well-formed IBAN (length, country, mod-97 check).
-    static Iban? tryParse(String input) {
+    static Iban? tryParse(String input) => parse(input).getOrNull();
+
+    /// The value, or the [IbanFailure] saying which check it failed. Never throws.
+    static ParseOutcome<IbanFailure, Iban> parse(String input) {
       final normalised = _normalise(input);
-      if (!_isWellFormed(normalised)) return null;
+      final failure = _failureFor(normalised);
 
-      return Iban._(normalised);
+      return failure != null ? ParseFailure(failure) : ParseSuccess(._(normalised));
     }
-
-    /// throws [MintedFormatException] when [input] is invalid.
-    static Iban parse(String input) =>
-        tryParse(input) ?? (throw MintedFormatException.from(const IbanChecksumFailed(), input));
 
     String get countryCode => value.substring(0, 2);
     // … further sub-part getters and render helpers …
@@ -161,9 +160,8 @@ consumer learns one shape and applies it everywhere. Rationale is in
   final class GeoCoordinate {
     const GeoCoordinate._(this.latitude, this.longitude);
 
-    static GeoCoordinate? tryParse(String input) { /* ISO 6709 */ }
-    static GeoCoordinate parse(String input) =>
-        tryParse(input) ?? (throw MintedFormatException.from(GeoCoordinateFailure.notIso6709, input));
+    static GeoCoordinate? tryParse(String input) => parse(input).getOrNull();
+    static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> parse(String input) { /* ISO 6709 */ }
 
     final double latitude;
     final double longitude;
@@ -189,20 +187,27 @@ consumer learns one shape and applies it everywhere. Rationale is in
    validation before `._` is fine, throwing [`MintedFormatException`](./APPENDIX.md#why-typed-format-exception)
    on bad parts: it's a parsing entry point keyed on parts, not a raw constructor, so the guarantee
    holds.
-2. **`static T? tryParse(String input)`** returns `null` on invalid input. No throwing.
-3. **`static T parse(String input)`** throws [`MintedFormatException`](./APPENDIX.md#why-typed-format-exception)
-   (never a bare `Exception`, never `assert`). Implement it as `tryParse(input) ?? (throw …)` so
-   the two never diverge.
-4. **Value equality.** Extension types inherit it from the representation for free (see below);
+2. **`static ParseOutcome<F, T> parse(String input)`** is the primary door and never throws: it
+   returns the value or the type's own [`MintedFailure`](./APPENDIX.md#per-type-failures). It does
+   the work; the other two derive from it.
+3. **`static T? tryParse(String input)`** is `parse(input).getOrNull()`, so the two can't diverge.
+   It stays nullable because `??`, `?.` and `whereType` are worth a dedicated path.
+4. **Assembly factories throw**, and they are the only things that do: `fromComponents`, `from`,
+   `fromBytes`, `Date(y, m, d)`. Calling one *is* the caller asserting the parts are valid, so a
+   violation is a bug in their source, not bad input. See
+   [`APPENDIX.md#claim-in-source`](./APPENDIX.md#claim-in-source).
+5. **Value equality.** Extension types inherit it from the representation for free (see below);
    classes hand-write `==` + `hashCode` over their parts. No `Equatable` dependency.
-5. **A canonical string form.** `.value` for extension types (the representation), a named getter
+6. **A canonical string form.** `.value` for extension types (the representation), a named getter
    (`.iso6709`, `.formatted`) for classes.
+7. **A failure vocabulary**, in the sector's `failures/` directory: one type per value type,
+   implementing `MintedFailure`, sized to what its standard can actually distinguish.
 
 **Normalise on parse.** `tryParse` converts input to a single canonical form before constructing
 (trim, case-fold the parts the standard says are case-insensitive, strip separators). Because
 extension-type equality is representation equality, this is what makes
-`Iban.parse('gb82 west …') == Iban.parse('GB82WEST…')` true. Document each type's normalisation in
-its dartdoc. See [`APPENDIX.md#normalise-on-parse`](./APPENDIX.md#normalise-on-parse).
+`Iban.tryParse('gb82 west …') == Iban.tryParse('GB82WEST…')` true. Document each type's
+normalisation in its dartdoc. See [`APPENDIX.md#normalise-on-parse`](./APPENDIX.md#normalise-on-parse).
 
 **Extension-type facts you must design around** (verified against the analyzer, not assumed):
 
@@ -364,17 +369,17 @@ experimental feature and are not used (see [`APPENDIX.md#sdk-floor`](./APPENDIX.
 
 Public symbols carry `///` dartdoc that explains *why* and *what guarantee*, not the mechanical
 *what*: the type already says that. `public_member_api_docs` is on (see
-[hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)).
-
-**One or two lines.** This is a limit, not a preference, and it binds dartdoc as hard as inline
-comments: `public_member_api_docs` decides that a doc *exists*, never how long it runs. A point
-needing a paragraph is rationale, so put it in [`APPENDIX.md`](./APPENDIX.md) and leave a one-line
-pointer to its anchor. Every surplus line is noise the next reader pays for, and it buries the one
-comment that mattered. Trim the neighbours whenever you edit a file. For every type, document its
+[hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)). For every type, document its
 normalisation and **link** the standard it enforces (with the clause or edition where it helps),
 preferring a freely-readable URL (an RFC); where the standard is paywalled (ISO), link a reliable
 free reference. The link lives in the dartdoc, which renders on pub.dev and travels with the type,
 not a central table.
+
+**Aim for one or two lines.** A guideline, not a cap: an explanation that earns its length keeps it,
+and a decision a reader would otherwise question is worth the sentence. What doesn't earn it is
+restating the signature, or rationale that belongs in [`APPENDIX.md`](./APPENDIX.md) behind a
+one-line pointer. Surplus lines are noise the next reader pays for and they bury the comment that
+mattered, so trim the neighbours whenever you edit a file.
 
 Gloss a component whose standard term is jargon with its common-usage alias, so the getter is
 self-explaining: `Email.localPart` notes it's the mailbox name (often a username), `Iban.bban` the
