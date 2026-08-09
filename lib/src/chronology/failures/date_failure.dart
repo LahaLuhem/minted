@@ -18,7 +18,7 @@ sealed class DateFailure implements MintedFailure {
 
 /// The text is not the ISO 8601 `YYYY-MM-DD` shape.
 final class DateNotIso8601 extends DateFailure {
-  /// The failure [Date.parse] reports for text of the wrong shape.
+  /// Creates the failure.
   const DateNotIso8601();
 
   @override
@@ -39,7 +39,7 @@ final class DateYearOutOfRange extends DateFailure {
   /// The offending year.
   final int year;
 
-  /// The failure reported for [year], which is outside `0000`-`9999`.
+  /// Creates the failure.
   const DateYearOutOfRange(this.year);
 
   @override
@@ -60,7 +60,7 @@ final class DateMonthOutOfRange extends DateFailure {
   /// The offending month number.
   final int month;
 
-  /// The failure reported for [month], which is outside `1`-`12`.
+  /// Creates the failure.
   const DateMonthOutOfRange(this.month);
 
   @override
@@ -91,7 +91,7 @@ final class DateDayOutOfRange extends DateFailure {
   /// The last day of [month] in [year], leap-year aware.
   final int maxDay;
 
-  /// The failure reported for a [day] outside `1`-[maxDay].
+  /// Creates the failure.
   const DateDayOutOfRange({
     required this.year,
     required this.month,

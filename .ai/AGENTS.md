@@ -95,10 +95,14 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
 ## Hard rules
 
 1. **Every value type follows the same contract.** Private primary constructor (`._`), no public
-   constructor ever; `static T? tryParse(String)` (null on invalid); `static T parse(String)`
-   (throws `MintedFormatException`); value equality; a canonical string form; per-type render
-   helpers. This is the package's identity, not a preference. Full spec:
-   [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract).
+   constructor ever; `static ParseOutcome<F, T> parse(String)` (never throws, carries the type's own
+   failure); `static T? tryParse(String)` derived from it; assembly factories (`fromComponents`,
+   `from`, …) that *do* throw `MintedFormatException`, because calling one is the caller asserting
+   the parts are valid; value equality; a canonical string form; a failure vocabulary in the
+   sector's `failures/`; per-type render helpers. This is the package's identity, not a preference.
+   Full spec: [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract); rationale in
+   [`APPENDIX.md#per-type-failures`](../APPENDIX.md#per-type-failures) and
+   [`APPENDIX.md#claim-in-source`](../APPENDIX.md#claim-in-source).
 2. **The public API lives only in `lib/minted.dart`**, which re-exports from `lib/src/`. Don't make
    users import `package:minted/src/…`. Shared internals go in `lib/src/shared/`.
 3. **Validate the real standard, including check digits** (IBAN mod-97, Luhn, ISBN/EAN/ISSN). A

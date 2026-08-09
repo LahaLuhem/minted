@@ -13,6 +13,9 @@ anchor, and keep anchors stable across renames.
 - [Extension type vs immutable class](#extension-type-representation)
 - [Typed digits: `Digit` and `Digits`](#typed-digit-subparts)
 - [Why a typed `FormatException`](#why-typed-format-exception)
+- [A throw is for a claim you made in source](#claim-in-source)
+- [Why a bespoke `ParseOutcome`, not `Either`](#parse-outcome)
+- [Failures are per type, because standards are](#per-type-failures)
 - [Normalise on parse](#normalise-on-parse)
 - [Check the real standard, not a regex shape](#check-digits-not-regex)
 - [Behavioural tests: a helper, not a framework](#behavioural-tests-helper)
@@ -64,7 +67,8 @@ That is what `Uri` does for URLs and `int.parse` does for integers, and it is wh
 type does for its domain. The mechanics that enforce it:
 
 - The primary constructor is **private** (`._`). No caller can build an instance directly.
-- The only way in is `tryParse` (returns `T?`) or `parse` (throws). Both run the full check.
+- The only ways in are `parse` (returns a [`ParseOutcome`](#parse-outcome)), `tryParse` (returns
+  `T?`), and the assembly factories (which throw). All run the same full check.
 - Therefore an instance of `Iban` is a proof that the string passed mod-97; a `CreditCardNumber`
   is a proof that it passed Luhn. Downstream code stops re-checking and stops carrying "is this
   string actually valid?" as an open question.
@@ -144,8 +148,9 @@ a volume identifiers rarely reach, and the unpacked bytes read as the digits und
 <a id="why-typed-format-exception"></a>
 ## Why a typed `FormatException`
 
-`parse` throws `MintedFormatException`, which **extends** `dart:core`'s `FormatException`. Two
-goals at once:
+The **assembly factories** (`fromComponents`, `from`, `fromBytes`, `Date(y, m, d)`) throw
+`MintedFormatException`, which **extends** `dart:core`'s `FormatException`. `parse` does not throw;
+it returns a [`ParseOutcome`](#parse-outcome). Two goals at once:
 
 - **Stdlib-consistent.** The package sells itself as "like `Uri`", and `int.parse` / `Uri.parse`
   / `DateTime.parse` all throw `FormatException`. Anyone already writing `on FormatException`
@@ -158,9 +163,110 @@ goals at once:
   the value types are extension types that erase to their representation at runtime, so a `'$T'` in
   the message would render `String`, not `Iban`.
 
-`tryParse` throws nothing and returns `null`; the throwing path is `parse` only. A failed parse
-is a runtime condition on untrusted input, so it is always a `throw`, never an `assert` (see
-[CODESTYLE class structure](./CODESTYLE.md#class-structure)).
+A failed assembly is still a runtime condition, so it is a `throw`, never an `assert` (see
+[CODESTYLE class structure](./CODESTYLE.md#class-structure)): `assert` is stripped in release, and
+these guard the type's core guarantee.
+
+---
+
+<a id="claim-in-source"></a>
+## A throw is for a claim you made in source
+
+The line between the two doors is **who is responsible for the failure**, not what the parameter
+type is.
+
+`parse` takes text you did not control: a form field, a CSV cell, a JSON payload. Invalid input is
+an expected outcome there, and the caller *must* handle it, so it belongs in the return type where
+the compiler can insist. That is `ParseOutcome`.
+
+The assembly factories take parts the caller already believes in. Writing `Date(2026, 7, 7)` or
+`Iban.fromComponents(countryCode: 'GB', bban: …)` is a claim, made in source, that those parts are
+good. A violated claim is a bug in the calling code, not a condition to branch on, and there is no
+remedy to write at the call site. Forcing an outcome there would make every caller write an arm
+they cannot act on, and they would write `case _ => null` next to the arm that mattered.
+
+This is the line every comparable system draws: Rust separates `Result` from `panic!`, Haskell
+separates `Either` from `error`, and ribs ships `Either.catching` for crossing it deliberately.
+
+---
+
+<a id="parse-outcome"></a>
+## Why a bespoke `ParseOutcome`, not `Either`
+
+`ParseOutcome<F extends MintedFailure, T>` is a sealed two-arm type in core, with no new dependency.
+It is deliberately `Either`-shaped so FP-style code reads natively, but named for the domain rather
+than `Left` / `Right`, because the package is general-purpose.
+
+**Why not depend on an FP library.** `ribs_core`'s `Either` was seriously considered and rejected,
+because the dependency would be **viral in the public API**: unlike `iban_validator`, it appears in
+every signature, so every consumer would have to add and import it. That re-pitches a general
+package as an FP-only one, and consumers already on `fpdart` would end up with two incompatible
+`Either`s. This is exactly the distinction [hard rule 7](./.ai/AGENTS.md#hard-rules) draws between
+an *engine* a type is built on and an *adapter* to another ecosystem.
+
+**FP interop is three lines in the consumer's own app**, not a companion package:
+
+```dart
+extension RibsOutcome<F extends MintedFailure, T> on ParseOutcome<F, T> {
+  Either<F, T>       get either    => fold(Either.left, Either.right);
+  ValidatedNel<F, T> get validated => fold(Validated.invalidNel, Validated.validNel);
+}
+```
+
+**Why no third state.** Modelling the assembly-factory failure as a third variant, so nothing ever
+throws, was rejected: it is the [claim-in-source](#claim-in-source) line above, it would lose the
+stack trace exactly where it is the only useful diagnostic, and it would be viral upward, since
+every function building a `Date` would then return the three-state type. Java's checked exceptions,
+same failure mode.
+
+**Why the constructors are public.** Unlike the value types, `ParseOutcome` protects no invariant:
+to build a `ParseSuccess(iban)` you must already hold an `Iban`, which only parsing produces. The
+sealed base and `final` arms still stop anyone adding a third state. Public `const` constructors buy
+fixture construction in consumer tests for nothing.
+
+---
+
+<a id="per-type-failures"></a>
+## Failures are per type, because standards are
+
+Every value type declares its own failure vocabulary implementing `MintedFailure`, rather than the
+package sharing one enum. The deciding factor is **uniformity across the family**, not the cost of
+the change.
+
+A single shared vocabulary has to pick one granularity, and no setting fits both ends of the family.
+Coarse enough for `Digit` and `Iban`'s distinct failures collapse into "invalid"; rich enough for
+`Iban` and `Digit` carries variants it can never produce, so consumer `switch`es are mostly
+unreachable arms. The variation is a property of the standards being modelled:
+
+> A standard that is a single grammar has one failure mode. A standard that is a checksum plus a
+> registry has several, because it has independent things to fail against.
+
+So uniformity lives in the *shape* of the API (every type has a failure type; every parse failure
+produces one; every one is a `MintedFailure`) and not in the *content*. That is already how the
+package handles family-level variation everywhere else: `Iban.checkDigits`, `Email.mailtoUri` and
+`Uuid.bytes` have nothing in common either, and nobody minds.
+
+**When a variant earns its place: it changes what the user does next.** "Checksum failed" means
+*you mistyped a character, look again*; "unknown country" means *we do not support this, stop
+trying*; "too short" means *keep typing*. Three remedies, three variants. "Bad character at index 7"
+versus "at index 9" is one remedy, so one variant.
+
+**The engine sets the ceiling, and we do not guess past it.** `email_validator` exposes a single
+`bool`, so `Email` gets exactly one variant. A heuristic guess at "invalid domain" would be a
+fabricated diagnosis wearing a type name, which is strictly worse than saying less: confidently
+wrong beats honestly silent. `PhoneNumber` is nearly the same story, since only one of
+`phone_numbers_parser`'s five codes is ever thrown; its other two variants are checks minted makes
+itself. `Iban` is the opposite extreme: `iban_validator` hands over a five-way diagnosis for free.
+
+**Sealed or enum, per type, decided by when the payload is known.** Enum when every variant's data
+is a declaration-time constant, or there is no data; sealed when any variant carries something
+derived from the input (`IbanInvalidLength(expected, actual)`, `DateDayOutOfRange`'s leap-aware
+bound). Note the second prong is about *timing*, not shape: an enhanced enum's payload is fixed at
+declaration, so it cannot hold anything computed from what was parsed.
+
+**Why `tryParse` still returns `T?`.** Replacing it with the outcome would kill `??`, `?.`,
+`whereType<Iban>()` and collection-`if` for every caller, including the many who only ever wanted
+the null. Two entry points is not worth that, and deriving one from the other costs nothing.
 
 ---
 
