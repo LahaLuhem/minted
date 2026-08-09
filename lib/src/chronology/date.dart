@@ -78,10 +78,24 @@ final class Date implements Comparable<Date> {
   /// Mirrors the `DateTime(year, month, day)` callers reach for today, so migrating a value to [Date]
   DateTime toDateTime() => DateTime(year, month.value, day);
 
-  /// The date [days] days after this one (pass a negative [days] to go back).
+  /// The date [days] days after this one (pass a negative [days] to go back), or `null` when the
+  /// result leaves `0000`-`9999`.
+  Date? tryAddDays(int days) {
+    final shifted = _utcMidnight.add(Duration(days: days));
+
+    return _tryFromParts(shifted.year, shifted.month, shifted.day);
+  }
+
+  /// The date [days] days after this one (pass a negative [days] to go back), throwing
+  /// [MintedFormatException] when the result leaves `0000`-`9999`. Use [tryAddDays] when [days]
+  /// could cross that bound.
   Date addDays(int days) => Date.fromDateTime(_utcMidnight.add(Duration(days: days)));
 
-  /// The date [days] days before this one.
+  /// The date [days] days before this one, or `null` when the result leaves `0000`-`9999`.
+  Date? trySubtractDays(int days) => tryAddDays(-days);
+
+  /// The date [days] days before this one, throwing [MintedFormatException] when the result leaves
+  /// `0000`-`9999`. Use [trySubtractDays] when [days] could cross that bound.
   Date subtractDays(int days) => addDays(-days);
 
   /// The whole number of days from [other] to this date (`this - other`), negative when this

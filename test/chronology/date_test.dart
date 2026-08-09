@@ -183,6 +183,30 @@ void main() {
       check(Date(2026, 7, 7).subtractDays(3)).equals(Date(2026, 7, 7).addDays(-3));
     });
 
+    scenario('day arithmetic throws when it walks off either end of 0000-9999', () {
+      check(() => Date(9999, 12, 31).addDays(1))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateYearOutOfRange(10000));
+      check(() => Date(0).subtractDays(1))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateYearOutOfRange(-1));
+    });
+
+    scenario('the try variants return null at the bound instead of throwing', () {
+      check(Date(9999, 12, 31).tryAddDays(1)).isNull();
+      check(Date(2026, 8, 4).tryAddDays(3000000)).isNull();
+      check(Date(0).trySubtractDays(1)).isNull();
+    });
+
+    scenario('the try variants agree with the throwing ones inside the bound', () {
+      check(Date(2026, 1, 31).tryAddDays(1)).equals(Date(2026, 2));
+      check(Date(2026, 3).trySubtractDays(1)).equals(Date(2026, 2, 28));
+      check(Date(9999, 12, 30).tryAddDays(1)).equals(Date(9999, 12, 31));
+      check(Date(0, 1, 2).trySubtractDays(1)).equals(Date(0));
+    });
+
     scenario('differenceInDays counts whole days, signed by order', () {
       check(Date(2026).differenceInDays(Date(2025))).equals(365); // 2025 is a common year
       check(Date(2025).differenceInDays(Date(2024))).equals(366); // 2024 is a leap year
