@@ -91,7 +91,11 @@ email. The trade-offs are real and deliberate:
   want.
 - There is no runtime distinction between the type and its representation (`email is String` is
   true). So the type safety is compile-time only, which is where primitive obsession bites
-  anyway, and serialization must be explicit rather than reflective.
+  anyway, and serialization must be explicit rather than reflective. The sharp edge of that:
+  `'nope' as Email` is a no-op cast that succeeds, and so is `rawStrings as List<Email>`, so a
+  caller can hand themselves an instance the parser would have rejected. Unfixable from inside the
+  package (a lint is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310)),
+  so the README documents it as a usage rule instead.
 - `const` construction is closed to callers (the constructor is private). That is the point:
   closing construction is what makes the invariant hold. Curated constants (say `CountryCode.gb`)
   are still built inside the library via the private constructor.

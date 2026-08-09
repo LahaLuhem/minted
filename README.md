@@ -9,6 +9,33 @@
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/LahaLuhem/minted.svg)](https://github.com/LahaLuhem/minted/pulls)
 [![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/LahaLuhem/minted.svg)](https://github.com/LahaLuhem/minted/pulls?q=is%3Apr+is%3Aclosed)
 
+**minted** gives you real types for the values you'd usually keep in a `String` and hope for the
+best: emails, IBANs, phone numbers, and more. Every type is built on *parse, don't validate*: the
+parser is the only door in, so anything that came through it is well-formed by construction. Once
+you hold an `Email`, it *is* a valid email. No more carrying "is this string actually valid?" three
+functions deep. (One asterisk on that, see [Caveats](#caveats).)
+
+It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
+type wears the same small API, so learning one teaches you the rest.
+
+<details>
+<summary><b>Why "parse, don't validate"?</b></summary>
+
+A validator takes a `String`, checks it, and hands the same `String` back, so every function
+downstream has to trust the check happened, or re-check it. A parser takes a `String` and returns a
+*different type* that can only exist if the input was well-formed. Validity becomes a fact of the
+type system: checked once, carried everywhere.
+
+That's what `int.parse` and `Uri.parse` already do, and it's what every `minted` type does for its
+domain. `String email, String phone, String name` are three interchangeable, mixed-up-able
+parameters; `Email`, `PhoneNumber`, `PersonName` are not.
+
+The phrase comes from Alexis King's essay,
+[*Parse, don't validate*](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/). It's
+written in Haskell, but nothing in the argument depends on that; it reads fine from Dart.
+
+</details>
+
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
 - [Install](#install)
@@ -20,19 +47,13 @@
     * [Identifiers](#identifiers)
     * [Numerics](#numerics)
 - [One shape, every type](#one-shape-every-type)
+- [Caveats](#caveats)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 
 <!-- TOC end -->
 
-**minted** gives you real types for the values you'd usually keep in a `String` and hope for the
-best: emails, IBANs, phone numbers, and more. Every type is built on *parse, don't validate*, so an
-instance can only exist if it's well-formed, the same guarantee `Uri` gives you for URLs. Once you
-hold an `Email`, it *is* a valid email. No more carrying "is this string actually valid?" three
-functions deep.
-
-It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
-type wears the same small API, so learning one teaches you the rest.
+---
 
 ## Install
 
@@ -149,20 +170,6 @@ PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.parse('6555
 </details>
 
 <details>
-<summary><b>Why "parse, don't validate"?</b></summary>
-
-A validator takes a `String`, checks it, and hands the same `String` back, so every function
-downstream has to trust the check happened, or re-check it. A parser takes a `String` and returns a
-*different type* that can only exist if the input was well-formed. Validity becomes a fact of the
-type system: checked once, carried everywhere.
-
-That's what `int.parse` and `Uri.parse` already do, and it's what every `minted` type does for its
-domain. `String email, String phone, String name` are three interchangeable, mixed-up-able
-parameters; `Email`, `PhoneNumber`, `PersonName` are not. (Named after Alexis King's essay.)
-
-</details>
-
-<details>
 <summary><b>Scope: what minted covers, and what it doesn't</b></summary>
 
 `minted` fills the gap where no clean value type exists. It doesn't re-model what the SDK (`Uri`,
@@ -180,6 +187,28 @@ check a given country in its
 [data file](https://github.com/khrisbreezy/iban_validator/blob/main/lib/src/iban_data.dart).
 
 </details>
+
+## Caveats
+
+**Never cast into a minted type.** The single-value types are `extension type`s, which is what makes
+them free: no allocation per value, and equality, `hashCode` and ordering inherited from the
+representation. The price is that the type exists only at compile time, so a cast slips past the
+parser and the compiler allows it.
+
+```dart
+'nope' as Email;             // compiles, succeeds
+json['email'] as Email;      // same hole, where unvalidated input actually arrives
+rawStrings as List<Email>;   // a whole list at once, no per-element check
+```
+
+That `Email` blows up the moment you read `.localPart`. So `parse`, `tryParse` and `fromComponents`
+are the only doors in, and a cast into a minted type is a bug. It's also the one place the
+`int.parse` / `Uri.parse` comparison breaks down, since those return real classes that can't be
+forged; worth saying out loud, because a package can't stop its callers from casting. A lint for it
+is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The multi-part
+types (`Date`, `Digits`) are ordinary classes, so bad casts throw there instead. Why the erasure is
+a deliberate trade rather than an oversight:
+[APPENDIX.md](./APPENDIX.md#extension-type-representation).
 
 ## Roadmap
 
