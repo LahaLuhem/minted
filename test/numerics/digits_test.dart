@@ -80,5 +80,16 @@ void main() {
     scenario('Digits.from throws MintedFormatException on an out-of-range value', () {
       check(() => Digits.from([9, 10])).throws<MintedFormatException>();
     });
+
+    scenario('both doors report the one failure a digit sequence has', () {
+      check(() => Digits.parse('12a'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(DigitsFailure.notAllDigits);
+      check(() => Digits.from([9, 10]))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(DigitsFailure.notAllDigits);
+    });
   });
 }

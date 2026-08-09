@@ -55,6 +55,17 @@ void main() {
       check(PhoneNumber.parse('+33 655 5705 76').telUri.toString()).equals('tel:+33655570576');
     });
 
+    scenario('every door reports the one failure the type distinguishes so far', () {
+      check(() => PhoneNumber.parse('not-a-number'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(PhoneNumberFailure.invalid);
+      check(() => PhoneNumber.parse('+44123', region: 'ZZ'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(PhoneNumberFailure.invalid);
+    });
+
     scenario('PhoneNumber.parse throws MintedFormatException on invalid input', () {
       check(() => PhoneNumber.parse('not-a-number')).throws<MintedFormatException>();
     });

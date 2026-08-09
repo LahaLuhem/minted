@@ -57,6 +57,17 @@ void main() {
       check(Iban.parse('GB29NWBK60161331926819').formatted).equals('GB29 NWBK 6016 1331 9268 19');
     });
 
+    scenario('every door reports the one failure the type distinguishes so far', () {
+      check(() => Iban.parse('GB29NWBK60161331926818'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(IbanFailure.invalid);
+      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(IbanFailure.invalid);
+    });
+
     scenario('Iban.parse throws MintedFormatException on a bad checksum', () {
       check(() => Iban.parse('GB29NWBK60161331926818')).throws<MintedFormatException>();
     });

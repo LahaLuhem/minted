@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 import 'digit.dart';
 
@@ -35,8 +36,7 @@ final class Digits extends Iterable<Digit> {
   /// Parses [input] as a run of decimal digits, throwing [MintedFormatException]
   /// when any character is not `0`-`9`.
   static Digits parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of('Digits', input, 'not a digits-only string'));
+      tryParse(input) ?? (throw MintedFormatException.from(DigitsFailure.notAllDigits, input));
 
   /// The sequence of the given [values], or `null` unless every value is in `0`-`9`.
   static Digits? tryFrom(List<int> values) =>
@@ -45,8 +45,7 @@ final class Digits extends Iterable<Digit> {
   /// The sequence of the given [values], throwing [MintedFormatException] unless
   /// every value is in `0`-`9`.
   static Digits from(List<int> values) =>
-      tryFrom(values) ??
-      (throw MintedFormatException.of('Digits', '$values', 'contains a value outside 0-9'));
+      tryFrom(values) ?? (throw MintedFormatException.from(DigitsFailure.notAllDigits, '$values'));
 
   /// The sequence built from the given `digits` (each already a valid `0`-`9`).
   static Digits of(Iterable<Digit> digits) => from([for (final digit in digits) digit.value]);
@@ -80,4 +79,22 @@ final class Digits extends Iterable<Digit> {
   static const _asciiZero = 0x30;
   static const _asciiNine = 0x39;
   static const _radix = 10;
+}
+
+/// Why a [Digits] sequence refused its input.
+///
+/// One variant: the remedy is the same whichever element offended and whichever door it came
+/// through ([Digits.tryParse] from text, [Digits.from] from numbers), so pinpointing the offender
+/// would not change what the caller does next.
+enum DigitsFailure implements MintedFailure {
+  /// Something in the input is not a decimal digit `0`-`9`.
+  notAllDigits('not all decimal digits 0-9');
+
+  const DigitsFailure(this.message);
+
+  @override
+  final String message;
+
+  @override
+  String get typeName => 'Digits';
 }

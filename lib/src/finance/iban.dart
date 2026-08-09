@@ -7,6 +7,7 @@ import 'package:iban_validator/iban_validator.dart';
 
 import '../numerics/digit.dart';
 import '../shared/check_digits.dart';
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 
 /// An IBAN: validated for structure, country-specific length, and the mod-97 checksum (via `iban_validator`).
@@ -25,11 +26,7 @@ extension type const Iban._(String value) {
     final assembled = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
 
     return tryParse(assembled) ??
-        (throw MintedFormatException.of(
-          'Iban',
-          '$countryCode + $bban',
-          'those components do not form a valid IBAN',
-        ));
+        (throw MintedFormatException.from(IbanFailure.invalid, '$countryCode + $bban'));
   }
 
   /// Parses [input] as an IBAN, or returns `null` when it fails the structure,
@@ -43,8 +40,7 @@ extension type const Iban._(String value) {
 
   /// Parses [input] as an IBAN, throwing [MintedFormatException] when it fails any check.
   static Iban parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of('Iban', input, 'failed IBAN structure or mod-97 check'));
+      tryParse(input) ?? (throw MintedFormatException.from(IbanFailure.invalid, input));
 
   /// The ISO 3166-1 alpha-2 country code (the first two characters).
   String get countryCode => value.substring(0, _checkDigitsStart);
@@ -72,4 +68,22 @@ extension type const Iban._(String value) {
   static const _checkDigitsStart = 2;
   static const _bbanStart = 4;
   static const _groupSize = 4;
+}
+
+/// Why an [Iban] refused its input.
+///
+/// One variant for now, which understates what is knowable: `iban_validator` already reports
+/// whether the country, the length, the charset, or the mod-97 check was the problem, and this
+/// type will grow to match.
+enum IbanFailure implements MintedFailure {
+  /// The input fails the structure, country, length, or mod-97 check.
+  invalid('failed the structure, country, length, or mod-97 check');
+
+  const IbanFailure(this.message);
+
+  @override
+  final String message;
+
+  @override
+  String get typeName => 'Iban';
 }

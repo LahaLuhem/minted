@@ -5,15 +5,25 @@ import 'support/bdd.dart';
 
 void main() {
   feature('MintedFormatException', () {
-    scenario('of renders the type name and reason in the message', () {
-      check(MintedFormatException.of('Email', 'x', 'boom').message).equals('Invalid Email: boom');
-      check(MintedFormatException.of('Iban', 'x', 'boom').message).equals('Invalid Iban: boom');
+    scenario('from renders the failure type name and message', () {
+      check(
+        MintedFormatException.from(EmailFailure.malformed, 'x').message,
+      ).equals('Invalid Email: not a well-formed email address');
+      check(
+        MintedFormatException.from(MonthFailure.notAMonth, 'x').message,
+      ).equals('Invalid Month: not a month number 1-12');
     });
 
-    scenario('of carries the offending input as its source', () {
+    scenario('from carries the offending input as its source', () {
       check(
-        MintedFormatException.of('Email', 'bad-input', 'boom').source as String?,
+        MintedFormatException.from(EmailFailure.malformed, 'bad-input').source as String?,
       ).equals('bad-input');
+    });
+
+    scenario('from carries the typed failure, so a caller can switch on the cause', () {
+      check(
+        MintedFormatException.from(IbanFailure.invalid, 'x').failure,
+      ).equals(IbanFailure.invalid);
     });
 
     scenario('it extends FormatException, so on FormatException catches parse failures', () {

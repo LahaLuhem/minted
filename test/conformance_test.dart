@@ -12,11 +12,12 @@ import 'package:test/test.dart';
 /// Enforces the value-type contract structurally.
 ///
 /// Every value type (each public type declared anywhere under `lib/src/`
-/// except `lib/src/shared/`) must expose the shared spine: static `tryParse`
-/// and `parse` factories, and, for an extension type, a representation named
-/// `value`. Static factories can't be enforced by an abstract class in Dart
-/// (they're static and not inherited), so this test is that enforcement: a new
-/// type that forgets part of the contract fails the build.
+/// except `lib/src/shared/`, and except the failure vocabularies that sit
+/// alongside them) must expose the shared spine: static `tryParse` and `parse`
+/// factories, and, for an extension type, a representation named `value`.
+/// Static factories can't be enforced by an abstract class in Dart (they're
+/// static and not inherited), so this test is that enforcement: a new type that
+/// forgets part of the contract fails the build.
 void main() {
   final valueTypeFiles = Directory('lib/src')
       .listSync(recursive: true)
@@ -71,6 +72,7 @@ class _ValueType {
 /// member names, using only AST primitives stable across analyzer versions.
 class _SpineCollector extends RecursiveAstVisitor<void> {
   final List<_ValueType> types = [];
+  final Set<String> _failureNames = {};
   _ValueType? _current;
 
   @override
@@ -89,11 +91,19 @@ class _SpineCollector extends RecursiveAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    final type = _ValueType(
-      _nameFrom(node.toSource(), r'class\s+([A-Za-z_$][\w$]*)'),
-      isExtensionType: false,
-      representationIsValue: true,
-    );
+    final source = node.toSource();
+    final name = _nameFrom(source, r'class\s+([A-Za-z_$][\w$]*)');
+
+    // A failure vocabulary lives beside its value type but is not one: it has no parse spine.
+    // Recognised structurally rather than by name, and relies on a sealed base being declared
+    // before the variants extending it (Dart requires them in the same library anyway).
+    if (_implementsFailure.hasMatch(source) || _failureNames.contains(_superclassOf(source))) {
+      _failureNames.add(name);
+
+      return;
+    }
+
+    final type = _ValueType(name, isExtensionType: false, representationIsValue: true);
     types.add(type);
     _current = type;
     super.visitClassDeclaration(node);
@@ -109,3 +119,8 @@ class _SpineCollector extends RecursiveAstVisitor<void> {
 
 String _nameFrom(String source, String pattern) =>
     RegExp(pattern).firstMatch(source)?.group(1) ?? '<unknown>';
+
+String? _superclassOf(String source) =>
+    RegExp(r'\bextends\s+([A-Za-z_$][\w$]*)').firstMatch(source)?.group(1);
+
+final _implementsFailure = RegExp(r'\bimplements\s+MintedFailure\b');

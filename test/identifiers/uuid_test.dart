@@ -198,6 +198,24 @@ void main() {
       check(earlier.compareTo(earlier)).equals(0);
     });
 
+    scenario('malformed text and a wrong byte count are distinct failures', () {
+      check(() => Uuid.parse('not-a-uuid'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const UuidMalformed());
+      check(() => Uuid.fromBytes(Uint8List(15)))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const UuidWrongByteCount(expected: 16, actual: 15));
+    });
+
+    scenario('the byte-count failure reports what it was handed', () {
+      check(() => Uuid.fromBytes(Uint8List(17)))
+          .throws<MintedFormatException>()
+          .has((error) => error.message, 'message')
+          .equals('Invalid Uuid: expected 16 bytes, got 17');
+    });
+
     scenario('Uuid.parse throws MintedFormatException, carrying the source', () {
       check(() => Uuid.parse('not-a-uuid'))
           .throws<MintedFormatException>()

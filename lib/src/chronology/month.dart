@@ -1,6 +1,7 @@
 /// @docImport 'date.dart';
 library;
 
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 
 /// A month of the year, `1` (January) to `12` (December).
@@ -25,8 +26,7 @@ extension type const Month._(int value) {
   /// Parses [input] as a month number `1`-`12`, throwing [MintedFormatException] unless it is one
   /// or two digits naming a month in range.
   static Month parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of('Month', input, 'not a month number 1-12'));
+      tryParse(input) ?? (throw MintedFormatException.from(MonthFailure.notAMonth, input));
 
   /// The [Month] with number [value], or `null` unless it is in `1`-`12`.
   static Month? tryFrom(int value) =>
@@ -34,7 +34,7 @@ extension type const Month._(int value) {
 
   /// The [Month] with number [value], throwing [MintedFormatException] unless it is in `1`-`12`.
   static Month from(int value) =>
-      tryFrom(value) ?? (throw MintedFormatException.of('Month', '$value', 'not a month in 1-12'));
+      tryFrom(value) ?? (throw MintedFormatException.from(MonthFailure.notAMonth, '$value'));
 
   /// The number of days in this month during [year] (`28`-`31`), counting February as `29` in a
   /// leap year (proleptic Gregorian: divisible by 4, except centuries not divisible by 400).
@@ -87,4 +87,21 @@ extension type const Month._(int value) {
   static const _leapDivisor = 4;
   static const _centuryDivisor = 100;
   static const _leapCenturyDivisor = 400;
+}
+
+/// Why a [Month] refused its input.
+///
+/// One variant: a month is a closed set of twelve, so "outside the set" is the whole story, and
+/// both doors ([Month.tryParse] from text, [Month.from] from a number) share the remedy.
+enum MonthFailure implements MintedFailure {
+  /// The input does not name a month in `1`-`12`.
+  notAMonth('not a month number 1-12');
+
+  const MonthFailure(this.message);
+
+  @override
+  final String message;
+
+  @override
+  String get typeName => 'Month';
 }

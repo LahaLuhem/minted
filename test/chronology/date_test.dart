@@ -68,6 +68,35 @@ void main() {
           .equals('2026-13-01');
     });
 
+    scenario('the factory reports which part is out of range', () {
+      check(() => Date(10000))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateYearOutOfRange(10000));
+      check(() => Date(2026, 13))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateMonthOutOfRange(13));
+      check(() => Date(2026, 2, 29))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateDayOutOfRange(year: 2026, month: 2, day: 29, maxDay: 28));
+    });
+
+    scenario('the day bound the failure reports is leap-year aware', () {
+      check(() => Date(2024, 2, 30))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29));
+    });
+
+    scenario('parse reports a shape failure, a different remedy from a bad part', () {
+      check(() => Date.parse('07/07/2026'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateNotIso8601());
+    });
+
     scenario('the factory throws MintedFormatException naming the bad part', () {
       check(() => Date(2026, 13))
           .throws<MintedFormatException>()

@@ -3,6 +3,9 @@
 
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 
 /// A UUID (Universally Unique IDentifier): 128 bits in the canonical `8-4-4-4-12` hex form, e.g.
@@ -36,22 +39,16 @@ extension type const Uuid._(String value) {
   /// Parses [input] as a UUID, throwing [MintedFormatException] unless it is a well-formed UUID
   /// string (canonical, `urn:uuid:`-prefixed, or brace-wrapped).
   static Uuid parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of(
-        'Uuid',
-        input,
-        'not a well-formed UUID (expected 8-4-4-4-12 hex)',
-      ));
+      tryParse(input) ?? (throw MintedFormatException.from(const UuidMalformed(), input));
 
   /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), throwing
   /// [MintedFormatException] unless there are exactly 16. Every 16-byte sequence is a valid UUID,
   /// so this only rejects the wrong length. The inverse of [bytes].
   static Uuid fromBytes(Uint8List bytes) {
     if (bytes.length != _byteCount) {
-      throw MintedFormatException.of(
-        'Uuid',
+      throw MintedFormatException.from(
+        UuidWrongByteCount(expected: _byteCount, actual: bytes.length),
         '$bytes',
-        'expected $_byteCount bytes, got ${bytes.length}',
       );
     }
 
@@ -149,6 +146,62 @@ extension type const Uuid._(String value) {
   static const _rfc9562VariantFloor = 0x8;
   static const _microsoftVariantFloor = 0xc;
   static const _futureVariantFloor = 0xe;
+}
+
+/// Why a [Uuid] refused its input.
+///
+/// Sealed rather than an enum because [UuidWrongByteCount] reports the count it was handed, which
+/// is only known per call.
+@immutable
+sealed class UuidFailure implements MintedFailure {
+  const UuidFailure();
+
+  @override
+  String get typeName => 'Uuid';
+}
+
+/// The text is not a UUID: it is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
+final class UuidMalformed extends UuidFailure {
+  /// The failure [Uuid.tryParse] and [Uuid.parse] report for unrecognisable text.
+  const UuidMalformed();
+
+  @override
+  String get message => 'not a well-formed UUID (expected 8-4-4-4-12 hex)';
+
+  @override
+  bool operator ==(Object other) => other is UuidMalformed;
+
+  @override
+  int get hashCode => (UuidMalformed).hashCode;
+
+  @override
+  String toString() => 'UuidMalformed()';
+}
+
+/// [Uuid.fromBytes] was handed something other than 16 bytes. Every 16-byte sequence is a valid
+/// UUID, so the length is the only thing it can reject.
+final class UuidWrongByteCount extends UuidFailure {
+  /// The byte count a UUID always has, `16`.
+  final int expected;
+
+  /// How many bytes were actually supplied.
+  final int actual;
+
+  /// The failure [Uuid.fromBytes] reports, carrying both counts.
+  const UuidWrongByteCount({required this.expected, required this.actual});
+
+  @override
+  String get message => 'expected $expected bytes, got $actual';
+
+  @override
+  bool operator ==(Object other) =>
+      other is UuidWrongByteCount && other.expected == expected && other.actual == actual;
+
+  @override
+  int get hashCode => Object.hash(expected, actual);
+
+  @override
+  String toString() => 'UuidWrongByteCount(expected: $expected, actual: $actual)';
 }
 
 /// The variant of a [Uuid]: which layout family it belongs to, named by the variant bits (the first

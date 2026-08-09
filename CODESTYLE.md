@@ -146,7 +146,7 @@ consumer learns one shape and applies it everywhere. Rationale is in
 
     /// throws [MintedFormatException] when [input] is invalid.
     static Iban parse(String input) =>
-        tryParse(input) ?? (throw MintedFormatException.of<Iban>(input, 'failed structure or mod-97 check'));
+        tryParse(input) ?? (throw MintedFormatException.from(IbanFailure.invalid, input));
 
     String get countryCode => value.substring(0, 2);
     // … further sub-part getters and render helpers …
@@ -163,7 +163,7 @@ consumer learns one shape and applies it everywhere. Rationale is in
 
     static GeoCoordinate? tryParse(String input) { /* ISO 6709 */ }
     static GeoCoordinate parse(String input) =>
-        tryParse(input) ?? (throw MintedFormatException.of<GeoCoordinate>(input, 'not ISO 6709'));
+        tryParse(input) ?? (throw MintedFormatException.from(GeoCoordinateFailure.notIso6709, input));
 
     final double latitude;
     final double longitude;
