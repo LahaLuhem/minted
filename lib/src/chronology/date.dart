@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../shared/iso_date_format.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/date_failure.dart';
 import 'month.dart';
 
@@ -50,16 +51,21 @@ final class Date implements Comparable<Date> {
 
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, or returns `null` unless it is exactly
   /// that shape (four-digit year, zero-padded two-digit month and day) and a real date.
-  static Date? tryParse(String input) {
+  static Date? tryParse(String input) => parse(input).getOrNull();
+
+  /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, reporting the [DateFailure] that
+  /// says whether the shape or one of the parts is wrong.
+  static ParseOutcome<DateFailure, Date> parse(String input) {
     final parts = _partsOf(input);
+    if (parts == null) return const ParseFailure(DateNotIso8601());
 
-    return parts == null ? null : _tryFromParts(parts.year, parts.month, parts.day);
+    final (:year, :month, :day) = parts;
+    final parsedDate = _tryFromParts(year, month, day);
+
+    return parsedDate == null
+        ? ParseFailure(_partsFailure(year, month, day))
+        : ParseSuccess(parsedDate);
   }
-
-  /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, throwing [MintedFormatException]
-  /// carrying the [DateFailure] that says whether the shape or one of the parts is wrong.
-  static Date parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(_failureFor(input), input));
 
   /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
   String get iso8601 => isoDate(year, month.value, day);
@@ -147,16 +153,6 @@ final class Date implements Comparable<Date> {
     final wellFormed = year >= 0 && year <= _maxYear && day >= 1 && day <= monthType.daysIn(year);
 
     return !wellFormed ? null : Date._(year, monthType, day);
-  }
-
-  // Why text is not a date: the shape, or else whichever part is out of range. Reached only after
-  // tryParse returns null, so the parts having matched means _tryFromParts rejected them.
-  static DateFailure _failureFor(String input) {
-    final parts = _partsOf(input);
-
-    return parts == null
-        ? const DateNotIso8601()
-        : _partsFailure(parts.year, parts.month, parts.day);
   }
 
   // Which part of the given date is out of range. Reached only after _tryFromParts returns null,

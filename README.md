@@ -64,7 +64,7 @@ dart pub add minted
 ## A quick taste
 
 ```dart
-final email = Email.parse('Jane.Doe@Example.COM');
+final email = Email.tryParse('Jane.Doe@Example.COM')!;
 email.value;   // 'Jane.Doe@example.com'   (domain lower-cased for you)
 email.domain;  // 'example.com'
 
@@ -115,27 +115,28 @@ and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enoug
 Learn one type and you've learned them all. Each one gives you:
 
 - `Type.tryParse(input)` returns the value, or `null` when the input isn't valid
-- `Type.parse(input)` returns the value, or throws `MintedFormatException` (it extends
-  `FormatException`, so your existing `on FormatException` handlers still catch it). It carries a
-  typed `failure` from that type's own vocabulary (`IbanFailure`, `DateFailure`, …), so you can
-  `switch` on the cause instead of matching on a message string
+- `Type.parse(input)` returns a `ParseOutcome`: either the value, or a typed `failure` from that
+  type's own vocabulary (`IbanFailure`, `DateFailure`, …). Nothing is thrown, so you can `switch`
+  on the cause, or read `.reasonOrNull` for a form-field message
 - **value equality**: `a == b` compares content, not identity
 - a **canonical form** to read back (`.value` on most types, `.asString` on `Digits`), normalised on
   parse so equal values really are equal
-- an assembly factory for parts you already trust (`fromComponents`, `from`, or `of`)
+- an **assembly factory** for parts you assert are valid (`fromComponents`, `from`, `of`). These
+  *do* throw `MintedFormatException`, which extends `FormatException`, because calling one is you
+  claiming the parts are good
 - getters that fit the type: `email.domain`, `iban.checkDigits`, `phone.nationalNumber`
 
 <details>
 <summary><b>More examples</b></summary>
 
 ```dart
-final iban = Iban.parse('gb29 nwbk 6016 1331 9268 19');
+final iban = Iban.tryParse('gb29 nwbk 6016 1331 9268 19')!;
 iban.value;       // 'GB29NWBK60161331926819'   (compact)
 iban.countryCode; // 'GB'
 iban.checkDigits; // (first: Digit, second: Digit)
 iban.formatted;   // 'GB29 NWBK 6016 1331 9268 19'   (grouped paper form)
 
-final phone = PhoneNumber.parse('0 655 5705 76', region: 'FR');
+final phone = PhoneNumber.tryParse('0 655 5705 76', region: 'FR')!;
 phone.value;          // '+33655570576'   (E.164)
 phone.type;           // PhoneNumberType.mobile
 phone.nationalNumber; // Digits(655570576)   (an Iterable<Digit>)
@@ -145,7 +146,7 @@ phone.telUri;         // tel:+33655570576
 PhoneNumber.tryParse('0 655 5705 76');   // null (no region given)
 
 // Date: the calendar date DateTime doesn't model (no time, no zone):
-final date = Date.parse('2026-07-07');   // strict ISO 8601 YYYY-MM-DD
+final date = Date.tryParse('2026-07-07')!;   // strict ISO 8601 YYYY-MM-DD
 date.iso8601;      // '2026-07-07'   (canonical form)
 date.weekday;      // 2   (1 = Monday … 7 = Sunday)
 date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
@@ -157,7 +158,7 @@ Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-
 
 // Uuid: type an existing UUID (the `uuid` package generates them). Case, a urn:uuid: prefix,
 // and surrounding braces are all normalised away:
-final id = Uuid.parse('URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6');
+final id = Uuid.tryParse('URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')!;
 id.value;    // 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6'   (lower-cased, unwrapped)
 id.version;  // 1
 id.variant;  // UuidVariant.rfc9562
@@ -166,7 +167,7 @@ Uuid.tryParse('not-a-uuid');   // null
 // build from parts you already trust (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
 Email.fromComponents(localPart: 'jane', domain: 'example.com');
-PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.parse('655570576'));
+PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryParse('655570576')!);
 ```
 
 </details>
@@ -181,7 +182,7 @@ registry, and phone metadata all come from established packages.
 
 `Uuid` is a value type, not a generator. The `uuid` package mints new UUIDs and hands you a
 `String`; minted's `Uuid` types an existing one so it stops being a bare `String` a few functions
-deep. They pair up: generate with `uuid`, then `Uuid.parse` the result.
+deep. They pair up: generate with `uuid`, then type the result with `Uuid`.
 
 IBAN country coverage comes from [`iban_validator`](https://pub.dev/packages/iban_validator), which
 tracks recent adoptions and includes some countries not yet in the formal ISO registry. You can

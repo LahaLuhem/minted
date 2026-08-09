@@ -4,6 +4,7 @@
 import 'package:email_validator/email_validator.dart';
 
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/email_failure.dart';
 
 /// An email address, validated against the RFC 5322 grammar (via
@@ -17,8 +18,13 @@ extension type const Email._(String value) {
   /// Builds an [Email] from its [localPart] and [domain], throwing
   /// [MintedFormatException] if they don't form a valid address. For assembling
   /// from a known-valid source.
-  static Email fromComponents({required String localPart, required String domain}) =>
-      parse('$localPart@$domain');
+  static Email fromComponents({required String localPart, required String domain}) {
+    final source = '$localPart@$domain';
+
+    return parse(
+      source,
+    ).fold((reason) => throw MintedFormatException.from(reason, source), (email) => email);
+  }
 
   /// As [fromComponents], but takes the domain as its dot-separated labels
   /// (`['example', 'com']`), joined with `.`.
@@ -27,22 +33,23 @@ extension type const Email._(String value) {
 
   /// Parses [input] as an email address, or returns `null` when it is not well-formed.
   /// See the type docs for the normalisation applied.
-  static Email? tryParse(String input) {
+  static Email? tryParse(String input) => parse(input).getOrNull();
+
+  /// Parses [input] as an email address, reporting [EmailFailure] when it is not
+  /// well-formed. See the type docs for the normalisation applied.
+  static ParseOutcome<EmailFailure, Email> parse(String input) {
     final trimmed = input.trim();
-    if (!EmailValidator.validate(trimmed)) return null;
+    if (!EmailValidator.validate(trimmed)) return const ParseFailure(.malformed);
 
     final atSign = trimmed.lastIndexOf('@');
-    final normalised =
+
+    return ParseSuccess(
+      ._(
         '${trimmed.substring(0, atSign)}@'
-        '${trimmed.substring(atSign + 1).toLowerCase()}';
-
-    return ._(normalised);
+        '${trimmed.substring(atSign + 1).toLowerCase()}',
+      ),
+    );
   }
-
-  /// Parses [input] as an email address, throwing [MintedFormatException] when
-  /// it is not well-formed.
-  static Email parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(EmailFailure.malformed, input));
 
   /// The local-part, before the last `@` (the mailbox name, often a username).
   /// Case is preserved from the input.

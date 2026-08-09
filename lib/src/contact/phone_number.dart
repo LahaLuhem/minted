@@ -3,6 +3,7 @@ import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers
 
 import '../numerics/digits.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/phone_number_failure.dart';
 
 /// A phone number, validated and stored in its canonical E.164 form (via `phone_numbers_parser`).
@@ -16,27 +17,37 @@ extension type const PhoneNumber._(String value) {
   /// `+`, e.g. `44`) and its [nationalNumber] digits. Throws
   /// [MintedFormatException] if they don't form a valid number. For assembling
   /// from a known-valid source.
-  static PhoneNumber fromComponents({
-    required String countryCode,
-    required Digits nationalNumber,
-  }) => parse('+$countryCode${nationalNumber.asString}');
+  static PhoneNumber fromComponents({required String countryCode, required Digits nationalNumber}) {
+    final source = '+$countryCode${nationalNumber.asString}';
+
+    return parse(
+      source,
+    ).fold((reason) => throw MintedFormatException.from(reason, source), (phone) => phone);
+  }
 
   /// Parses [input] as a phone number, or returns `null` when it is not a valid number.
   ///
   /// Pass [region] (ISO 3166-1 alpha-2) to resolve national-format input; `+`-international input needs none.
   /// An unknown [region] yields `null`.
-  static PhoneNumber? tryParse(String input, {String? region}) {
-    final e164 = _resolve(input, region).e164;
+  static PhoneNumber? tryParse(String input, {String? region}) =>
+      parse(input, region: region).getOrNull();
 
-    return e164 == null ? null : ._(e164);
-  }
+  /// Parses [input] as a phone number, reporting the [PhoneNumberFailure] that says which check
+  /// failed. See [tryParse] for the `region` hint.
+  static ParseOutcome<PhoneNumberFailure, PhoneNumber> parse(String input, {String? region}) {
+    final callerCountry = region == null ? null : _isoCodeForRegion(region);
+    if (region != null && callerCountry == null) return const ParseFailure(.unknownRegion);
 
-  /// Parses [input] as a phone number, throwing [MintedFormatException] carrying the
-  /// [PhoneNumberFailure] that says which check failed. See [tryParse] for the `region` hint.
-  static PhoneNumber parse(String input, {String? region}) {
-    final (:e164, :failure) = _resolve(input, region);
+    final phone_numbers.PhoneNumber parsed;
+    try {
+      parsed = phone_numbers.PhoneNumber.parse(input, callerCountry: callerCountry);
+    } on phone_numbers.PhoneNumberException catch (exception) {
+      return ParseFailure(_failureForCode(exception.code));
+    }
 
-    return failure != null ? throw MintedFormatException.from(failure, input) : ._(e164!);
+    return !parsed.isValid()
+        ? const ParseFailure(.invalid)
+        : ParseSuccess(._(parsed.international));
   }
 
   /// The country calling code, without the `+` (for example `44` for the UK).
@@ -45,7 +56,8 @@ extension type const PhoneNumber._(String value) {
   /// The national (significant) number as a [Digits] sequence, without the
   /// country calling code (the local number you'd dial within the country).
   /// Use [Digits.asString] for the plain string.
-  Digits get nationalNumber => Digits.parse(_parsed.nsn);
+  // A validated number's national significant number is digits only, so this cannot be null.
+  Digits get nationalNumber => Digits.tryParse(_parsed.nsn)!;
 
   /// The number's type (mobile, fixed line, VoIP, ...), or `null` if it matches no known type.
   /// When a number is valid as more than one type, the first match in enum-declaration order is returned.
@@ -66,26 +78,6 @@ extension type const PhoneNumber._(String value) {
   Uri get telUri => Uri(scheme: 'tel', path: value);
 
   phone_numbers.PhoneNumber get _parsed => phone_numbers.PhoneNumber.parse(value);
-
-  // The E.164 form of [input], or why it is not a phone number; exactly one field is non-null. The
-  // single gate tryParse and parse funnel through, so a diagnosis and an acceptance can't disagree.
-  static ({String? e164, PhoneNumberFailure? failure}) _resolve(String input, String? region) {
-    final callerCountry = region == null ? null : _isoCodeForRegion(region);
-    if (region != null && callerCountry == null) {
-      return (e164: null, failure: PhoneNumberFailure.unknownRegion);
-    }
-
-    final phone_numbers.PhoneNumber parsed;
-    try {
-      parsed = phone_numbers.PhoneNumber.parse(input, callerCountry: callerCountry);
-    } on phone_numbers.PhoneNumberException catch (exception) {
-      return (e164: null, failure: _failureForCode(exception.code));
-    }
-
-    return parsed.isValid()
-        ? (e164: parsed.international, failure: null)
-        : (e164: null, failure: PhoneNumberFailure.invalid);
-  }
 
   // notFound is the only code 9.0.24 throws here; the rest are engine metadata misses that
   // resolving the region against IsoCode.values already rules out.

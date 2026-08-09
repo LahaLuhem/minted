@@ -26,8 +26,12 @@ void main() {
       ).equals(const IbanChecksumFailed());
     });
 
-    scenario('it extends FormatException, so on FormatException catches parse failures', () {
-      check(() => Email.parse('nope')).throws<FormatException>();
+    scenario('it extends FormatException, so on FormatException catches assembly failures', () {
+      // parse reports its failure instead of throwing; the assembly factories are the throwing door.
+      check(
+        () => Email.fromComponents(localPart: 'a b', domain: 'example.com'),
+      ).throws<FormatException>();
+      check(() => Digit.from(10)).throws<FormatException>();
     });
   });
 }

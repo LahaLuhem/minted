@@ -42,11 +42,13 @@ void main() {
     );
 
     scenario('grouped and compact forms are equal', () {
-      check(Iban.parse('gb29 nwbk 6016 1331 9268 19')).equals(Iban.parse('GB29NWBK60161331926819'));
+      check(
+        Iban.tryParse('gb29 nwbk 6016 1331 9268 19')!,
+      ).equals(Iban.tryParse('GB29NWBK60161331926819')!);
     });
 
     scenario('an IBAN exposes its country code, check digits, and BBAN', () {
-      final parsedIban = Iban.parse('GB29NWBK60161331926819');
+      final parsedIban = Iban.tryParse('GB29NWBK60161331926819')!;
 
       check(parsedIban.countryCode).equals('GB');
       check(parsedIban.checkDigits).equals((first: Digit.from(2), second: Digit.from(9)));
@@ -54,7 +56,9 @@ void main() {
     });
 
     scenario('an IBAN rebuilds the grouped paper form', () {
-      check(Iban.parse('GB29NWBK60161331926819').formatted).equals('GB29 NWBK 6016 1331 9268 19');
+      check(
+        Iban.tryParse('GB29NWBK60161331926819')!.formatted,
+      ).equals('GB29 NWBK 6016 1331 9268 19');
     });
 
     scenarioOutline<({String input, IbanFailure failure})>(
@@ -79,10 +83,7 @@ void main() {
           failure: const IbanChecksumFailed(),
         ),
       },
-      outline: (example) => check(() => Iban.parse(example.input))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(example.failure),
+      outline: (example) => check(Iban.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
     scenario('fromComponents reports the same vocabulary as parse', () {
@@ -93,14 +94,19 @@ void main() {
     });
 
     scenario('the length failure names the length the country requires', () {
-      check(() => Iban.parse('GB29NWBK6016133192681'))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .equals('Invalid Iban: expected 22 characters for this country, got 21');
+      check(
+        Iban.parse('GB29NWBK6016133192681').reasonOrNull?.message,
+      ).equals('expected 22 characters for this country, got 21');
     });
 
-    scenario('Iban.parse throws MintedFormatException on a bad checksum', () {
-      check(() => Iban.parse('GB29NWBK60161331926818')).throws<MintedFormatException>();
+    scenario('parse reports the failure rather than throwing', () {
+      check(Iban.parse('GB29NWBK60161331926818')).equals(const ParseFailure(IbanChecksumFailed()));
+      check(Iban.parse('GB29NWBK60161331926819').isSuccess).isTrue();
+    });
+
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Iban.tryParse('GB29NWBK60161331926818')).isNull();
+      check(Iban.tryParse('gb29 nwbk 6016 1331 9268 19')?.value).equals('GB29NWBK60161331926819');
     });
 
     scenario('fromComponents computes the check digits and assembles a valid IBAN', () {

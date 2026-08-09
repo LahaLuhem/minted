@@ -4,6 +4,7 @@
 import 'dart:typed_data';
 
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/uuid_failure.dart';
 
 /// A UUID (Universally Unique IDentifier): 128 bits in the canonical `8-4-4-4-12` hex form, e.g.
@@ -27,17 +28,17 @@ import 'failures/uuid_failure.dart';
 extension type const Uuid._(String value) {
   /// Parses [input] as a UUID, or returns `null` unless it is the canonical `8-4-4-4-12` hex form
   /// (case-insensitive), optionally wrapped as `urn:uuid:…` or `{…}`.
-  static Uuid? tryParse(String input) {
+  static Uuid? tryParse(String input) => parse(input).getOrNull();
+
+  /// Parses [input] as a UUID, reporting [UuidMalformed] unless it is a well-formed UUID string
+  /// (canonical, `urn:uuid:`-prefixed, or brace-wrapped).
+  static ParseOutcome<UuidFailure, Uuid> parse(String input) {
     final unwrapped = _unwrap(input.trim().toLowerCase());
-    if (!_canonical.hasMatch(unwrapped)) return null;
 
-    return ._(unwrapped);
+    return !_canonical.hasMatch(unwrapped)
+        ? const ParseFailure(UuidMalformed())
+        : ParseSuccess(._(unwrapped));
   }
-
-  /// Parses [input] as a UUID, throwing [MintedFormatException] unless it is a well-formed UUID
-  /// string (canonical, `urn:uuid:`-prefixed, or brace-wrapped).
-  static Uuid parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(const UuidMalformed(), input));
 
   /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), throwing
   /// [MintedFormatException] unless there are exactly 16. Every 16-byte sequence is a valid UUID,
@@ -47,13 +48,15 @@ extension type const Uuid._(String value) {
           UuidWrongByteCount(expected: _byteCount, actual: bytes.length),
           '$bytes',
         )
-      : parse(
-          _hyphenate(
-            bytes
-                .map((byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, _padChar))
+      : tryParse(
+          Iterable.generate(
+            _groupByteBoundaries.length - 1,
+            (group) => bytes
+                .getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1])
+                .map(_hex)
                 .join(),
-          ),
-        );
+          ).join(_hyphen),
+        )!;
 
   /// The UUID version, `0`-`15`: the 4-bit version field (the first hex digit of the third group).
   ///
@@ -113,11 +116,8 @@ extension type const Uuid._(String value) {
     return lowerInput;
   }
 
-  // Groups 32 hex digits into the canonical 8-4-4-4-12 hyphenated form, slicing at each boundary.
-  static String _hyphenate(String hex) => Iterable.generate(
-    _groupHexBoundaries.length - 1,
-    (group) => hex.substring(_groupHexBoundaries[group], _groupHexBoundaries[group + 1]),
-  ).join(_hyphen);
+  // One byte as two lowercase hex digits.
+  static String _hex(int byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, _padChar);
 
   static final _canonical = RegExp(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
@@ -128,8 +128,9 @@ extension type const Uuid._(String value) {
   static const _hexRadix = 16;
   static const _byteCount = 16;
   static const _byteHexLength = 2;
-  // Cut points bracketing the 8-4-4-4-12 hex groups (one more than the group count).
-  static const _groupHexBoundaries = [0, 8, 12, 16, 20, 32];
+  // Cut points bracketing the 4-2-2-2-6 byte groups of the 8-4-4-4-12 hex form (one more than the
+  // group count).
+  static const _groupByteBoundaries = [0, 4, 6, 8, 10, _byteCount];
   static const _padChar = '0';
   static const _hyphen = '-';
   static const _urnPrefix = 'urn:uuid:';

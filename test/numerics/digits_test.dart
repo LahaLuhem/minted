@@ -23,7 +23,7 @@ void main() {
     );
 
     scenario('a single-digit sequence exposes its one Digit', () {
-      final parsedDigits = Digits.parse('7');
+      final parsedDigits = Digits.tryParse('7')!;
 
       check(parsedDigits.length).equals(1);
       check(parsedDigits.isEmpty).isFalse();
@@ -31,7 +31,7 @@ void main() {
     });
 
     scenario('an empty sequence has no digits', () {
-      final parsedDigits = Digits.parse('');
+      final parsedDigits = Digits.tryParse('')!;
 
       check(parsedDigits.length).equals(0);
       check(parsedDigits.isEmpty).isTrue();
@@ -39,7 +39,7 @@ void main() {
     });
 
     scenario('indexing and iteration agree', () {
-      final parsedDigits = Digits.parse('905');
+      final parsedDigits = Digits.tryParse('905')!;
 
       check(parsedDigits[0]).equals(Digit.from(9));
       check(parsedDigits[2]).equals(Digit.from(5));
@@ -47,17 +47,17 @@ void main() {
     });
 
     scenario('a Digits is an Iterable of its Digits', () {
-      check(Digits.parse('905').map((digit) => digit.value).toList()).deepEquals([9, 0, 5]);
-      check(Digits.parse('12321').where((digit) => digit == Digit.from(2)).length).equals(2);
+      check(Digits.tryParse('905')!.map((digit) => digit.value).toList()).deepEquals([9, 0, 5]);
+      check(Digits.tryParse('12321')!.where((digit) => digit == Digit.from(2)).length).equals(2);
     });
 
     scenario('equal sequences are equal by value and hash', () {
-      check(Digits.parse('12345')).equals(Digits.parse('12345'));
-      check(Digits.parse('12345').hashCode).equals(Digits.parse('12345').hashCode);
+      check(Digits.tryParse('12345')).equals(Digits.tryParse('12345'));
+      check(Digits.tryParse('12345')!.hashCode).equals(Digits.tryParse('12345')!.hashCode);
     });
 
     scenario('different sequences are not equal', () {
-      check(Digits.parse('12345') == Digits.parse('12346')).isFalse();
+      check(Digits.tryParse('12345') == Digits.tryParse('12346')).isFalse();
     });
 
     scenario('tryFrom accepts in-range values and rejects out-of-range', () {
@@ -70,22 +70,21 @@ void main() {
       check(Digits.of([Digit.from(9), Digit.from(0), Digit.from(5)]).asString).equals('905');
     });
 
-    scenario('Digits.parse throws MintedFormatException, carrying the source', () {
-      check(() => Digits.parse('90x'))
-          .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('90x');
+    scenario('parse reports the failure rather than throwing', () {
+      check(Digits.parse('90x')).equals(const ParseFailure(DigitsFailure.notAllDigits));
     });
 
-    scenario('Digits.from throws MintedFormatException on an out-of-range value', () {
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Digits.tryParse('90x')).isNull();
+      check(Digits.tryParse('905')?.asString).equals('905');
+    });
+
+    scenario('from still throws, because calling it asserts the values are in range', () {
       check(() => Digits.from([9, 10])).throws<MintedFormatException>();
     });
 
-    scenario('both doors report the one failure a digit sequence has', () {
-      check(() => Digits.parse('12a'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(DigitsFailure.notAllDigits);
+    scenario('both doors report the same one failure a digit sequence has', () {
+      check(Digits.parse('12a').reasonOrNull).equals(DigitsFailure.notAllDigits);
       check(() => Digits.from([9, 10]))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')

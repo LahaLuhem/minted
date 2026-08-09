@@ -34,12 +34,12 @@ void main() {
 
     scenario('international and national forms of the same number are equal', () {
       check(
-        PhoneNumber.parse('+33 655 5705 76'),
-      ).equals(PhoneNumber.parse('0 655 5705 76', region: 'FR'));
+        PhoneNumber.tryParse('+33 655 5705 76')!,
+      ).equals(PhoneNumber.tryParse('0 655 5705 76', region: 'FR')!);
     });
 
     scenario('a phone number exposes its country calling code and national number', () {
-      final parsedPhone = PhoneNumber.parse('+33 655 5705 76');
+      final parsedPhone = PhoneNumber.tryParse('+33 655 5705 76')!;
 
       check(parsedPhone.countryCode).equals('33');
       check(parsedPhone.nationalNumber.length).equals(9);
@@ -48,11 +48,11 @@ void main() {
     });
 
     scenario('a French mobile is classified as mobile', () {
-      check(PhoneNumber.parse('+33 655 5705 76').type).equals(PhoneNumberType.mobile);
+      check(PhoneNumber.tryParse('+33 655 5705 76')!.type).equals(PhoneNumberType.mobile);
     });
 
     scenario('a phone number builds a tel: URI', () {
-      check(PhoneNumber.parse('+33 655 5705 76').telUri.toString()).equals('tel:+33655570576');
+      check(PhoneNumber.tryParse('+33 655 5705 76')!.telUri.toString()).equals('tel:+33655570576');
     });
 
     // Only unknownCountryCallingCode comes from the engine: notFound is the one code
@@ -91,35 +91,41 @@ void main() {
           failure: PhoneNumberFailure.invalid,
         ),
       },
-      outline: (example) => check(() => PhoneNumber.parse(example.input, region: example.region))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(example.failure),
+      outline: (example) => check(
+        PhoneNumber.parse(example.input, region: example.region).reasonOrNull,
+      ).equals(example.failure),
     );
 
     scenario('an unknown region is distinguished from an unparseable number', () {
-      check(() => PhoneNumber.parse('0655570576', region: 'ZZ'))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .equals('Invalid PhoneNumber: the region hint is not an ISO 3166-1 alpha-2 code');
+      check(
+        PhoneNumber.parse('0655570576', region: 'ZZ').reasonOrNull?.message,
+      ).equals('the region hint is not an ISO 3166-1 alpha-2 code');
     });
 
-    scenario('PhoneNumber.parse throws MintedFormatException on invalid input', () {
-      check(() => PhoneNumber.parse('not-a-number')).throws<MintedFormatException>();
+    scenario('parse reports the failure rather than throwing', () {
+      check(
+        PhoneNumber.parse('not-a-number'),
+      ).equals(const ParseFailure(PhoneNumberFailure.unknownCountryCallingCode));
+      check(PhoneNumber.parse('+33 655 5705 76').isSuccess).isTrue();
+    });
+
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(PhoneNumber.tryParse('not-a-number')).isNull();
+      check(PhoneNumber.tryParse('+33 655 5705 76')?.value).equals('+33655570576');
     });
 
     scenario('fromComponents assembles the E.164 form from calling code and number', () {
       check(
         PhoneNumber.fromComponents(
           countryCode: '33',
-          nationalNumber: Digits.parse('655570576'),
+          nationalNumber: Digits.tryParse('655570576')!,
         ).value,
       ).equals('+33655570576');
     });
 
     scenario('fromComponents throws MintedFormatException on an invalid number', () {
       check(
-        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.parse('1')),
+        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryParse('1')!),
       ).throws<MintedFormatException>();
     });
 
@@ -128,18 +134,18 @@ void main() {
     });
 
     scenario('type finds a non-mobile classification', () {
-      check(PhoneNumber.parse('+33 1 42 68 53 00').type).equals(PhoneNumberType.fixedLine);
+      check(PhoneNumber.tryParse('+33 1 42 68 53 00')!.type).equals(PhoneNumberType.fixedLine);
     });
 
     scenario('formatNational renders the local display form', () {
-      check(PhoneNumber.parse('+33 6 55 57 05 76').formatNational()).equals('6 55 57 05 76');
+      check(PhoneNumber.tryParse('+33 6 55 57 05 76')!.formatNational()).equals('6 55 57 05 76');
     });
 
-    scenario('parse error carries the offending input as its source', () {
-      check(() => PhoneNumber.parse('nope'))
+    scenario('an assembly failure carries the assembled number as its source', () {
+      check(() => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.from([1])))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
-          .equals('nope');
+          .equals('+331');
     });
   });
 }

@@ -4,6 +4,7 @@
 library;
 
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/digit_failure.dart';
 
 /// A single decimal digit, `0`-`9`.
@@ -18,18 +19,18 @@ import 'failures/digit_failure.dart';
 extension type const Digit._(int value) {
   /// Parses [input] as a single decimal digit, or returns `null` unless it is
   /// exactly one character in `0`-`9`.
-  static Digit? tryParse(String input) {
-    if (input.length != 1) return null;
+  static Digit? tryParse(String input) => parse(input).getOrNull();
 
-    final parsedValue = int.tryParse(input);
+  /// Parses [input] as a single decimal digit, reporting [DigitFailure] unless
+  /// it is exactly one character in `0`-`9`.
+  static ParseOutcome<DigitFailure, Digit> parse(String input) {
+    final parsedValue = input.length != 1 ? null : int.tryParse(input);
+    final parsedDigit = parsedValue == null ? null : tryFrom(parsedValue);
 
-    return parsedValue == null ? null : tryFrom(parsedValue);
+    return parsedDigit == null
+        ? const ParseFailure(DigitFailure.notADigit)
+        : ParseSuccess(parsedDigit);
   }
-
-  /// Parses [input] as a single decimal digit, throwing [MintedFormatException]
-  /// unless it is exactly one character in `0`-`9`.
-  static Digit parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(DigitFailure.notADigit, input));
 
   /// The [Digit] with numeric [value], or `null` unless it is in `0`-`9`.
   static Digit? tryFrom(int value) => value >= 0 && value < _radix ? ._(value) : null;
