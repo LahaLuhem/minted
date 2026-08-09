@@ -22,8 +22,8 @@ void main() {
 
     scenario('from carries the typed failure, so a caller can switch on the cause', () {
       check(
-        MintedFormatException.from(IbanFailure.invalid, 'x').failure,
-      ).equals(IbanFailure.invalid);
+        MintedFormatException.from(const IbanChecksumFailed(), 'x').failure,
+      ).equals(const IbanChecksumFailed());
     });
 
     scenario('it extends FormatException, so on FormatException catches parse failures', () {

@@ -89,10 +89,7 @@ extension type const Month._(int value) {
   static const _leapCenturyDivisor = 400;
 }
 
-/// Why a [Month] refused its input.
-///
-/// One variant: a month is a closed set of twelve, so "outside the set" is the whole story, and
-/// both doors ([Month.tryParse] from text, [Month.from] from a number) share the remedy.
+/// Why a [Month] refused its input. One variant: a closed set of twelve has one way to miss.
 enum MonthFailure implements MintedFailure {
   /// The input does not name a month in `1`-`12`.
   notAMonth('not a month number 1-12');

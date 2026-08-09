@@ -55,11 +55,8 @@ extension type const Email._(String value) {
   Uri get mailtoUri => Uri(scheme: 'mailto', path: value);
 }
 
-/// Why an [Email] refused its input.
-///
-/// One variant, and that is the honest ceiling rather than a shortcut: `email_validator` exposes a
-/// single `bool`, so the package cannot tell a bad domain from a bad local-part without
-/// re-implementing RFC 5322. A guessed diagnosis would be worse than none.
+/// Why an [Email] refused its input. One variant, and that is the ceiling, not a shortcut:
+/// `email_validator` exposes a single `bool`, so a finer diagnosis would be a guess.
 enum EmailFailure implements MintedFailure {
   /// The input is not a well-formed RFC 5322 address.
   malformed('not a well-formed email address');

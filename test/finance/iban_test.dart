@@ -57,15 +57,46 @@ void main() {
       check(Iban.parse('GB29NWBK60161331926819').formatted).equals('GB29 NWBK 6016 1331 9268 19');
     });
 
-    scenario('every door reports the one failure the type distinguishes so far', () {
-      check(() => Iban.parse('GB29NWBK60161331926818'))
+    scenarioOutline<({String input, IbanFailure failure})>(
+      'parse reports which check the input failed',
+      examples: {
+        'empty input cannot identify a country yet': (input: '', failure: const IbanTooShort()),
+        'under four characters is still too short': (input: 'GB', failure: const IbanTooShort()),
+        'a stray separator is not an IBAN character': (
+          input: 'GB29-NWBK60161331926819',
+          failure: const IbanInvalidCharacters(),
+        ),
+        'an unregistered country is unsupported, not mistyped': (
+          input: 'ZZ29NWBK60161331926819',
+          failure: const IbanUnknownCountry('ZZ'),
+        ),
+        'a known country fixes the length': (
+          input: 'GB29NWBK6016133192681',
+          failure: const IbanInvalidLength(expected: 22, actual: 21),
+        ),
+        'a corrupted final digit fails mod-97': (
+          input: 'GB29NWBK60161331926818',
+          failure: const IbanChecksumFailed(),
+        ),
+      },
+      outline: (example) => check(() => Iban.parse(example.input))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
-          .equals(IbanFailure.invalid);
+          .equals(example.failure),
+    );
+
+    scenario('fromComponents reports the same vocabulary as parse', () {
       check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
-          .equals(IbanFailure.invalid);
+          .equals(const IbanInvalidLength(expected: 22, actual: 12));
+    });
+
+    scenario('the length failure names the length the country requires', () {
+      check(() => Iban.parse('GB29NWBK6016133192681'))
+          .throws<MintedFormatException>()
+          .has((error) => error.message, 'message')
+          .equals('Invalid Iban: expected 22 characters for this country, got 21');
     });
 
     scenario('Iban.parse throws MintedFormatException on a bad checksum', () {

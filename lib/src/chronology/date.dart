@@ -163,13 +163,8 @@ final class Date implements Comparable<Date> {
   static const _padChar = '0';
 }
 
-/// Why a [Date] refused its input.
-///
-/// Sealed rather than an enum because three of the four variants report the offending number back,
-/// and [DateDayOutOfRange] reports a bound that depends on the month and the year.
-///
-/// Two kinds of remedy, which is why the shape check and the range checks are separate variants:
-/// [DateNotIso8601] means fix the format, the rest mean fix a number.
+/// Why a [Date] refused its input. Sealed, not an enum, because the variants report the offending
+/// number back. Two remedies: [DateNotIso8601] means fix the format, the rest mean fix a number.
 @immutable
 sealed class DateFailure implements MintedFailure {
   const DateFailure();
@@ -178,10 +173,9 @@ sealed class DateFailure implements MintedFailure {
   String get typeName => 'Date';
 }
 
-/// The text is not the ISO 8601 `YYYY-MM-DD` shape: a four-digit year, then a zero-padded
-/// two-digit month and day, hyphen-separated.
+/// The text is not the ISO 8601 `YYYY-MM-DD` shape.
 final class DateNotIso8601 extends DateFailure {
-  /// The failure [Date.parse] reports for text that never had the right shape.
+  /// The failure [Date.parse] reports for text of the wrong shape.
   const DateNotIso8601();
 
   @override
@@ -239,11 +233,8 @@ final class DateMonthOutOfRange extends DateFailure {
   String toString() => 'DateMonthOutOfRange($month)';
 }
 
-/// The day falls outside `1`-[maxDay], the length of that month in that year.
-///
-/// The bound is leap-year aware, so 29 February is out of range in a common year and in range in
-/// a leap year. Both [year] and [month] are carried so the message can name the month the bound
-/// belongs to.
+/// The day falls outside `1`-[maxDay]. The bound is leap-year aware, so 29 February is out of
+/// range in a common year and in range in a leap one.
 final class DateDayOutOfRange extends DateFailure {
   /// The year the day was given for.
   final int year;
@@ -257,7 +248,7 @@ final class DateDayOutOfRange extends DateFailure {
   /// The last day of [month] in [year], leap-year aware.
   final int maxDay;
 
-  /// The failure reported for [day], which is outside `1`-[maxDay] for that year and month.
+  /// The failure reported for a [day] outside `1`-[maxDay].
   const DateDayOutOfRange({
     required this.year,
     required this.month,

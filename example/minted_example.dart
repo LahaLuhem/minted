@@ -47,7 +47,18 @@ void main() {
   try {
     Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   } on MintedFormatException catch (ex) {
-    print(ex.message); // Invalid Iban: failed the structure, country, length, or mod-97 check
-    print(ex.failure); // IbanFailure.invalid — switch on this to write your own wording
+    print(ex.message); // Invalid Iban: failed the mod-97 check
+    print(ex.failure); // IbanChecksumFailed() — switch on this to write your own wording
+  }
+
+  // The failure says which check failed, so a UI can tell "mistyped" from "unsupported".
+  try {
+    Iban.parse('ZZ29NWBK60161331926819'); // no such IBAN country
+  } on MintedFormatException catch (ex) {
+    print(switch (ex.failure) {
+      IbanChecksumFailed() => 'Check the digits, one looks mistyped',
+      IbanUnknownCountry(:final countryCode) => 'We do not support IBANs from $countryCode',
+      _ => 'That does not look like an IBAN',
+    });
   }
 }
