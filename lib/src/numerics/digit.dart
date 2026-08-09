@@ -42,11 +42,7 @@ extension type const Digit._(int value) {
   static const _radix = 10;
 }
 
-/// Why a [Digit] refused its input.
-///
-/// One variant, because a digit is a one-character grammar: there is a single way to not be one,
-/// and both doors ([Digit.tryParse] from text, [Digit.from] from a number) leave the caller the
-/// same remedy.
+/// Why a [Digit] refused its input. One variant: a one-character grammar has one way to fail.
 enum DigitFailure implements MintedFailure {
   /// The input is not a decimal digit `0`-`9`.
   notADigit('not a decimal digit 0-9');

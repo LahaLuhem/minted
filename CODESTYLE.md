@@ -146,7 +146,7 @@ consumer learns one shape and applies it everywhere. Rationale is in
 
     /// throws [MintedFormatException] when [input] is invalid.
     static Iban parse(String input) =>
-        tryParse(input) ?? (throw MintedFormatException.from(IbanFailure.invalid, input));
+        tryParse(input) ?? (throw MintedFormatException.from(const IbanChecksumFailed(), input));
 
     String get countryCode => value.substring(0, 2);
     // … further sub-part getters and render helpers …
@@ -354,7 +354,13 @@ experimental feature and are not used (see [`APPENDIX.md#sdk-floor`](./APPENDIX.
 
 Public symbols carry `///` dartdoc that explains *why* and *what guarantee*, not the mechanical
 *what*: the type already says that. `public_member_api_docs` is on (see
-[hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)). For every type, document its
+[hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)).
+
+**One or two lines.** This is a limit, not a preference, and it binds dartdoc as hard as inline
+comments: `public_member_api_docs` decides that a doc *exists*, never how long it runs. A point
+needing a paragraph is rationale, so put it in [`APPENDIX.md`](./APPENDIX.md) and leave a one-line
+pointer to its anchor. Every surplus line is noise the next reader pays for, and it buries the one
+comment that mattered. Trim the neighbours whenever you edit a file. For every type, document its
 normalisation and **link** the standard it enforces (with the clause or edition where it helps),
 preferring a freely-readable URL (an RFC); where the standard is paywalled (ISO), link a reliable
 free reference. The link lives in the dartdoc, which renders on pub.dev and travels with the type,

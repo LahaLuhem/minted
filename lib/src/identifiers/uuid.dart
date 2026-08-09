@@ -148,10 +148,8 @@ extension type const Uuid._(String value) {
   static const _futureVariantFloor = 0xe;
 }
 
-/// Why a [Uuid] refused its input.
-///
-/// Sealed rather than an enum because [UuidWrongByteCount] reports the count it was handed, which
-/// is only known per call.
+/// Why a [Uuid] refused its input. Sealed, not an enum, because [UuidWrongByteCount] reports a
+/// count known only per call.
 @immutable
 sealed class UuidFailure implements MintedFailure {
   const UuidFailure();
@@ -160,9 +158,9 @@ sealed class UuidFailure implements MintedFailure {
   String get typeName => 'Uuid';
 }
 
-/// The text is not a UUID: it is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
+/// The text is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
 final class UuidMalformed extends UuidFailure {
-  /// The failure [Uuid.tryParse] and [Uuid.parse] report for unrecognisable text.
+  /// The failure [Uuid.parse] reports for unrecognisable text.
   const UuidMalformed();
 
   @override
@@ -178,13 +176,13 @@ final class UuidMalformed extends UuidFailure {
   String toString() => 'UuidMalformed()';
 }
 
-/// [Uuid.fromBytes] was handed something other than 16 bytes. Every 16-byte sequence is a valid
-/// UUID, so the length is the only thing it can reject.
+/// [Uuid.fromBytes] got other than 16 bytes. Every 16-byte sequence is a valid UUID, so length is
+/// all it can reject.
 final class UuidWrongByteCount extends UuidFailure {
   /// The byte count a UUID always has, `16`.
   final int expected;
 
-  /// How many bytes were actually supplied.
+  /// How many bytes were supplied.
   final int actual;
 
   /// The failure [Uuid.fromBytes] reports, carrying both counts.

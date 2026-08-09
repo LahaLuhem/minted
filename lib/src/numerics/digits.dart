@@ -81,11 +81,8 @@ final class Digits extends Iterable<Digit> {
   static const _radix = 10;
 }
 
-/// Why a [Digits] sequence refused its input.
-///
-/// One variant: the remedy is the same whichever element offended and whichever door it came
-/// through ([Digits.tryParse] from text, [Digits.from] from numbers), so pinpointing the offender
-/// would not change what the caller does next.
+/// Why a [Digits] sequence refused its input. One variant: naming which element offended would
+/// not change the remedy.
 enum DigitsFailure implements MintedFailure {
   /// Something in the input is not a decimal digit `0`-`9`.
   notAllDigits('not all decimal digits 0-9');

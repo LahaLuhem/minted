@@ -1,28 +1,18 @@
 /// @docImport 'minted_format_exception.dart';
 library;
 
-/// Why a `minted` value type refused to parse its input.
+/// Why a `minted` value type refused its input.
 ///
-/// Every value type declares its own failure type implementing this one, so the vocabulary matches
-/// what its standard can actually distinguish: a grammar has one way to fail, while a checksum plus
-/// a registry has several. Switch on that per-type failure for user-facing text; this supertype is
-/// the generic handle, for code that works across value types (a form validator, a logger) and has
-/// nothing to switch on.
-///
-/// Deliberately not `sealed`: a sealed supertype would force every failure type into this one file
-/// and rule out the enum half of the family. Cross-type exhaustiveness was never the goal, and
-/// exhaustive switching works per type for enums and sealed classes alike.
+/// Each value type declares its own failure vocabulary implementing this, sized to what its
+/// standard can distinguish; switch on that for user-facing text. This supertype is the generic
+/// handle, for code spanning value types.
 abstract interface class MintedFailure {
-  /// The value type that refused the input, e.g. `'Iban'`.
-  ///
-  /// An explicit string rather than a `<T>`, because the value types are extension types: they
-  /// erase to their representation at runtime, so `'$T'` would render `String`, not `Iban`.
+  /// The value type that refused the input, e.g. `'Iban'`. An explicit string, not a `<T>`,
+  /// because extension types erase to their representation at runtime.
   String get typeName;
 
-  /// What went wrong, e.g. `'failed the mod-97 check'`, for logs and debugging.
+  /// What went wrong, e.g. `'failed the mod-97 check'`, for logs.
   ///
-  /// Never names its own type: [MintedFormatException] renders `'Invalid $typeName: $message'`, so
-  /// a message naming its type would stutter into `Invalid Iban: not a valid Iban`. For text shown
-  /// to a user, switch on the failure itself and write the wording (and the translation) there.
+  /// Never names its own type: [MintedFormatException] already prefixes `Invalid <typeName>:`.
   String get message;
 }
