@@ -90,11 +90,47 @@ void main() {
           .equals(const DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29));
     });
 
-    scenario('parse reports a shape failure, a different remedy from a bad part', () {
-      check(() => Date.parse('07/07/2026'))
+    // Both remedies from one door: fix the format, or fix a number. DateYearOutOfRange is absent
+    // deliberately, being unreachable here (a four-digit group can't leave 0000-9999); the factory
+    // covers it.
+    scenarioOutline<({String input, DateFailure failure})>(
+      'parse reports the part that is wrong, not just the shape',
+      examples: {
+        'slashes never had the shape': (input: '07/07/2026', failure: const DateNotIso8601()),
+        'an unpadded month never had the shape': (
+          input: '2026-7-07',
+          failure: const DateNotIso8601(),
+        ),
+        'a thirteenth month': (input: '2026-13-01', failure: const DateMonthOutOfRange(13)),
+        'month zero': (input: '2026-00-10', failure: const DateMonthOutOfRange(0)),
+        'the 30th of February': (
+          input: '2026-02-30',
+          failure: const DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
+        ),
+        'a leap day in a common year': (
+          input: '2026-02-29',
+          failure: const DateDayOutOfRange(year: 2026, month: 2, day: 29, maxDay: 28),
+        ),
+        'the same day in a leap year moves the bound, not the verdict': (
+          input: '2024-02-30',
+          failure: const DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29),
+        ),
+        'day 31 of a 30-day month': (
+          input: '2026-04-31',
+          failure: const DateDayOutOfRange(year: 2026, month: 4, day: 31, maxDay: 30),
+        ),
+      },
+      outline: (example) => check(() => Date.parse(example.input))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
-          .equals(const DateNotIso8601());
+          .equals(example.failure),
+    );
+
+    scenario('the message parse renders names the offending part', () {
+      check(() => Date.parse('2026-02-30'))
+          .throws<MintedFormatException>()
+          .has((error) => error.message, 'message')
+          .equals('Invalid Date: day 30 is outside 1-28 for 2026-02');
     });
 
     scenario('the factory throws MintedFormatException naming the bad part', () {

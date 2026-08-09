@@ -50,20 +50,15 @@ final class Date implements Comparable<Date> {
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, or returns `null` unless it is exactly
   /// that shape (four-digit year, zero-padded two-digit month and day) and a real date.
   static Date? tryParse(String input) {
-    final match = _iso8601.firstMatch(input);
-    if (match == null) return null;
+    final parts = _partsOf(input);
 
-    return _tryFromParts(
-      int.parse(match.group(1)!),
-      int.parse(match.group(2)!),
-      int.parse(match.group(3)!),
-    );
+    return parts == null ? null : _tryFromParts(parts.year, parts.month, parts.day);
   }
 
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, throwing [MintedFormatException]
-  /// unless it is exactly that shape and a real date.
+  /// carrying the [DateFailure] that says whether the shape or one of the parts is wrong.
   static Date parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(const DateNotIso8601(), input));
+      tryParse(input) ?? (throw MintedFormatException.from(_failureFor(input), input));
 
   /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
   String get iso8601 =>
@@ -131,6 +126,18 @@ final class Date implements Comparable<Date> {
   // differenceInDays can't be skewed by a daylight-saving transition the way a local day can.
   DateTime get _utcMidnight => DateTime.utc(year, month.value, day);
 
+  // The parts of an ISO 8601 YYYY-MM-DD string, or null when the input isn't that shape.
+  static ({int year, int month, int day})? _partsOf(String input) {
+    final match = _iso8601.firstMatch(input);
+    if (match == null) return null;
+
+    return (
+      year: int.parse(match.group(1)!),
+      month: int.parse(match.group(2)!),
+      day: int.parse(match.group(3)!),
+    );
+  }
+
   // The [Date] for these parts, or null when they don't form a real calendar date. The single
   // validation gate that parse, the factory, and fromDateTime all funnel through.
   static Date? _tryFromParts(int year, int month, int day) {
@@ -140,6 +147,15 @@ final class Date implements Comparable<Date> {
     final wellFormed = year >= 0 && year <= _maxYear && day >= 1 && day <= monthType.daysIn(year);
 
     return wellFormed ? Date._(year, monthType, day) : null;
+  }
+
+  // Why text is not a date: the shape, or else whichever part is out of range. Reached only after
+  // tryParse returns null, so the parts having matched means _tryFromParts rejected them.
+  static DateFailure _failureFor(String input) {
+    final parts = _partsOf(input);
+    if (parts == null) return const DateNotIso8601();
+
+    return _partsFailure(parts.year, parts.month, parts.day);
   }
 
   // Which part of the given date is out of range. Reached only after _tryFromParts returns null,
