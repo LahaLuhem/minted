@@ -19,4 +19,5 @@ export 'src/finance/iban.dart';
 export 'src/identifiers/uuid.dart';
 export 'src/numerics/digit.dart';
 export 'src/numerics/digits.dart';
+export 'src/shared/minted_failure.dart';
 export 'src/shared/minted_format_exception.dart';

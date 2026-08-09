@@ -116,7 +116,9 @@ Learn one type and you've learned them all. Each one gives you:
 
 - `Type.tryParse(input)` returns the value, or `null` when the input isn't valid
 - `Type.parse(input)` returns the value, or throws `MintedFormatException` (it extends
-  `FormatException`, so your existing `on FormatException` handlers still catch it)
+  `FormatException`, so your existing `on FormatException` handlers still catch it). It carries a
+  typed `failure` from that type's own vocabulary (`IbanFailure`, `DateFailure`, …), so you can
+  `switch` on the cause instead of matching on a message string
 - **value equality**: `a == b` compares content, not identity
 - a **canonical form** to read back (`.value` on most types, `.asString` on `Digits`), normalised on
   parse so equal values really are equal

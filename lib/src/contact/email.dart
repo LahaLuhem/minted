@@ -3,6 +3,7 @@
 
 import 'package:email_validator/email_validator.dart';
 
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 
 /// An email address, validated against the RFC 5322 grammar (via
@@ -41,8 +42,7 @@ extension type const Email._(String value) {
   /// Parses [input] as an email address, throwing [MintedFormatException] when
   /// it is not well-formed.
   static Email parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of('Email', input, 'not a well-formed email address'));
+      tryParse(input) ?? (throw MintedFormatException.from(EmailFailure.malformed, input));
 
   /// The local-part, before the last `@` (the mailbox name, often a username).
   /// Case is preserved from the input.
@@ -53,4 +53,22 @@ extension type const Email._(String value) {
 
   /// A `mailto:` URI addressing this email.
   Uri get mailtoUri => Uri(scheme: 'mailto', path: value);
+}
+
+/// Why an [Email] refused its input.
+///
+/// One variant, and that is the honest ceiling rather than a shortcut: `email_validator` exposes a
+/// single `bool`, so the package cannot tell a bad domain from a bad local-part without
+/// re-implementing RFC 5322. A guessed diagnosis would be worse than none.
+enum EmailFailure implements MintedFailure {
+  /// The input is not a well-formed RFC 5322 address.
+  malformed('not a well-formed email address');
+
+  const EmailFailure(this.message);
+
+  @override
+  final String message;
+
+  @override
+  String get typeName => 'Email';
 }

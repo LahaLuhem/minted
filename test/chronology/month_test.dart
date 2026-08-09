@@ -72,6 +72,17 @@ void main() {
           .equals('13');
     });
 
+    scenario('both doors report the one failure a month has', () {
+      check(() => Month.parse('13'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(MonthFailure.notAMonth);
+      check(() => Month.from(13))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(MonthFailure.notAMonth);
+    });
+
     scenario('Month.from throws MintedFormatException on an out-of-range number', () {
       check(() => Month.from(0)).throws<MintedFormatException>();
       check(() => Month.from(13)).throws<MintedFormatException>();

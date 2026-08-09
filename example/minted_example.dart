@@ -47,6 +47,7 @@ void main() {
   try {
     Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   } on MintedFormatException catch (ex) {
-    print(ex.message); // Invalid Iban: failed IBAN structure or mod-97 check
+    print(ex.message); // Invalid Iban: failed the structure, country, length, or mod-97 check
+    print(ex.failure); // IbanFailure.invalid — switch on this to write your own wording
   }
 }

@@ -60,6 +60,18 @@ void main() {
       ).equals('mailto:jane.doe@example.com');
     });
 
+    scenario('every door reports the one failure the engine can distinguish', () {
+      // email_validator exposes a single bool, so a finer diagnosis would be a guess.
+      check(() => Email.parse('nope'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(EmailFailure.malformed);
+      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(EmailFailure.malformed);
+    });
+
     scenario('Email.parse throws MintedFormatException on malformed input', () {
       check(() => Email.parse('nope')).throws<MintedFormatException>();
     });

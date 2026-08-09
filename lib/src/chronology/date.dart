@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 import 'month.dart';
 
@@ -36,7 +37,7 @@ final class Date implements Comparable<Date> {
   /// rather than silently becoming 2027-01-01.
   factory Date(int year, [int month = 1, int day = 1]) =>
       _tryFromParts(year, month, day) ??
-      (throw MintedFormatException.of('Date', '$year-$month-$day', _partsReason(year, month, day)));
+      (throw MintedFormatException.from(_partsFailure(year, month, day), '$year-$month-$day'));
 
   const Date._(this.year, this.month, this.day);
 
@@ -62,8 +63,7 @@ final class Date implements Comparable<Date> {
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, throwing [MintedFormatException]
   /// unless it is exactly that shape and a real date.
   static Date parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of('Date', input, 'not an ISO 8601 YYYY-MM-DD calendar date'));
+      tryParse(input) ?? (throw MintedFormatException.from(const DateNotIso8601(), input));
 
   /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
   String get iso8601 =>
@@ -142,16 +142,15 @@ final class Date implements Comparable<Date> {
     return wellFormed ? Date._(year, monthType, day) : null;
   }
 
-  // Why the given parts are not a valid date, for the exception message.
-  // Reached only after _tryFromParts returns null, so exactly one of these conditions holds.
-  static String _partsReason(int year, int month, int day) {
-    if (year < 0 || year > _maxYear) return 'year $year is outside 0000-9999';
+  // Which part of the given date is out of range. Reached only after _tryFromParts returns null,
+  // so exactly one of these conditions holds.
+  static DateFailure _partsFailure(int year, int month, int day) {
+    if (year < 0 || year > _maxYear) return DateYearOutOfRange(year);
 
     final monthType = Month.tryFrom(month);
-    if (monthType == null) return 'month $month is outside 1-12';
+    if (monthType == null) return DateMonthOutOfRange(month);
 
-    return 'day $day is outside 1-${monthType.daysIn(year)} for '
-        '${_pad(year, _yearWidth)}-${_pad(month, _fieldWidth)}';
+    return DateDayOutOfRange(year: year, month: month, day: day, maxDay: monthType.daysIn(year));
   }
 
   static String _pad(int value, int width) => value.toString().padLeft(width, _padChar);
@@ -162,4 +161,126 @@ final class Date implements Comparable<Date> {
   static const _yearWidth = 4;
   static const _fieldWidth = 2;
   static const _padChar = '0';
+}
+
+/// Why a [Date] refused its input.
+///
+/// Sealed rather than an enum because three of the four variants report the offending number back,
+/// and [DateDayOutOfRange] reports a bound that depends on the month and the year.
+///
+/// Two kinds of remedy, which is why the shape check and the range checks are separate variants:
+/// [DateNotIso8601] means fix the format, the rest mean fix a number.
+@immutable
+sealed class DateFailure implements MintedFailure {
+  const DateFailure();
+
+  @override
+  String get typeName => 'Date';
+}
+
+/// The text is not the ISO 8601 `YYYY-MM-DD` shape: a four-digit year, then a zero-padded
+/// two-digit month and day, hyphen-separated.
+final class DateNotIso8601 extends DateFailure {
+  /// The failure [Date.parse] reports for text that never had the right shape.
+  const DateNotIso8601();
+
+  @override
+  String get message => 'not an ISO 8601 YYYY-MM-DD calendar date';
+
+  @override
+  bool operator ==(Object other) => other is DateNotIso8601;
+
+  @override
+  int get hashCode => (DateNotIso8601).hashCode;
+
+  @override
+  String toString() => 'DateNotIso8601()';
+}
+
+/// The year falls outside `0000`-`9999`, the range a [Date] can hold.
+final class DateYearOutOfRange extends DateFailure {
+  /// The offending year.
+  final int year;
+
+  /// The failure reported for [year], which is outside `0000`-`9999`.
+  const DateYearOutOfRange(this.year);
+
+  @override
+  String get message => 'year $year is outside 0000-9999';
+
+  @override
+  bool operator ==(Object other) => other is DateYearOutOfRange && other.year == year;
+
+  @override
+  int get hashCode => Object.hash(DateYearOutOfRange, year);
+
+  @override
+  String toString() => 'DateYearOutOfRange($year)';
+}
+
+/// The month falls outside `1`-`12`.
+final class DateMonthOutOfRange extends DateFailure {
+  /// The offending month number.
+  final int month;
+
+  /// The failure reported for [month], which is outside `1`-`12`.
+  const DateMonthOutOfRange(this.month);
+
+  @override
+  String get message => 'month $month is outside 1-12';
+
+  @override
+  bool operator ==(Object other) => other is DateMonthOutOfRange && other.month == month;
+
+  @override
+  int get hashCode => Object.hash(DateMonthOutOfRange, month);
+
+  @override
+  String toString() => 'DateMonthOutOfRange($month)';
+}
+
+/// The day falls outside `1`-[maxDay], the length of that month in that year.
+///
+/// The bound is leap-year aware, so 29 February is out of range in a common year and in range in
+/// a leap year. Both [year] and [month] are carried so the message can name the month the bound
+/// belongs to.
+final class DateDayOutOfRange extends DateFailure {
+  /// The year the day was given for.
+  final int year;
+
+  /// The month number the day was given for.
+  final int month;
+
+  /// The offending day.
+  final int day;
+
+  /// The last day of [month] in [year], leap-year aware.
+  final int maxDay;
+
+  /// The failure reported for [day], which is outside `1`-[maxDay] for that year and month.
+  const DateDayOutOfRange({
+    required this.year,
+    required this.month,
+    required this.day,
+    required this.maxDay,
+  });
+
+  @override
+  String get message =>
+      'day $day is outside 1-$maxDay for '
+      '${Date._pad(year, Date._yearWidth)}-${Date._pad(month, Date._fieldWidth)}';
+
+  @override
+  bool operator ==(Object other) =>
+      other is DateDayOutOfRange &&
+      other.year == year &&
+      other.month == month &&
+      other.day == day &&
+      other.maxDay == maxDay;
+
+  @override
+  int get hashCode => Object.hash(year, month, day, maxDay);
+
+  @override
+  String toString() => 'DateDayOutOfRange(year: $year, month: $month, day: $day, maxDay: $maxDay)';
 }

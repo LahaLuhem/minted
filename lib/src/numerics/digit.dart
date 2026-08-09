@@ -3,6 +3,7 @@
 /// @docImport 'digits.dart';
 library;
 
+import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
 
 /// A single decimal digit, `0`-`9`.
@@ -28,8 +29,7 @@ extension type const Digit._(int value) {
   /// Parses [input] as a single decimal digit, throwing [MintedFormatException]
   /// unless it is exactly one character in `0`-`9`.
   static Digit parse(String input) =>
-      tryParse(input) ??
-      (throw MintedFormatException.of('Digit', input, 'not a single decimal digit'));
+      tryParse(input) ?? (throw MintedFormatException.from(DigitFailure.notADigit, input));
 
   /// The [Digit] with numeric [value], or `null` unless it is in `0`-`9`.
   static Digit? tryFrom(int value) => value >= 0 && value < _radix ? ._(value) : null;
@@ -37,7 +37,25 @@ extension type const Digit._(int value) {
   /// The [Digit] with numeric [value], throwing [MintedFormatException] unless
   /// it is in `0`-`9`.
   static Digit from(int value) =>
-      tryFrom(value) ?? (throw MintedFormatException.of('Digit', '$value', 'not a digit in 0-9'));
+      tryFrom(value) ?? (throw MintedFormatException.from(DigitFailure.notADigit, '$value'));
 
   static const _radix = 10;
+}
+
+/// Why a [Digit] refused its input.
+///
+/// One variant, because a digit is a one-character grammar: there is a single way to not be one,
+/// and both doors ([Digit.tryParse] from text, [Digit.from] from a number) leave the caller the
+/// same remedy.
+enum DigitFailure implements MintedFailure {
+  /// The input is not a decimal digit `0`-`9`.
+  notADigit('not a decimal digit 0-9');
+
+  const DigitFailure(this.message);
+
+  @override
+  final String message;
+
+  @override
+  String get typeName => 'Digit';
 }
