@@ -1,8 +1,8 @@
 /// @docImport 'date.dart';
 library;
 
-import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
+import 'failures/month_failure.dart';
 
 /// A month of the year, `1` (January) to `12` (December).
 ///
@@ -17,11 +17,8 @@ import '../shared/minted_format_exception.dart';
 extension type const Month._(int value) {
   /// Parses [input] as a month number `1`-`12` (`'7'` or `'07'`), or returns `null` unless it is
   /// one or two digits naming a month in range.
-  static Month? tryParse(String input) {
-    if (!_digits.hasMatch(input)) return null;
-
-    return tryFrom(int.parse(input));
-  }
+  static Month? tryParse(String input) =>
+      !_digits.hasMatch(input) ? null : tryFrom(int.parse(input));
 
   /// Parses [input] as a month number `1`-`12`, throwing [MintedFormatException] unless it is one
   /// or two digits naming a month in range.
@@ -87,18 +84,4 @@ extension type const Month._(int value) {
   static const _leapDivisor = 4;
   static const _centuryDivisor = 100;
   static const _leapCenturyDivisor = 400;
-}
-
-/// Why a [Month] refused its input. One variant: a closed set of twelve has one way to miss.
-enum MonthFailure implements MintedFailure {
-  /// The input does not name a month in `1`-`12`.
-  notAMonth('not a month number 1-12');
-
-  const MonthFailure(this.message);
-
-  @override
-  final String message;
-
-  @override
-  String get typeName => 'Month';
 }

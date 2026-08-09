@@ -3,10 +3,8 @@
 
 import 'dart:typed_data';
 
-import 'package:meta/meta.dart';
-
-import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
+import 'failures/uuid_failure.dart';
 
 /// A UUID (Universally Unique IDentifier): 128 bits in the canonical `8-4-4-4-12` hex form, e.g.
 /// `f81d4fae-7dec-11d0-a765-00a0c91e6bf6`.
@@ -44,20 +42,18 @@ extension type const Uuid._(String value) {
   /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), throwing
   /// [MintedFormatException] unless there are exactly 16. Every 16-byte sequence is a valid UUID,
   /// so this only rejects the wrong length. The inverse of [bytes].
-  static Uuid fromBytes(Uint8List bytes) {
-    if (bytes.length != _byteCount) {
-      throw MintedFormatException.from(
-        UuidWrongByteCount(expected: _byteCount, actual: bytes.length),
-        '$bytes',
-      );
-    }
-
-    final hex = bytes
-        .map((byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, _padChar))
-        .join();
-
-    return parse(_hyphenate(hex));
-  }
+  static Uuid fromBytes(Uint8List bytes) => bytes.length != _byteCount
+      ? throw MintedFormatException.from(
+          UuidWrongByteCount(expected: _byteCount, actual: bytes.length),
+          '$bytes',
+        )
+      : parse(
+          _hyphenate(
+            bytes
+                .map((byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, _padChar))
+                .join(),
+          ),
+        );
 
   /// The UUID version, `0`-`15`: the 4-bit version field (the first hex digit of the third group).
   ///
@@ -109,9 +105,7 @@ extension type const Uuid._(String value) {
 
   // Strips an optional `urn:uuid:` prefix or a surrounding `{…}` from the already-lowercased input.
   static String _unwrap(String lowerInput) {
-    if (lowerInput.startsWith(_urnPrefix)) {
-      return lowerInput.substring(_urnPrefix.length);
-    }
+    if (lowerInput.startsWith(_urnPrefix)) return lowerInput.substring(_urnPrefix.length);
     if (lowerInput.startsWith(_braceOpen) && lowerInput.endsWith(_braceClose)) {
       return lowerInput.substring(_braceOpen.length, lowerInput.length - _braceClose.length);
     }
@@ -146,60 +140,6 @@ extension type const Uuid._(String value) {
   static const _rfc9562VariantFloor = 0x8;
   static const _microsoftVariantFloor = 0xc;
   static const _futureVariantFloor = 0xe;
-}
-
-/// Why a [Uuid] refused its input. Sealed, not an enum, because [UuidWrongByteCount] reports a
-/// count known only per call.
-@immutable
-sealed class UuidFailure implements MintedFailure {
-  const UuidFailure();
-
-  @override
-  String get typeName => 'Uuid';
-}
-
-/// The text is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
-final class UuidMalformed extends UuidFailure {
-  /// The failure [Uuid.parse] reports for unrecognisable text.
-  const UuidMalformed();
-
-  @override
-  String get message => 'not a well-formed UUID (expected 8-4-4-4-12 hex)';
-
-  @override
-  bool operator ==(Object other) => other is UuidMalformed;
-
-  @override
-  int get hashCode => (UuidMalformed).hashCode;
-
-  @override
-  String toString() => 'UuidMalformed()';
-}
-
-/// [Uuid.fromBytes] got other than 16 bytes. Every 16-byte sequence is a valid UUID, so length is
-/// all it can reject.
-final class UuidWrongByteCount extends UuidFailure {
-  /// The byte count a UUID always has, `16`.
-  final int expected;
-
-  /// How many bytes were supplied.
-  final int actual;
-
-  /// The failure [Uuid.fromBytes] reports, carrying both counts.
-  const UuidWrongByteCount({required this.expected, required this.actual});
-
-  @override
-  String get message => 'expected $expected bytes, got $actual';
-
-  @override
-  bool operator ==(Object other) =>
-      other is UuidWrongByteCount && other.expected == expected && other.actual == actual;
-
-  @override
-  int get hashCode => Object.hash(expected, actual);
-
-  @override
-  String toString() => 'UuidWrongByteCount(expected: $expected, actual: $actual)';
 }
 
 /// The variant of a [Uuid]: which layout family it belongs to, named by the variant bits (the first

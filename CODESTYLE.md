@@ -323,8 +323,10 @@ and `Uuid.fromBytes` (both reduce to a `String`) use the lazy pipeline.
 
 Legitimate uses: sealed-class cases across files (Dart requires the same library for sealed
 subtypes), code-generation outputs (`*.g.dart`). Avoid it for general organisation; imports are
-explicit, and parts leak `_private` symbols across files. In this package each value type is one
-self-contained file under `lib/src/`, so `part` should be rare.
+explicit, and parts leak `_private` symbols across files. Each value type is one file under
+`lib/src/`, with its failure vocabulary in a sibling `failures/` file, and neither needs `part`: a
+sealed hierarchy kept whole in one file already shares a library. Where a failure looks like it
+needs `part` to reach its value type's privates, move the shared piece to `shared/` instead.
 
 <a id="idioms-dot-shorthands"></a>
 ### Static dot shorthands (Dart 3.10+; stable at the 3.12 floor)

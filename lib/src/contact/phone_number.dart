@@ -2,8 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
 import '../numerics/digits.dart';
-import '../shared/minted_failure.dart';
 import '../shared/minted_format_exception.dart';
+import 'failures/phone_number_failure.dart';
 
 /// A phone number, validated and stored in its canonical E.164 form (via `phone_numbers_parser`).
 /// Standard: [E.164](https://en.wikipedia.org/wiki/E.164).
@@ -73,20 +73,6 @@ extension type const PhoneNumber._(String value) {
   Uri get telUri => Uri(scheme: 'tel', path: value);
 
   phone_numbers.PhoneNumber get _parsed => phone_numbers.PhoneNumber.parse(value);
-}
-
-/// Why a [PhoneNumber] refused its input.
-enum PhoneNumberFailure implements MintedFailure {
-  /// The input is not a valid phone number.
-  invalid('not a valid phone number');
-
-  const PhoneNumberFailure(this.message);
-
-  @override
-  final String message;
-
-  @override
-  String get typeName => 'PhoneNumber';
 }
 
 phone_numbers.IsoCode? _isoCodeForRegion(String region) {

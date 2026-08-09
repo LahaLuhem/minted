@@ -50,11 +50,15 @@ minted/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   └── src/
 │       ├── contact/                 Email, PhoneNumber
+│       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
 │       ├── finance/                 Iban (+ Bic, CreditCardNumber, … as they land)
+│       │   └── failures/            IbanFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
 │       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/
+│           ├── minted_failure.dart            The MintedFailure supertype
 │           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
+│           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
 │           └── check_digits.dart              Luhn / mod-97 / mod-11 / GS1 helpers (private)
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
@@ -75,6 +79,14 @@ Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `c
 numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
 because `minted.dart` re-exports every type. `test/` mirrors this layout.
+
+**A type's failure vocabulary goes in its sector's `failures/`, never in the value-type file**, one
+file per type (`finance/failures/iban_failure.dart` holds `IbanFailure` and its variants). The
+vocabularies grow to rival the types themselves, and the split on disk is what lets
+`conformance_test.dart` tell a value type from a failure by path rather than by inferring it from
+the AST. No `part` / `part of`: sealed variants only have to share a *file*, so a plain import
+suffices, and anything a failure needs from its value type belongs in `shared/` instead (which is
+why [`iso_date_format.dart`](../lib/src/shared/iso_date_format.dart) exists).
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
 or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping.
