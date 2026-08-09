@@ -150,7 +150,8 @@ final date = Date.tryParse('2026-07-07')!;   // strict ISO 8601 YYYY-MM-DD
 date.iso8601;      // '2026-07-07'   (canonical form)
 date.weekday;      // 2   (1 = Monday … 7 = Sunday)
 date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
-date.addDays(30);  // Date(2026-08-06)
+date.addDays(30);  // Date(2026-08-06)   (throws past the 0000-9999 bound)
+date.tryAddDays(3000000); // null        (the same walk, without the throw)
 date < Date(2027); // true   (Date(2027) is 2027-01-01)
 
 // impossible dates are rejected, not rolled over the way DateTime does:
