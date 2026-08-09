@@ -61,22 +61,22 @@ void main() {
 
     scenario('equal months are equal, whichever way they are built', () {
       check(Month.from(7)).equals(Month.july);
-      check(Month.parse('07')).equals(Month.july);
+      check(Month.tryParse('07')).equals(Month.july);
       check(Month.july == Month.august).isFalse();
     });
 
-    scenario('Month.parse throws MintedFormatException, carrying the source', () {
-      check(() => Month.parse('13'))
-          .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('13');
+    scenario('parse reports the failure rather than throwing', () {
+      check(Month.parse('13')).equals(const ParseFailure(MonthFailure.notAMonth));
+      check(Month.parse('07')).equals(const ParseSuccess(Month.july));
     });
 
-    scenario('both doors report the one failure a month has', () {
-      check(() => Month.parse('13'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(MonthFailure.notAMonth);
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Month.tryParse('13')).isNull();
+      check(Month.tryParse('7')).equals(Month.july);
+    });
+
+    scenario('both doors report the same one failure a month has', () {
+      check(Month.parse('13').reasonOrNull).equals(MonthFailure.notAMonth);
       check(() => Month.from(13))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')

@@ -2,6 +2,7 @@
 library;
 
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/month_failure.dart';
 
 /// A month of the year, `1` (January) to `12` (December).
@@ -17,13 +18,15 @@ import 'failures/month_failure.dart';
 extension type const Month._(int value) {
   /// Parses [input] as a month number `1`-`12` (`'7'` or `'07'`), or returns `null` unless it is
   /// one or two digits naming a month in range.
-  static Month? tryParse(String input) =>
-      !_digits.hasMatch(input) ? null : tryFrom(int.parse(input));
+  static Month? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a month number `1`-`12`, throwing [MintedFormatException] unless it is one
-  /// or two digits naming a month in range.
-  static Month parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(MonthFailure.notAMonth, input));
+  /// Parses [input] as a month number `1`-`12`, reporting [MonthFailure] unless it is one or two
+  /// digits naming a month in range.
+  static ParseOutcome<MonthFailure, Month> parse(String input) {
+    final parsedMonth = !_digits.hasMatch(input) ? null : tryFrom(int.parse(input));
+
+    return parsedMonth == null ? const ParseFailure(.notAMonth) : ParseSuccess(parsedMonth);
+  }
 
   /// The [Month] with number [value], or `null` unless it is in `1`-`12`.
   static Month? tryFrom(int value) =>

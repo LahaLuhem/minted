@@ -41,29 +41,32 @@ void main() {
     );
 
     scenario('the string and integer factories agree', () {
-      check(Digit.parse('7')).equals(Digit.from(7));
+      check(Digit.parse('7')).equals(ParseSuccess(Digit.from(7)));
     });
 
     scenario('a Digit renders as its bare character', () {
       check(Digit.from(7).toString()).equals('7');
     });
 
-    scenario('Digit.parse throws MintedFormatException, carrying the source', () {
-      check(() => Digit.parse('x'))
-          .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('x');
+    scenario('parse reports the failure rather than throwing', () {
+      check(Digit.parse('x')).equals(const ParseFailure(DigitFailure.notADigit));
+      check(Digit.parse('x').reasonOrNull).equals(DigitFailure.notADigit);
     });
 
-    scenario('Digit.from throws MintedFormatException on an out-of-range value', () {
-      check(() => Digit.from(10)).throws<MintedFormatException>();
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Digit.tryParse('x')).isNull();
+      check(Digit.tryParse('7')).equals(Digit.from(7));
     });
 
-    scenario('both doors report the one failure a digit has', () {
-      check(() => Digit.parse('x'))
+    scenario('from still throws, because calling it asserts the value is in range', () {
+      check(() => Digit.from(10))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
           .equals(DigitFailure.notADigit);
+    });
+
+    scenario('both doors report the same one failure a digit has', () {
+      check(Digit.parse('x').reasonOrNull).equals(DigitFailure.notADigit);
       check(() => Digit.from(10))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')

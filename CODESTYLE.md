@@ -293,17 +293,20 @@ its input.
 
 ```dart
 // Prefer (lazy, no intermediate list; each group is a pure function of its index):
-String _hyphenate(String hex) => Iterable.generate(
-  _groupHexBoundaries.length - 1,
-  (group) => hex.substring(_groupHexBoundaries[group], _groupHexBoundaries[group + 1]),
+String _grouped(Uint8List bytes) => Iterable.generate(
+  _groupByteBoundaries.length - 1,
+  (group) => bytes
+      .getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1])
+      .map(_hex)
+      .join(),
 ).join('-');
 
 // Over (a mutable cursor and an accumulator list built only to be joined):
-String _hyphenate(String hex) {
+String _grouped(Uint8List bytes) {
   final groups = <String>[];
   var offset = 0;
-  for (final length in _groupHexLengths) {
-    groups.add(hex.substring(offset, offset + length));
+  for (final length in _groupByteLengths) {
+    groups.add(bytes.sublist(offset, offset + length).map(_hex).join());
     offset += length;
   }
   return groups.join('-');
@@ -315,8 +318,13 @@ The terminal decides it. When the pipeline ends in a *reduction* to one value (`
 *is* a materialised collection (`Uint8List.fromList([for …])`, an embedded table), the
 collection-`for` stays: it is the direct literal form, and a `generate(…).toList()` /
 `map(…).toList()` only bolts on a `.toList()` that reads awkwardly and saves nothing (the collection
-is built either way). So `Uuid.bytes` (a `Uint8List`) keeps its collection-`for`, while `_hyphenate`
-and `Uuid.fromBytes` (both reduce to a `String`) use the lazy pipeline.
+is built either way). So `Uuid.bytes` (a `Uint8List`) keeps its collection-`for`, while
+`Uuid.fromBytes` (which reduces to a `String`) uses the lazy pipeline.
+
+**Group at the source, don't flatten and re-split.** The pipeline should build the final shape
+directly. `Uuid.fromBytes` groups the *bytes* and hex-encodes each group, rather than hex-encoding
+everything into one 32-character string and slicing that back apart: the flat string would exist
+only to be taken apart again, and `getRange` keeps each group lazy.
 
 <a id="idioms-parts"></a>
 ### `part` / `part of` only when structurally needed

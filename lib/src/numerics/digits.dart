@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'digit.dart';
 import 'failures/digits_failure.dart';
 
@@ -25,30 +26,33 @@ final class Digits extends Iterable<Digit> {
 
   /// Parses [input] as a run of decimal digits, or returns `null` when any
   /// character is not `0`-`9`. Empty input yields an empty sequence.
-  static Digits? tryParse(String input) {
+  static Digits? tryParse(String input) => parse(input).getOrNull();
+
+  /// Parses [input] as a run of decimal digits, reporting [DigitsFailure] when
+  /// any character is not `0`-`9`. Empty input yields an empty sequence.
+  static ParseOutcome<DigitsFailure, Digits> parse(String input) {
     final codes = input.codeUnits;
+    final parsedDigits = !codes.every(_isAsciiDigit)
+        ? null
+        : Digits._(Uint8List.fromList([for (final code in codes) code - _asciiZero]));
 
-    return codes.every(_isAsciiDigit)
-        ? ._(.fromList([for (final code in codes) code - _asciiZero]))
-        : null;
+    return parsedDigits == null
+        ? const ParseFailure(DigitsFailure.notAllDigits)
+        : ParseSuccess(parsedDigits);
   }
-
-  /// Parses [input] as a run of decimal digits, throwing [MintedFormatException]
-  /// when any character is not `0`-`9`.
-  static Digits parse(String input) =>
-      tryParse(input) ?? (throw MintedFormatException.from(DigitsFailure.notAllDigits, input));
 
   /// The sequence of the given [values], or `null` unless every value is in `0`-`9`.
   static Digits? tryFrom(List<int> values) =>
-      !values.every(_isDigitValue) ? null : ._(.fromList(values));
+      !values.every(_isDigitValue) ? null : ._(.fromList(values.toList(growable: false)));
 
   /// The sequence of the given [values], throwing [MintedFormatException] unless
   /// every value is in `0`-`9`.
-  static Digits from(List<int> values) =>
-      tryFrom(values) ?? (throw MintedFormatException.from(DigitsFailure.notAllDigits, '$values'));
+  static Digits from(Iterable<int> values) =>
+      tryFrom(values.toList(growable: false)) ??
+      (throw MintedFormatException.from(DigitsFailure.notAllDigits, '$values'));
 
   /// The sequence built from the given `digits` (each already a valid `0`-`9`).
-  static Digits of(Iterable<Digit> digits) => from([for (final digit in digits) digit.value]);
+  static Digits of(Iterable<Digit> digits) => from(digits.map((digit) => digit.value));
 
   @override
   Iterator<Digit> get iterator => _bytes.map(Digit.from).iterator;

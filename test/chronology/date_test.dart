@@ -61,11 +61,14 @@ void main() {
       check(() => Date(-1)).throws<MintedFormatException>();
     });
 
-    scenario('Date.parse throws MintedFormatException, carrying the source', () {
-      check(() => Date.parse('2026-13-01'))
-          .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('2026-13-01');
+    scenario('parse reports the failure rather than throwing', () {
+      check(Date.parse('2026-13-01')).equals(const ParseFailure(DateMonthOutOfRange(13)));
+      check(Date.parse('2026-07-07')).equals(ParseSuccess(Date(2026, 7, 7)));
+    });
+
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Date.tryParse('2026-13-01')).isNull();
+      check(Date.tryParse('2026-07-07')).equals(Date(2026, 7, 7));
     });
 
     scenario('the factory reports which part is out of range', () {
@@ -120,17 +123,13 @@ void main() {
           failure: const DateDayOutOfRange(year: 2026, month: 4, day: 31, maxDay: 30),
         ),
       },
-      outline: (example) => check(() => Date.parse(example.input))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(example.failure),
+      outline: (example) => check(Date.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
-    scenario('the message parse renders names the offending part', () {
-      check(() => Date.parse('2026-02-30'))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .equals('Invalid Date: day 30 is outside 1-28 for 2026-02');
+    scenario('the failure parse reports renders the offending part', () {
+      check(
+        Date.parse('2026-02-30').reasonOrNull?.message,
+      ).equals('day 30 is outside 1-28 for 2026-02');
     });
 
     scenario('the factory throws MintedFormatException naming the bad part', () {
@@ -143,7 +142,7 @@ void main() {
     scenario('equal dates are equal by value and hash', () {
       check(Date(2026, 7, 7)).equals(Date(2026, 7, 7));
       check(Date(2026, 7, 7).hashCode).equals(Date(2026, 7, 7).hashCode);
-      check(Date.parse('2026-07-07')).equals(Date(2026, 7, 7));
+      check(Date.tryParse('2026-07-07')!).equals(Date(2026, 7, 7));
     });
 
     scenario('different dates are not equal', () {
@@ -212,7 +211,7 @@ void main() {
 
     scenario('the canonical form round-trips through parse', () {
       for (final date in [Date(2026, 7, 7), Date(2000), Date(2024, 2, 29)]) {
-        check(Date.parse(date.iso8601)).equals(date);
+        check(Date.tryParse(date.iso8601)!).equals(date);
       }
     });
 

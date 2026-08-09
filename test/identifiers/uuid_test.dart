@@ -91,7 +91,7 @@ void main() {
         'the Max UUID is version 15': (input: 'ffffffff-ffff-ffff-ffff-ffffffffffff', version: 15),
       },
       outline: (example) {
-        check(Uuid.parse(example.input).version).equals(example.version);
+        check(Uuid.tryParse(example.input)!.version).equals(example.version);
       },
     );
 
@@ -138,14 +138,14 @@ void main() {
         ),
       },
       outline: (example) {
-        check(Uuid.parse(example.input).variant).equals(example.variant);
+        check(Uuid.tryParse(example.input)!.variant).equals(example.variant);
       },
     );
 
     scenario('the Nil and Max sentinels are recognised', () {
-      final nil = Uuid.parse('00000000-0000-0000-0000-000000000000');
-      final max = Uuid.parse('ffffffff-ffff-ffff-ffff-ffffffffffff');
-      final ordinary = Uuid.parse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
+      final nil = Uuid.tryParse('00000000-0000-0000-0000-000000000000')!;
+      final max = Uuid.tryParse('ffffffff-ffff-ffff-ffff-ffffffffffff')!;
+      final ordinary = Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')!;
 
       check(nil.isNil).isTrue();
       check(nil.isMax).isFalse();
@@ -156,21 +156,21 @@ void main() {
     });
 
     scenario('equal UUIDs are equal, whichever spelling they are built from', () {
-      final canonical = Uuid.parse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
+      final canonical = Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')!;
 
-      check(Uuid.parse('F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')).equals(canonical);
-      check(Uuid.parse('urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6')).equals(canonical);
-      check(Uuid.parse('{f81d4fae-7dec-11d0-a765-00a0c91e6bf6}')).equals(canonical);
+      check(Uuid.tryParse('F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')!).equals(canonical);
+      check(Uuid.tryParse('urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6')!).equals(canonical);
+      check(Uuid.tryParse('{f81d4fae-7dec-11d0-a765-00a0c91e6bf6}')!).equals(canonical);
     });
 
     scenario('urn rebuilds the URN form from the canonical value', () {
       check(
-        Uuid.parse('F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6').urn,
+        Uuid.tryParse('F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')!.urn,
       ).equals('urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
     });
 
     scenario('bytes and fromBytes round-trip', () {
-      final uuid = Uuid.parse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
+      final uuid = Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')!;
 
       check(uuid.bytes).deepEquals([
         0xf8, 0x1d, 0x4f, 0xae, 0x7d, 0xec, 0x11, 0xd0, //
@@ -184,12 +184,12 @@ void main() {
       check(() => Uuid.fromBytes(Uint8List(17))).throws<MintedFormatException>();
       check(
         Uuid.fromBytes(Uint8List(16)),
-      ).equals(Uuid.parse('00000000-0000-0000-0000-000000000000'));
+      ).equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
     });
 
     scenario('compareTo orders lexicographically by canonical form', () {
-      final earlier = Uuid.parse('00000000-0000-0000-0000-000000000001');
-      final later = Uuid.parse('00000000-0000-0000-0000-000000000002');
+      final earlier = Uuid.tryParse('00000000-0000-0000-0000-000000000001')!;
+      final later = Uuid.tryParse('00000000-0000-0000-0000-000000000002')!;
 
       check(earlier.compareTo(later)).isLessThan(0);
       check(later.compareTo(earlier)).isGreaterThan(0);
@@ -199,10 +199,7 @@ void main() {
     });
 
     scenario('malformed text and a wrong byte count are distinct failures', () {
-      check(() => Uuid.parse('not-a-uuid'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(const UuidMalformed());
+      check(Uuid.parse('not-a-uuid').reasonOrNull).equals(const UuidMalformed());
       check(() => Uuid.fromBytes(Uint8List(15)))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
@@ -216,17 +213,22 @@ void main() {
           .equals('Invalid Uuid: expected 16 bytes, got 17');
     });
 
-    scenario('Uuid.parse throws MintedFormatException, carrying the source', () {
-      check(() => Uuid.parse('not-a-uuid'))
-          .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('not-a-uuid');
+    scenario('parse reports the failure rather than throwing', () {
+      check(Uuid.parse('not-a-uuid')).equals(const ParseFailure(UuidMalformed()));
+      check(Uuid.parse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6').isSuccess).isTrue();
     });
 
-    scenario('the exception message names the type, not its erased representation', () {
-      // Extension types erase to String at runtime, so a `<T>`-derived message would read
-      // "Invalid String"; the message must name Uuid.
-      check(() => Uuid.parse('nope'))
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Uuid.tryParse('not-a-uuid')).isNull();
+      check(
+        Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')?.value,
+      ).equals('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
+    });
+
+    scenario('the failure names the type, not its erased representation', () {
+      // Extension types erase to String at runtime, so a `<T>`-derived name would read "String".
+      check(Uuid.parse('nope').reasonOrNull?.typeName).equals('Uuid');
+      check(() => Uuid.fromBytes(Uint8List(15)))
           .throws<MintedFormatException>()
           .has((error) => error.message, 'message')
           .startsWith('Invalid Uuid:');

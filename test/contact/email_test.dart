@@ -40,15 +40,15 @@ void main() {
     );
 
     scenario('addresses are equal when their domains differ only by case', () {
-      check(Email.parse('a@B.com')).equals(Email.parse('a@b.com'));
+      check(Email.tryParse('a@B.com')!).equals(Email.tryParse('a@b.com')!);
     });
 
     scenario('addresses are not equal when their local-parts differ by case', () {
-      check(Email.parse('A@b.com') == Email.parse('a@b.com')).isFalse();
+      check(Email.tryParse('A@b.com')! == Email.tryParse('a@b.com')!).isFalse();
     });
 
     scenario('an email exposes its local-part and domain', () {
-      final parsedEmail = Email.parse('jane.doe@example.com');
+      final parsedEmail = Email.tryParse('jane.doe@example.com')!;
 
       check(parsedEmail.localPart).equals('jane.doe');
       check(parsedEmail.domain).equals('example.com');
@@ -56,24 +56,27 @@ void main() {
 
     scenario('an email builds a mailto: URI', () {
       check(
-        Email.parse('jane.doe@example.com').mailtoUri.toString(),
+        Email.tryParse('jane.doe@example.com')!.mailtoUri.toString(),
       ).equals('mailto:jane.doe@example.com');
     });
 
     scenario('every door reports the one failure the engine can distinguish', () {
       // email_validator exposes a single bool, so a finer diagnosis would be a guess.
-      check(() => Email.parse('nope'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(EmailFailure.malformed);
+      check(Email.parse('nope').reasonOrNull).equals(EmailFailure.malformed);
       check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
           .equals(EmailFailure.malformed);
     });
 
-    scenario('Email.parse throws MintedFormatException on malformed input', () {
-      check(() => Email.parse('nope')).throws<MintedFormatException>();
+    scenario('parse reports the failure rather than throwing', () {
+      check(Email.parse('nope')).equals(const ParseFailure(EmailFailure.malformed));
+      check(Email.parse('jane@example.com').isSuccess).isTrue();
+    });
+
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Email.tryParse('nope')).isNull();
+      check(Email.tryParse('jane@Example.COM')?.value).equals('jane@example.com');
     });
 
     scenario('fromComponents assembles and normalises the address', () {
@@ -100,11 +103,11 @@ void main() {
       ).throws<MintedFormatException>();
     });
 
-    scenario('parse error carries the offending input as its source', () {
-      check(() => Email.parse('nope'))
+    scenario('an assembly failure carries the offending parts as its source', () {
+      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
-          .equals('nope');
+          .equals('a b@example.com');
     });
   });
 }

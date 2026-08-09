@@ -8,6 +8,7 @@ import 'package:iban_validator/iban_validator.dart';
 import '../numerics/digit.dart';
 import '../shared/check_digits.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/parse_outcome.dart';
 import 'failures/iban_failure.dart';
 
 /// An IBAN: validated for structure, country-specific length, and the mod-97 checksum (via `iban_validator`).
@@ -33,19 +34,14 @@ extension type const Iban._(String value) {
 
   /// Parses [input] as an IBAN, or returns `null` when it fails the structure,
   /// country, length, or mod-97 checks.
-  static Iban? tryParse(String input) {
-    final normalised = _normalise(input);
+  static Iban? tryParse(String input) => parse(input).getOrNull();
 
-    return _failureFor(normalised) != null ? null : ._(normalised);
-  }
-
-  /// Parses [input] as an IBAN, throwing [MintedFormatException] carrying the [IbanFailure] that
-  /// says which check failed.
-  static Iban parse(String input) {
+  /// Parses [input] as an IBAN, reporting the [IbanFailure] that says which check failed.
+  static ParseOutcome<IbanFailure, Iban> parse(String input) {
     final normalised = _normalise(input);
     final failure = _failureFor(normalised);
 
-    return (failure != null) ? throw MintedFormatException.from(failure, input) : ._(normalised);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(normalised));
   }
 
   /// The ISO 3166-1 alpha-2 country code (the first two characters).
@@ -53,9 +49,10 @@ extension type const Iban._(String value) {
 
   /// The two check digits (positions 3 and 4) as a `(first, second)` record of
   /// [Digit]s; read `.first.value` / `.second.value` for their numeric values.
+  // Both positions are digits in a validated IBAN, so tryParse cannot return null here.
   ({Digit first, Digit second}) get checkDigits => (
-    first: Digit.parse(value[_checkDigitsStart]),
-    second: Digit.parse(value[_checkDigitsStart + 1]),
+    first: .tryParse(value[_checkDigitsStart])!,
+    second: .tryParse(value[_checkDigitsStart + 1])!,
   );
 
   /// The Basic Bank Account Number: everything after the check digits (the bank-specific part,
