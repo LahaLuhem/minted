@@ -24,6 +24,7 @@ anchor, and keep anchors stable across renames.
 - [British spelling in the public API](#spelling)
 - [SDK floor](#sdk-floor)
 - [Date: a calendar date, not an instant](#date-value-type)
+- [Weekday: an enum, where Month is an extension type](#weekday-enum)
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
@@ -466,10 +467,59 @@ behaviour. Day arithmetic (`addDays`, `differenceInDays`) works in UTC internall
 day is always 24 hours and a local one is not (a daylight-saving transition makes a local day 23
 or 25 hours, which would skew the count).
 
+**`Date.now()` types the clock, it does not read it.** `DateTime.now()` already owns reading the
+clock, so `Date.now()` is `Date.fromDateTime(DateTime.now())`: it drops the time and the zone and
+hands back the local calendar day. Same division of labour as [`Uuid`](#uuid-value-type), where the
+neighbouring tool keeps its job and minted supplies the missing *value*. It is local, matching its
+sibling; for the UTC day, `Date.fromDateTime(DateTime.now().toUtc())`.
+
 **Year `0000`-`9999`.** Parsing is the strict ISO 8601 calendar date `YYYY-MM-DD`, so the year is
 four digits and the canonical form is always well-defined; the factory holds the same range. The
 expanded ISO representation (a leading sign and more than four digits) is deliberately out of
 scope, and can be added later without breaking the four-digit forms.
+
+---
+
+<a id="weekday-enum"></a>
+## Weekday: an enum, where Month is an extension type
+
+Two closed sets of named numbers, two different shapes. The deciding question is not size, it is
+what the value *is* in the model. `Month` is a **parsed component**: it is position two of
+`YYYY-MM-DD`, `Date` stores one, `Month.parse` reads one out of text, and it owns the calendar
+knowledge that hangs off a month. `Weekday` is **derived**: nothing stores it, it never appears in
+a canonical form, and it only ever comes from a date that already parsed. That is `UuidVariant`'s
+profile rather than `Month`'s, and the split already exists in the package: parsed components take
+the [value-type contract](./CODESTYLE.md#value-type-contract), derived classifications are a plain
+enum.
+
+**An enum, because seven days is a set that can be named honestly.** That is the same test
+[`Uuid.version` fails and `UuidVariant` passes](#uuid-value-type): an enum fits when its members are
+the whole domain and each reads by name, and misleads when it would have to paper over a reserved
+hole. Seven named days is the clean case. The payoff is exhaustiveness, since a `switch` over a
+`Weekday` needs no default arm and the compiler catches the day you forgot, which is most of what
+weekday code does (opening hours, business days, labels). An extension type over `int` cannot offer
+that at any price: only sealed types and enums drive exhaustiveness. The cost is that an enum
+carries an `index` beside `value`, one apart, so the dartdoc names `value` as the ISO number and
+points away from `index`.
+
+**Ordering is a convention, and the type says so.** `Weekday` has `compareTo` and `<` / `<=` / `>` /
+`>=` over the ISO number, so Monday sorts first. That is a choice, not arithmetic: weeks begin on
+Sunday in the US, Canada and Japan, and on Saturday across much of the Middle East, and those weeks
+order the same seven days differently. [`Date`](#date-value-type) earns its operators outright
+because dates are totally ordered, but a weekday is a *cycle*, and ordering a cycle means picking an
+origin. So the comparisons document the origin they assume, and the arithmetic that needs no origin
+(`next`, `plusDays`, `daysUntil`, all modular and total) is the safer default. For the same reason
+there is no `isWeekend`: ISO 8601 numbers the days and says nothing about which of them are a
+weekend, and Friday-Saturday weekends are common enough that a bare answer would be an opinion
+wearing a standard's name.
+
+**A failure vocabulary for a type that never parses.** `WeekdayFailure` has one variant and one use:
+`Weekday.from` throwing on a number outside `1`-`7`. It never reaches a `ParseOutcome`, because a
+classification has no `parse`, so it cannot lean on the usual justification of filling the `F` slot
+in a public signature. It stays regardless. `MintedFormatException` needs a `MintedFailure` carrying
+`typeName: 'Weekday'`, and the alternative is a shared parameterised failure: a new public shape,
+which would turn any later per-type growth into a breaking signature change. See
+[failures are per type](#per-type-failures).
 
 ---
 

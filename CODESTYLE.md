@@ -203,6 +203,14 @@ consumer learns one shape and applies it everywhere. Rationale is in
 7. **A failure vocabulary**, in the sector's `failures/` directory: one type per value type,
    implementing `MintedFailure`, sized to what its standard can actually distinguish.
 
+**Classifications are not value types.** A closed set a value type *hands back* (`Weekday`,
+`UuidVariant`, `PhoneNumberType`) is a plain `enum`, not a contract-bearing type: it is derived from
+something that already parsed rather than parsed from text, so it gets named cases and an exhaustive
+`switch` instead of `parse` / `tryParse`. Add `from` / `tryFrom` when callers need to build one from
+a primitive, and a failure type only if one of those throws. Note `conformance_test.dart` does not
+visit enum declarations, so this tier is unenforced by construction: keep the line honest by hand.
+Rationale: [`APPENDIX.md#weekday-enum`](./APPENDIX.md#weekday-enum).
+
 **Normalise on parse.** `tryParse` converts input to a single canonical form before constructing
 (trim, case-fold the parts the standard says are case-insensitive, strip separators). Because
 extension-type equality is representation equality, this is what makes

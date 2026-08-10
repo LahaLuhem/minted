@@ -50,6 +50,10 @@ final class Date implements Comparable<Date> {
   /// (an extreme [DateTime] can reach beyond it).
   factory Date.fromDateTime(DateTime dateTime) => Date(dateTime.year, dateTime.month, dateTime.day);
 
+  /// Today's date in the local time zone, the date-only sibling of [DateTime.now]. For the UTC day,
+  /// use `Date.fromDateTime(DateTime.now().toUtc())`.
+  factory Date.now() => Date.fromDateTime(DateTime.now());
+
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, or returns `null` unless it is exactly
   /// that shape (four-digit year, zero-padded two-digit month and day) and a real date.
   static Date? tryParse(String input) => parse(input).getOrNull();
