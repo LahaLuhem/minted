@@ -61,7 +61,8 @@ minted/
 │           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
 │           └── check_digits/                  One file per standard, all private
 │               ├── digit_values.dart          ASCII '0'-'9' → 0-9, shared by every algorithm
-│               └── iban_check_digits.dart     ISO 13616 mod-97-10
+│               ├── iban_check_digits.dart     ISO 13616 mod-97-10
+│               └── isbn_check_digits.dart     ISO 2108 mod-11 (10-digit) and GS1 mod-10 (13)
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
