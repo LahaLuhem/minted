@@ -21,6 +21,7 @@ export 'src/contact/email.dart';
 export 'src/contact/failures/email_failure.dart';
 export 'src/contact/failures/phone_number_failure.dart';
 export 'src/contact/phone_number.dart';
+export 'src/finance/bic.dart';
 export 'src/finance/failures/bic_failure.dart';
 export 'src/finance/failures/iban_failure.dart';
 export 'src/finance/iban.dart';
