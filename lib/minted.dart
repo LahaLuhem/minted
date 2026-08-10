@@ -14,7 +14,9 @@ export 'package:phone_numbers_parser/phone_numbers_parser.dart' show PhoneNumber
 export 'src/chronology/date.dart';
 export 'src/chronology/failures/date_failure.dart';
 export 'src/chronology/failures/month_failure.dart';
+export 'src/chronology/failures/weekday_failure.dart';
 export 'src/chronology/month.dart';
+export 'src/chronology/weekday.dart';
 export 'src/contact/email.dart';
 export 'src/contact/failures/email_failure.dart';
 export 'src/contact/failures/phone_number_failure.dart';

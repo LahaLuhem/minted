@@ -169,8 +169,9 @@ void main() {
     });
 
     scenario('weekday matches the Gregorian calendar', () {
-      check(Date(2000).weekday).equals(DateTime.saturday); // 2000-01-01 was a Saturday
-      check(Date(2024).weekday).equals(DateTime.monday); // 2024-01-01 was a Monday
+      check(Date(2000).weekday).equals(Weekday.saturday); // 2000-01-01 was a Saturday
+      check(Date(2024).weekday).equals(Weekday.monday); // 2024-01-01 was a Monday
+      check(Date(2024).weekday.value).equals(DateTime.monday); // and bridges back to dart:core
     });
 
     scenario('addDays and subtractDays cross month, year, and leap boundaries', () {

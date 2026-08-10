@@ -5,6 +5,7 @@ import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/date_failure.dart';
 import 'month.dart';
+import 'weekday.dart';
 
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.
 ///
@@ -70,8 +71,8 @@ final class Date implements Comparable<Date> {
   /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
   String get iso8601 => isoDate(year, month.value, day);
 
-  /// The day of the week, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
-  int get weekday => _utcMidnight.weekday;
+  /// The day of the week; [Weekday.value] is the ISO day number, matching [DateTime.weekday].
+  Weekday get weekday => Weekday.from(_utcMidnight.weekday);
 
   /// This date as a [DateTime] at local midnight.
   ///
