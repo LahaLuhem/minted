@@ -61,6 +61,11 @@ live under [*Hard rules* in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules).
   type name (`parsedIban`, not `parsed`; `candidateDigits`, not `candidate`). Callback and
   comparator parameters are exempt and stay single-word (`input`, `digit`, `(a, b)`), because
   the call site already pins the type.
+- **In a multi-stage pipeline, name each callback parameter for what the value has *become*.**
+  The exemption above rests on the type being recoverable at the call site; in a chain the type
+  never changes, so what a reader cannot recover is which filters have already run
+  (`candidateRange` → `placeableRange` → `claimingRange` in `PaymentCardNumber.cardSchemesOf`).
+  Well worth the small noise, and reuse the surrounding dartdoc's words where it has them.
 
 ```dart
 // Prefer:
@@ -351,17 +356,23 @@ collection, the chain wins even though the terminal materialises. Each step then
 transformation, and nothing is built until the end.
 
 ```dart
-// Prefer (filter, then project, then materialise once):
+// Prefer (each step one transformation, its parameter named for what survived the last;
+// nothing is built until the terminal):
 return Set.unmodifiable(
-  _schemeRanges.where((range) => _rangeHolds(input, range)).map((range) => range.scheme),
+  _schemeRanges
+      .where((candidateRange) => candidateRange.digits <= input.length)
+      .map((placeableRange) => placeableRange.scheme),
 );
 
-// Over (the predicate hides inside an `if`, and the set is filled element by element):
+// Over (the filter buried in an `if`, and the set filled element by element):
 return Set.unmodifiable({
   for (final range in _schemeRanges)
-    if (_rangeHolds(input, range)) range.scheme,
+    if (range.digits <= input.length) range.scheme,
 });
 ```
+
+How far to split the chain is a judgement call, not a rule: sometimes one predicate per `where`
+reads best, sometimes several conditions belong in one. Take whichever is cleaner and quieter.
 
 **Group at the source, don't flatten and re-split.** The pipeline should build the final shape
 directly. `Uuid.fromBytes` groups the *bytes* and hex-encodes each group, rather than hex-encoding
