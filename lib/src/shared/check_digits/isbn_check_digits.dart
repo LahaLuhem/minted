@@ -10,12 +10,12 @@ const _isbn10LeadingWeight = 10; // each later position counts for one less
 const _isbn10TenValue = 10;
 const _isbn10TenGlyph = 'X'; // ten has to fit in one character, so ISO 2108 spells it X
 
-/// The GS1 mod-10 check digit for [body], the twelve leading digits of an ISBN-13 (ISO 2108),
-/// assumed already separator-free.
+/// The GS1 mod-10 check digit for [body], the twelve leading digits of an ISBN-13 (ISO 2108), assumed
+/// already separator-free.
 ///
-/// Over a twelve-digit body, alternating from the left is GS1's right-to-left rule; generalising
-/// this to the other GTIN lengths would mean indexing from the right instead. What mod-10 cannot
-/// catch: two adjacent digits differing by 5 transpose without changing the weighted sum.
+/// Over a twelve-digit body, alternating from the left is GS1's right-to-left rule; generalising this
+/// to the other GTIN lengths would mean indexing from the right instead. What mod-10 cannot catch:
+/// two adjacent digits differing by 5 transpose without changing the weighted sum.
 String isbn13CheckDigit(String body) {
   final weightedSum = body.codeUnits
       .mapIndexed(

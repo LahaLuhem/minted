@@ -15,8 +15,8 @@ import 'weekday.dart';
 /// (two "equal" dates comparing unequal over a stray time, or a day sliding across a zone boundary).
 ///
 /// Parse, don't validate: a [Date] exists only if it is a real calendar date. [parse] and the [Date]
-/// factory reject impossible dates (month 13, 30 February, 29 February in a common year)
-/// instead of rolling them over the way [DateTime] does, so any [Date] you hold names a day that genuinely exists.
+/// factory reject impossible dates (month 13, 30 February, 29 February in a common year) instead of
+/// rolling them over the way [DateTime] does, so any [Date] you hold names a day that genuinely exists.
 /// The canonical form is ISO 8601 `YYYY-MM-DD` ([iso8601]); [year] is held in `0000`-`9999`.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
 ///

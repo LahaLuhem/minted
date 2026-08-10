@@ -62,6 +62,31 @@ void main() {
         typeName: 'Uuid',
         message: 'expected 16 bytes, got 15',
       ),
+      'Isbn: neither generation has that length': (
+        failure: IsbnWrongLength(12),
+        typeName: 'Isbn',
+        message: 'expected 10 or 13 digits, got 12',
+      ),
+      'Isbn: the charset message says where X is allowed': (
+        failure: IsbnInvalidCharacters(),
+        typeName: 'Isbn',
+        message: 'contains characters outside 0-9 (X only as the ISBN-10 check digit)',
+      ),
+      'Isbn: an unknown prefix echoes the code': (
+        failure: IsbnInvalidPrefix('977'),
+        typeName: 'Isbn',
+        message: '"977" is not an ISBN prefix (expected 978 or 979)',
+      ),
+      'Isbn: the ISMN range is named, not called a typo': (
+        failure: IsbnInvalidPrefix('9790'),
+        typeName: 'Isbn',
+        message: '"9790" is the ISMN range for printed music, not an ISBN',
+      ),
+      'Isbn: checksum failed': (
+        failure: IsbnChecksumFailed(),
+        typeName: 'Isbn',
+        message: 'failed the check-digit test',
+      ),
       'Date: wrong shape': (
         failure: DateNotIso8601(),
         typeName: 'Date',
@@ -144,6 +169,19 @@ void main() {
           failure: UuidWrongByteCount(expected: 16, actual: 15),
           rendered: 'UuidWrongByteCount(expected: 16, actual: 15)',
         ),
+        'a wrong ISBN length': (failure: IsbnWrongLength(12), rendered: 'IsbnWrongLength(12)'),
+        'an ISBN charset failure': (
+          failure: IsbnInvalidCharacters(),
+          rendered: 'IsbnInvalidCharacters()',
+        ),
+        'an unknown ISBN prefix': (
+          failure: IsbnInvalidPrefix('977'),
+          rendered: 'IsbnInvalidPrefix(977)',
+        ),
+        'the ISBN checksum variant': (
+          failure: IsbnChecksumFailed(),
+          rendered: 'IsbnChecksumFailed()',
+        ),
         'a wrong-shaped date': (failure: DateNotIso8601(), rendered: 'DateNotIso8601()'),
         'a bad year': (failure: DateYearOutOfRange(10000), rendered: 'DateYearOutOfRange(10000)'),
         'a bad month': (failure: DateMonthOutOfRange(13), rendered: 'DateMonthOutOfRange(13)'),
@@ -194,6 +232,26 @@ void main() {
           failure: UuidWrongByteCount(expected: 16, actual: 15),
           twin: UuidWrongByteCount(expected: 16, actual: 15),
           other: UuidWrongByteCount(expected: 16, actual: 17),
+        ),
+        'ISBN length differs by its count': (
+          failure: IsbnWrongLength(12),
+          twin: IsbnWrongLength(12),
+          other: IsbnWrongLength(14),
+        ),
+        'the ISBN charset variant': (
+          failure: IsbnInvalidCharacters(),
+          twin: IsbnInvalidCharacters(),
+          other: IsbnChecksumFailed(),
+        ),
+        'an ISBN prefix differs by its code': (
+          failure: IsbnInvalidPrefix('977'),
+          twin: IsbnInvalidPrefix('977'),
+          other: IsbnInvalidPrefix('9790'),
+        ),
+        'the ISBN checksum variant': (
+          failure: IsbnChecksumFailed(),
+          twin: IsbnChecksumFailed(),
+          other: IsbnInvalidCharacters(),
         ),
         'a wrong-shaped date': (
           failure: DateNotIso8601(),
