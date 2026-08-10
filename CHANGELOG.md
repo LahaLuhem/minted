@@ -2,6 +2,7 @@
 ### Added
 - \[#11\] Weekday added
 - \[#4\] Isbn (ISO 2108: both generations, folded to ISBN-13)
+- \[#1\] Bic (ISO 9362: SWIFT codes, 8- and 11-character forms folded to one value)
 
 ## [1.0.0] - 2026-08-09
 ### Changed
