@@ -27,6 +27,7 @@ anchor, and keep anchors stable across renames.
 - [Weekday: an enum, where Month is an extension type](#weekday-enum)
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [Isbn: two generations, one value, no hyphens](#isbn-value-type)
+- [Bic: no checksum, so the standard is the whole check](#bic-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -606,6 +607,42 @@ two check-digit algorithms, which is the case [hard rule 7](./.ai/AGENTS.md#hard
 unchanged, so `9780306401657` passes as readily as `9780306406157`. That is a property of the
 standard, not of this implementation, and mod-11 over the ten-digit form catches every
 transposition. A test pins the blind spot so it does not read as a bug.
+
+---
+
+<a id="bic-value-type"></a>
+## Bic: no checksum, so the standard is the whole check
+
+ISO 9362 defines no check digit. Every other standardised type here leans on one
+([check digits, not regex](#check-digits-not-regex)); `Bic` has nothing to lean on, so what is left
+is the shape plus one real lookup: positions 5-6 must be an ISO 3166-1 country. `Bic.parse` will
+therefore accept a well-formed code no institution holds, the same honesty [`Uuid`](#uuid-value-type)
+states about its own lack of a checksum. Naming the gap beats pretending to close it.
+
+**The standard is wider than the registry, so the wider rule wins.** ISO 9362:2014 redefined the
+first four characters as alphanumeric, and ISO 20022 retired its letters-only `AnyBICIdentifier`
+pattern to follow. SWIFT, as registration authority, still issues letters only. Validating against
+current SWIFT practice would ship a clock, the failure mode the [ISBN range table](#isbn-value-type)
+is kept out of core to avoid: a real digit-prefixed BIC already broke a mature validator in
+production. So `parse` enforces the standard and `isSwiftRegistrable` *reports* the narrower shape,
+which is a fact about the code rather than grounds to refuse it.
+
+**Eight characters folds to eleven.** A branch code of `XXX` means the primary office, which is
+exactly what an eight-character BIC addresses, so the two spellings denote one party. Storing
+whichever arrived would make them unequal and put one office in a `Set` twice
+([normalise on parse](#normalise-on-parse)). Folding up rather than down also fixes the length at
+eleven, so `branchCode` is never null and `bic8` rebuilds the short form.
+
+**The country list is borrowed, not carried.** `phone_numbers_parser` is already a dependency and
+its `IsoCode` has 245 entries, including the `XK` SWIFT uses for Kosovo; it omits only seven
+uninhabited territories with no banks. `iban_validator`'s list covers IBAN countries alone and would
+reject `CHASUS33`. Borrowing keeps core free of a country table it would have to maintain, at the
+cost of a finance type tracking a phone engine's data, which the README states.
+
+**The location code is documented, not modelled.** By SWIFT convention its second character reads
+`0` for a test code, `1` for a passive participant, `2` for reverse billing. ISO 9362 assigns none of
+those, so an enum naming them would overclaim, and its default case worst of all. Same reasoning as
+[`Uuid.version`](#uuid-value-type) staying an `int`.
 
 ---
 

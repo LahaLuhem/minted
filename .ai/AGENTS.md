@@ -51,8 +51,8 @@ minted/
 │   └── src/
 │       ├── contact/                 Email, PhoneNumber
 │       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
-│       ├── finance/                 Iban (+ Bic, CreditCardNumber, … as they land)
-│       │   └── failures/            IbanFailure and its variants
+│       ├── finance/                 Iban, Bic (+ CreditCardNumber, … as they land)
+│       │   └── failures/            IbanFailure, BicFailure and their variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
 │       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/
