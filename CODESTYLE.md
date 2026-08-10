@@ -183,6 +183,13 @@ consumer learns one shape and applies it everywhere. Rationale is in
   }
   ```
 
+**One carve-out on the first bullet: a single primitive still takes a class when a delegated
+`Object` member would be wrong for the type.** The delegation below is a feature only while the
+inherited behaviour is the wanted one. `Digits` needs structural `==` that its `Uint8List` will not
+give, and `PaymentCardNumber` needs a `toString` that does not print the card. Both are
+single-valued, both are classes. Rationale:
+[`APPENDIX.md#payment-card-number-value-type`](./APPENDIX.md#payment-card-number-value-type).
+
 **Non-negotiable across both shapes:**
 
 1. **Private primary constructor** (`._`). There is no public way to build an instance except
@@ -227,7 +234,8 @@ normalisation in its dartdoc. See [`APPENDIX.md#normalise-on-parse`](./APPENDIX.
 - You **cannot** redeclare `toString`, `==`, or `hashCode` on an extension type; they always
   delegate to the representation. For a `String`-backed type this is a feature: `print(iban)`
   shows the IBAN, and equality is canonical-string equality. Do not fight it; do not try to
-  make an extension type print `Iban(...)`.
+  make an extension type print `Iban(...)`. Where you genuinely need the member the delegation
+  denies you, that is the signal to reach for a class, per the carve-out above.
 - An `implements` clause only accepts **supertypes of the representation**. `implements Comparable<String>`
   is legal for a `String`-backed type; `implements Comparable<Iban>` is not. If you need ordering,
   expose a plain `int compareTo(T other)` method rather than the `Comparable` interface.

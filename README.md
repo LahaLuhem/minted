@@ -85,10 +85,11 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Finance
 
-| Type   | What it guarantees                                     | Standard                                                                     |
-|--------|--------------------------------------------------------|------------------------------------------------------------------------------|
-| `Iban` | structure, country length, and the mod-97 checksum     | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
-| `Bic`  | a SWIFT code: structure and a real country, folded to 11 | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
+| Type                | What it guarantees                                       | Standard                                                                     |
+|---------------------|----------------------------------------------------------|------------------------------------------------------------------------------|
+| `Iban`              | structure, country length, and the mod-97 checksum       | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
+| `Bic`               | a SWIFT code: structure and a real country, folded to 11 | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
+| `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
 
 ### Chronology
 
@@ -196,6 +197,19 @@ bic.countryCode;        // 'DE'
 bic.isPrimaryOffice;    // true
 bic.isSwiftRegistrable; // true: ISO 9362 permits shapes SWIFT itself doesn't issue
 
+// PaymentCardNumber is a class, not an extension type, so printing one can't leak the number:
+final card = PaymentCardNumber.tryParse('4111 1111 1111 1111')!;
+card.masked;      // '••••1111'
+'$card';          // 'PaymentCardNumber(••••1111)'
+card.value;       // '4111111111111111'   (the only member that hands the number back)
+card.iin6;        // '411111'   (null when the number is too short to hold one)
+card.cardScheme;  // CardScheme.visa   (read off the prefix, never validated)
+
+// the scheme also reads from partial input, so a form can show the brand while you type:
+PaymentCardNumber.cardSchemesOf('4');   // {CardScheme.visa}
+
+PaymentCardNumber.tryParse('4111111111111112');   // null: fails the Luhn check
+
 // build from parts you already trust (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
 Isbn.fromComponents(prefix: '978', body: '030640615');              // same, for a publisher
@@ -230,6 +244,13 @@ or not an institution holds it. The country list comes from `phone_numbers_parse
 International's range table, revised as ranges get allocated, so shipping a snapshot would mean
 shipping a clock. Hyphens are accepted and stripped, and you get `value`, `prefix`, `body` and
 `checkDigit`.
+
+`PaymentCardNumber` doesn't make the brand part of the guarantee, for the same reason. ISO/IEC 7812
+assigns no brand ranges, the IIN-to-network table drifts, and some ranges are genuinely contested
+(`65` is claimed by both Discover and RuPay). So `cardScheme` reports only ranges no other network
+claims and says `unknown` otherwise: silence means "can't say", not "not a card". It also masks
+itself, printing `••••1111`, with `value` the one member that hands the number back, so a stray log
+line can't leak a PAN.
 
 </details>
 
@@ -311,8 +332,9 @@ That `Email` blows up the moment you read `.localPart`. So `parse`, `tryParse` a
 are the only doors in, and a cast into a minted type is a bug. It's also the one place the
 `int.parse` / `Uri.parse` comparison breaks down, since those return real classes that can't be
 forged; worth saying out loud, because a package can't stop its callers from casting. A lint for it
-is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The multi-part
-types (`Date`, `Digits`) are ordinary classes, so bad casts throw there instead. Why the erasure is
+is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The
+class-backed types (`Date`, `Digits`, `PaymentCardNumber`) are ordinary classes, so bad casts throw
+there instead. Why the erasure is
 a deliberate trade rather than an oversight:
 [APPENDIX.md](./APPENDIX.md#extension-type-representation).
 
@@ -326,7 +348,8 @@ a deliberate trade rather than an oversight:
 - [x] `Uuid` (RFC 9562: parse, classify version/variant, Nil/Max sentinels)
 - [x] `Isbn` (ISO 2108: both generations, mod-11 and GS1 mod-10, folded to ISBN-13)
 - [x] `Bic` (ISO 9362: SWIFT codes, 8- and 11-character forms folded to one value)
-- [ ] `CreditCardNumber` (Luhn), `Ean` / `Gtin`
+- [x] `PaymentCardNumber` (ISO/IEC 7812: Luhn, masked rendering, schemes reported not validated)
+- [ ] `Ean` / `Gtin`
 - [ ] `Isbn` hyphenation, once the ISBN range table has somewhere to live
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
 

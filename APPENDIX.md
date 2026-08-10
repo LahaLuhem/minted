@@ -112,6 +112,12 @@ latitude and longitude), an `@immutable final class` with a private constructor,
 `==` / `hashCode`, and a `ClassName(...)` `toString` is the right shape. No `Equatable`
 dependency: the core stays dependency-light, and hand-written equality is a few honest lines.
 
+**A single primitive still takes a class where a delegated `Object` member is wrong for it.** The
+delegation above is a feature only while the inherited behaviour is the wanted one.
+[`Digits`](#typed-digit-subparts) needs structural `==` that `Uint8List` will not give, and
+[`PaymentCardNumber`](#payment-card-number-value-type) needs a `toString` that does not print the
+card. Both are single-valued and both are classes.
+
 ---
 
 <a id="typed-digit-subparts"></a>
@@ -597,11 +603,12 @@ while staying one variant, *not an ISBN*.
 in the digits; they come from ISBN International's range table, revised as blocks are allocated.
 Embedding a snapshot ships a clock: correct on release day, quietly wrong after, and a confidently
 mis-hyphenated ISBN is worse than a plain one, the same reasoning that caps `Email` at one failure
-variant. It would also make core carry mutable data for the first time. So `Isbn` strips hyphens
-and exposes the parts that *are* derivable. `Iban.formatted` is no precedent: grouping by four
-needs no table. The `isbn` package on pub carries no range data either, so it would buy only the
-two check-digit algorithms, which is the case [hard rule 7](./.ai/AGENTS.md#hard-rules) sends to
-`lib/src/shared/` rather than a micro-dependency.
+variant and keeps the card-brand registry out of
+[`PaymentCardNumber`](#payment-card-number-value-type). It would also make core carry mutable data
+for the first time. So `Isbn` strips hyphens and exposes the parts that *are* derivable.
+`Iban.formatted` is no precedent: grouping by four needs no table. The `isbn` package on pub carries
+no range data either, so it would buy only the two check-digit algorithms, which is the case
+[hard rule 7](./.ai/AGENTS.md#hard-rules) sends to `lib/src/shared/` rather than a micro-dependency.
 
 **What mod-10 cannot do.** Swapping two adjacent digits differing by five leaves the weighted sum
 unchanged, so `9780306401657` passes as readily as `9780306406157`. That is a property of the
@@ -643,6 +650,46 @@ cost of a finance type tracking a phone engine's data, which the README states.
 `0` for a test code, `1` for a passive participant, `2` for reverse billing. ISO 9362 assigns none of
 those, so an enum naming them would overclaim, and its default case worst of all. Same reasoning as
 [`Uuid.version`](#uuid-value-type) staying an `int`.
+
+---
+
+<a id="payment-card-number-value-type"></a>
+## PaymentCardNumber: a class so it can mask, and a scheme it only reports
+
+**A class, where every other single-`String` type is an extension type.** An extension type cannot
+redeclare `toString` ([extension type vs immutable class](#extension-type-representation)), so
+`'$card'`, a test failure, and a crash-reporter breadcrumb would each print the whole number. Every
+other type here treats that delegation as the feature it is; for a PAN it is a leak. So this one is
+an `@immutable` class rendering `PaymentCardNumber(••••1111)`, with `value` the single member that
+hands the number back. [`Digits`](#typed-digit-subparts) set the precedent, being a class because
+the delegated `==` was wrong for it: same test, different `Object` member. It is defence in depth
+rather than a guarantee, since `value` is one interpolation away and Dart strings cannot be wiped,
+but it moves the leak off the default path.
+
+**The scheme is reported, never validated.** ISO/IEC 7812 assigns no brand ranges at all, and the
+IIN-to-network table is registry data whose ranges overlap: `65` is claimed by Discover and RuPay,
+`55` by Mastercard and Diners US/Canada, `60` by RuPay against Discover's `6011`. Gating `parse` on
+it would reject real cards as the registry moved, the failure mode that keeps the
+[ISBN range table](#isbn-value-type) out of core. So the table carries only ranges no other known
+network contests, and a contested one is left out rather than guessed at: `unknown` means "cannot
+say", not "not a card".
+
+Two getters, because one resolution does not fit. `cardScheme` answers the common case;
+`cardSchemes` answers the co-brands a single value cannot express, `622126`-`622925` being a
+UnionPay that Discover also accepts. `cardScheme` is `cardSchemes.singleOrNull ?? unknown`, so the
+two cannot drift and there is one table. `cardSchemesOf` is static because a half-typed number has
+no check digit yet and so cannot parse, while a checkout form still wants the brand at the fourth
+keystroke.
+
+**Eight digits is the floor, though nothing is issued that short.** ISO/IEC 7812 allows 8 to 19; the
+shortest real PAN is a 12-digit Maestro. Enforcing the standard rather than current practice is the
+[`Bic`](#bic-value-type) decision again: practice is a registry that moves, and Luhn already rejects
+most of what the wider window admits.
+
+**What Luhn cannot do.** Mod-10 misses a `09`/`90` transposition and the twin errors 22/55, 33/66
+and 44/77, because both members of each pair carry the same weighted sum. That is a property of the
+standard, not of this implementation, and tests pin it so it does not read as a bug. The
+[ISBN](#isbn-value-type) mod-10 has a blind spot of the same shape.
 
 ---
 

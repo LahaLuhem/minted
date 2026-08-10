@@ -58,6 +58,15 @@ void main() {
   print(bic == Bic.tryParse('DEUTDEFFXXX')); // true
   print(Bic.tryParse('DEUTZZFF')); // null (ZZ is not a country)
 
+  // `PaymentCardNumber` is a class rather than an extension type so its rendered form can mask the
+  // number: printing one cannot leak a PAN.
+  final card = PaymentCardNumber.tryParse('4111 1111 1111 1111')!;
+  print(card); // PaymentCardNumber(••••1111)
+  print(card.masked); // ••••1111
+  print(card.cardScheme); // CardScheme.visa  (read off the prefix, never validated)
+  print(PaymentCardNumber.cardSchemesOf('4')); // {CardScheme.visa}  (answers while you type)
+  print(PaymentCardNumber.tryParse('4111111111111112')); // null (fails the Luhn check)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
