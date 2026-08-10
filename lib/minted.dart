@@ -23,6 +23,7 @@ export 'src/contact/failures/phone_number_failure.dart';
 export 'src/contact/phone_number.dart';
 export 'src/finance/failures/iban_failure.dart';
 export 'src/finance/iban.dart';
+export 'src/identifiers/failures/isbn_failure.dart';
 export 'src/identifiers/failures/uuid_failure.dart';
 export 'src/identifiers/uuid.dart';
 export 'src/numerics/digit.dart';
