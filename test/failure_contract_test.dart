@@ -147,6 +147,21 @@ void main() {
         typeName: 'Bic',
         message: '"ZZ" is not a recognised country code',
       ),
+      'PaymentCardNumber: outside the 8-to-19 window': (
+        failure: PaymentCardNumberWrongLength(7),
+        typeName: 'PaymentCardNumber',
+        message: 'expected 8 to 19 digits, got 7',
+      ),
+      'PaymentCardNumber: bad charset': (
+        failure: PaymentCardNumberInvalidCharacters(),
+        typeName: 'PaymentCardNumber',
+        message: 'contains characters outside 0-9',
+      ),
+      'PaymentCardNumber: the Luhn check is named': (
+        failure: PaymentCardNumberChecksumFailed(),
+        typeName: 'PaymentCardNumber',
+        message: 'failed the Luhn check',
+      ),
     };
 
     scenarioOutline<({MintedFailure failure, String typeName, String message})>(
@@ -212,6 +227,18 @@ void main() {
         'an unknown BIC country': (
           failure: BicUnknownCountry('ZZ'),
           rendered: 'BicUnknownCountry(ZZ)',
+        ),
+        'a wrong card-number length': (
+          failure: PaymentCardNumberWrongLength(7),
+          rendered: 'PaymentCardNumberWrongLength(7)',
+        ),
+        'a card-number charset failure': (
+          failure: PaymentCardNumberInvalidCharacters(),
+          rendered: 'PaymentCardNumberInvalidCharacters()',
+        ),
+        'the Luhn variant': (
+          failure: PaymentCardNumberChecksumFailed(),
+          rendered: 'PaymentCardNumberChecksumFailed()',
         ),
       },
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
@@ -311,6 +338,21 @@ void main() {
           failure: BicUnknownCountry('ZZ'),
           twin: BicUnknownCountry('ZZ'),
           other: BicUnknownCountry('QQ'),
+        ),
+        'a card-number length differs by its count': (
+          failure: PaymentCardNumberWrongLength(7),
+          twin: PaymentCardNumberWrongLength(7),
+          other: PaymentCardNumberWrongLength(20),
+        ),
+        'the card-number charset variant': (
+          failure: PaymentCardNumberInvalidCharacters(),
+          twin: PaymentCardNumberInvalidCharacters(),
+          other: PaymentCardNumberChecksumFailed(),
+        ),
+        'the Luhn variant': (
+          failure: PaymentCardNumberChecksumFailed(),
+          twin: PaymentCardNumberChecksumFailed(),
+          other: PaymentCardNumberInvalidCharacters(),
         ),
         'enum variants are canonical': (
           failure: PhoneNumberFailure.invalid,
