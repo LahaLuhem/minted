@@ -91,10 +91,11 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Chronology
 
-| Type    | What it guarantees                                                | Standard                                           |
-|---------|-------------------------------------------------------------------|----------------------------------------------------|
-| `Date`  | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-| `Month` | a real month `1`-`12` that knows its own length (leap-aware)      | building block                                     |
+| Type      | What it guarantees                                                | Standard                                           |
+|-----------|-------------------------------------------------------------------|----------------------------------------------------|
+| `Date`    | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Month`   | a real month `1`-`12` that knows its own length (leap-aware)      | building block                                     |
+| `Weekday` | one of seven named days, ISO-numbered `1` (Monday) to `7` (Sunday) | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 
 ### Identifiers
 
@@ -127,6 +128,11 @@ Learn one type and you've learned them all. Each one gives you:
   claiming the parts are good
 - getters that fit the type: `email.domain`, `iban.checkDigits`, `phone.nationalNumber`
 
+One exception, and it's deliberate: a few types are **classifications** rather than parsed values.
+`Weekday`, `UuidVariant` and `PhoneNumberType` are enums a value type hands back, derived from
+something that already parsed, so they give you named cases and an exhaustive `switch` instead of
+`tryParse` / `parse`. `Weekday` still has `from` / `tryFrom` to build one from an ISO day number.
+
 <details>
 <summary><b>More examples</b></summary>
 
@@ -149,11 +155,17 @@ PhoneNumber.tryParse('0 655 5705 76');   // null (no region given)
 // Date: the calendar date DateTime doesn't model (no time, no zone):
 final date = Date.tryParse('2026-07-07')!;   // strict ISO 8601 YYYY-MM-DD
 date.iso8601;      // '2026-07-07'   (canonical form)
-date.weekday;      // 2   (1 = Monday … 7 = Sunday)
+date.weekday;      // Weekday.tuesday   (.value is 2, matching DateTime.weekday)
 date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
 date.addDays(30);  // Date(2026-08-06)   (throws past the 0000-9999 bound)
 date.tryAddDays(3000000); // null        (the same walk, without the throw)
 date < Date(2027); // true   (Date(2027) is 2027-01-01)
+Date.now();        // today in the local zone, the date-only DateTime.now()
+
+// Weekday: seven named days, so a switch over one needs no default arm:
+date.weekday.next;                         // Weekday.wednesday   (wraps past Sunday)
+Weekday.friday.daysUntil(Weekday.monday);  // 3   (counts forward round the week)
+Weekday.from(DateTime.now().weekday);      // bridges back from dart:core
 
 // impossible dates are rejected, not rolled over the way DateTime does:
 Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-01-01)

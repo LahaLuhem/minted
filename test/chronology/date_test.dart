@@ -221,6 +221,17 @@ void main() {
       check(Date.fromDateTime(DateTime.utc(2026, 7, 7, 23, 59, 59))).equals(Date(2026, 7, 7));
     });
 
+    scenario('now gives today in the local time zone', () {
+      // Bracketed by two clock reads, so a midnight rollover mid-scenario widens the window
+      // rather than failing.
+      final before = Date.fromDateTime(DateTime.now());
+      final today = Date.now();
+      final after = Date.fromDateTime(DateTime.now());
+
+      check(today >= before).isTrue();
+      check(today <= after).isTrue();
+    });
+
     scenario('toDateTime returns local midnight', () {
       final dateTime = Date(2026, 7, 7).toDateTime();
 
