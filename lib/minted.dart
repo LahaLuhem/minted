@@ -26,6 +26,7 @@ export 'src/finance/failures/bic_failure.dart';
 export 'src/finance/failures/iban_failure.dart';
 export 'src/finance/failures/payment_card_number_failure.dart';
 export 'src/finance/iban.dart';
+export 'src/finance/payment_card_number.dart';
 export 'src/identifiers/failures/isbn_failure.dart';
 export 'src/identifiers/failures/uuid_failure.dart';
 export 'src/identifiers/isbn.dart';
