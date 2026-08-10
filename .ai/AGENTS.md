@@ -59,6 +59,8 @@ minted/
 │           ├── minted_failure.dart            The MintedFailure supertype
 │           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
 │           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
+│           ├── iso_country_code.dart          ISO 3166-1 alpha-2 lookup, borrowed from the
+│           │                                  phone engine so no country table is carried
 │           └── check_digits/                  One file per standard, all private
 │               ├── digit_values.dart          ASCII '0'-'9' → 0-9, shared by every algorithm
 │               ├── iban_check_digits.dart     ISO 13616 mod-97-10
