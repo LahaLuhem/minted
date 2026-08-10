@@ -1,6 +1,7 @@
 ## [Unreleased]
 ### Added
 - \[#11\] Weekday added
+- \[#4\] Isbn (ISO 2108: both generations, folded to ISBN-13)
 
 ## [1.0.0] - 2026-08-09
 ### Changed
