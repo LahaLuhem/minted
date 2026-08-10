@@ -132,6 +132,21 @@ void main() {
         typeName: 'Iban',
         message: 'failed the mod-97 check',
       ),
+      'Bic: neither of the two lengths': (
+        failure: BicWrongLength(9),
+        typeName: 'Bic',
+        message: 'expected 8 or 11 characters, got 9',
+      ),
+      'Bic: bad charset': (
+        failure: BicInvalidCharacters(),
+        typeName: 'Bic',
+        message: 'contains characters outside A-Z and 0-9',
+      ),
+      'Bic: unknown country echoes the code': (
+        failure: BicUnknownCountry('ZZ'),
+        typeName: 'Bic',
+        message: '"ZZ" is not a recognised country code',
+      ),
     };
 
     scenarioOutline<({MintedFailure failure, String typeName, String message})>(
@@ -188,6 +203,15 @@ void main() {
         'a bad day': (
           failure: DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
           rendered: 'DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28)',
+        ),
+        'a wrong BIC length': (failure: BicWrongLength(9), rendered: 'BicWrongLength(9)'),
+        'a BIC charset failure': (
+          failure: BicInvalidCharacters(),
+          rendered: 'BicInvalidCharacters()',
+        ),
+        'an unknown BIC country': (
+          failure: BicUnknownCountry('ZZ'),
+          rendered: 'BicUnknownCountry(ZZ)',
         ),
       },
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
@@ -272,6 +296,21 @@ void main() {
           failure: DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
           twin: DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
           other: DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29),
+        ),
+        'BIC length differs by its count': (
+          failure: BicWrongLength(9),
+          twin: BicWrongLength(9),
+          other: BicWrongLength(10),
+        ),
+        'the BIC charset variant': (
+          failure: BicInvalidCharacters(),
+          twin: BicInvalidCharacters(),
+          other: BicWrongLength(9),
+        ),
+        'a BIC country differs by its code': (
+          failure: BicUnknownCountry('ZZ'),
+          twin: BicUnknownCountry('ZZ'),
+          other: BicUnknownCountry('QQ'),
         ),
         'enum variants are canonical': (
           failure: PhoneNumberFailure.invalid,
