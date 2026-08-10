@@ -1,8 +1,11 @@
+/// @docImport '../bic.dart';
+library;
+
 import 'package:meta/meta.dart';
 
 import '../../shared/minted_failure.dart';
 
-/// Why a BIC refused its input. Sealed, not an enum, because [BicWrongLength] and [BicUnknownCountry]
+/// Why a [Bic] refused its input. Sealed, not an enum, because [BicWrongLength] and [BicUnknownCountry]
 /// report values read from the input.
 ///
 /// Three variants where IBAN has five: ISO 9362 has no checksum and no per-country length, so there
