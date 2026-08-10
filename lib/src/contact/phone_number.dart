@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
 import '../numerics/digits.dart';
+import '../shared/iso_country_code.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/phone_number_failure.dart';
@@ -35,7 +36,7 @@ extension type const PhoneNumber._(String value) {
   /// Parses [input] as a phone number, reporting the [PhoneNumberFailure] that says which check
   /// failed. See [tryParse] for the `region` hint.
   static ParseOutcome<PhoneNumberFailure, PhoneNumber> parse(String input, {String? region}) {
-    final callerCountry = region == null ? null : _isoCodeForRegion(region);
+    final callerCountry = region == null ? null : isoCountryCodeFor(region);
     if (region != null && callerCountry == null) return const ParseFailure(.unknownRegion);
 
     final phone_numbers.PhoneNumber parsed;
@@ -89,10 +90,4 @@ extension type const PhoneNumber._(String value) {
     .invalid || .invalidCountryCallingCode || .invalidIsoCode || .inputIsTooLong => .invalid,
     // coverage:ignore-end
   };
-}
-
-phone_numbers.IsoCode? _isoCodeForRegion(String region) {
-  final upperRegion = region.toUpperCase();
-
-  return phone_numbers.IsoCode.values.firstWhereOrNull((code) => code.name == upperRegion);
 }
