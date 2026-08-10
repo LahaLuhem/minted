@@ -31,10 +31,10 @@ final class Digits extends Iterable<Digit> {
   /// Parses [input] as a run of decimal digits, reporting [DigitsFailure] when
   /// any character is not `0`-`9`. Empty input yields an empty sequence.
   static ParseOutcome<DigitsFailure, Digits> parse(String input) {
-    final codes = input.codeUnits;
-    final parsedDigits = !codes.every(_isAsciiDigit)
+    final codeUnits = input.codeUnits;
+    final parsedDigits = !codeUnits.every(_isAsciiDigit)
         ? null
-        : Digits._(Uint8List.fromList([for (final code in codes) code - _asciiZero]));
+        : Digits._(Uint8List.fromList([for (final code in codeUnits) code - _asciiZero]));
 
     return parsedDigits == null
         ? const ParseFailure(DigitsFailure.notAllDigits)

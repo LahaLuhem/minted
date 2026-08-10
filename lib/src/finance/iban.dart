@@ -24,12 +24,12 @@ extension type const Iban._(String value) {
   static Iban fromComponents({required String countryCode, required String bban}) {
     final upperCountry = countryCode.toUpperCase();
     final compactBban = bban.replaceAll(_whitespace, '').toUpperCase();
-    final assembled = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
-    final failure = _failureFor(assembled);
+    final assembledIban = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
+    final failure = _failureFor(assembledIban);
 
     return failure != null
         ? throw MintedFormatException.from(failure, '$countryCode + $bban')
-        : ._(assembled);
+        : ._(assembledIban);
   }
 
   /// Parses [input] as an IBAN, or returns `null` when it fails the structure,
@@ -72,16 +72,16 @@ extension type const Iban._(String value) {
   // Why already-normalised input is not an IBAN, or null when it is one. The single gate tryParse,
   // parse, and fromComponents funnel through, so a diagnosis and an acceptance can't disagree.
   static IbanFailure? _failureFor(String normalised) {
-    final result = IbanValidator.validate(normalised);
-    if (result.isValid) return null;
+    final validationResult = IbanValidator.validate(normalised);
+    if (validationResult.isValid) return null;
 
-    return switch (result.error) {
+    return switch (validationResult.error) {
       .emptyInput || .tooShort => const IbanTooShort(),
       .invalidCharacters => const IbanInvalidCharacters(),
       .unknownCountry => IbanUnknownCountry(normalised.substring(0, _checkDigitsStart)),
       // countryInfo is populated whenever the country is known, which invalidLength implies.
       .invalidLength => IbanInvalidLength(
-        expected: result.countryInfo!.ibanLength,
+        expected: validationResult.countryInfo!.ibanLength,
         actual: normalised.length,
       ),
       .checksumFailed => const IbanChecksumFailed(),

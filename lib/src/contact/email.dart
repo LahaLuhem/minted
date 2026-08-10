@@ -38,15 +38,15 @@ extension type const Email._(String value) {
   /// Parses [input] as an email address, reporting [EmailFailure] when it is not
   /// well-formed. See the type docs for the normalisation applied.
   static ParseOutcome<EmailFailure, Email> parse(String input) {
-    final trimmed = input.trim();
-    if (!EmailValidator.validate(trimmed)) return const ParseFailure(.malformed);
+    final trimmedInput = input.trim();
+    if (!EmailValidator.validate(trimmedInput)) return const ParseFailure(.malformed);
 
-    final atSign = trimmed.lastIndexOf('@');
+    final atSignIndex = trimmedInput.lastIndexOf('@');
 
     return ParseSuccess(
       ._(
-        '${trimmed.substring(0, atSign)}@'
-        '${trimmed.substring(atSign + 1).toLowerCase()}',
+        '${trimmedInput.substring(0, atSignIndex)}@'
+        '${trimmedInput.substring(atSignIndex + 1).toLowerCase()}',
       ),
     );
   }
