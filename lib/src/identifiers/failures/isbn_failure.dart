@@ -1,8 +1,11 @@
+/// @docImport '../isbn.dart';
+library;
+
 import 'package:meta/meta.dart';
 
 import '../../shared/minted_failure.dart';
 
-/// Why an ISBN refused its input. Sealed, not an enum, because [IsbnWrongLength] and [IsbnInvalidPrefix]
+/// Why an [Isbn] refused its input. Sealed, not an enum, because [IsbnWrongLength] and [IsbnInvalidPrefix]
 /// report values read from the input.
 ///
 /// Four variants because ISO 2108 is a prefix range plus a check digit, so it has independent things
