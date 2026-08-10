@@ -50,6 +50,14 @@ void main() {
   print(isbn.isbn10); // 0306406152  (null for a 979 ISBN, which never had one)
   print(Isbn.tryParse('9790260000438')); // null (an ISMN: printed music, not a book)
 
+  // `Bic` folds the 8-character SWIFT code into the 11-character one, `XXX` being the primary
+  // office, so both spellings of one office are the same value.
+  final bic = Bic.tryParse('deut de ff')!;
+  print(bic.value); // DEUTDEFFXXX
+  print(bic.bic8); // DEUTDEFF  (the short form, rebuilt)
+  print(bic == Bic.tryParse('DEUTDEFFXXX')); // true
+  print(Bic.tryParse('DEUTZZFF')); // null (ZZ is not a country)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

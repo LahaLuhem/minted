@@ -85,9 +85,10 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Finance
 
-| Type   | What it guarantees                                 | Standard                                                                     |
-|--------|----------------------------------------------------|------------------------------------------------------------------------------|
-| `Iban` | structure, country length, and the mod-97 checksum | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
+| Type   | What it guarantees                                     | Standard                                                                     |
+|--------|--------------------------------------------------------|------------------------------------------------------------------------------|
+| `Iban` | structure, country length, and the mod-97 checksum     | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
+| `Bic`  | a SWIFT code: structure and a real country, folded to 11 | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
 
 ### Chronology
 
@@ -187,6 +188,14 @@ isbn == Isbn.tryParse('978-0-306-40615-7');   // true
 
 Isbn.tryParse('9790260000438');   // null: an ISMN, printed music rather than a book
 
+// Bic: the 8- and 11-character spellings of one office are the same value, XXX being the office:
+final bic = Bic.tryParse('deut de ff')!;
+bic.value;              // 'DEUTDEFFXXX'
+bic.bic8;               // 'DEUTDEFF'   (the short form, rebuilt)
+bic.countryCode;        // 'DE'
+bic.isPrimaryOffice;    // true
+bic.isSwiftRegistrable; // true: ISO 9362 permits shapes SWIFT itself doesn't issue
+
 // build from parts you already trust (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
 Isbn.fromComponents(prefix: '978', body: '030640615');              // same, for a publisher
@@ -212,6 +221,10 @@ IBAN country coverage comes from [`iban_validator`](https://pub.dev/packages/iba
 tracks recent adoptions and includes some countries not yet in the formal ISO registry. You can
 check a given country in its
 [data file](https://github.com/khrisbreezy/iban_validator/blob/main/lib/src/iban_data.dart).
+
+`Bic` has no checksum to lean on: ISO 9362 defines none, so a well-formed code is accepted whether
+or not an institution holds it. The country list comes from `phone_numbers_parser`, already here for
+`PhoneNumber`, and includes `XK` for Kosovo the way SWIFT does.
 
 `Isbn` doesn't hyphenate. The group boundaries aren't in the digits; they come from ISBN
 International's range table, revised as ranges get allocated, so shipping a snapshot would mean
@@ -312,7 +325,8 @@ a deliberate trade rather than an oversight:
 - [x] `Digit` / `Digits` (numeric building blocks)
 - [x] `Uuid` (RFC 9562: parse, classify version/variant, Nil/Max sentinels)
 - [x] `Isbn` (ISO 2108: both generations, mod-11 and GS1 mod-10, folded to ISBN-13)
-- [ ] `Bic`, `CreditCardNumber` (Luhn), `Ean` / `Gtin`
+- [x] `Bic` (ISO 9362: SWIFT codes, 8- and 11-character forms folded to one value)
+- [ ] `CreditCardNumber` (Luhn), `Ean` / `Gtin`
 - [ ] `Isbn` hyphenation, once the ISBN range table has somewhere to live
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
 
