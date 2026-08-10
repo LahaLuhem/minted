@@ -33,11 +33,11 @@ extension type const Uuid._(String value) {
   /// Parses [input] as a UUID, reporting [UuidMalformed] unless it is a well-formed UUID string
   /// (canonical, `urn:uuid:`-prefixed, or brace-wrapped).
   static ParseOutcome<UuidFailure, Uuid> parse(String input) {
-    final unwrapped = _unwrap(input.trim().toLowerCase());
+    final unwrappedInput = _unwrap(input.trim().toLowerCase());
 
-    return !_canonical.hasMatch(unwrapped)
+    return !_canonical.hasMatch(unwrappedInput)
         ? const ParseFailure(UuidMalformed())
-        : ParseSuccess(._(unwrapped));
+        : ParseSuccess(._(unwrappedInput));
   }
 
   /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), throwing

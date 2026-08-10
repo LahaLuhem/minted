@@ -61,10 +61,10 @@ final class Date implements Comparable<Date> {
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, reporting the [DateFailure] that
   /// says whether the shape or one of the parts is wrong.
   static ParseOutcome<DateFailure, Date> parse(String input) {
-    final parts = _partsOf(input);
-    if (parts == null) return const ParseFailure(DateNotIso8601());
+    final dateParts = _partsOf(input);
+    if (dateParts == null) return const ParseFailure(DateNotIso8601());
 
-    final (:year, :month, :day) = parts;
+    final (:year, :month, :day) = dateParts;
     final parsedDate = _tryFromParts(year, month, day);
 
     return parsedDate == null
@@ -86,9 +86,9 @@ final class Date implements Comparable<Date> {
   /// The date [days] days after this one (pass a negative [days] to go back), or `null` when the
   /// result leaves `0000`-`9999`.
   Date? tryAddDays(int days) {
-    final shifted = _utcMidnight.add(Duration(days: days));
+    final shiftedUtc = _utcMidnight.add(Duration(days: days));
 
-    return _tryFromParts(shifted.year, shifted.month, shifted.day);
+    return _tryFromParts(shiftedUtc.year, shiftedUtc.month, shiftedUtc.day);
   }
 
   /// The date [days] days after this one (pass a negative [days] to go back), throwing
@@ -152,26 +152,26 @@ final class Date implements Comparable<Date> {
 
   // The parts of an ISO 8601 YYYY-MM-DD string, or null when the input isn't that shape.
   static ({int year, int month, int day})? _partsOf(String input) {
-    final match = _iso8601.firstMatch(input);
+    final iso8601Match = _iso8601.firstMatch(input);
 
-    return match == null
+    return iso8601Match == null
         ? null
         : (
-            year: int.parse(match.group(1)!),
-            month: int.parse(match.group(2)!),
-            day: int.parse(match.group(3)!),
+            year: int.parse(iso8601Match.group(1)!),
+            month: int.parse(iso8601Match.group(2)!),
+            day: int.parse(iso8601Match.group(3)!),
           );
   }
 
   // The [Date] for these parts, or null when they don't form a real calendar date. The single
   // validation gate that parse, the factory, and fromDateTime all funnel through.
   static Date? _tryFromParts(int year, int month, int day) {
-    final monthType = Month.tryFrom(month);
-    if (monthType == null) return null;
+    final parsedMonth = Month.tryFrom(month);
+    if (parsedMonth == null) return null;
 
-    final wellFormed = year >= 0 && year <= _maxYear && day >= 1 && day <= monthType.daysIn(year);
+    final wellFormed = year >= 0 && year <= _maxYear && day >= 1 && day <= parsedMonth.daysIn(year);
 
-    return !wellFormed ? null : Date._(year, monthType, day);
+    return !wellFormed ? null : Date._(year, parsedMonth, day);
   }
 
   // Which part of the given date is out of range. Reached only after _tryFromParts returns null,
@@ -179,11 +179,11 @@ final class Date implements Comparable<Date> {
   static DateFailure _partsFailure(int year, int month, int day) {
     if (year < 0 || year > _maxYear) return DateYearOutOfRange(year);
 
-    final monthType = Month.tryFrom(month);
+    final parsedMonth = Month.tryFrom(month);
 
-    return monthType == null
+    return parsedMonth == null
         ? DateMonthOutOfRange(month)
-        : DateDayOutOfRange(year: year, month: month, day: day, maxDay: monthType.daysIn(year));
+        : DateDayOutOfRange(year: year, month: month, day: day, maxDay: parsedMonth.daysIn(year));
   }
 
   static final _iso8601 = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');

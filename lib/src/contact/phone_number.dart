@@ -62,10 +62,10 @@ extension type const PhoneNumber._(String value) {
   /// The number's type (mobile, fixed line, VoIP, ...), or `null` if it matches no known type.
   /// When a number is valid as more than one type, the first match in enum-declaration order is returned.
   phone_numbers.PhoneNumberType? get type {
-    final parsed = _parsed;
+    final parsedPhone = _parsed;
 
     return phone_numbers.PhoneNumberType.values.firstWhereOrNull(
-      (candidate) => parsed.isValid(type: candidate),
+      (candidate) => parsedPhone.isValid(type: candidate),
     );
   }
 
