@@ -27,6 +27,11 @@ void main() {
         typeName: 'Month',
         message: 'not a month number 1-12',
       ),
+      'Weekday has one way to fail': (
+        failure: WeekdayFailure.notAWeekday,
+        typeName: 'Weekday',
+        message: 'not a weekday number 1-7',
+      ),
       'Email is capped at one by its engine': (
         failure: EmailFailure.malformed,
         typeName: 'Email',
