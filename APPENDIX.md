@@ -26,6 +26,7 @@ anchor, and keep anchors stable across renames.
 - [Date: a calendar date, not an instant](#date-value-type)
 - [Weekday: an enum, where Month is an extension type](#weekday-enum)
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
+- [Isbn: two generations, one value, no hyphens](#isbn-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -569,6 +570,42 @@ merits: the enum where the domain is a fixed set of names, the `int` where an en
 misrepresent the field. This is the balance minted is always weighing (stronger typing against
 honest representation and call-site ergonomics), resolved per field, not a reflex toward the
 strongest type.
+
+---
+
+<a id="isbn-value-type"></a>
+## Isbn: two generations, one value, no hyphens
+
+ISO 2108 has had two shapes: ten characters with a mod-11 check digit (ten spelled `X`), and, since
+2007, thirteen digits with the GS1 mod-10 check. Every 978-prefixed ISBN-13 has exactly one ISBN-10
+twin, so the same book arrives written both ways.
+
+**Everything folds to thirteen digits.** Extension-type equality is representation equality, so the
+stored form *is* the equality key ([normalise on parse](#normalise-on-parse)). Keeping whichever
+spelling arrived would make `0-306-40615-2` and `978-0-306-40615-7` unequal and put one book in a
+`Set` twice. Nothing is lost, since the mapping is a bijection: `isbn10` rebuilds the legacy form,
+`null` for the 979 range that never had one. The check digit is recomputed rather than carried
+across, because the two generations use different algorithms.
+
+**979-0 is refused.** `977` is an ISSN and `9790` an ISMN (ISO 10957, printed music): real
+identifiers that are also well-formed GS1 article numbers, so a shape-only check would take them
+for books. `IsbnInvalidPrefix` names ISMN specifically, because "this is sheet music" is a remedy,
+while staying one variant, *not an ISBN*.
+
+**No hyphenation, which is the load-bearing decision.** The groups in `978-0-306-40615-7` are not
+in the digits; they come from ISBN International's range table, revised as blocks are allocated.
+Embedding a snapshot ships a clock: correct on release day, quietly wrong after, and a confidently
+mis-hyphenated ISBN is worse than a plain one, the same reasoning that caps `Email` at one failure
+variant. It would also make core carry mutable data for the first time. So `Isbn` strips hyphens
+and exposes the parts that *are* derivable. `Iban.formatted` is no precedent: grouping by four
+needs no table. The `isbn` package on pub carries no range data either, so it would buy only the
+two check-digit algorithms, which is the case [hard rule 7](./.ai/AGENTS.md#hard-rules) sends to
+`lib/src/shared/` rather than a micro-dependency.
+
+**What mod-10 cannot do.** Swapping two adjacent digits differing by five leaves the weighted sum
+unchanged, so `9780306401657` passes as readily as `9780306406157`. That is a property of the
+standard, not of this implementation, and mod-11 over the ten-digit form catches every
+transposition. A test pins the blind spot so it does not read as a bug.
 
 ---
 

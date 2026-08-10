@@ -99,9 +99,10 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Identifiers
 
-| Type   | What it guarantees                                                    | Standard                                           |
-|--------|-----------------------------------------------------------------------|----------------------------------------------------|
-| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) |
+| Type   | What it guarantees                                                    | Standard                                                         |
+|--------|-----------------------------------------------------------------------|--------------------------------------------------------------------|
+| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)               |
+| `Isbn` | prefix and check digit; both generations folded to ISBN-13            | [ISO 2108](https://www.isbn-international.org/content/what-isbn) |
 
 ### Numerics
 
@@ -178,8 +179,17 @@ id.version;  // 1
 id.variant;  // UuidVariant.rfc9562
 Uuid.tryParse('not-a-uuid');   // null
 
+// Isbn: both generations fold to the same 13-digit value, so two spellings of one book are equal:
+final isbn = Isbn.tryParse('0-306-40615-2')!;
+isbn.value;    // '9780306406157'
+isbn.isbn10;   // '0306406152'   (null for a 979 ISBN, which never had one)
+isbn == Isbn.tryParse('978-0-306-40615-7');   // true
+
+Isbn.tryParse('9790260000438');   // null: an ISMN, printed music rather than a book
+
 // build from parts you already trust (throws if they don't form a valid whole):
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
+Isbn.fromComponents(prefix: '978', body: '030640615');              // same, for a publisher
 Email.fromComponents(localPart: 'jane', domain: 'example.com');
 PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryParse('655570576')!);
 ```
@@ -202,6 +212,11 @@ IBAN country coverage comes from [`iban_validator`](https://pub.dev/packages/iba
 tracks recent adoptions and includes some countries not yet in the formal ISO registry. You can
 check a given country in its
 [data file](https://github.com/khrisbreezy/iban_validator/blob/main/lib/src/iban_data.dart).
+
+`Isbn` doesn't hyphenate. The group boundaries aren't in the digits; they come from ISBN
+International's range table, revised as ranges get allocated, so shipping a snapshot would mean
+shipping a clock. Hyphens are accepted and stripped, and you get `value`, `prefix`, `body` and
+`checkDigit`.
 
 </details>
 
@@ -296,7 +311,9 @@ a deliberate trade rather than an oversight:
 - [x] `Date` / `Month` (ISO 8601 calendar date, leap-aware month)
 - [x] `Digit` / `Digits` (numeric building blocks)
 - [x] `Uuid` (RFC 9562: parse, classify version/variant, Nil/Max sentinels)
-- [ ] `Bic`, `CreditCardNumber` (Luhn), `Isbn`, `Ean` / `Gtin`
+- [x] `Isbn` (ISO 2108: both generations, mod-11 and GS1 mod-10, folded to ISBN-13)
+- [ ] `Bic`, `CreditCardNumber` (Luhn), `Ean` / `Gtin`
+- [ ] `Isbn` hyphenation, once the ISBN range table has somewhere to live
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
 
 ## Contributing
