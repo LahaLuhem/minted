@@ -43,6 +43,13 @@ void main() {
   print(id.variant); // UuidVariant.rfc9562
   print(Uuid.tryParse('not-a-uuid')); // null
 
+  // `Isbn` folds both generations into the 13-digit form, so the two spellings of one book are
+  // the same value.
+  final isbn = Isbn.tryParse('0-306-40615-2')!;
+  print(isbn.value); // 9780306406157
+  print(isbn.isbn10); // 0306406152  (null for a 979 ISBN, which never had one)
+  print(Isbn.tryParse('9790260000438')); // null (an ISMN: printed music, not a book)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
