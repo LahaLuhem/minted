@@ -65,7 +65,16 @@ final class PaymentCardNumber {
     final compactInput = _compact(input);
 
     return Set.unmodifiable(
-      _schemeRanges.where((range) => _rangeHolds(compactInput, range)).map((range) => range.scheme),
+      _schemeRanges
+          .where((candidateRange) => candidateRange.digits <= compactInput.length)
+          .where((placeableRange) {
+            final prefixValue = int.tryParse(compactInput.substring(0, placeableRange.digits));
+
+            return prefixValue != null &&
+                prefixValue >= placeableRange.from &&
+                prefixValue <= placeableRange.to;
+          })
+          .map((claimingRange) => claimingRange.scheme),
     );
   }
 
@@ -123,13 +132,6 @@ final class PaymentCardNumber {
 
   static bool _checksumHolds(String compactInput) =>
       compactInput.endsWith(luhnCheckDigit(compactInput.substring(0, compactInput.length - 1)));
-
-  static bool _rangeHolds(String compactInput, _SchemeRange range) {
-    if (compactInput.length < range.digits) return false;
-    final prefixValue = int.tryParse(compactInput.substring(0, range.digits));
-
-    return prefixValue != null && prefixValue >= range.from && prefixValue <= range.to;
-  }
 
   // One row per range, and only ranges no other known network contests, so a contested one reads as
   // unknown rather than as a confident wrong answer. Why the full registry stays out:
