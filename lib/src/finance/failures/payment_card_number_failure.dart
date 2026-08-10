@@ -1,8 +1,11 @@
+/// @docImport '../payment_card_number.dart';
+library;
+
 import 'package:meta/meta.dart';
 
 import '../../shared/minted_failure.dart';
 
-/// Why a payment card number refused its input. Sealed, not an enum, because
+/// Why a [PaymentCardNumber] refused its input. Sealed, not an enum, because
 /// [PaymentCardNumberWrongLength] reports a value read from the input.
 ///
 /// Three variants: ISO/IEC 7812 is a length window, a charset, and the Luhn check, and the card

@@ -264,6 +264,17 @@ collection, e.g. an embedded ISO table or a type's set of known values. The cons
 mutate it and the view silently follows. Reach for `UnmodifiableListView` only when you
 specifically want a read-through view of private mutable state.
 
+<a id="idioms-collection-type-by-semantics"></a>
+### Pick the collection type by semantics, not by habit
+
+An embedded table whose order is never consulted and whose rows are unique is a `Set`, not a
+`List`, even when the access pattern is a predicate scan rather than `contains` (so the `Set` buys
+nothing at lookup). The type states the two facts, and a `const` `Set` turns a duplicated row into
+`equal_elements_in_const_set` at compile time, where a `List` would quietly scan it twice. Records
+are legal elements: they carry structural equality without overriding `==`, so the const-set
+restriction doesn't apply. `Isbn._booklandPrefixes` and `PaymentCardNumber._schemeRanges` are both
+`Set`s on that reasoning.
+
 <a id="idioms-collection-literals"></a>
 ### Collection-`for` / collection-`if` over `Iterable.map(…).toList()`
 
@@ -334,6 +345,24 @@ collection-`for` stays: it is the direct literal form, and a `generate(…).toLi
 is built either way). So `Uuid.bytes` (a `Uint8List`) keeps its collection-`for`, while
 `Uuid.fromBytes` (which reduces to a `String`) uses the lazy pipeline.
 
+**Read that carve-out narrowly: it covers a *literal*, where every element is written out and
+nothing is derived.** The moment the elements come from *selecting or projecting* another
+collection, the chain wins even though the terminal materialises. Each step then names one
+transformation, and nothing is built until the end.
+
+```dart
+// Prefer (filter, then project, then materialise once):
+return Set.unmodifiable(
+  _schemeRanges.where((range) => _rangeHolds(input, range)).map((range) => range.scheme),
+);
+
+// Over (the predicate hides inside an `if`, and the set is filled element by element):
+return Set.unmodifiable({
+  for (final range in _schemeRanges)
+    if (_rangeHolds(input, range)) range.scheme,
+});
+```
+
 **Group at the source, don't flatten and re-split.** The pipeline should build the final shape
 directly. `Uuid.fromBytes` groups the *bytes* and hex-encodes each group, rather than hex-encoding
 everything into one 32-character string and slicing that back apart: the flat string would exist
@@ -357,12 +386,16 @@ from the parameter, return, or variable type. This covers enum values in pattern
 slots, and named constructors / static factories in a return or context slot.
 
 ```dart
-// enum value in a switch arm — context type is CardBrand:
-CardBrand _brand(String digits) => switch (digits) {
-  _ when digits.startsWith('4')  => .visa,
-  _ when digits.startsWith('34') => .amex,
-  _                              => .unknown,
+// enum value in a switch arm — context type is the wrapped engine's error enum (Iban._failureFor):
+return switch (validationResult.error) {
+  .emptyInput || .tooShort => const IbanTooShort(),
+  .invalidCharacters => const IbanInvalidCharacters(),
+  // … one arm per error the engine reports
 };
+
+// enum value in a record field of a typed const table, and in a `??` slot (PaymentCardNumber):
+static const _schemeRanges = <_SchemeRange>[(scheme: .visa, digits: 1, from: 4, to: 4)];
+CardScheme get cardScheme => cardSchemes.singleOrNull ?? .unknown;
 ```
 
 Skip it where the context type isn't obvious without re-reading, or where it hurts readability.
