@@ -59,7 +59,9 @@ minted/
 │           ├── minted_failure.dart            The MintedFailure supertype
 │           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
 │           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
-│           └── check_digits.dart              Luhn / mod-97 / mod-11 / GS1 helpers (private)
+│           └── check_digits/                  One file per standard, all private
+│               ├── digit_values.dart          ASCII '0'-'9' → 0-9, shared by every algorithm
+│               └── iban_check_digits.dart     ISO 13616 mod-97-10
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
@@ -87,6 +89,12 @@ vocabularies grow to rival the types themselves, and the split on disk is what l
 the AST. No `part` / `part of`: sealed variants only have to share a *file*, so a plain import
 suffices, and anything a failure needs from its value type belongs in `shared/` instead (which is
 why [`iso_date_format.dart`](../lib/src/shared/iso_date_format.dart) exists).
+
+**Check-digit algorithms get one file per standard** under `shared/check_digits/`, and reach what
+they share (`digit_values.dart`, ASCII decimal decoding) by plain import, never `part`. Separate
+libraries is the whole point: Dart privacy is library-scoped, so parts would leak every `_` constant
+across every standard, and mod-97's modulus of 97 has no business being visible to the next
+algorithm. Each standard keeps its own constants and its own character map private to its own file.
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
 or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping.
