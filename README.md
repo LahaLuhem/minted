@@ -90,6 +90,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Iban`              | structure, country length, and the mod-97 checksum        | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
 | `Bic`               | a SWIFT code: structure and a real country, folded to 11  | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
 | `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
+| `Isin`              | a securities ID: charset, two-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html) |
 
 ### Commerce
 

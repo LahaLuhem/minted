@@ -29,6 +29,7 @@ anchor, and keep anchors stable across renames.
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [Isbn: two generations, one value, no hyphens](#isbn-value-type)
 - [Issn: the one type that keeps its hyphen](#issn-value-type)
+- [Isin: a prefix that need not be a country](#isin-value-type)
 - [Bic: no checksum, so the standard is the whole check](#bic-value-type)
 - [PaymentCardNumber: a class so it can mask, and a scheme it only reports](#payment-card-number-value-type)
 - [Gtin: four lengths, one number, padded to fourteen](#gtin-value-type)
@@ -661,6 +662,28 @@ family cannot see, so a future "simplification" to mod-10 would turn them green.
 numbers together is an assignment held in the ISSN Register, not a computation, and the `977` EAN-13
 that carries an ISSN on a magazine adds two variant digits that are likewise not derivable. Both are
 registry lookups wearing a checksum's clothing.
+
+---
+
+<a id="isin-value-type"></a>
+## Isin: a prefix that need not be a country
+
+**Luhn, but over an expansion, which changes the weighting.** ISO 6166 replaces every letter with
+the two digits of its value (`A`=10 ... `Z`=35) and runs Luhn over the result, so `AU0000XVGZA3`
+weighs eighteen characters rather than the twelve it shows. That is why `luhnCheckDigit` had to be
+length-agnostic before this type could reuse it, and why the `A`=10 mapping moved out of
+`iban_check_digits.dart` into `shared/`: ISO 13616 folds those values into mod-97 and ISO 6166
+spells them out, but the mapping is one convention shared by two standards.
+
+**The prefix is two letters, not a country.** `XS` is Euroclear and Clearstream, `EU` is
+supranational, and both are as valid as `GB`. Gating `parse` on ISO 3166 would
+[ship a clock](#registry-data-ships-a-clock) against the set of non-country prefixes, so `parse`
+enforces what the standard actually fixes (two letters) and `hasCountryPrefix` *reports* the
+narrower fact. Exactly the [`Bic`](#bic-value-type) split between the standard and the registry.
+
+**Its parts stay `String`.** An NSIN is `[A-Z0-9]`, so the
+[digits-only rule](#typed-digit-subparts) does not apply and `Digits` there would be a narrower type
+rather than a stronger one. Same reason `Iban.fromComponents` keeps its `bban` a `String`.
 
 ---
 

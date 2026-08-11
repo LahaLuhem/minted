@@ -92,6 +92,14 @@ void main() {
   print(issn.checkCharacter); // X
   print(Issn.tryParse('0317-8470')); // null (fails the mod-11 check)
 
+  // `Isin` runs Luhn over the number with its letters expanded to two digits each, so a letter in
+  // the NSIN weighs more characters than it shows.
+  final isin = Isin.tryParse('au0000xvgza3')!;
+  print(isin.value); // AU0000XVGZA3
+  print(isin.nsin); // 0000XVGZA
+  print(isin.hasCountryPrefix); // true
+  print(Isin.tryParse('US0378331006')); // null (fails the Luhn check)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
