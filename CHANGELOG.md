@@ -4,6 +4,7 @@
 - \[#4\] Isbn (ISO 2108: both generations, folded to ISBN-13)
 - \[#1\] Bic (ISO 9362: SWIFT codes, 8- and 11-character forms folded to one value)
 - \[#3\] PaymentCardNumber (ISO/IEC 7812: Luhn, masked rendering, card schemes reported)
+- \[#16\] Gtin (GS1 GTIN: mod-10 across all four lengths, folded to fourteen digits)
 
 ## [1.0.0] - 2026-08-09
 ### Changed
