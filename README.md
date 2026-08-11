@@ -111,6 +111,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 |--------|-----------------------------------------------------------------------|------------------------------------------------------------------|
 | `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)               |
 | `Isbn` | prefix and check digit; both generations folded to ISBN-13            | [ISO 2108](https://www.isbn-international.org/content/what-isbn) |
+| `Imei` | fifteen digits and the Luhn check; TAC and serial read back           | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)      |
 
 ### Numerics
 

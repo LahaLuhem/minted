@@ -62,6 +62,26 @@ void main() {
         typeName: 'Uuid',
         message: 'expected 16 bytes, got 15',
       ),
+      'Imei: not the one length': (
+        failure: ImeiWrongLength(14),
+        typeName: 'Imei',
+        message: 'expected 15 digits, got 14',
+      ),
+      'Imei: sixteen digits is named as an IMEISV, not called a miscount': (
+        failure: ImeiWrongLength(16),
+        typeName: 'Imei',
+        message: '16 digits is an IMEISV, not an IMEI',
+      ),
+      'Imei: bad charset': (
+        failure: ImeiInvalidCharacters(),
+        typeName: 'Imei',
+        message: 'contains characters outside 0-9',
+      ),
+      'Imei: the Luhn check is named': (
+        failure: ImeiChecksumFailed(),
+        typeName: 'Imei',
+        message: 'failed the Luhn check',
+      ),
       'Isbn: neither generation has that length': (
         failure: IsbnWrongLength(12),
         typeName: 'Isbn',
@@ -214,6 +234,12 @@ void main() {
           failure: UuidWrongByteCount(expected: 16, actual: 15),
           rendered: 'UuidWrongByteCount(expected: 16, actual: 15)',
         ),
+        'a wrong IMEI length': (failure: ImeiWrongLength(14), rendered: 'ImeiWrongLength(14)'),
+        'an IMEI charset failure': (
+          failure: ImeiInvalidCharacters(),
+          rendered: 'ImeiInvalidCharacters()',
+        ),
+        'the IMEI Luhn variant': (failure: ImeiChecksumFailed(), rendered: 'ImeiChecksumFailed()'),
         'a wrong ISBN length': (failure: IsbnWrongLength(12), rendered: 'IsbnWrongLength(12)'),
         'an ISBN charset failure': (
           failure: IsbnInvalidCharacters(),
@@ -307,6 +333,21 @@ void main() {
           failure: UuidWrongByteCount(expected: 16, actual: 15),
           twin: UuidWrongByteCount(expected: 16, actual: 15),
           other: UuidWrongByteCount(expected: 16, actual: 17),
+        ),
+        'IMEI length differs by its count': (
+          failure: ImeiWrongLength(14),
+          twin: ImeiWrongLength(14),
+          other: ImeiWrongLength(16),
+        ),
+        'the IMEI charset variant': (
+          failure: ImeiInvalidCharacters(),
+          twin: ImeiInvalidCharacters(),
+          other: ImeiChecksumFailed(),
+        ),
+        'the IMEI Luhn variant': (
+          failure: ImeiChecksumFailed(),
+          twin: ImeiChecksumFailed(),
+          other: ImeiInvalidCharacters(),
         ),
         'ISBN length differs by its count': (
           failure: IsbnWrongLength(12),
