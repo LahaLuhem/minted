@@ -55,6 +55,8 @@ minted/
 │       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
 │       ├── finance/                 Iban, Bic (+ CreditCardNumber, … as they land)
 │       │   └── failures/            IbanFailure, BicFailure and their variants
+│       ├── geography/               GeoCoordinate
+│       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
 │       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/

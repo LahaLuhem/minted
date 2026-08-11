@@ -163,13 +163,13 @@ consumer learns one shape and applies it everywhere. Rationale is in
   ```dart
   @immutable
   final class GeoCoordinate {
+    final double latitude;
+    final double longitude;
+
     const GeoCoordinate._(this.latitude, this.longitude);
 
     static GeoCoordinate? tryParse(String input) => parse(input).getOrNull();
     static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> parse(String input) { /* ISO 6709 */ }
-
-    final double latitude;
-    final double longitude;
 
     String get iso6709 => /* canonical string form */;
 
@@ -182,6 +182,9 @@ consumer learns one shape and applies it everywhere. Rationale is in
     String toString() => 'GeoCoordinate(latitude: $latitude, longitude: $longitude)';
   }
   ```
+
+  This one ships: [`lib/src/geography/geo_coordinate.dart`](./lib/src/geography/geo_coordinate.dart)
+  is the sketch filled in, so keep the two in step.
 
 **One carve-out on the first bullet: a single primitive still takes a class when a delegated
 `Object` member would be wrong for the type.** The delegation below is a feature only while the

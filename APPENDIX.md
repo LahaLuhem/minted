@@ -35,6 +35,7 @@ anchor, and keep anchors stable across renames.
 - [PaymentCardNumber: a class so it can mask, and a scheme it only reports](#payment-card-number-value-type)
 - [Gtin: four lengths, one number, padded to fourteen](#gtin-value-type)
 - [Imei: printed in full, unlike a card number](#imei-value-type)
+- [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -839,6 +840,66 @@ branch on `ImeiWrongLength` rather than its own variant, because the remedy is i
 
 **Luhn's blind spots come along**, so `352099001761481` and `352909001761481` both pass; see
 [check-digit blind spots](#check-digit-blind-spots).
+
+---
+
+<a id="geo-coordinate-value-type"></a>
+## GeoCoordinate: a bounded pair, not two doubles
+
+**The bug this type exists for is a transposition, which no range check can catch.** `f(lat, lng)`
+and `f(lng, lat)` have the same signature, and both arguments are plausible degrees. So the pair is
+named once, at the parse boundary, and `from` / `tryFrom` take **required named** parameters. That
+breaks the habit [`Date`](#date-value-type) set with positional `Date(y, m, d)`, deliberately: a
+year, a month and a day are not interchangeable at a glance, whereas two degree values are. Half the
+transpositions are caught anyway, because a longitude past 90 is not a latitude, which is exactly the
+half that would otherwise reach production silently.
+
+**Altitude and a CRS identifier are refused, not modelled and not dropped.** `+27.5916+086.5640+8850CRSWGS_84/`
+is valid ISO 6709, and this type rejects it. Modelling altitude buys no invariant: its sign, its
+units and its datum are all defined by the CRS, so a `double? altitude` would be a field the type
+cannot promise anything about, and validating the CRS needs a registry we do not carry (see
+[registry data ships a clock](#registry-data-ships-a-clock)). Accepting the string and discarding
+the altitude is worse still, because a parse that silently loses part of its input is not a parse.
+Refusing says what is true: this type is a surface coordinate.
+
+**The canonical form is decimal degrees even though the input may be sexagesimal.** ISO 6709 uses
+the *width* of the degree field as the unit selector — 2/4/6 digits for latitude, 3/5/7 for
+longitude — so one point has three spellings. Folding them to one is the same move
+[`Gtin`](#gtin-value-type) makes with its four lengths. The cost is that a coordinate read from
+`+501234-0001042/` renders as `+50.20944444444444-000.17833333333333334/`, which is ugly and exact.
+The alternative, rounding to a pretty fixed precision, would break the round-trip the canonical form
+promises, so the digits stay. Rendering searches for the shortest fixed-point decimal that reads
+back as the same `double` rather than using `toString`, which switches to exponential notation below
+`1e-6` — and `1e-7` is a legal latitude but not a legal ISO 6709 field.
+
+**Normalising negative zero is a correctness requirement, not a cosmetic one.** This is the first
+floating-point value in the package, which makes two IEEE 754 facts load-bearing that no `int`- or
+`String`-backed type had to face. `-0.0 == 0.0` is true while the two need not share a hash code, so
+an instance holding `-0.0` would break the Set-and-Map-key guarantee
+[normalise on parse](#normalise-on-parse) makes. It also happens to be what the standard asks for,
+signing the equator and the prime meridian with a plus. `NaN` needs no special case for the same
+family of reasons: every comparison with it is false, so a range test written as `>= -bound &&
+<= bound` rejects it for free, which is why the check is written positively rather than as
+`< -bound || > bound`.
+
+**`-180` folds onto `+180`, and a pole keeps its longitude.** Both are cases where two values name
+one place, and they get opposite treatment because only one of them is two spellings of the same
+thing. The standard itself says minus denotes "west longitude *or* the 180° meridian", so the
+antimeridian has two spellings and one location, and RFC 5870 makes that equality normative for
+`geo:` URIs — fold it. At a pole the longitude is *meaningless* rather than redundant, and zeroing it
+would discard a number the caller supplied on a guess about what they meant, so it stands.
+
+**Minutes and seconds reaching 60 fail the shape check, not a range check.** The fixed-width scheme
+is what makes the grammar unambiguous, and the digit range `00`-`59` is part of that width rather
+than a bound on a part, so `+5060+00000/` reports `GeoCoordinateNotIso6709`. This keeps the failure
+vocabulary at three variants, one per remedy: fix the format, fix the latitude, fix the longitude.
+The same reasoning is why `+46+2/` must be refused rather than read leniently — an unpadded
+longitude in a fixed-width format is not a typo the parser can see, it is a *different location*, and
+a lenient parser hands back a plausible wrong answer instead of an error.
+
+**A sole member still earns `lib/src/geography/`.** No existing sector fits a coordinate, and the
+public API is flat regardless because `minted.dart` re-exports everything, so the folder costs
+nothing and is where the next spatial type (Plus Code, MGRS) lands.
 
 ---
 

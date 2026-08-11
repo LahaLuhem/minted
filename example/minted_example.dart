@@ -108,6 +108,15 @@ void main() {
   print(isni.isInOrcidBlock); // true
   print(Isni.tryParse('0000 0001 2103 2683')?.isInOrcidBlock); // false (an ISNI, not an ORCID iD)
 
+  // `GeoCoordinate` names the pair, because a swapped latitude and longitude is a type bug no range
+  // check catches. ISO 6709 picks the unit by field width, and all three widths fold to degrees.
+  final eiffelTower = GeoCoordinate.tryParse('+48.8577+002.295/')!;
+  print(eiffelTower.latitude); // 48.8577
+  print(eiffelTower.iso6709); // +48.8577+002.295/  (canonical form)
+  print(eiffelTower.sexagesimal); // 48°51′27.72″N 2°17′42″E  (display form)
+  print(GeoCoordinate.tryParse('+5012-00010/')?.latitude); // 50.2  (degrees and minutes)
+  print(GeoCoordinate.tryParse('+46+2/')); // null (an unpadded longitude is a different location)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
