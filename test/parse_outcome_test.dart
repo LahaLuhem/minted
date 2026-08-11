@@ -39,6 +39,33 @@ void main() {
       check(failure.getOrElse(() => 99)).equals(99);
     });
 
+    scenario('getOrThrow passes a value through and throws the typed failure otherwise', () {
+      check(success.getOrThrow()).equals(4);
+      check(failure.getOrThrow).throws<MintedFormatException>();
+    });
+
+    // The whole reason it exists over `getOrNull()!`: the typed reason survives, so a violated
+    // claim-in-source says which type refused and why instead of "null check on a null value".
+    scenario('getOrThrow keeps the reason that getOrNull would have discarded', () {
+      check(failure.getOrThrow)
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(EmailFailure.malformed);
+
+      check(failure.getOrThrow)
+          .throws<MintedFormatException>()
+          .has((error) => error.message, 'message')
+          .equals('Invalid Email: not a well-formed email address');
+    });
+
+    // It has the failure but never the text that produced it, so source stays null rather than
+    // being invented.
+    scenario('getOrThrow reports no source, having never seen the input', () {
+      check(
+        failure.getOrThrow,
+      ).throws<MintedFormatException>().has((error) => error.source, 'source').isNull();
+    });
+
     scenario('map transforms a value and carries a failure across untouched', () {
       check(success.map((value) => value * 2)).equals(const ParseSuccess(8));
       check(

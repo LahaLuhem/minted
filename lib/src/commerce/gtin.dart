@@ -2,6 +2,7 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digit.dart';
+import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
@@ -22,12 +23,13 @@ extension type const Gtin._(String value) {
   /// Builds a [Gtin] from [bodyDigits], the number without its check digit, computing that digit.
   /// Throws [MintedFormatException] when the parts don't form a valid GTIN. For assembling from a
   /// known-valid source.
-  static Gtin fromBody(String bodyDigits) {
-    final assembledGtin = _withCheckDigit(_compact(bodyDigits));
+  static Gtin fromBody(Digits bodyDigits) {
+    final body = bodyDigits.asString;
+    final assembledGtin = _withCheckDigit(body);
     final failure = _failureFor(assembledGtin);
 
     return failure != null
-        ? throw MintedFormatException.from(failure, bodyDigits)
+        ? throw MintedFormatException.from(failure, body)
         : ._(_toGtin14(assembledGtin));
   }
 

@@ -153,27 +153,21 @@ void main() {
       },
       outline: (example) {
         check(
-          Isbn.fromComponents(prefix: example.prefix, body: example.body).value,
+          Isbn.fromComponents(
+            prefix: Digits.parse(example.prefix).getOrThrow(),
+            body: Digits.parse(example.body).getOrThrow(),
+          ).value,
         ).equals(example.isbn);
       },
     );
-
-    scenario('fromComponents normalises a hyphenated, spaced input', () {
-      check(Isbn.fromComponents(prefix: '978', body: '0-306 40615').value).equals('9780306406157');
-    });
 
     scenarioOutline<({String prefix, String body, IsbnFailure failure})>(
       'fromComponents reports the same vocabulary as parse',
       examples: {
         'a short body cannot reach thirteen digits': (
           prefix: '978',
-          body: 'TOOSHORT',
+          body: '03064061',
           failure: const IsbnWrongLength(12),
-        ),
-        'the generator refuses a body outside 0-9 rather than guessing': (
-          prefix: '978',
-          body: '03064061A',
-          failure: const IsbnInvalidCharacters(),
         ),
         'a prefix outside the book ranges': (
           prefix: '977',
@@ -187,7 +181,12 @@ void main() {
         ),
       },
       outline: (example) {
-        check(() => Isbn.fromComponents(prefix: example.prefix, body: example.body))
+        check(
+              () => Isbn.fromComponents(
+                prefix: Digits.parse(example.prefix).getOrThrow(),
+                body: Digits.parse(example.body).getOrThrow(),
+              ),
+            )
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -195,10 +194,15 @@ void main() {
     );
 
     scenario('fromComponents error carries the components as its source', () {
-      check(() => Isbn.fromComponents(prefix: '978', body: 'TOOSHORT'))
+      check(
+            () => Isbn.fromComponents(
+              prefix: Digits.parse('978').getOrThrow(),
+              body: Digits.parse('03064061').getOrThrow(),
+            ),
+          )
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
-          .equals('978 + TOOSHORT');
+          .equals('978 + 03064061');
     });
   });
 }

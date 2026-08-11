@@ -123,16 +123,13 @@ void main() {
       },
       outline: (example) {
         check(
-          Imei.fromComponents(tac: example.tac, serialNumber: example.serialNumber).value,
+          Imei.fromComponents(
+            tac: Digits.parse(example.tac).getOrThrow(),
+            serialNumber: Digits.parse(example.serialNumber).getOrThrow(),
+          ).value,
         ).equals(example.imei);
       },
     );
-
-    scenario('fromComponents normalises a hyphenated, spaced TAC', () {
-      check(
-        Imei.fromComponents(tac: '35-209900', serialNumber: '176 148').value,
-      ).equals('352099001761481');
-    });
 
     scenarioOutline<({String tac, String serialNumber, ImeiFailure failure})>(
       'fromComponents reports the same vocabulary as parse',
@@ -147,14 +144,14 @@ void main() {
           serialNumber: '1761480',
           failure: const ImeiWrongLength(16),
         ),
-        'the generator refuses a part outside 0-9 rather than guessing': (
-          tac: '3520990A',
-          serialNumber: '176148',
-          failure: const ImeiInvalidCharacters(),
-        ),
       },
       outline: (example) {
-        check(() => Imei.fromComponents(tac: example.tac, serialNumber: example.serialNumber))
+        check(
+              () => Imei.fromComponents(
+                tac: Digits.parse(example.tac).getOrThrow(),
+                serialNumber: Digits.parse(example.serialNumber).getOrThrow(),
+              ),
+            )
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -162,7 +159,12 @@ void main() {
     );
 
     scenario('fromComponents error carries the components as its source', () {
-      check(() => Imei.fromComponents(tac: '352099', serialNumber: '176148'))
+      check(
+            () => Imei.fromComponents(
+              tac: Digits.parse('352099').getOrThrow(),
+              serialNumber: Digits.parse('176148').getOrThrow(),
+            ),
+          )
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('352099 + 176148');

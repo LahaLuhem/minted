@@ -122,6 +122,28 @@ rather than a raw `String`, so "these are digits" is a fact of the type instead 
 each caller re-checks. Neither `Digit` nor `Digits` is a domain entity from a standard; they are
 the building blocks the standard types are cut from.
 
+**They travel inbound too, not only outbound.** For a while these types were returned by getters but
+never accepted by a parameter, so every assembly factory took `String` for parts it knew were digits.
+That was the package declining to eat its own cooking, and it had a concrete cost: the charset failure
+stayed reachable through a door whose caller was already asserting validity. So a digits-only part of
+an assembly factory is a `Digits` (`Isbn.fromComponents`, `PaymentCardNumber.fromComponents`,
+`Gtin.fromBody`, `Imei.fromComponents`, `Issn.fromBody`), and the corresponding
+`*InvalidCharacters` variant becomes unreachable from that door while staying live for `parse`. Parts
+that are genuinely alphanumeric keep `String`: an IBAN's `bban` and a BIC's institution code are
+`[A-Z0-9]`, so `Digits` there would be a narrower type, not a stronger one, and there is no
+alphanumeric sibling to reach for yet.
+
+**`getOrThrow` is what makes that spelling bearable, and it belongs on the outcome.** Building a
+`Digits` from a literal to hand to a factory used to mean `Digits.tryParse('978')!`, which throws
+away the `DigitsFailure` the parse just produced and leaves a bare null-check error in its place.
+The first fix attempted was a per-type `Digits.fromString`, and it was wrong: the
+[door table](#parse-outcome) has four kinds, and a throwing factory whose parameter is a single
+`String` that *is* the whole value is none of them, it is `parse`'s own signature wearing a throw.
+So the door moved onto `ParseOutcome` instead, where one method serves every type and nothing grows
+a fifth kind. It carries the failure but not the text that produced it, so
+`MintedFormatException.source` is null there; the typed reason and the rendered message are what
+matter for a bug in the caller's own source.
+
 `Digit` (a single `0`-`9`) is an `extension type` over `int`, so it erases at runtime and costs
 nothing per value; `.value` is the number. Arity decides how each consumer exposes its digits.
 `Iban.checkDigits` is always exactly two, so it is a `({Digit first, Digit second})` record (a
@@ -198,6 +220,22 @@ separates `Either` from `error`, and ribs ships `Either.catching` for crossing i
 `ParseOutcome<F extends MintedFailure, T>` is a sealed two-arm type in core, with no new dependency.
 It is deliberately `Either`-shaped so FP-style code reads natively, but named for the domain rather
 than `Left` / `Right`, because the package is general-purpose.
+
+**The door table**, which governs what any new member returns. One rule decides every row: *a throw
+is for a claim you made in source; the outcome is for data you did not control.*
+
+| Door | Example | Returns |
+|------|---------|---------|
+| Parse text | `Iban.parse(String)` | `ParseOutcome<F, T>` |
+| Parse text, cheaply | `Iban.tryParse(String)` | `T?` |
+| Assemble from parts you assert are valid | `Date(2026, 7, 7)`, `Isbn.fromComponents`, `Digits.from`, `Uuid.fromBytes` | `T`, throws `MintedFormatException` |
+| Range-check a primitive | `Digit.tryFrom(int)`, `Digits.tryFrom(List<int>)` | `T?` |
+| Assert against an outcome you already hold | `Digits.parse('978').getOrThrow()` | `T`, throws `MintedFormatException` |
+
+The last row is the one that arrived late, and its absence caused a real mistake: with no way to
+assert against an outcome, a type that wanted one grew its own throwing `String` door instead, which
+is just `parse`'s signature with a throw bolted on. `getOrThrow` lives on the sealed base, so the
+table stays five rows however many value types land.
 
 **Why not depend on an FP library.** `ribs_core`'s `Either` was considered and rejected because the
 dependency would be **viral in the public API**: unlike `iban_validator` it appears in every

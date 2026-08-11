@@ -1,6 +1,7 @@
 // A validated ISSN is ASCII digits, plus at most a trailing X.
 // ignore_for_file: avoid-substring
 
+import '../numerics/digits.dart';
 import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
@@ -21,13 +22,13 @@ extension type const Issn._(String value) {
   /// Builds an [Issn] from [bodyDigits], the seven digits before the check character, computing that
   /// character. Throws [MintedFormatException] when the parts don't form a valid ISSN. For assembling
   /// from a known-valid source.
-  static Issn fromBody(String bodyDigits) {
-    final compactBody = _compact(bodyDigits);
-    final assembledIssn = '$compactBody${mod11CheckCharacter(compactBody)}';
+  static Issn fromBody(Digits bodyDigits) {
+    final body = bodyDigits.asString;
+    final assembledIssn = '$body${mod11CheckCharacter(body)}';
     final failure = _failureFor(assembledIssn);
 
     return failure != null
-        ? throw MintedFormatException.from(failure, bodyDigits)
+        ? throw MintedFormatException.from(failure, body)
         : ._(_hyphenated(assembledIssn));
   }
 

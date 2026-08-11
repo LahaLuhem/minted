@@ -136,7 +136,8 @@ Learn one type and you've learned them all. Each one gives you:
   parse so equal values really are equal
 - an **assembly factory** for parts you assert are valid (`fromComponents`, `from`, `of`). These
   *do* throw `MintedFormatException`, which extends `FormatException`, because calling one is you
-  claiming the parts are good
+  claiming the parts are good. `.getOrThrow()` on an outcome is the same claim, made against text:
+  it throws the typed failure where `getOrNull()!` would throw it away
 - getters that fit the type: `email.domain`, `iban.checkDigits`, `phone.nationalNumber`
 
 One exception, and it's deliberate: a few types are **classifications** rather than parsed values.
@@ -218,11 +219,17 @@ PaymentCardNumber.cardSchemesOf('4');   // {CardScheme.visa}
 
 PaymentCardNumber.tryParse('4111111111111112');   // null: fails the Luhn check
 
-// build from parts you already trust (throws if they don't form a valid whole):
-Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // computes the check digits
-Isbn.fromComponents(prefix: '978', body: '030640615');              // same, for a publisher
+// build from parts you already trust (throws if they don't form a valid whole).
+// a part that is only ever digits takes `Digits`, so junk can't reach the factory at all:
+final prefix = Digits.parse('978').getOrThrow();   // getOrThrow: "I assert this is digits"
+final body = Digits.parse('030640615').getOrThrow();
+
+Isbn.fromComponents(prefix: prefix, body: body);   // computes the check digit
+Gtin.fromBody(Digits.parse('400638133393').getOrThrow());
+
+// parts that aren't digits stay strings, because `Digits` would be the wrong type:
+Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // a BBAN is alphanumeric
 Email.fromComponents(localPart: 'jane', domain: 'example.com');
-PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryParse('655570576')!);
 ```
 
 </details>
