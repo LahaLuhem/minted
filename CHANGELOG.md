@@ -7,6 +7,7 @@
 - \[#16\] Gtin (GS1 GTIN: mod-10 across all four lengths, folded to fourteen digits)
 - \[#17\]add Imei, validating the Luhn check the printed grouping hides
 - \[#18\] Issn (ISO 3297: mod-11 check character, kept in printed NNNN-NNNC form)
+- \[#19\] Isin (ISO 6166: Luhn over the letter-expanded number)
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
