@@ -5,7 +5,9 @@ import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/check_digits/mod11_check_character.dart';
+import '../shared/isbn_prefixes.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/isbn_failure.dart';
 
@@ -57,9 +59,9 @@ extension type const Isbn._(String value) {
 
   /// The legacy ten-character form (mod-11 check digit, `X` for ten), or `null` for a `979` ISBN,
   /// which never had one.
-  String? get isbn10 => prefix != _bookland978 ? null : '$body${mod11CheckCharacter(body)}';
+  String? get isbn10 => prefix != bookland978 ? null : '$body${mod11CheckCharacter(body)}';
 
-  static String _compact(String input) => input.replaceAll(_separators, '').toUpperCase();
+  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '').toUpperCase();
 
   static String _withCheckDigit(String twelveDigits) =>
       '$twelveDigits${gs1CheckDigit(twelveDigits)}';
@@ -68,7 +70,7 @@ extension type const Isbn._(String value) {
   // is recomputed because the two generations use different algorithms.
   static String _toIsbn13(String compactInput) => compactInput.length == _length13
       ? compactInput
-      : _withCheckDigit('$_bookland978${compactInput.substring(0, _isbn10BodyLength)}');
+      : _withCheckDigit('$bookland978${compactInput.substring(0, _isbn10BodyLength)}');
 
   // Why already-compacted input is not an ISBN, or null when it is one. The single gate parse and
   // fromComponents funnel through; widest check first, so the earliest wrong thing is named.
@@ -90,17 +92,16 @@ extension type const Isbn._(String value) {
       : _thirteenDigitForm.hasMatch(compactInput);
 
   static bool _prefixHolds(String compactInput) =>
-      _booklandPrefixes.contains(compactInput.substring(0, _prefixLength)) &&
-      !compactInput.startsWith(_ismnRange);
+      booklandPrefixes.contains(compactInput.substring(0, _prefixLength)) &&
+      !compactInput.startsWith(ismnRange);
 
   static String _offendingPrefix(String compactInput) =>
-      compactInput.startsWith(_ismnRange) ? _ismnRange : compactInput.substring(0, _prefixLength);
+      compactInput.startsWith(ismnRange) ? ismnRange : compactInput.substring(0, _prefixLength);
 
   static bool _checksumHolds(String compactInput) => compactInput.length == _length13
       ? compactInput.endsWith(gs1CheckDigit(compactInput.substring(0, _checkDigitIndex)))
       : compactInput.endsWith(mod11CheckCharacter(compactInput.substring(0, _isbn10BodyLength)));
 
-  static final _separators = RegExp(r'[\s-]+');
   static final _tenDigitForm = RegExp(r'^\d{9}[\dX]$');
   static final _thirteenDigitForm = RegExp(r'^\d{13}$');
 
@@ -109,10 +110,4 @@ extension type const Isbn._(String value) {
   static const _prefixLength = 3;
   static const _checkDigitIndex = 12;
   static const _isbn10BodyLength = 9;
-  // GS1's "Bookland" prefixes: the article-number range standing in for a country.
-  static const _bookland978 = '978';
-  static const _bookland979 = '979';
-  static const _booklandPrefixes = {_bookland978, _bookland979};
-  // ISO 10957 holds 979-0 for the ISMN, so printed music is carved out of the 979 range.
-  static const _ismnRange = '9790';
 }

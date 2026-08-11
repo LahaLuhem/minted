@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 
-import 'digit_values.dart';
+import '../digit_values.dart';
 
 const _modulus = 10;
 const _doubledWeight = 2;

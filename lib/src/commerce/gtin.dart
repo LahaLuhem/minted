@@ -5,6 +5,7 @@ import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/gtin_failure.dart';
 
@@ -68,19 +69,19 @@ extension type const Gtin._(String value) {
       ? null
       : value.substring(_length14 - length);
 
-  static String _compact(String input) => input.replaceAll(_separators, '');
+  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${gs1CheckDigit(bodyDigits)}';
 
   // GS1's own rule for storing every length in one field. Lossless because the weights run from the
   // right, so the added zeros neither carry weight nor shift another digit's.
-  static String _toGtin14(String compactInput) => compactInput.padLeft(_length14, _zeroDigit);
+  static String _toGtin14(String compactInput) => compactInput.padLeft(_length14, zeroPad);
 
   // Why already-compacted input is not a GTIN, or null when it is one. The single gate parse and
   // fromBody funnel through; widest check first, so the earliest wrong thing is named.
   static GtinFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when !_lengths.contains(compactInput.length) => GtinWrongLength(compactInput.length),
-    _ when !_digitsOnly.hasMatch(compactInput) => const GtinInvalidCharacters(),
+    _ when !digitsOnly.hasMatch(compactInput) => const GtinInvalidCharacters(),
     _ when !_checksumHolds(compactInput) => const GtinChecksumFailed(),
     _ => null,
   };
@@ -88,9 +89,7 @@ extension type const Gtin._(String value) {
   static bool _checksumHolds(String compactInput) =>
       compactInput.endsWith(gs1CheckDigit(compactInput.substring(0, compactInput.length - 1)));
 
-  static final _separators = RegExp(r'[\s-]+');
-  static final _digitsOnly = RegExp(r'^\d+$');
-  static final _nonZeroDigit = RegExp('[^$_zeroDigit]');
+  static final _nonZeroDigit = RegExp('[^$zeroPad]');
 
   // GTIN-8, GTIN-12 (UPC-A), GTIN-13 (EAN-13) and GTIN-14. GS1 defines no others.
   static const _length8 = 8;
@@ -99,5 +98,4 @@ extension type const Gtin._(String value) {
   static const _length14 = 14;
   static const _lengths = {_length8, _length12, _length13, _length14};
   static const _checkDigitIndex = 13;
-  static const _zeroDigit = '0';
 }

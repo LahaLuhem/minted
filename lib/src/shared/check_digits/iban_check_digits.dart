@@ -1,4 +1,4 @@
-import 'digit_values.dart';
+import '../digit_values.dart';
 
 const _asciiUpperA = 0x41;
 const _asciiUpperZ = 0x5A;

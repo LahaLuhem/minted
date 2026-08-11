@@ -8,6 +8,7 @@ import 'package:iban_validator/iban_validator.dart';
 import '../numerics/digit.dart';
 import '../shared/check_digits/iban_check_digits.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/iban_failure.dart';
 
@@ -23,7 +24,7 @@ extension type const Iban._(String value) {
   /// wrong BBAN length or charset). For assembling from a known-valid source.
   static Iban fromComponents({required String countryCode, required String bban}) {
     final upperCountry = countryCode.toUpperCase();
-    final compactBban = bban.replaceAll(_whitespace, '').toUpperCase();
+    final compactBban = bban.replaceAll(whitespace, '').toUpperCase();
     final assembledIban = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
     final failure = _failureFor(assembledIban);
 
@@ -67,7 +68,7 @@ extension type const Iban._(String value) {
         value.substring(group * _groupSize, math.min((group + 1) * _groupSize, value.length)),
   ).join(' ');
 
-  static String _normalise(String input) => input.replaceAll(_whitespace, '').toUpperCase();
+  static String _normalise(String input) => input.replaceAll(whitespace, '').toUpperCase();
 
   // Why already-normalised input is not an IBAN, or null when it is one. The single gate tryParse,
   // parse, and fromComponents funnel through, so a diagnosis and an acceptance can't disagree.
@@ -93,7 +94,6 @@ extension type const Iban._(String value) {
     };
   }
 
-  static final _whitespace = RegExp(r'\s+');
   static const _checkDigitsStart = 2;
   static const _bbanStart = 4;
   static const _groupSize = 4;

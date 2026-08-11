@@ -4,6 +4,7 @@
 import 'dart:typed_data';
 
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/uuid_failure.dart';
 
@@ -55,7 +56,7 @@ extension type const Uuid._(String value) {
                 .getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1])
                 .map(_hex)
                 .join(),
-          ).join(_hyphen),
+          ).join(hyphen),
         )!;
 
   /// The UUID version, `0`-`15`: the 4-bit version field (the first hex digit of the third group).
@@ -93,7 +94,7 @@ extension type const Uuid._(String value) {
   /// The 16 raw bytes (big-endian), the inverse of [fromBytes]. Handy for binary interop (a database
   /// `uuid` column, a byte protocol) where the hex string would waste space.
   Uint8List get bytes {
-    final hex = value.replaceAll(_hyphen, '');
+    final hex = value.replaceAll(hyphen, '');
 
     return Uint8List.fromList([
       for (var offset = 0; offset < hex.length; offset += _byteHexLength)
@@ -117,7 +118,7 @@ extension type const Uuid._(String value) {
   }
 
   // One byte as two lowercase hex digits.
-  static String _hex(int byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, _padChar);
+  static String _hex(int byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, zeroPad);
 
   static final _canonical = RegExp(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
@@ -131,8 +132,6 @@ extension type const Uuid._(String value) {
   // Cut points bracketing the 4-2-2-2-6 byte groups of the 8-4-4-4-12 hex form (one more than the
   // group count).
   static const _groupByteBoundaries = [0, 4, 6, 8, 10, _byteCount];
-  static const _padChar = '0';
-  static const _hyphen = '-';
   static const _urnPrefix = 'urn:uuid:';
   static const _braceOpen = '{';
   static const _braceClose = '}';
