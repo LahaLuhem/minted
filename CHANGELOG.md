@@ -8,6 +8,7 @@
 - \[#17\]add Imei, validating the Luhn check the printed grouping hides
 - \[#18\] Issn (ISO 3297: mod-11 check character, kept in printed NNNN-NNNC form)
 - \[#19\] Isin (ISO 6166: Luhn over the letter-expanded number)
+- \[#25\] Isni (ISO 27729: MOD 11-2, and ORCID iDs reported not gated)
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
