@@ -2,7 +2,8 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digit.dart';
-import '../shared/check_digits/isbn_check_digits.dart';
+import '../shared/check_digits/gs1_check_digit.dart';
+import '../shared/check_digits/isbn_check_digit.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/isbn_failure.dart';
@@ -59,7 +60,7 @@ extension type const Isbn._(String value) {
   static String _compact(String input) => input.replaceAll(_separators, '').toUpperCase();
 
   static String _withCheckDigit(String twelveDigits) =>
-      '$twelveDigits${isbn13CheckDigit(twelveDigits)}';
+      '$twelveDigits${gs1CheckDigit(twelveDigits)}';
 
   // Itself when already thirteen digits, otherwise the 978-prefixed equivalent, whose check digit
   // is recomputed because the two generations use different algorithms.
@@ -94,7 +95,7 @@ extension type const Isbn._(String value) {
       compactInput.startsWith(_ismnRange) ? _ismnRange : compactInput.substring(0, _prefixLength);
 
   static bool _checksumHolds(String compactInput) => compactInput.length == _length13
-      ? compactInput.endsWith(isbn13CheckDigit(compactInput.substring(0, _checkDigitIndex)))
+      ? compactInput.endsWith(gs1CheckDigit(compactInput.substring(0, _checkDigitIndex)))
       : compactInput.endsWith(isbn10CheckDigit(compactInput.substring(0, _isbn10BodyLength)));
 
   static final _separators = RegExp(r'[\s-]+');
