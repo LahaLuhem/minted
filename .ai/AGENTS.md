@@ -49,6 +49,8 @@ minted/
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   └── src/
+│       ├── commerce/                Gtin
+│       │   └── failures/            GtinFailure and its variants
 │       ├── contact/                 Email, PhoneNumber
 │       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
 │       ├── finance/                 Iban, Bic (+ CreditCardNumber, … as they land)

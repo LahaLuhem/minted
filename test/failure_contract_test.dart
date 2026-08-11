@@ -87,6 +87,21 @@ void main() {
         typeName: 'Isbn',
         message: 'failed the check-digit test',
       ),
+      'Gtin: none of the four GS1 lengths': (
+        failure: GtinWrongLength(9),
+        typeName: 'Gtin',
+        message: 'expected 8, 12, 13 or 14 digits, got 9',
+      ),
+      'Gtin: bad charset': (
+        failure: GtinInvalidCharacters(),
+        typeName: 'Gtin',
+        message: 'contains characters outside 0-9',
+      ),
+      'Gtin: the GS1 check is named': (
+        failure: GtinChecksumFailed(),
+        typeName: 'Gtin',
+        message: 'failed the GS1 mod-10 check',
+      ),
       'Date: wrong shape': (
         failure: DateNotIso8601(),
         typeName: 'Date',
@@ -212,6 +227,15 @@ void main() {
           failure: IsbnChecksumFailed(),
           rendered: 'IsbnChecksumFailed()',
         ),
+        'a wrong GTIN length': (failure: GtinWrongLength(9), rendered: 'GtinWrongLength(9)'),
+        'a GTIN charset failure': (
+          failure: GtinInvalidCharacters(),
+          rendered: 'GtinInvalidCharacters()',
+        ),
+        'the GTIN checksum variant': (
+          failure: GtinChecksumFailed(),
+          rendered: 'GtinChecksumFailed()',
+        ),
         'a wrong-shaped date': (failure: DateNotIso8601(), rendered: 'DateNotIso8601()'),
         'a bad year': (failure: DateYearOutOfRange(10000), rendered: 'DateYearOutOfRange(10000)'),
         'a bad month': (failure: DateMonthOutOfRange(13), rendered: 'DateMonthOutOfRange(13)'),
@@ -303,6 +327,21 @@ void main() {
           failure: IsbnChecksumFailed(),
           twin: IsbnChecksumFailed(),
           other: IsbnInvalidCharacters(),
+        ),
+        'GTIN length differs by its count': (
+          failure: GtinWrongLength(9),
+          twin: GtinWrongLength(9),
+          other: GtinWrongLength(15),
+        ),
+        'the GTIN charset variant': (
+          failure: GtinInvalidCharacters(),
+          twin: GtinInvalidCharacters(),
+          other: GtinChecksumFailed(),
+        ),
+        'the GTIN checksum variant': (
+          failure: GtinChecksumFailed(),
+          twin: GtinChecksumFailed(),
+          other: GtinInvalidCharacters(),
         ),
         'a wrong-shaped date': (
           failure: DateNotIso8601(),

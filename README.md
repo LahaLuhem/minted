@@ -43,6 +43,7 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
 - [What's in the box](#whats-in-the-box)
     * [Contact](#contact)
     * [Finance](#finance)
+    * [Commerce](#commerce)
     * [Chronology](#chronology)
     * [Identifiers](#identifiers)
     * [Numerics](#numerics)
@@ -85,24 +86,30 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Finance
 
-| Type                | What it guarantees                                       | Standard                                                                     |
-|---------------------|----------------------------------------------------------|------------------------------------------------------------------------------|
-| `Iban`              | structure, country length, and the mod-97 checksum       | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
-| `Bic`               | a SWIFT code: structure and a real country, folded to 11 | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
+| Type                | What it guarantees                                        | Standard                                                                     |
+|---------------------|-----------------------------------------------------------|------------------------------------------------------------------------------|
+| `Iban`              | structure, country length, and the mod-97 checksum        | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
+| `Bic`               | a SWIFT code: structure and a real country, folded to 11  | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
 | `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
+
+### Commerce
+
+| Type   | What it guarantees                                                                 | Standard                                               |
+|--------|------------------------------------------------------------------------------------|--------------------------------------------------------|
+| `Gtin` | digits, one of the four GS1 lengths, and the mod-10 check digit; folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin) |
 
 ### Chronology
 
-| Type      | What it guarantees                                                | Standard                                           |
-|-----------|-------------------------------------------------------------------|----------------------------------------------------|
-| `Date`    | a real calendar date: no time, no zone; impossible dates rejected | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-| `Month`   | a real month `1`-`12` that knows its own length (leap-aware)      | building block                                     |
+| Type      | What it guarantees                                                 | Standard                                           |
+|-----------|--------------------------------------------------------------------|----------------------------------------------------|
+| `Date`    | a real calendar date: no time, no zone; impossible dates rejected  | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Month`   | a real month `1`-`12` that knows its own length (leap-aware)       | building block                                     |
 | `Weekday` | one of seven named days, ISO-numbered `1` (Monday) to `7` (Sunday) | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 
 ### Identifiers
 
 | Type   | What it guarantees                                                    | Standard                                                         |
-|--------|-----------------------------------------------------------------------|--------------------------------------------------------------------|
+|--------|-----------------------------------------------------------------------|------------------------------------------------------------------|
 | `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)               |
 | `Isbn` | prefix and check digit; both generations folded to ISBN-13            | [ISO 2108](https://www.isbn-international.org/content/what-isbn) |
 
@@ -349,7 +356,7 @@ a deliberate trade rather than an oversight:
 - [x] `Isbn` (ISO 2108: both generations, mod-11 and GS1 mod-10, folded to ISBN-13)
 - [x] `Bic` (ISO 9362: SWIFT codes, 8- and 11-character forms folded to one value)
 - [x] `PaymentCardNumber` (ISO/IEC 7812: Luhn, masked rendering, schemes reported not validated)
-- [ ] `Ean` / `Gtin`
+- [x] `Gtin` (GS1: EAN-8, UPC-A, EAN-13 and GTIN-14, all folded to fourteen digits)
 - [ ] `Isbn` hyphenation, once the ISBN range table has somewhere to live
 - Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
 

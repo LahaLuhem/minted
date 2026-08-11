@@ -67,6 +67,14 @@ void main() {
   print(PaymentCardNumber.cardSchemesOf('4')); // {CardScheme.visa}  (answers while you type)
   print(PaymentCardNumber.tryParse('4111111111111112')); // null (fails the Luhn check)
 
+  // `Gtin` folds all four GS1 lengths into the 14-digit form, so a UPC-A and its EAN-13 spelling
+  // are the same trade item. Padding is safe: GS1 weights from the right.
+  final gtin = Gtin.tryParse('036000291452')!;
+  print(gtin.value); // 00036000291452
+  print(gtin.shortestForm); // 036000291452  (what the barcode carries)
+  print(gtin.gtin8); // null (it needs more than eight digits)
+  print(Gtin.tryParse('4006381333932')); // null (fails the GS1 mod-10 check)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
