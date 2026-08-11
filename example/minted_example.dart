@@ -100,6 +100,14 @@ void main() {
   print(isin.hasCountryPrefix); // true
   print(Isin.tryParse('US0378331006')); // null (fails the Luhn check)
 
+  // `Isni` covers ORCID iDs too, since ORCID issues from a block inside the ISNI range. The block
+  // is reported, not gated: refusing everything outside it would refuse most of the standard.
+  final isni = Isni.tryParse('0000-0002-1825-0097')!;
+  print(isni.value); // 0000000218250097  (separators stripped)
+  print(isni.formatted); // 0000 0002 1825 0097
+  print(isni.isInOrcidBlock); // true
+  print(Isni.tryParse('0000 0001 2103 2683')?.isInOrcidBlock); // false (an ISNI, not an ORCID iD)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

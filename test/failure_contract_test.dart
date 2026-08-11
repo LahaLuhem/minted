@@ -82,6 +82,21 @@ void main() {
         typeName: 'Imei',
         message: 'failed the Luhn check',
       ),
+      'Isni: not the one length': (
+        failure: IsniWrongLength(15),
+        typeName: 'Isni',
+        message: 'expected 16 characters, got 15',
+      ),
+      'Isni: the charset message says where X is allowed': (
+        failure: IsniInvalidCharacters(),
+        typeName: 'Isni',
+        message: 'contains characters outside 0-9 (X only as the check character)',
+      ),
+      'Isni: the ISO 7064 variant is named': (
+        failure: IsniChecksumFailed(),
+        typeName: 'Isni',
+        message: 'failed the ISO 7064 MOD 11-2 check',
+      ),
       'Issn: not the one length': (
         failure: IssnWrongLength(7),
         typeName: 'Issn',
@@ -275,6 +290,15 @@ void main() {
           rendered: 'ImeiInvalidCharacters()',
         ),
         'the IMEI Luhn variant': (failure: ImeiChecksumFailed(), rendered: 'ImeiChecksumFailed()'),
+        'a wrong ISNI length': (failure: IsniWrongLength(15), rendered: 'IsniWrongLength(15)'),
+        'an ISNI charset failure': (
+          failure: IsniInvalidCharacters(),
+          rendered: 'IsniInvalidCharacters()',
+        ),
+        'the ISNI checksum variant': (
+          failure: IsniChecksumFailed(),
+          rendered: 'IsniChecksumFailed()',
+        ),
         'a wrong ISSN length': (failure: IssnWrongLength(7), rendered: 'IssnWrongLength(7)'),
         'an ISSN charset failure': (
           failure: IssnInvalidCharacters(),
@@ -405,6 +429,21 @@ void main() {
           failure: ImeiChecksumFailed(),
           twin: ImeiChecksumFailed(),
           other: ImeiInvalidCharacters(),
+        ),
+        'ISNI length differs by its count': (
+          failure: IsniWrongLength(15),
+          twin: IsniWrongLength(15),
+          other: IsniWrongLength(17),
+        ),
+        'the ISNI charset variant': (
+          failure: IsniInvalidCharacters(),
+          twin: IsniInvalidCharacters(),
+          other: IsniChecksumFailed(),
+        ),
+        'the ISNI checksum variant': (
+          failure: IsniChecksumFailed(),
+          twin: IsniChecksumFailed(),
+          other: IsniInvalidCharacters(),
         ),
         'ISSN length differs by its count': (
           failure: IssnWrongLength(7),

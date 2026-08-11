@@ -35,7 +35,7 @@ final class Digits extends Iterable<Digit> {
     final codeUnits = input.codeUnits;
     final parsedDigits = codeUnits.any((code) => decimalValue(code) < 0)
         ? null
-        : Digits._(Uint8List.fromList([for (final code in codeUnits) decimalValue(code)]));
+        : Digits._(.fromList([for (final code in codeUnits) decimalValue(code)]));
 
     return parsedDigits == null
         ? const ParseFailure(DigitsFailure.notAllDigits)

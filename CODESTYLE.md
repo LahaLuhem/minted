@@ -306,6 +306,27 @@ When building a literal collection (an embedded code table, a set of test vector
 with embedded control flow reads as data and drops the `<T>` annotations the literal context
 already infers. Keep `.map(...)` for genuine pipelines.
 
+**The tell is whether the collection survives.** A literal that exists only to be `.join`ed or
+folded away on the next line was never data: it is a pipeline wearing a literal's brackets, and it
+materialises a list nobody reads.
+
+```dart
+// bad: built, then thrown away one call later
+String get formatted => [
+  for (var start = 0; start < _length; start += _groupSize)
+    value.substring(start, start + _groupSize),
+].join(' ');
+
+// good
+String get formatted => Iterable.generate(
+  _length ~/ _groupSize,
+  (group) => value.substring(group * _groupSize, (group + 1) * _groupSize),
+).join(' ');
+```
+
+A literal handed to a constructor that needs a `List` (`Uint8List.fromList([for …])`) is the other
+case and stays: there the collection *is* the result.
+
 <a id="idioms-functional-pipelines"></a>
 ### Functional pipelines over imperative loops for lookup and transform
 

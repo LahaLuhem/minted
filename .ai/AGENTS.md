@@ -67,6 +67,7 @@ minted/
 │           ├── iso_country_code.dart          ISO 3166-1 alpha-2 lookup, borrowed from the
 │           │                                  phone engine so no country table is carried
 │           └── check_digits/                  One file per algorithm, all private
+│               ├── doubling_mod11_check_character.dart  ISO 7064 MOD 11-2: ISNI
 │               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
 │               ├── iban_check_digits.dart     ISO 13616 mod-97-10
 │               ├── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10

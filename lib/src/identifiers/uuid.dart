@@ -96,7 +96,7 @@ extension type const Uuid._(String value) {
   Uint8List get bytes {
     final hex = value.replaceAll(hyphen, '');
 
-    return Uint8List.fromList([
+    return .fromList([
       for (var offset = 0; offset < hex.length; offset += _byteHexLength)
         int.parse(hex.substring(offset, offset + _byteHexLength), radix: _hexRadix),
     ]);

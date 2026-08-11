@@ -27,6 +27,7 @@ anchor, and keep anchors stable across renames.
 - [Date: a calendar date, not an instant](#date-value-type)
 - [Weekday: an enum, where Month is an extension type](#weekday-enum)
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
+- [Isni: one type, because Orcid would over-promise](#isni-value-type)
 - [Isbn: two generations, one value, no hyphens](#isbn-value-type)
 - [Issn: the one type that keeps its hyphen](#issn-value-type)
 - [Isin: a prefix that need not be a country](#isin-value-type)
@@ -599,6 +600,32 @@ classification (NCS, RFC 9562, Microsoft, future-reserved), so an enum names its
 version is a raw 4-bit field where an enum would either omit the reserved range (and so fail to
 represent a valid UUID) or carry a catch-all member that lies about being one value, so an `int` is
 the honest type. Resolved per field, on the merits, never as a reflex toward the strongest type.
+
+---
+
+<a id="isni-value-type"></a>
+## Isni: one type, because Orcid would over-promise
+
+**There is no `Orcid`, and that is the decision.** ORCID issues iDs from a block inside the ISNI
+range, so every ORCID iD *is* an ISNI. Two types need something to tell them apart and the only
+candidate is that block: gating on it makes `Isni` refuse most of its own standard, and not gating
+makes `Orcid.parse` accept Isaac Newton's ISNI `0000000121032683`. The second is the
+[`Day` test](#date-value-type), a type named for what it does not guarantee. So one type holds the
+standard and `isInOrcidBlock` reports the narrower fact.
+
+The block is genuinely registry-shaped here, unlike [`Isbn`'s prefix](#isbn-value-type): ORCID has
+said publicly that it will grow, where ISO 2108's `978`/`979` is fixed. Reporting rather than gating
+is [the usual answer](#registry-data-ships-a-clock).
+
+**Its check is not the mod-11 the package already had.** ISO 7064 MOD 11-2 doubles a running total,
+so its weights are powers of two mod 11 where `mod11_check_character.dart` descends linearly. They
+share a modulus and an `X` glyph and agree on nothing: the weighted one rejected all five ORCID iDs
+tested against it. Hence a separate file, and a test pinning that the two cannot be swapped, because
+that resemblance is exactly what invites a "simplification".
+
+**The block test compares text, not integers.** Sixteen digits reach 10^16, past the web's safe
+integer range of 2^53-1, so `int.parse` would lose precision on a real ISNI. Equal-length
+zero-padded strings order the same way the numbers do, so `compareTo` is both correct and web-safe.
 
 ---
 
