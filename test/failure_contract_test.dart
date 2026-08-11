@@ -247,6 +247,21 @@ void main() {
         typeName: 'PaymentCardNumber',
         message: 'failed the Luhn check',
       ),
+      'GeoCoordinate: wrong shape': (
+        failure: GeoCoordinateNotIso6709(),
+        typeName: 'GeoCoordinate',
+        message: 'not an ISO 6709 coordinate string',
+      ),
+      'GeoCoordinate: latitude out of range': (
+        failure: GeoCoordinateLatitudeOutOfRange(91),
+        typeName: 'GeoCoordinate',
+        message: 'latitude 91.0 is outside -90 to 90',
+      ),
+      'GeoCoordinate: longitude out of range': (
+        failure: GeoCoordinateLongitudeOutOfRange(181),
+        typeName: 'GeoCoordinate',
+        message: 'longitude 181.0 is outside -180 to 180',
+      ),
     };
 
     scenarioOutline<({MintedFailure failure, String typeName, String message})>(
@@ -370,6 +385,18 @@ void main() {
         'the Luhn variant': (
           failure: PaymentCardNumberChecksumFailed(),
           rendered: 'PaymentCardNumberChecksumFailed()',
+        ),
+        'a coordinate shape failure': (
+          failure: GeoCoordinateNotIso6709(),
+          rendered: 'GeoCoordinateNotIso6709()',
+        ),
+        'an out-of-range latitude echoes it as a double': (
+          failure: GeoCoordinateLatitudeOutOfRange(91),
+          rendered: 'GeoCoordinateLatitudeOutOfRange(91.0)',
+        ),
+        'an out-of-range longitude': (
+          failure: GeoCoordinateLongitudeOutOfRange(181),
+          rendered: 'GeoCoordinateLongitudeOutOfRange(181.0)',
         ),
       },
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
@@ -564,6 +591,22 @@ void main() {
           failure: PhoneNumberFailure.invalid,
           twin: PhoneNumberFailure.invalid,
           other: PhoneNumberFailure.unknownRegion,
+        ),
+        'the coordinate shape variant': (
+          failure: GeoCoordinateNotIso6709(),
+          twin: GeoCoordinateNotIso6709(),
+          other: GeoCoordinateLatitudeOutOfRange(91),
+        ),
+        // A finite double only: a NaN would not equal its own twin, which the type's own suite covers.
+        'a latitude differs by its degrees': (
+          failure: GeoCoordinateLatitudeOutOfRange(91),
+          twin: GeoCoordinateLatitudeOutOfRange(91),
+          other: GeoCoordinateLatitudeOutOfRange(-91),
+        ),
+        'a longitude differs by its degrees': (
+          failure: GeoCoordinateLongitudeOutOfRange(181),
+          twin: GeoCoordinateLongitudeOutOfRange(181),
+          other: GeoCoordinateLongitudeOutOfRange(-181),
         ),
       },
       outline: (example) {
