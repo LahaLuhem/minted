@@ -63,12 +63,12 @@ minted/
 │           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
 │           ├── iso_country_code.dart          ISO 3166-1 alpha-2 lookup, borrowed from the
 │           │                                  phone engine so no country table is carried
-│           └── check_digits/                  One file per standard, all private
+│           └── check_digits/                  One file per algorithm, all private
 │               ├── digit_values.dart          ASCII '0'-'9' → 0-9, shared by every algorithm
 │               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
 │               ├── iban_check_digits.dart     ISO 13616 mod-97-10
-│               ├── isbn_check_digit.dart      ISO 2108 mod-11, the ten-digit form only
-│               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
+│               ├── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
+│               └── mod11_check_character.dart Weighted mod-11: ISBN-10 and ISSN
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
@@ -97,11 +97,19 @@ the AST. No `part` / `part of`: sealed variants only have to share a *file*, so 
 suffices, and anything a failure needs from its value type belongs in `shared/` instead (which is
 why [`iso_date_format.dart`](../lib/src/shared/iso_date_format.dart) exists).
 
-**Check-digit algorithms get one file per standard** under `shared/check_digits/`, and reach what
+**Check-digit algorithms get one file per *algorithm*** under `shared/check_digits/`, and reach what
 they share (`digit_values.dart`, ASCII decimal decoding) by plain import, never `part`. Separate
 libraries is the whole point: Dart privacy is library-scoped, so parts would leak every `_` constant
-across every standard, and mod-97's modulus of 97 has no business being visible to the next
-algorithm. Each standard keeps its own constants and its own character map private to its own file.
+across every algorithm, and mod-97's modulus of 97 has no business being visible to the next one.
+Each file keeps its own constants and its own character map private to itself.
+
+**Per algorithm, not per standard**, because standards share arithmetic: GS1's mod-10 validates both
+GTIN and ISBN-13, and one weighted mod-11 serves ISO 2108's ISBN-10 and ISO 3297's ISSN, differing
+only in the leading weight, which falls out of the body length. So a file is named for the algorithm
+where two standards share one (`mod11_check_character.dart`) and for the standard where it is the
+only user (`iban_check_digits.dart`). A second copy of an algorithm that is provably identical is a
+bug waiting to be fixed twice; generalise it first, as its own behaviour-preserving commit, then
+build the new type on it.
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
 or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping.

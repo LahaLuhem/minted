@@ -3,7 +3,7 @@
 
 import '../numerics/digit.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
-import '../shared/check_digits/isbn_check_digit.dart';
+import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/isbn_failure.dart';
@@ -13,14 +13,14 @@ import 'failures/isbn_failure.dart';
 /// Standard: [ISO 2108](https://www.isbn-international.org/content/what-isbn).
 ///
 /// Normalisation on parse: spaces and hyphens are stripped, a trailing `x` is upper-cased, and the
-/// ten-digit form is folded into its thirteen-digit equivalent, so [value] is always thirteen
-/// digits and the two spellings of one book compare equal. [isbn10] rebuilds the legacy form.
+/// ten-digit form is folded into its thirteen-digit equivalent, so [value] is always thirteen digits
+/// and the two spellings of one book compare equal. [isbn10] rebuilds the legacy form.
 ///
 /// Not hyphenated: the group boundaries come from ISBN International's range table, not the digits.
 extension type const Isbn._(String value) {
-  /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the
-  /// check digit. Throws [MintedFormatException] when the parts don't form a valid ISBN. For
-  /// assembling from a known-valid source.
+  /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the check
+  /// digit. Throws [MintedFormatException] when the parts don't form a valid ISBN. For assembling from
+  /// a known-valid source.
   static Isbn fromComponents({required String prefix, required String body}) {
     final assembledIsbn = _withCheckDigit(_compact('$prefix$body'));
     final failure = _failureFor(assembledIsbn);
@@ -45,8 +45,8 @@ extension type const Isbn._(String value) {
   /// The three-digit GS1 prefix, `978` or `979`.
   String get prefix => value.substring(0, _prefixLength);
 
-  /// The nine digits between the prefix and the check digit: registration group, registrant and
-  /// publication, run together. Splitting them needs a range table this package does not carry.
+  /// The nine digits between the prefix and the check digit: registration group, registrant and publication,
+  /// run together. Splitting them needs a range table this package does not carry.
   String get body => value.substring(_prefixLength, _checkDigitIndex);
 
   /// The final digit, the GS1 mod-10 check over the other twelve.
@@ -55,7 +55,7 @@ extension type const Isbn._(String value) {
 
   /// The legacy ten-character form (mod-11 check digit, `X` for ten), or `null` for a `979` ISBN,
   /// which never had one.
-  String? get isbn10 => prefix != _bookland978 ? null : '$body${isbn10CheckDigit(body)}';
+  String? get isbn10 => prefix != _bookland978 ? null : '$body${mod11CheckCharacter(body)}';
 
   static String _compact(String input) => input.replaceAll(_separators, '').toUpperCase();
 
@@ -96,7 +96,7 @@ extension type const Isbn._(String value) {
 
   static bool _checksumHolds(String compactInput) => compactInput.length == _length13
       ? compactInput.endsWith(gs1CheckDigit(compactInput.substring(0, _checkDigitIndex)))
-      : compactInput.endsWith(isbn10CheckDigit(compactInput.substring(0, _isbn10BodyLength)));
+      : compactInput.endsWith(mod11CheckCharacter(compactInput.substring(0, _isbn10BodyLength)));
 
   static final _separators = RegExp(r'[\s-]+');
   static final _tenDigitForm = RegExp(r'^\d{9}[\dX]$');
