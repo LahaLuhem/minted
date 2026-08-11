@@ -46,6 +46,7 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
     * [Commerce](#commerce)
     * [Chronology](#chronology)
     * [Identifiers](#identifiers)
+    * [Geography](#geography)
     * [Numerics](#numerics)
 - [One shape, every type](#one-shape-every-type)
 - [Handling failures](#handling-failures)
@@ -115,6 +116,12 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Imei` | fifteen digits and the Luhn check; TAC and serial read back           | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)      |
 | `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
 | `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/) |
+
+### Geography
+
+| Type            | What it guarantees                                                          | Standard                                             |
+|-----------------|-----------------------------------------------------------------------------|------------------------------------------------------|
+| `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)   |
 
 ### Numerics
 
@@ -221,6 +228,19 @@ PaymentCardNumber.cardSchemesOf('4');   // {CardScheme.visa}
 
 PaymentCardNumber.tryParse('4111111111111112');   // null: fails the Luhn check
 
+// GeoCoordinate: the swapped-argument bug is a type problem, so the pair is named at the boundary.
+// ISO 6709 uses the width of the degree field as the unit selector; all three fold to degrees:
+final eiffel = GeoCoordinate.tryParse('+48.8577+002.295/')!;
+eiffel.latitude;    // 48.8577
+eiffel.iso6709;     // '+48.8577+002.295/'   (canonical form)
+eiffel.sexagesimal; // '48°51′27.72″N 2°17′42″E'   (display form)
+
+// the same point spelled as degrees-minutes-seconds is the same value:
+GeoCoordinate.tryParse('+485127.72+0021742/') == eiffel;   // true
+
+GeoCoordinate.tryParse('+46+2/');   // null: an unpadded longitude is a different location
+GeoCoordinate.from(latitude: 48.8577, longitude: 2.295);   // named, so it can't be written swapped
+
 // build from parts you already trust (throws if they don't form a valid whole).
 // a part that is only ever digits takes `Digits`, so junk can't reach the factory at all:
 final prefix = Digits.parse('978').getOrThrow();   // getOrThrow: "I assert this is digits"
@@ -268,6 +288,12 @@ assigns no brand ranges, the IIN-to-network table drifts, and some ranges are ge
 claims and says `unknown` otherwise: silence means "can't say", not "not a card". It also masks
 itself, printing `••••1111`, with `value` the one member that hands the number back, so a stray log
 line can't leak a PAN.
+
+`GeoCoordinate` is a surface coordinate: altitude and a CRS identifier are *refused*, not silently
+dropped. Their sign, units and datum are all defined by the CRS, so an `altitude` field would be one
+the type couldn't promise anything about, and validating a CRS needs a registry minted doesn't carry.
+Parsing is strict about the fixed widths, because in ISO 6709 an unpadded longitude isn't a typo, it's
+a different place. The human-readable `48°51′27.72″N` form is output-only for now, via `sexagesimal`.
 
 </details>
 
