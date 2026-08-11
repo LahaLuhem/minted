@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import '../numerics/digit.dart';
+import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
@@ -32,15 +33,14 @@ final class PaymentCardNumber {
   /// digit. Throws [MintedFormatException] when the parts don't form a valid number. For assembling
   /// from a known-valid source.
   static PaymentCardNumber fromComponents({
-    required String iin,
-    required String accountIdentifier,
+    required Digits iin,
+    required Digits accountIdentifier,
   }) {
-    final assembledNumber = _withCheckDigit(_compact('$iin$accountIdentifier'));
+    final parts = '${iin.asString} + ${accountIdentifier.asString}';
+    final assembledNumber = _withCheckDigit('${iin.asString}${accountIdentifier.asString}');
     final failure = _failureFor(assembledNumber);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, '$iin + $accountIdentifier')
-        : ._(assembledNumber);
+    return failure != null ? throw MintedFormatException.from(failure, parts) : ._(assembledNumber);
   }
 
   /// Parses [input] as a payment card number, or returns `null` when it fails the length, character,

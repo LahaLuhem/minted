@@ -186,8 +186,8 @@ void main() {
 
     scenario('fromComponents computes the check digit', () {
       final assembledNumber = PaymentCardNumber.fromComponents(
-        iin: '411111',
-        accountIdentifier: '111111111',
+        iin: Digits.parse('411111').getOrThrow(),
+        accountIdentifier: Digits.parse('111111111').getOrThrow(),
       );
 
       // The parts of the Visa test number above, so the computed digit is checkable by eye.
@@ -208,17 +208,12 @@ void main() {
           accountIdentifier: '111111111111',
           failure: const PaymentCardNumberWrongLength(21),
         ),
-        'a letter in a part': (
-          iin: '41111a',
-          accountIdentifier: '11111111',
-          failure: const PaymentCardNumberInvalidCharacters(),
-        ),
       },
       outline: (example) {
         check(
               () => PaymentCardNumber.fromComponents(
-                iin: example.iin,
-                accountIdentifier: example.accountIdentifier,
+                iin: Digits.parse(example.iin).getOrThrow(),
+                accountIdentifier: Digits.parse(example.accountIdentifier).getOrThrow(),
               ),
             )
             .throws<MintedFormatException>()
@@ -228,7 +223,12 @@ void main() {
     );
 
     scenario('fromComponents error carries the components as its source', () {
-      check(() => PaymentCardNumber.fromComponents(iin: '4111', accountIdentifier: '11'))
+      check(
+            () => PaymentCardNumber.fromComponents(
+              iin: Digits.parse('4111').getOrThrow(),
+              accountIdentifier: Digits.parse('11').getOrThrow(),
+            ),
+          )
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('4111 + 11');

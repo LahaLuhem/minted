@@ -2,6 +2,7 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digit.dart';
+import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/minted_format_exception.dart';
@@ -21,12 +22,13 @@ extension type const Isbn._(String value) {
   /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the check
   /// digit. Throws [MintedFormatException] when the parts don't form a valid ISBN. For assembling from
   /// a known-valid source.
-  static Isbn fromComponents({required String prefix, required String body}) {
-    final assembledIsbn = _withCheckDigit(_compact('$prefix$body'));
+  static Isbn fromComponents({required Digits prefix, required Digits body}) {
+    final bodyStr = body.asString;
+    final assembledIsbn = _withCheckDigit('${prefix.asString}$bodyStr');
     final failure = _failureFor(assembledIsbn);
 
     return failure != null
-        ? throw MintedFormatException.from(failure, '$prefix + $body')
+        ? throw MintedFormatException.from(failure, '${prefix.asString} + $bodyStr')
         : ._(assembledIsbn);
   }
 

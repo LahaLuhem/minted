@@ -208,6 +208,17 @@ single-valued, both are classes. Rationale:
    `fromBytes`, `Date(y, m, d)`. Calling one *is* the caller asserting the parts are valid, so a
    violation is a bug in their source, not bad input. See
    [`APPENDIX.md#claim-in-source`](./APPENDIX.md#claim-in-source).
+   **Their parameters take the package's own types, not raw primitives.** A part that is only ever
+   decimal digits is a `Digits`; a part that is genuinely alphanumeric, like an IBAN's `bban` or an
+   email's `domain`, stays a `String`, because `Digits` there would be the wrong type rather than a
+   stronger one. This is the package eating its own cooking: a factory taking `String` for a
+   digits-only part ships the exact primitive obsession the library exists to remove, and it leaves
+   the charset failure reachable from a door whose caller is already asserting. Rationale:
+   [`APPENDIX.md#typed-digit-subparts`](./APPENDIX.md#typed-digit-subparts).
+   **Never add a per-type throwing door to make that convenient.** The spelling is
+   `Digits.parse('978').getOrThrow()`: `getOrThrow` lives on `ParseOutcome`, so every type gets one
+   assert-in-source door and no type grows a fifth entry to the door table above. Reach for it rather
+   than `getOrNull()!`, which discards the typed reason.
 5. **Value equality.** Extension types inherit it from the representation for free (see below);
    classes hand-write `==` + `hashCode` over their parts. No `Equatable` dependency.
 6. **A canonical string form.** `.value` for extension types (the representation), a named getter

@@ -133,12 +133,9 @@ void main() {
         'Nature online': (body: '1476468', issn: '1476-4687'),
         'a check character of ten spells X': (body: '1050124', issn: '1050-124X'),
       },
-      outline: (example) => check(Issn.fromBody(example.body).value).equals(example.issn),
+      outline: (example) =>
+          check(Issn.fromBody(Digits.parse(example.body).getOrThrow()).value).equals(example.issn),
     );
-
-    scenario('fromBody normalises a hyphenated, spaced body', () {
-      check(Issn.fromBody('031-7 847').value).equals('0317-8471');
-    });
 
     scenarioOutline<({String body, IssnFailure failure})>(
       'fromBody reports the same vocabulary as parse',
@@ -147,13 +144,9 @@ void main() {
           body: '03178',
           failure: const IssnWrongLength(6),
         ),
-        'the generator refuses a body outside 0-9 rather than guessing': (
-          body: '031784A',
-          failure: const IssnInvalidCharacters(),
-        ),
       },
       outline: (example) {
-        check(() => Issn.fromBody(example.body))
+        check(() => Issn.fromBody(Digits.parse(example.body).getOrThrow()))
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -161,7 +154,7 @@ void main() {
     );
 
     scenario('fromBody error carries the body as its source', () {
-      check(() => Issn.fromBody('03178'))
+      check(() => Issn.fromBody(Digits.parse('03178').getOrThrow()))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('03178');

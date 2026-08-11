@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'minted_failure.dart';
+import 'minted_format_exception.dart';
 
 /// The result of parsing text: either the value, or the [MintedFailure] saying why not.
 ///
@@ -40,6 +41,16 @@ sealed class ParseOutcome<F extends MintedFailure, T> {
   T getOrElse(T Function() orElse) => switch (this) {
     ParseSuccess(:final value) => value,
     ParseFailure() => orElse(),
+  };
+
+  /// The parsed value, throwing [MintedFormatException] when this failed.
+  ///
+  /// The door for a claim made in source: the caller asserts the input is valid, so a failure is a
+  /// bug in their code rather than a branch to write. Prefer it to `getOrNull()!`, which discards
+  /// the typed reason this outcome is holding and leaves a bare null-check error in its place.
+  T getOrThrow() => switch (this) {
+    ParseSuccess(:final value) => value,
+    ParseFailure(:final reason) => throw MintedFormatException.from(reason),
   };
 
   /// This outcome with a successful value passed through [transform]; a failure is carried across

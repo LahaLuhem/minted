@@ -167,12 +167,9 @@ void main() {
         'an EAN-13 body': (body: '400638133393', gtin: '04006381333931'),
         'a GTIN-14 body': (body: '1061414100041', gtin: '10614141000415'),
       },
-      outline: (example) => check(Gtin.fromBody(example.body).value).equals(example.gtin),
+      outline: (example) =>
+          check(Gtin.fromBody(Digits.parse(example.body).getOrThrow()).value).equals(example.gtin),
     );
-
-    scenario('fromBody normalises a hyphenated, spaced body', () {
-      check(Gtin.fromBody('4-006381 33393').value).equals('04006381333931');
-    });
 
     scenarioOutline<({String body, GtinFailure failure})>(
       'fromBody reports the same vocabulary as parse',
@@ -181,13 +178,9 @@ void main() {
           body: '400638133',
           failure: const GtinWrongLength(10),
         ),
-        'the generator refuses a body outside 0-9 rather than guessing': (
-          body: '40063813339A',
-          failure: const GtinInvalidCharacters(),
-        ),
       },
       outline: (example) {
-        check(() => Gtin.fromBody(example.body))
+        check(() => Gtin.fromBody(Digits.parse(example.body).getOrThrow()))
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -195,10 +188,10 @@ void main() {
     );
 
     scenario('fromBody error carries the body as its source', () {
-      check(() => Gtin.fromBody('40063813339A'))
+      check(() => Gtin.fromBody(Digits.parse('400638133').getOrThrow()))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
-          .equals('40063813339A');
+          .equals('400638133');
     });
   });
 }

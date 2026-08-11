@@ -2,6 +2,7 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digit.dart';
+import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
@@ -19,12 +20,13 @@ import 'failures/imei_failure.dart';
 extension type const Imei._(String value) {
   /// Builds an [Imei] from its [tac] and [serialNumber], computing the Luhn check digit. Throws
   /// [MintedFormatException] when the parts don't form a valid IMEI. For assembling from a known-valid source.
-  static Imei fromComponents({required String tac, required String serialNumber}) {
-    final assembledImei = _withCheckDigit(_compact('$tac$serialNumber'));
+  static Imei fromComponents({required Digits tac, required Digits serialNumber}) {
+    final serialNumStr = serialNumber.asString;
+    final assembledImei = _withCheckDigit('${tac.asString}$serialNumStr');
     final failure = _failureFor(assembledImei);
 
     return failure != null
-        ? throw MintedFormatException.from(failure, '$tac + $serialNumber')
+        ? throw MintedFormatException.from(failure, '${tac.asString} + $serialNumStr')
         : ._(assembledImei);
   }
 
