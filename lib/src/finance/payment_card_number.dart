@@ -8,6 +8,7 @@ import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/payment_card_number_failure.dart';
 
@@ -116,7 +117,7 @@ final class PaymentCardNumber {
   @override
   String toString() => 'PaymentCardNumber($masked)';
 
-  static String _compact(String input) => input.replaceAll(_separators, '');
+  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
 
@@ -125,7 +126,7 @@ final class PaymentCardNumber {
   static PaymentCardNumberFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when compactInput.length < _minLength || compactInput.length > _maxLength =>
       PaymentCardNumberWrongLength(compactInput.length),
-    _ when !_digitsOnly.hasMatch(compactInput) => const PaymentCardNumberInvalidCharacters(),
+    _ when !digitsOnly.hasMatch(compactInput) => const PaymentCardNumberInvalidCharacters(),
     _ when !_checksumHolds(compactInput) => const PaymentCardNumberChecksumFailed(),
     _ => null,
   };
@@ -151,9 +152,6 @@ final class PaymentCardNumber {
     (scheme: .discover, digits: 6, from: 622126, to: 622925),
     (scheme: .unionPay, digits: 2, from: 62, to: 62),
   };
-
-  static final _separators = RegExp(r'[\s-]+');
-  static final _digitsOnly = RegExp(r'^\d+$');
 
   static const _minLength = 8;
   static const _maxLength = 19;

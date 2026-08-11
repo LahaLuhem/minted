@@ -60,11 +60,13 @@ minted/
 │       └── shared/
 │           ├── minted_failure.dart            The MintedFailure supertype
 │           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
+│           ├── digit_values.dart              ASCII '0'-'9' ↔ 0-9, both directions
+│           ├── normalisation.dart             Separator patterns + the hyphen / zero-pad characters
+│           ├── isbn_prefixes.dart             Bookland 978/979 + the carved-out ISMN range
 │           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
 │           ├── iso_country_code.dart          ISO 3166-1 alpha-2 lookup, borrowed from the
 │           │                                  phone engine so no country table is carried
 │           └── check_digits/                  One file per algorithm, all private
-│               ├── digit_values.dart          ASCII '0'-'9' → 0-9, shared by every algorithm
 │               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
 │               ├── iban_check_digits.dart     ISO 13616 mod-97-10
 │               ├── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
@@ -98,10 +100,25 @@ suffices, and anything a failure needs from its value type belongs in `shared/` 
 why [`iso_date_format.dart`](../lib/src/shared/iso_date_format.dart) exists).
 
 **Check-digit algorithms get one file per *algorithm*** under `shared/check_digits/`, and reach what
-they share (`digit_values.dart`, ASCII decimal decoding) by plain import, never `part`. Separate
+they share (`../digit_values.dart`, ASCII decimal decoding) by plain import, never `part`. That file
+sits in `shared/` rather than inside `check_digits/` because it was never check-digit-specific:
+`Digits` decodes with it too, and once a second caller appeared from outside the directory, keeping
+it in there would have meant `numerics/` importing `check_digits/` for something that is not a check
+digit. It carries both directions (`decimalValue`, `decimalCodeUnit`) even though no algorithm needs
+the encoder, because rendering does. Separate
 libraries is the whole point: Dart privacy is library-scoped, so parts would leak every `_` constant
 across every algorithm, and mod-97's modulus of 97 has no business being visible to the next one.
 Each file keeps its own constants and its own character map private to itself.
+
+**A constant that two files both need goes in `shared/`, but only when it is the same *concept*.**
+`cosmeticSeparators` was five identical copies of one normalisation rule, and `ismnRange` was
+duplicated between `Isbn` and its own failure (a failure may not import its value type, so `shared/`
+is the only place it can live). Coincidental equality is not duplication and must stay put: `Iban`
+and `Issn` both have a `_groupSize` of 4, but IBAN groups repeatedly every four where ISSN splits
+once after four, and two of the check-digit moduli are both 10 for unrelated standards. Hoisting
+those would couple facts that are free to move independently. Sharing a top-level constant also
+means dropping its `_`, since a leading underscore is library-private in Dart; privacy then comes
+from `lib/src/` and from not re-exporting it.
 
 **Per algorithm, not per standard**, because standards share arithmetic: GS1's mod-10 validates both
 GTIN and ISBN-13, and one weighted mod-11 serves ISO 2108's ISBN-10 and ISO 3297's ISSN, differing

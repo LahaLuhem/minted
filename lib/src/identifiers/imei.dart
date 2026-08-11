@@ -5,6 +5,7 @@ import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/imei_failure.dart';
 
@@ -59,7 +60,7 @@ extension type const Imei._(String value) {
       '$reportingBodyIdentifier-${value.substring(_reportingBodyLength, _tacLength)}'
       '-$serialNumber-${checkDigit.value}';
 
-  static String _compact(String input) => input.replaceAll(_separators, '');
+  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
 
@@ -67,16 +68,13 @@ extension type const Imei._(String value) {
   // fromComponents funnel through; widest check first, so the earliest wrong thing is named.
   static ImeiFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when compactInput.length != _length => ImeiWrongLength(compactInput.length),
-    _ when !_digitsOnly.hasMatch(compactInput) => const ImeiInvalidCharacters(),
+    _ when !digitsOnly.hasMatch(compactInput) => const ImeiInvalidCharacters(),
     _ when !_checksumHolds(compactInput) => const ImeiChecksumFailed(),
     _ => null,
   };
 
   static bool _checksumHolds(String compactInput) =>
       compactInput.endsWith(luhnCheckDigit(compactInput.substring(0, _checkDigitIndex)));
-
-  static final _separators = RegExp(r'[\s-]+');
-  static final _digitsOnly = RegExp(r'^\d+$');
 
   static const _length = 15;
   // The 2004 revision folded the two-digit Final Assembly Code into the TAC, so there is no separate

@@ -3,6 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
+import '../../shared/isbn_prefixes.dart';
 import '../../shared/minted_failure.dart';
 
 /// Why an [Isbn] refused its input. Sealed, not an enum, because [IsbnWrongLength] and [IsbnInvalidPrefix]
@@ -70,7 +71,7 @@ final class IsbnInvalidPrefix extends IsbnFailure {
   const IsbnInvalidPrefix(this.prefix);
 
   @override
-  String get message => prefix == _ismnRange
+  String get message => prefix == ismnRange
       ? '"$prefix" is the ISMN range for printed music, not an ISBN'
       : '"$prefix" is not an ISBN prefix (expected 978 or 979)';
 
@@ -82,10 +83,6 @@ final class IsbnInvalidPrefix extends IsbnFailure {
 
   @override
   String toString() => 'IsbnInvalidPrefix($prefix)';
-
-  // ISO 10957 holds 979-0 for the ISMN, and saying so beats calling it a mistyped prefix: the input
-  // is a real identifier, just not this one.
-  static const _ismnRange = '9790';
 }
 
 /// The check digit disagrees with the rest of the number: a character is mistyped or transposed.

@@ -4,6 +4,7 @@
 import '../numerics/digits.dart';
 import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/issn_failure.dart';
 
@@ -44,18 +45,18 @@ extension type const Issn._(String value) {
   }
 
   /// The eight characters without the hyphen, for a URL or a database key.
-  String get compact => value.replaceAll(_hyphen, '');
+  String get compact => value.replaceAll(hyphen, '');
 
   /// The final character, the mod-11 check over the other seven. A `String` rather than a `Digit`,
   /// because ISO 3297 spells the value ten as `X`.
   String get checkCharacter => value.substring(_checkCharacterIndex);
 
-  static String _compact(String input) => input.replaceAll(_separators, '').toUpperCase();
+  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '').toUpperCase();
 
   // ISO 3297 fixes the hyphen after the fourth character, so it carries no information and is
   // reinserted rather than stored through parsing.
   static String _hyphenated(String compactInput) =>
-      '${compactInput.substring(0, _groupSize)}$_hyphen${compactInput.substring(_groupSize)}';
+      '${compactInput.substring(0, _groupSize)}$hyphen${compactInput.substring(_groupSize)}';
 
   // Why already-compacted input is not an ISSN, or null when it is one. The single gate parse and
   // fromBody funnel through; widest check first, so the earliest wrong thing is named.
@@ -69,12 +70,10 @@ extension type const Issn._(String value) {
   static bool _checksumHolds(String compactInput) =>
       compactInput.endsWith(mod11CheckCharacter(compactInput.substring(0, _bodyLength)));
 
-  static final _separators = RegExp(r'[\s-]+');
   static final _issnForm = RegExp(r'^\d{7}[\dX]$');
 
   static const _length = 8;
   static const _bodyLength = 7;
   static const _groupSize = 4;
   static const _checkCharacterIndex = 8; // past the hyphen, so one further than in the compact form
-  static const _hyphen = '-';
 }

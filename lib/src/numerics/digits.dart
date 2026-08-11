@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
+import '../shared/digit_values.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/parse_outcome.dart';
 import 'digit.dart';
@@ -32,9 +33,9 @@ final class Digits extends Iterable<Digit> {
   /// any character is not `0`-`9`. Empty input yields an empty sequence.
   static ParseOutcome<DigitsFailure, Digits> parse(String input) {
     final codeUnits = input.codeUnits;
-    final parsedDigits = !codeUnits.every(_isAsciiDigit)
+    final parsedDigits = codeUnits.any((code) => decimalValue(code) < 0)
         ? null
-        : Digits._(Uint8List.fromList([for (final code in codeUnits) code - _asciiZero]));
+        : Digits._(Uint8List.fromList([for (final code in codeUnits) decimalValue(code)]));
 
     return parsedDigits == null
         ? const ParseFailure(DigitsFailure.notAllDigits)
@@ -42,8 +43,10 @@ final class Digits extends Iterable<Digit> {
   }
 
   /// The sequence of the given [values], or `null` unless every value is in `0`-`9`.
-  static Digits? tryFrom(List<int> values) =>
-      !values.every(_isDigitValue) ? null : ._(.fromList(values.toList(growable: false)));
+  // Asks [Digit] what a digit is rather than re-deciding: one range, one place.
+  static Digits? tryFrom(List<int> values) => values.any((value) => Digit.tryFrom(value) == null)
+      ? null
+      : ._(.fromList(values.toList(growable: false)));
 
   /// The sequence of the given [values], throwing [MintedFormatException] unless
   /// every value is in `0`-`9`.
@@ -64,7 +67,7 @@ final class Digits extends Iterable<Digit> {
   Digit operator [](int index) => Digit.from(_bytes[index]);
 
   /// The digits as a plain string, e.g. `'12345'` (the canonical form).
-  String get asString => .fromCharCodes(_bytes.map((byte) => byte + _asciiZero));
+  String get asString => .fromCharCodes(_bytes.map(decimalCodeUnit));
 
   @override
   bool operator ==(Object other) => other is Digits && _byteEquality.equals(_bytes, other._bytes);
@@ -75,12 +78,5 @@ final class Digits extends Iterable<Digit> {
   @override
   String toString() => 'Digits($asString)';
 
-  static bool _isAsciiDigit(int code) => code >= _asciiZero && code <= _asciiNine;
-
-  static bool _isDigitValue(int value) => value >= 0 && value < _radix;
-
   static const _byteEquality = ListEquality<int>();
-  static const _asciiZero = 0x30;
-  static const _asciiNine = 0x39;
-  static const _radix = 10;
 }

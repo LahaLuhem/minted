@@ -3,6 +3,7 @@
 
 import '../shared/iso_country_code.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/bic_failure.dart';
 
@@ -73,7 +74,7 @@ extension type const Bic._(String value) {
   /// puts no restriction on [locationCode]; the registration authority still uses neither freedom.
   bool get isSwiftRegistrable => _swiftRegistrationForm.hasMatch(value);
 
-  static String _compact(String input) => input.replaceAll(_whitespace, '').toUpperCase();
+  static String _compact(String input) => input.replaceAll(whitespace, '').toUpperCase();
 
   // The eight-character form addresses the primary office, which is what XXX spells at eleven.
   static String _withPrimaryOffice(String compactInput) =>
@@ -95,7 +96,6 @@ extension type const Bic._(String value) {
   static String _countryCodeOf(String compactInput) =>
       compactInput.substring(_countryCodeStart, _locationCodeStart);
 
-  static final _whitespace = RegExp(r'\s+');
   static final _alphanumeric = RegExp(r'^[A-Z0-9]+$');
   // The pre-2014 shape ISO 20022 retired and SWIFT still registers by, over the folded eleven.
   static final _swiftRegistrationForm = RegExp(r'^[A-Z]{6}[A-Z2-9][A-NP-Z0-9][A-Z0-9]{3}$');
