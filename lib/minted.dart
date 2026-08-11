@@ -31,6 +31,8 @@ export 'src/finance/failures/payment_card_number_failure.dart';
 export 'src/finance/iban.dart';
 export 'src/finance/isin.dart';
 export 'src/finance/payment_card_number.dart';
+export 'src/geography/failures/geo_coordinate_failure.dart';
+export 'src/geography/geo_coordinate.dart';
 export 'src/identifiers/failures/imei_failure.dart';
 export 'src/identifiers/failures/isbn_failure.dart';
 export 'src/identifiers/failures/isni_failure.dart';
