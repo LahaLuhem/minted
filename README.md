@@ -50,7 +50,6 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
 - [One shape, every type](#one-shape-every-type)
 - [Handling failures](#handling-failures)
 - [Caveats](#caveats)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 
 <!-- TOC end -->
@@ -345,23 +344,10 @@ there instead. Why the erasure is
 a deliberate trade rather than an oversight:
 [APPENDIX.md](./APPENDIX.md#extension-type-representation).
 
-## Roadmap
-
-- [x] `Email` (RFC 5322)
-- [x] `Iban` (ISO 13616, mod-97)
-- [x] `PhoneNumber` (E.164)
-- [x] `Date` / `Month` (ISO 8601 calendar date, leap-aware month)
-- [x] `Digit` / `Digits` (numeric building blocks)
-- [x] `Uuid` (RFC 9562: parse, classify version/variant, Nil/Max sentinels)
-- [x] `Isbn` (ISO 2108: both generations, mod-11 and GS1 mod-10, folded to ISBN-13)
-- [x] `Bic` (ISO 9362: SWIFT codes, 8- and 11-character forms folded to one value)
-- [x] `PaymentCardNumber` (ISO/IEC 7812: Luhn, masked rendering, schemes reported not validated)
-- [x] `Gtin` (GS1: EAN-8, UPC-A, EAN-13 and GTIN-14, all folded to fourteen digits)
-- [ ] `Isbn` hyphenation, once the ISBN range table has somewhere to live
-- Later: ISO code lists, bounded numerics, opt-in JSON / `fpdart` / Flutter companions
-
 ## Contributing
 
-Issues and pull requests are welcome. If you're adding a type, hold it to the shared value-type
-contract (parse-don't-validate, a private constructor, `MintedFormatException`, value equality) and
-bring the official standard test vectors along.
+Issues and pull requests are welcome, and the
+[issue tracker](https://github.com/LahaLuhem/minted/issues) is where the types still to land are
+kept. If you're adding one, hold it to the shared value-type contract (parse-don't-validate, a
+private constructor, `MintedFormatException`, value equality) and bring the official standard test
+vectors along.
