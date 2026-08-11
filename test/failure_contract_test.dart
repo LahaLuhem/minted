@@ -82,6 +82,21 @@ void main() {
         typeName: 'Imei',
         message: 'failed the Luhn check',
       ),
+      'Issn: not the one length': (
+        failure: IssnWrongLength(7),
+        typeName: 'Issn',
+        message: 'expected 8 characters, got 7',
+      ),
+      'Issn: the charset message says where X is allowed': (
+        failure: IssnInvalidCharacters(),
+        typeName: 'Issn',
+        message: 'contains characters outside 0-9 (X only as the check character)',
+      ),
+      'Issn: the mod-11 check is named': (
+        failure: IssnChecksumFailed(),
+        typeName: 'Issn',
+        message: 'failed the mod-11 check',
+      ),
       'Isbn: neither generation has that length': (
         failure: IsbnWrongLength(12),
         typeName: 'Isbn',
@@ -240,6 +255,15 @@ void main() {
           rendered: 'ImeiInvalidCharacters()',
         ),
         'the IMEI Luhn variant': (failure: ImeiChecksumFailed(), rendered: 'ImeiChecksumFailed()'),
+        'a wrong ISSN length': (failure: IssnWrongLength(7), rendered: 'IssnWrongLength(7)'),
+        'an ISSN charset failure': (
+          failure: IssnInvalidCharacters(),
+          rendered: 'IssnInvalidCharacters()',
+        ),
+        'the ISSN checksum variant': (
+          failure: IssnChecksumFailed(),
+          rendered: 'IssnChecksumFailed()',
+        ),
         'a wrong ISBN length': (failure: IsbnWrongLength(12), rendered: 'IsbnWrongLength(12)'),
         'an ISBN charset failure': (
           failure: IsbnInvalidCharacters(),
@@ -348,6 +372,21 @@ void main() {
           failure: ImeiChecksumFailed(),
           twin: ImeiChecksumFailed(),
           other: ImeiInvalidCharacters(),
+        ),
+        'ISSN length differs by its count': (
+          failure: IssnWrongLength(7),
+          twin: IssnWrongLength(7),
+          other: IssnWrongLength(9),
+        ),
+        'the ISSN charset variant': (
+          failure: IssnInvalidCharacters(),
+          twin: IssnInvalidCharacters(),
+          other: IssnChecksumFailed(),
+        ),
+        'the ISSN checksum variant': (
+          failure: IssnChecksumFailed(),
+          twin: IssnChecksumFailed(),
+          other: IssnInvalidCharacters(),
         ),
         'ISBN length differs by its count': (
           failure: IsbnWrongLength(12),

@@ -84,6 +84,14 @@ void main() {
     Imei.parse('3520990017614810').reasonOrNull?.message,
   ); // 16 digits is an IMEISV, not an IMEI
 
+  // `Issn` keeps the hyphen, because ISO 3297 fixes it at one position (unlike an ISBN's groups,
+  // which come from a range table). Its check character can be `X`, standing for ten.
+  final issn = Issn.tryParse('1050124x')!;
+  print(issn.value); // 1050-124X  (hyphen placed, x upper-cased)
+  print(issn.compact); // 1050124X  (for a URL or a database key)
+  print(issn.checkCharacter); // X
+  print(Issn.tryParse('0317-8470')); // null (fails the mod-11 check)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

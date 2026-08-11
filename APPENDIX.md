@@ -28,6 +28,7 @@ anchor, and keep anchors stable across renames.
 - [Weekday: an enum, where Month is an extension type](#weekday-enum)
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [Isbn: two generations, one value, no hyphens](#isbn-value-type)
+- [Issn: the one type that keeps its hyphen](#issn-value-type)
 - [Bic: no checksum, so the standard is the whole check](#bic-value-type)
 - [PaymentCardNumber: a class so it can mask, and a scheme it only reports](#payment-card-number-value-type)
 - [Gtin: four lengths, one number, padded to fourteen](#gtin-value-type)
@@ -592,6 +593,36 @@ either, so it would buy only the two check-digit algorithms, which is the case
 **Its blind spot is mod-10's**, so `9780306401657` passes as readily as `9780306406157`; mod-11 over
 the ten-digit form catches every transposition. See
 [check-digit blind spots](#check-digit-blind-spots).
+
+---
+
+<a id="issn-value-type"></a>
+## Issn: the one type that keeps its hyphen
+
+**The hyphen is in `value`, where [`Isbn`](#isbn-value-type) strips its own.** That looks
+inconsistent and is not, because the two hyphens are different things. An ISBN's groups come from
+ISBN International's range table, so rendering them [ships a clock](#registry-data-ships-a-clock); an
+ISSN's single hyphen sits after the fourth character always, fixed by ISO 3297 and derivable from
+nothing but the length. So there is no data to go stale, the standard's own written form is
+`NNNN-NNNC`, and storing anything else would mean `print(issn)` showing a form that appears on no
+masthead, in no citation and in no catalogue. `compact` drops it for a URL or a database key, the
+same reconstruct-on-demand relationship [`Iban.formatted`](#normalise-on-parse) has, just pointing
+the other way.
+
+**`checkCharacter` is a `String`, not a `Digit`.** ISO 3297 spells the value ten as `X`, so the field
+is not always a digit and the honest type is the wider one. `Isbn.checkDigit` and `Gtin.checkDigit`
+*are* `Digit`s, because an ISBN-13 and a GTIN both end in a real digit. The
+[typing-versus-honesty balance](#typing-versus-honesty) again, resolved per field.
+
+**Mod-11 has no transposition blind spot**, which makes this the one check-digit type in the package
+without a [caveat to pin](#check-digit-blind-spots). The tests pin the opposite: three real ISSNs with
+an adjacent pair differing by five, transposed, all rejected. Those are exactly the swaps the mod-10
+family cannot see, so a future "simplification" to mod-10 would turn them green.
+
+**ISSN-L and the 977 barcode are out of scope.** The linking ISSN that ties a title's print and online
+numbers together is an assignment held in the ISSN Register, not a computation, and the `977` EAN-13
+that carries an ISSN on a magazine adds two variant digits that are likewise not derivable. Both are
+registry lookups wearing a checksum's clothing.
 
 ---
 
