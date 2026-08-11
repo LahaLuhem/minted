@@ -75,6 +75,15 @@ void main() {
   print(gtin.gtin8); // null (it needs more than eight digits)
   print(Gtin.tryParse('4006381333932')); // null (fails the GS1 mod-10 check)
 
+  // `Imei` runs the Luhn check the printed grouping hides, and hands back the parts.
+  final imei = Imei.tryParse('35-209900-176148-1')!;
+  print(imei.value); // 352099001761481
+  print(imei.tac); // 35209900  (which model, not which unit)
+  print(imei.formatted); // 35-209900-176148-1
+  print(
+    Imei.parse('3520990017614810').reasonOrNull?.message,
+  ); // 16 digits is an IMEISV, not an IMEI
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

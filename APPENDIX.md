@@ -18,9 +18,10 @@ anchor, and keep anchors stable across renames.
 - [Failures are per type, because standards are](#per-type-failures)
 - [Normalise on parse](#normalise-on-parse)
 - [Check the real standard, not a regex shape](#check-digits-not-regex)
+- [Registry data ships a clock](#registry-data-ships-a-clock)
 - [Behavioural tests: a helper, not a framework](#behavioural-tests-helper)
 - [Public API funnelled through `lib/minted.dart`](#public-api-via-single-export-file)
-- [Packaging: one core, companions for opinionated deps](#packaging-core-and-companions)
+- [Packaging: engine dependencies in core, adapters in companions](#packaging-core-and-companions)
 - [British spelling in the public API](#spelling)
 - [SDK floor](#sdk-floor)
 - [Date: a calendar date, not an instant](#date-value-type)
@@ -28,6 +29,9 @@ anchor, and keep anchors stable across renames.
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [Isbn: two generations, one value, no hyphens](#isbn-value-type)
 - [Bic: no checksum, so the standard is the whole check](#bic-value-type)
+- [PaymentCardNumber: a class so it can mask, and a scheme it only reports](#payment-card-number-value-type)
+- [Gtin: four lengths, one number, padded to fourteen](#gtin-value-type)
+- [Imei: printed in full, unlike a card number](#imei-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -60,7 +64,7 @@ downstream user, so it stays as short as the validation honestly requires.
 <a id="parse-dont-validate"></a>
 ## Parse, don't validate
 
-The organising principle, after Alexis King's essay of the same name. A function that *validates*
+The organizing principle, after Alexis King's essay of the same name. A function that *validates*
 takes a `String`, checks it, and hands the same `String` back; every later consumer has to trust
 that the check happened and re-check if unsure. A function that *parses* takes a `String` and
 returns a **different type** that can only exist if the input was well-formed. The validity
@@ -72,51 +76,39 @@ type does for its domain. The mechanics that enforce it:
 - The primary constructor is **private** (`._`). No caller can build an instance directly.
 - The only ways in are `parse` (returns a [`ParseOutcome`](#parse-outcome)), `tryParse` (returns
   `T?`), and the assembly factories (which throw). All run the same full check.
-- Therefore an instance of `Iban` is a proof that the string passed mod-97; a `CreditCardNumber`
+- Therefore, an instance of `Iban` is a proof that the string passed mod-97; a `PaymentCardNumber`
   is a proof that it passed Luhn. Downstream code stops re-checking and stops carrying "is this
   string actually valid?" as an open question.
 
-This is the direct antidote to primitive obsession: `String email, String phone, String name`
-are three interchangeable, mixed-up-able parameters; `Email`, `Phone`, `PersonName` are not.
+This is the direct antidote to primitive obsession: `String email, String phone, String card`
+are three interchangeable, mixed-up-able parameters; `Email`, `PhoneNumber`, `PaymentCardNumber`
+are not.
 
 ---
 
 <a id="extension-type-representation"></a>
 ## Extension type vs immutable class
 
-Two shapes, chosen by the data, both presenting the [same contract](./CODESTYLE.md#value-type-contract).
+*Which* shape each value takes, and the mechanics you must design around, are specified in
+[CODESTYLE](./CODESTYLE.md#value-type-contract). This is only why the split exists.
 
-**Single primitive → extension type.** An `extension type const Email._(String value)` is a
-purely static, zero-runtime-cost wrapper: at runtime the instance *is* the `String`, so there is
-no allocation and no indirection. Equality, `hashCode`, and `toString` delegate to the
-representation, which is precisely what a `String`-backed value type wants: two `Email`s that
-normalise to the same string are equal and hash equal for free, and `print(email)` shows the
-email. The trade-offs are real and deliberate:
+**A single primitive gets an extension type because the delegation is free and correct.** At runtime
+the instance *is* the `String`, so there is no allocation and no indirection, and `==` / `hashCode`
+/ `toString` all delegate to the representation. For a `String`-backed value type that delegation
+is exactly the wanted behaviour: two `Email`s that normalise to the same string are equal and hash
+equal for nothing, and `print(email)` shows the email. The cost is that type safety is compile-time
+only, so `'nope' as Email` is a no-op cast that succeeds. That is unfixable from inside the package
+(a lint is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310)), so the
+README documents it as a usage rule instead. Since primitive obsession bites at compile time anyway,
+the trade is worth taking.
 
-- You cannot override `toString` / `==` / `hashCode` (the analyzer forbids redeclaring `Object`
-  members on an extension type). Fine here, because the delegated behaviour is the behaviour we
-  want.
-- There is no runtime distinction between the type and its representation (`email is String` is
-  true). So the type safety is compile-time only, which is where primitive obsession bites
-  anyway, and serialization must be explicit rather than reflective. The sharp edge of that:
-  `'nope' as Email` is a no-op cast that succeeds, and so is `rawStrings as List<Email>`, so a
-  caller can hand themselves an instance the parser would have rejected. Unfixable from inside the
-  package (a lint is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310)),
-  so the README documents it as a usage rule instead.
-- `const` construction is closed to callers (the constructor is private). That is the point:
-  closing construction is what makes the invariant hold. Curated constants (say `CountryCode.gb`)
-  are still built inside the library via the private constructor.
-
-**Multiple parts → immutable class.** When a value is genuinely several fields (a coordinate's
-latitude and longitude), an `@immutable final class` with a private constructor, hand-written
-`==` / `hashCode`, and a `ClassName(...)` `toString` is the right shape. No `Equatable`
-dependency: the core stays dependency-light, and hand-written equality is a few honest lines.
-
-**A single primitive still takes a class where a delegated `Object` member is wrong for it.** The
-delegation above is a feature only while the inherited behaviour is the wanted one.
+**A class is for when that delegation would be wrong, or there is nothing to delegate to.**
+Genuinely multi-field values ([`Date`](#date-value-type)) have no single representation to wrap.
+Single-valued ones still take a class when an inherited `Object` member misbehaves:
 [`Digits`](#typed-digit-subparts) needs structural `==` that `Uint8List` will not give, and
 [`PaymentCardNumber`](#payment-card-number-value-type) needs a `toString` that does not print the
-card. Both are single-valued and both are classes.
+card. Same test, different member. No `Equatable` dependency either way: handwritten equality is a
+few honest lines and the core stays dependency-light.
 
 ---
 
@@ -206,12 +198,11 @@ separates `Either` from `error`, and ribs ships `Either.catching` for crossing i
 It is deliberately `Either`-shaped so FP-style code reads natively, but named for the domain rather
 than `Left` / `Right`, because the package is general-purpose.
 
-**Why not depend on an FP library.** `ribs_core`'s `Either` was seriously considered and rejected,
-because the dependency would be **viral in the public API**: unlike `iban_validator`, it appears in
-every signature, so every consumer would have to add and import it. That re-pitches a general
-package as an FP-only one, and consumers already on `fpdart` would end up with two incompatible
-`Either`s. This is exactly the distinction [hard rule 7](./.ai/AGENTS.md#hard-rules) draws between
-an *engine* a type is built on and an *adapter* to another ecosystem.
+**Why not depend on an FP library.** `ribs_core`'s `Either` was considered and rejected because the
+dependency would be **viral in the public API**: unlike `iban_validator` it appears in every
+signature, so every consumer would have to add and import it, re-pitching a general package as an
+FP-only one and leaving anyone already on `fpdart` with two incompatible `Either`s. That is exactly
+the *engine* versus *adapter* line in [hard rule 7](./.ai/AGENTS.md#hard-rules).
 
 **FP interop is three lines in the consumer's own app**, not a companion package:
 
@@ -222,16 +213,15 @@ extension RibsOutcome<F extends MintedFailure, T> on ParseOutcome<F, T> {
 }
 ```
 
-**Why no third state.** Modelling the assembly-factory failure as a third variant, so nothing ever
-throws, was rejected: it is the [claim-in-source](#claim-in-source) line above, it would lose the
-stack trace exactly where it is the only useful diagnostic, and it would be viral upward, since
-every function building a `Date` would then return the three-state type. Java's checked exceptions,
-same failure mode.
+**Why no third state.** Folding the assembly-factory failure in as a third variant, so nothing ever
+throws, crosses the [claim-in-source](#claim-in-source) line, loses the stack trace exactly where it
+is the only useful diagnostic, and is viral upward: every function building a `Date` would return the
+three-state type. Java's checked exceptions, same failure mode.
 
-**Why the constructors are public.** Unlike the value types, `ParseOutcome` protects no invariant:
-to build a `ParseSuccess(iban)` you must already hold an `Iban`, which only parsing produces. The
-sealed base and `final` arms still stop anyone adding a third state. Public `const` constructors buy
-fixture construction in consumer tests for nothing.
+**Why the constructors are public.** `ParseOutcome` protects no invariant, since building a
+`ParseSuccess(iban)` requires already holding an `Iban`, which only parsing produces. The sealed base
+and `final` arms still stop anyone adding a third state, and public `const` constructors buy consumer
+test fixtures for nothing.
 
 ---
 
@@ -239,48 +229,45 @@ fixture construction in consumer tests for nothing.
 ## Failures are per type, because standards are
 
 Every value type declares its own failure vocabulary implementing `MintedFailure`, rather than the
-package sharing one enum. The deciding factor is **uniformity across the family**, not the cost of
-the change.
+package sharing one enum, and the deciding factor is **uniformity across the family**.
 
-A single shared vocabulary has to pick one granularity, and no setting fits both ends of the family.
-Coarse enough for `Digit` and `Iban`'s distinct failures collapse into "invalid"; rich enough for
-`Iban` and `Digit` carries variants it can never produce, so consumer `switch`es are mostly
-unreachable arms. The variation is a property of the standards being modelled:
+One shared vocabulary would have to pick a single granularity, and neither setting fits both ends:
+coarse enough for `Digit` and `Iban`'s distinct failures collapse into "invalid"; rich enough for
+`Iban` and `Digit` carries variants it can never produce, leaving consumer `switch`es mostly
+unreachable arms. The variation is a property of the standards themselves:
 
 > A standard that is a single grammar has one failure mode. A standard that is a checksum plus a
 > registry has several, because it has independent things to fail against.
 
-So uniformity lives in the *shape* of the API (every type has a failure type; every parse failure
-produces one; every one is a `MintedFailure`) and not in the *content*. That is already how the
-package handles family-level variation everywhere else: `Iban.checkDigits`, `Email.mailtoUri` and
-`Uuid.bytes` have nothing in common either, and nobody minds.
+So uniformity lives in the *shape* of the API (every type has a failure type, every parse failure
+produces one, every one is a `MintedFailure`) and not in the *content*, which is how the package
+handles family-level variation everywhere else: `Iban.checkDigits`, `Email.mailtoUri` and `Uuid.bytes`
+have nothing in common either.
 
-**When a variant earns its place: it changes what the user does next.** "Checksum failed" means
-*you mistyped a character, look again*; "unknown country" means *we do not support this, stop
-trying*; "too short" means *keep typing*. Three remedies, three variants. "Bad character at index 7"
-versus "at index 9" is one remedy, so one variant.
+**A variant earns its place by changing what the user does next.** "Checksum failed" means *you
+mistyped, look again*; "unknown country" means *we do not support this, stop*; "too short" means *keep
+typing*. Three remedies, three variants. "Bad character at index 7" versus "at index 9" is one remedy,
+so one variant.
 
 **The engine sets the ceiling, and we do not guess past it.** `email_validator` exposes a single
-`bool`, so `Email` gets exactly one variant. A heuristic guess at "invalid domain" would be a
-fabricated diagnosis wearing a type name, which is strictly worse than saying less: confidently
-wrong beats honestly silent. `PhoneNumber` is nearly the same story, since only one of
-`phone_numbers_parser`'s five codes is ever thrown; its other two variants are checks minted makes
-itself. `Iban` is the opposite extreme: `iban_validator` hands over a five-way diagnosis for free.
+`bool`, so `Email` gets exactly one variant; a heuristic guess at "invalid domain" would be a
+fabricated diagnosis wearing a type name, and honestly silent beats confidently wrong. `PhoneNumber`
+is nearly the same story, since only one of `phone_numbers_parser`'s five codes is ever thrown.
+`Iban` is the opposite extreme, handed a five-way diagnosis for free.
 
-**Sealed or enum, per type, decided by when the payload is known.** Enum when every variant's data
-is a declaration-time constant, or there is no data; sealed when any variant carries something
-derived from the input (`IbanInvalidLength(expected, actual)`, `DateDayOutOfRange`'s leap-aware
-bound). Note the second prong is about *timing*, not shape: an enhanced enum's payload is fixed at
-declaration, so it cannot hold anything computed from what was parsed.
+**Sealed or enum, decided by when the payload is known.** Enum where every variant's data is a
+declaration-time constant or absent; sealed where any variant carries something derived from the input
+(`IbanInvalidLength(expected, actual)`, `DateDayOutOfRange`'s leap-aware bound). The second prong is
+about *timing*, not shape: an enhanced enum's payload is fixed at declaration.
 
 **Why `tryParse` still returns `T?`.** Replacing it with the outcome would kill `??`, `?.`,
-`whereType<Iban>()` and collection-`if` for every caller, including the many who only ever wanted
-the null. Two entry points is not worth that, and deriving one from the other costs nothing.
+`whereType<Iban>()` and collection-`if` for every caller who only ever wanted the null, and deriving
+one door from the other costs nothing.
 
 ---
 
 <a id="normalise-on-parse"></a>
-## Normalise on parse
+## Normalize on parse
 
 `tryParse` reduces input to one canonical form before it constructs the instance: trim
 whitespace, strip the separators the standard treats as cosmetic (spaces in an IBAN, dashes in a
@@ -288,10 +275,10 @@ card number), and case-fold the parts the standard says are case-insensitive (an
 upper-case; an email's domain is lower-case, its local-part left as-is).
 
 This is not cosmetic. Extension-type equality is representation equality, so the stored canonical
-form *is* the equality key. Normalising on the way in is what makes
+form *is* the equality key. Normalizing on the way in is what makes
 `Iban.parse('gb82 west 1234') == Iban.parse('GB82WEST1234')` hold, and what makes these types
-safe to use in a `Set` or as a `Map` key. Each type documents its exact normalisation in dartdoc
-so the canonicalisation is never a surprise. Render helpers (`Iban.formatted`, the grouped paper
+safe to use in a `Set` or as a `Map` key. Each type documents its exact normalization in dartdoc
+so the canonicalization is never a surprise. Render helpers (`Iban.formatted`, the grouped paper
 form) reconstruct a display form from the canonical one on demand; they do not change what is
 stored.
 
@@ -300,16 +287,51 @@ stored.
 <a id="check-digits-not-regex"></a>
 ## Check the real standard, not a regex shape
 
-Where a standard defines a checksum, `minted` computes it. IBAN carries a mod-97 check; card
-numbers carry a Luhn check; ISBN, EAN/GTIN, and ISSN carry check digits. A regex that matches the
-*shape* (right length, right character classes) accepts an enormous number of strings the
-standard rejects, and shipping that would defeat the entire "an instance is a proof of validity"
+Where a standard defines a checksum, `minted` computes it: mod-97 for `Iban`, Luhn for
+`PaymentCardNumber` and `Imei`, GS1 mod-10 for `Gtin` and ISBN-13, mod-11 for ISBN-10. A regex that
+matches the *shape* (right length, right character classes) accepts an enormous number of strings
+the standard rejects, and shipping that would defeat the entire "an instance is a proof of validity"
 premise. These check-digit types are the highest-value members of the package precisely because
 the standard hands us a real correctness test, not just a format.
 
 Tests for these types use the **official standard test vectors** (the IBAN registry examples, the
-Luhn worked examples, published ISBN/EAN check-digit cases), plus deliberately corrupted variants
-(one transposed digit, one wrong check digit) that must be rejected.
+Luhn worked examples, published ISBN/GTIN/IMEI check-digit cases), plus deliberately corrupted
+variants (one transposed digit, one wrong check digit) that must be rejected.
+
+<a id="check-digit-blind-spots"></a>
+**What the mod-10 family cannot catch**, stated once because three types inherit it. Luhn misses a
+`09`/`90` transposition and the twin errors 22/55, 33/66, and 44/77; GS1 mod-10 misses a
+transposition of two adjacent digits differing by five. Both members of each pair carry the same
+weighted sum, so the check digit is identical either way. Only mod-11 (ISBN-10) catches every
+transposition. These are properties of the standards, not of these implementations, and each
+affected type pins its own case in a test so it does not read as a bug later.
+
+---
+
+<a id="registry-data-ships-a-clock"></a>
+## Registry data ships a clock
+
+The most repeated decision in this package, hoisted here so the type sections can point at it instead
+of re-deriving it. **A validation rule built on registry data is correct on release day and quietly
+wrong afterwards**, because the registry moves and a published package does not. That is worse than
+under-validating: rejecting a real value, or confidently mis-rendering one, costs the caller more than
+saying less would have.
+
+So the rule is uniform. Validate what the *standard* fixes; **report** what a registry merely
+observes, and leave the caller to decide what to do with it. Every instance:
+
+| Type                | Registry kept out                              | What is done instead                                                                 |
+|---------------------|------------------------------------------------|--------------------------------------------------------------------------------------|
+| `Isbn`              | ISBN International's hyphenation range table   | hyphens stripped, derivable parts exposed                                            |
+| `Bic`               | current SWIFT practice (letters-only prefixes) | `parse` takes the wider ISO 9362 rule, `isSwiftRegistrable` reports the narrower one |
+| `PaymentCardNumber` | the IIN-to-network brand table                 | only uncontested ranges listed, `unknown` means "cannot say"                         |
+| `Gtin`              | GS1's company-prefix boundary                  | no company-prefix / item-reference split                                             |
+| `Email`             | anything past the engine's single `bool`       | exactly one failure variant, no guessed diagnosis                                    |
+
+Two consequences worth naming. It keeps mutable data out of core entirely, which is why no type here
+carries a table it would have to maintain (`Bic` borrows its country list rather than owning one).
+And it is not hypothetical: a real digit-prefixed BIC already broke a mature validator in production,
+which is the concrete case the rule exists to avoid.
 
 ---
 
@@ -321,34 +343,27 @@ tiny in-repo helper, not a BDD framework. [`test/support/bdd.dart`](./test/suppo
 about 25 lines of `feature` / `scenario` / `scenarioOutline` over `package:test`, with the
 assertions still written in `package:checks`.
 
-A real Gherkin runner was on the table and was turned down on the merits. An earlier
-`bdd_framework` dev-dependency had already been dropped because it pulled in `flutter_test`, which
-breaks `dart test` off Flutter and clashes with the `analyzer` / `meta` pin. Its pure-Dart
-replacement, the `gherkin` package, was then evaluated properly: it *does* resolve against the full
-dependency set and runs Flutter-free under Dart 3.12 when wrapped in a `package:test` case. It was
-still rejected, for reasons independent of the version:
+A real Gherkin runner was evaluated and turned down on the merits, not on availability. An earlier
+`bdd_framework` dev-dependency was dropped for pulling in `flutter_test` (which breaks `dart test`
+off Flutter), but the pure-Dart `gherkin` package *does* resolve and run Flutter-free here. It was
+still rejected, for four reasons independent of any version:
 
 - **No audience for the payoff.** Gherkin earns its keep when non-technical stakeholders read and
-  write `.feature` files. `minted`'s consumers are Dart developers; there is nobody here for whom
-  `Given the input "a@b.com" Then it is rejected` beats `check(Email.tryParse('a@b.com')).isNull()`.
-  The specification is the published standard (RFC 5322, ISO 13616) plus the dartdoc and the
-  structural [`test/conformance_test.dart`](./test/conformance_test.dart), all already executable.
-- **Ceremony over pure functions.** A value type is a single-call, stateless parse. Gherkin's
-  Given/When/Then and `World` context are built for stateful, multi-step flows; routing a pure
-  parse through them means inventing a stateful world just to carry the input across three steps.
-- **It degrades `dart test`.** The runner reports a whole feature as one opaque test; the
-  individual scenarios are printed by its own reporter and stay invisible to `dart test`'s test
-  counting, `-n` name filtering, and per-case failure attribution.
-- **Frozen.** `gherkin`'s last release was 2022 (Dart 2.15 era); it resolves under Dart 3 only
-  because pub relaxes the legacy `<3.0.0` SDK cap, and it holds `uuid` below 4.
+  write `.feature` files. This package's consumers are Dart developers, and the specification is
+  already the published standard plus the dartdoc plus the structural
+  [`conformance_test.dart`](./test/conformance_test.dart).
+- **Ceremony over pure functions.** A value type is a single-call, stateless parse. `World` context
+  and multistep flows mean inventing a stateful world to carry one input across three steps.
+- **It degrades `dart test`.** A whole feature reports as one opaque test, so scenario counting,
+  `-n` filtering, and per-case failure attribution all stop working.
+- **Frozen.** Last released 2022, resolves under Dart 3 only because pub relaxes the legacy SDK cap,
+  and it holds `uuid` below 4.
 
-The helper keeps the readability that was actually wanted and drops all four costs. Every example
-row stays a genuine `dart test` case, so counting, `-n` filtering, and failure naming still work.
-The examples table is the point: each row groups its input parameters with the expected outcome
-under a descriptive name, so the cases read as a table instead of literals scattered across
-separate tests and loop lists. Where a type normalises on parse, the canonical form doubles as the
-outcome (a string means "accepted and normalised to this", `null` means "rejected"), folding
-acceptance, rejection, and normalisation into one table. The how-to is in
+The helper keeps the readability and drops all four costs, since every example row stays a genuine
+`dart test` case. The examples’ table is the point: each row groups its inputs with the expected
+outcome under a descriptive name. Where a type normalizes on parse, the canonical form doubles as
+that outcome (a string means "accepted and normalized to this", `null` means "rejected"), folding
+acceptance, rejection, and normalization into one table. How-to in
 [CODESTYLE test style](./CODESTYLE.md#test-style).
 
 ---
@@ -356,12 +371,10 @@ acceptance, rejection, and normalisation into one table. The how-to is in
 <a id="public-api-via-single-export-file"></a>
 ## Public API funnelled through `lib/minted.dart`
 
-The public API is only what [`lib/minted.dart`](./lib/minted.dart) re-exports. Everything under
-`lib/src/` is private by convention; consumers never import `package:minted/src/…`. One barrel
-means the public surface is auditable in one file, and moving code around inside `lib/src/` is
-never a breaking change as long as the re-exports hold. Each value type is one self-contained file
-under `lib/src/<type>.dart`; shared internals (the `MintedFormatException`, the check-digit
-helpers) live under `lib/src/shared/`.
+The mechanics are [hard rule 2](./.ai/AGENTS.md#hard-rules); the reason is that one barrel makes the
+public surface auditable in a single file, and makes any move inside `lib/src/` a non-breaking
+change. That is what buys the freedom to regroup types into sector directories, or lift a shared
+check-digit algorithm out of one, without a semver event.
 
 ---
 
@@ -375,12 +388,12 @@ someone who only touches one type. Tree-shaking drops unused *code* from a relea
 the entry in the dependency graph. So "one package with optional heavy libraries" is not possible;
 the decision turns on *what a dependency is for*, not merely whether there is one.
 
-- **Engine dependencies live in core.** A dependency that a core value type is *built on* may sit
+- **Engine dependencies live in the core.** A dependency that a core value type is *built on* may sit
   in core, provided it is pure Dart, web-safe, and free of a heavy transitive closure: `Email`
-  wraps `email_validator`, `Iban` wraps `iban_validator`, and a `Phone` type wraps
-  `phone_numbers_parser`. These are the parser or registry the type needs to exist, in the same
-  category as each other. The guard still rejects a heavy or platform-bound engine: a type whose
-  only parser dragged in Flutter or a large runtime would go to a companion instead.
+  wraps `email_validator`, `Iban` wraps `iban_validator`, `PhoneNumber` wraps
+  `phone_numbers_parser`. These are the parser or registry the type needs to exist. The guard still
+  rejects a heavy or platform-bound engine: a type whose only parser dragged in Flutter or a large
+  runtime would go to a companion instead.
 - **Adapter dependencies go in companions.** A dependency that *adapts* the value types to another
   ecosystem is genuinely opt-in and must never burden core: `fpdart` (Option / Either), `hive`
   (persistence), a Flutter form-field validator. Each becomes its own package (`minted_fpdart`,
@@ -420,10 +433,10 @@ breaking change, starting current avoids churn later.
 They are still an *experiment* there (`--enable-experiment=primary-constructors`, off by default,
 verified against 3.12.2). Experiments are per-compilation and global, so a published package that
 used them would force every downstream consumer to enable the same experiment in their own build,
-and the syntax can still change before it stabilises. Until the feature ships stable (no flag),
+and the syntax can still change before it stabilizes. Until the feature ships stable (no flag),
 the private-representation extension type (`extension type const T._(String _value)`) already
 gives the same "private field declared at the constructor" shape with zero experiments; revisit
-the [value-type contract](./CODESTYLE.md#value-type-contract) when it stabilises. Record any floor
+the [value-type contract](./CODESTYLE.md#value-type-contract) when it stabilizes. Record any floor
 bump here, since it is breaking for anyone on the older SDK.
 
 ---
@@ -438,96 +451,75 @@ day, yet `DateTime` is what everyone reaches for, so a plain date ends up carryi
 nobody set, or a date that slides across midnight when it crosses a zone. Dart has no date-only
 sibling to `DateTime` (no `LocalDate`), so `Date` is that missing value.
 
-**An immutable class, not an extension type.** A date is three fields (year, month, day), so it
-takes the [multi-part shape](#extension-type-representation), not an extension type. The
-zero-cost alternatives don't hold up: an extension type over `DateTime` can't override `toString`,
-so it would print `2026-07-07 00:00:00.000` instead of `2026-07-07`, and it would inherit
-`DateTime`'s rollover; an extension type over a packed `int` (days-since-epoch, or a `yyyymmdd`
-number) has an opaque canonical form and needs arithmetic to read a component back. Plain fields
-with hand-written equality read best and cost least in confusion.
+**An immutable class, not an extension type.** Three fields means the
+[multi-part shape](#extension-type-representation), and the zero-cost alternatives do not hold up: an
+extension type over `DateTime` cannot override `toString`, so it would print `2026-07-07 00:00:00.000`
+and inherit the rollover; one over a packed `int` has an opaque canonical form and needs arithmetic
+to read a component back.
 
 **`Month` is a type; `day` and `year` are plain `int`.** A month is one of twelve regardless of
-context, so `Month` (an extension type on `int`, 1-12) is a clean building block, and it owns the
-calendar knowledge that hangs off the month: `Month.daysIn(year)` gives the length, leap-aware, so
-`Date` delegates to it instead of hand-rolling a month-length table. A *day*, by contrast, is only
-valid relative to a month and a year (is there a 30 February? a 31 April?), so a standalone
-`Day(1-31)` would be a shape check that still leaves `Date` to do the real validation, and a type
-named `Day` that accepts 31 February over-promises on its name. The meaningful notion of a valid
-day lives in `Date`, so `day` stays `int`; `year` would be only a thin bounded `int`, so it stays
-`int` too.
+context, so `Month` is a clean building block, and it owns the calendar knowledge that hangs off a
+month (`Month.daysIn(year)` is leap-aware, so `Date` delegates rather than carrying a length table).
+A *day* is only valid relative to a month and a year, so a standalone `Day(1-31)` would be a shape
+check that leaves `Date` doing the real validation, and a type named `Day` that accepts 31 February
+overpromises on its name. `year` would be only a thin bounded `int`. This is the
+[typing-versus-honesty balance](#typing-versus-honesty) resolved per field.
 
-**A validating factory, not a raw constructor.** `Date(2026, 7, 7)` is a factory that validates
-and throws `MintedFormatException` on an impossible date, backed by a private `Date._`. It is not
-a plain public constructor, because the package's guarantee is that every instance is well-formed
-and a raw constructor can't promise that: a `const` constructor's `assert`s are stripped in release
-builds, so `Date(2026, 13, 40)` would leak an impossible date into production. The factory is the
-parts-keyed parsing entry point the [value-type contract](./CODESTYLE.md#value-type-contract)
-allows, so the guarantee holds. The cost is that `Date(...)` is not `const`; neither is
-`DateTime(...)`, and the type is new, so nothing downstream loses a `const` it had.
+**A validating factory, not a raw constructor.** `Date(2026, 7, 7)` validates and throws
+`MintedFormatException`, backed by a private `Date._`. A plain `const` constructor cannot promise the
+guarantee, because its `assert`s are stripped in release builds, so `Date(2026, 13, 40)` would leak
+into production. The cost is that `Date(...)` is not `const`; neither is `DateTime(...)`.
 
 **Reject, don't roll over.** Where `DateTime(2026, 13, 1)` silently becomes 2027-01-01, `Date`
-rejects it. Rolling an out-of-range part over is the opposite of parse-don't-validate: it invents
-a different value instead of refusing a bad one.
+rejects it. Rolling an out-of-range part over invents a different value instead of refusing a bad
+one, which is the opposite of parse-don't-validate.
 
-**Local `toDateTime()`, UTC arithmetic.** `toDateTime()` returns local midnight, matching the
-`DateTime(year, month, day)` callers write today, so moving a value to `Date` and back preserves
-behaviour. Day arithmetic (`addDays`, `differenceInDays`) works in UTC internally, because a UTC
-day is always 24 hours and a local one is not (a daylight-saving transition makes a local day 23
-or 25 hours, which would skew the count).
+**Local `toDateTime()`, UTC arithmetic.** `toDateTime()` returns local midnight, matching what
+callers write today. Day arithmetic (`addDays`, `differenceInDays`) works in UTC internally, because
+a UTC day is always 24 hours when a daylight-saving transition makes a local one 23 or 25, which
+would skew the count.
 
-**`Date.now()` types the clock, it does not read it.** `DateTime.now()` already owns reading the
-clock, so `Date.now()` is `Date.fromDateTime(DateTime.now())`: it drops the time and the zone and
-hands back the local calendar day. Same division of labour as [`Uuid`](#uuid-value-type), where the
-neighbouring tool keeps its job and minted supplies the missing *value*. It is local, matching its
-sibling; for the UTC day, `Date.fromDateTime(DateTime.now().toUtc())`.
+**`Date.now()` types the clock, it does not read it**, being `Date.fromDateTime(DateTime.now())`:
+the same division of labour as [`Uuid`](#uuid-value-type). Local, matching its sibling; for the UTC
+day, `Date.fromDateTime(DateTime.now().toUtc())`.
 
-**Year `0000`-`9999`.** Parsing is the strict ISO 8601 calendar date `YYYY-MM-DD`, so the year is
-four digits and the canonical form is always well-defined; the factory holds the same range. The
-expanded ISO representation (a leading sign and more than four digits) is deliberately out of
-scope, and can be added later without breaking the four-digit forms.
+**Year `0000`-`9999`**, so the canonical `YYYY-MM-DD` form is always well defined. The expanded ISO
+representation (a leading sign and more digits) is out of scope and can be added later without
+breaking the four-digit forms.
 
 ---
 
 <a id="weekday-enum"></a>
 ## Weekday: an enum, where Month is an extension type
 
-Two closed sets of named numbers, two different shapes. The deciding question is not size, it is
-what the value *is* in the model. `Month` is a **parsed component**: it is position two of
-`YYYY-MM-DD`, `Date` stores one, `Month.parse` reads one out of text, and it owns the calendar
-knowledge that hangs off a month. `Weekday` is **derived**: nothing stores it, it never appears in
-a canonical form, and it only ever comes from a date that already parsed. That is `UuidVariant`'s
-profile rather than `Month`'s, and the split already exists in the package: parsed components take
-the [value-type contract](./CODESTYLE.md#value-type-contract), derived classifications are a plain
-enum.
+Two closed sets of named numbers, two different shapes, and the deciding question is not size but
+what the value *is*. `Month` is a **parsed component**: position two of `YYYY-MM-DD`, stored by
+`Date`, read out of text by `Month.parse`. `Weekday` is **derived**: nothing stores it, it never
+appears in a canonical form, and it only comes from a date that already parsed. That is
+`UuidVariant`'s profile, and the package already splits on it: parsed components take the
+[value-type contract](./CODESTYLE.md#value-type-contract), derived classifications are a plain enum.
 
-**An enum, because seven days is a set that can be named honestly.** That is the same test
-[`Uuid.version` fails and `UuidVariant` passes](#uuid-value-type): an enum fits when its members are
-the whole domain and each reads by name, and misleads when it would have to paper over a reserved
-hole. Seven named days is the clean case. The payoff is exhaustiveness, since a `switch` over a
-`Weekday` needs no default arm and the compiler catches the day you forgot, which is most of what
-weekday code does (opening hours, business days, labels). An extension type over `int` cannot offer
-that at any price: only sealed types and enums drive exhaustiveness. The cost is that an enum
-carries an `index` beside `value`, one apart, so the dartdoc names `value` as the ISO number and
-points away from `index`.
+**An enum, because seven days is a set that can be named honestly**, which is the same test
+[`Uuid.version` fails and `UuidVariant` passes](#uuid-value-type). The payoff is exhaustiveness: a
+`switch` over a `Weekday` needs no default arm and the compiler catches the day you forgot, which is
+most of what weekday code does. An extension type over `int` cannot offer that at any price, since
+only sealed types and enums drive exhaustiveness. The cost is an `index` sitting one apart from
+`value`, so the dartdoc names `value` as the ISO number and points away from `index`.
 
-**Ordering is a convention, and the type says so.** `Weekday` has `compareTo` and `<` / `<=` / `>` /
-`>=` over the ISO number, so Monday sorts first. That is a choice, not arithmetic: weeks begin on
-Sunday in the US, Canada and Japan, and on Saturday across much of the Middle East, and those weeks
-order the same seven days differently. [`Date`](#date-value-type) earns its operators outright
-because dates are totally ordered, but a weekday is a *cycle*, and ordering a cycle means picking an
-origin. So the comparisons document the origin they assume, and the arithmetic that needs no origin
-(`next`, `plusDays`, `daysUntil`, all modular and total) is the safer default. For the same reason
-there is no `isWeekend`: ISO 8601 numbers the days and says nothing about which of them are a
-weekend, and Friday-Saturday weekends are common enough that a bare answer would be an opinion
-wearing a standard's name.
+**Ordering is a convention, and the type says so.** `compareTo` and the comparison operators run over
+the ISO number, so Monday sorts first, but that is a choice rather than arithmetic: weeks begin on
+Sunday in the US, Canada, and Japan and on Saturday across much of the Middle East. A weekday is a
+*cycle*, and ordering a cycle means picking an origin, where [`Date`](#date-value-type) earns its
+operators outright because dates are totally ordered. So the comparisons document the origin they
+assume, and the origin-free arithmetic (`next`, `plusDays`, `daysUntil`, all modular and total) is the
+safer default. Same reason there is no `isWeekend`: ISO 8601 numbers the days and says nothing about
+which are a weekend, so a bare answer would be an opinion wearing a standard's name.
 
-**A failure vocabulary for a type that never parses.** `WeekdayFailure` has one variant and one use:
-`Weekday.from` throwing on a number outside `1`-`7`. It never reaches a `ParseOutcome`, because a
-classification has no `parse`, so it cannot lean on the usual justification of filling the `F` slot
-in a public signature. It stays regardless. `MintedFormatException` needs a `MintedFailure` carrying
-`typeName: 'Weekday'`, and the alternative is a shared parameterised failure: a new public shape,
-which would turn any later per-type growth into a breaking signature change. See
-[failures are per type](#per-type-failures).
+**Failure vocabulary for a type that never parses.** `WeekdayFailure` exists for one use,
+`Weekday.from` throwing outside `1`-`7`, and never reaches a `ParseOutcome`. It stays anyway,
+because `MintedFormatException` needs a `MintedFailure` carrying `typeName: 'Weekday'`, and the
+alternative is a shared parameterized failure: a new public shape that would turn later per-type
+growth into a breaking signature change ([failures are per type](#per-type-failures)).
 
 ---
 
@@ -539,44 +531,34 @@ compares, and stores, trusting that whoever produced it wrote a well-formed one.
 well-formedness a fact of the type, the same bargain [`Email`](#parse-dont-validate) and `Iban`
 strike.
 
-**It types, it does not generate.** The `uuid` package already mints v1/v4/v7/… UUIDs, and does it
-well (a CSPRNG, the version-specific layouts). But it hands back a `String`, so the primitive
-obsession is untouched: the value is a bare `String` again the moment it leaves the generator. The
-division of labour is clean, so `Uuid` owns none of the generation: `uuid` generates, `Uuid` types
-the result. That also keeps the core dependency-free here (validation is a regex plus two nibble
-reads), matching [the packaging rule](#packaging-core-and-companions). It is the same shape as
-[`Date`](#date-value-type) filling the date-only gap `DateTime` leaves: minted adds the missing
-*value*, it does not re-implement the neighbouring tool. (Both are named `Uuid`; a consumer using
-both imports one with a prefix.)
+**It types, it does not generate.** The `uuid` package already mints v1/v4/v7/… UUIDs and does it
+well, but it hands back a `String`, so the primitive obsession is untouched the moment the value
+leaves the generator. So `uuid` generates, `Uuid` types the result, which also keeps core
+dependency-free here (validation is a regex plus two nibble reads). Same shape as
+[`Date`](#date-value-type) filling the date-only gap: minted adds the missing *value* rather than
+re-implementing the neighbouring tool. (Both are named `Uuid`; a consumer using both imports one with
+a prefix.)
 
-**An extension type over `String`.** The canonical form is a single string, so `Uuid` takes the
-[single-primitive shape](#extension-type-representation): a zero-cost `extension type const
-Uuid._(String value)` whose equality is canonical-string equality. Normalising on parse (lower-case
-the hex, strip a `urn:uuid:` prefix or surrounding `{…}`, trim) is what makes that equality behave,
-so `Uuid.parse('URN:UUID:F81D…') == Uuid.parse('f81d…')`.
+**An extension type over `String`**, normalised on parse (lower-case hex, strip a `urn:uuid:` prefix
+or surrounding `{…}`, trim) so that `Uuid.parse('URN:UUID:F81D…') == Uuid.parse('f81d…')`
+([normalise on parse](#normalise-on-parse)).
 
-**Accept every well-formed UUID; classify, don't reject.** [Hard rule 3](./.ai/AGENTS.md#hard-rules)
-says validate the *real* standard, not a regex shape, because for an IBAN or a card number the
-standard hands us a checksum. A UUID has none. Its "more than shape" content is the version and
-variant fields, and RFC 9562 treats those as *classification*, not a validity gate: it defines the
-Nil and Max UUIDs (whose version and variant nibbles land in "reserved" buckets) as valid, and it
-defines four variants and versions `0` and `9`-`15` as reserved-but-legal. Rejecting on version or
-variant would refuse values the standard itself calls valid. So `Uuid` validates the structural
-grammar and exposes `version` and `variant` as read-back accessors, plus `isNil` / `isMax`, rather
-than gating on them. Validating the real standard here *means* parsing those fields correctly, not
-inventing a stricter rule the RFC does not have.
+**Accept every well-formed UUID; classify, don't reject.**
+[Hard rule 3](./.ai/AGENTS.md#hard-rules) wants the real standard rather than a regex shape, but a
+UUID carries no checksum, and RFC 9562 treats its version and variant fields as *classification*
+rather than a validity gate: the Nil and Max UUIDs are valid with nibbles in "reserved" buckets, and
+versions `0` and `9`-`15` are reserved-but-legal. Rejecting on either would refuse values the standard
+itself calls valid. So `Uuid` validates the grammar and exposes `version`, `variant`, `isNil` and
+`isMax` as read-back accessors. Validating the real standard here *means* parsing those fields
+correctly, not inventing a stricter rule the RFC does not have.
 
-**`version` is an `int`; `variant` is an enum.** The two fields take different types on purpose. The
-variant is a genuine finite classification (NCS, RFC 9562, Microsoft, future-reserved), so it is a
-`UuidVariant` enum: those four cases are the whole domain and each reads by name. The version is a
-raw 4-bit field, `0`-`15`, where `1`-`8` are defined and `0` and `9`-`15` are unused or reserved; an
-enum would either omit the reserved range (and then can't represent a valid UUID whose nibble lands
-there) or carry a catch-all member that lies about being one value. An `int` is the honest type for
-a bounded integer field with reserved holes. So the two fields land on opposite choices, each on its
-merits: the enum where the domain is a fixed set of names, the `int` where an enum would have to
-misrepresent the field. This is the balance minted is always weighing (stronger typing against
-honest representation and call-site ergonomics), resolved per field, not a reflex toward the
-strongest type.
+<a id="typing-versus-honesty"></a>
+**`version` is an `int`; `variant` is an enum**, and the split is the balance this package keeps
+returning to: stronger typing against honest representation. The variant is a genuine finite
+classification (NCS, RFC 9562, Microsoft, future-reserved), so an enum names its whole domain. The
+version is a raw 4-bit field where an enum would either omit the reserved range (and so fail to
+represent a valid UUID) or carry a catch-all member that lies about being one value, so an `int` is
+the honest type. Resolved per field, on the merits, never as a reflex toward the strongest type.
 
 ---
 
@@ -600,20 +582,16 @@ for books. `IsbnInvalidPrefix` names ISMN specifically, because "this is sheet m
 while staying one variant, *not an ISBN*.
 
 **No hyphenation, which is the load-bearing decision.** The groups in `978-0-306-40615-7` are not
-in the digits; they come from ISBN International's range table, revised as blocks are allocated.
-Embedding a snapshot ships a clock: correct on release day, quietly wrong after, and a confidently
-mis-hyphenated ISBN is worse than a plain one, the same reasoning that caps `Email` at one failure
-variant and keeps the card-brand registry out of
-[`PaymentCardNumber`](#payment-card-number-value-type). It would also make core carry mutable data
-for the first time. So `Isbn` strips hyphens and exposes the parts that *are* derivable.
-`Iban.formatted` is no precedent: grouping by four needs no table. The `isbn` package on pub carries
-no range data either, so it would buy only the two check-digit algorithms, which is the case
+in the digits; they come from ISBN International's range table, so embedding a snapshot
+[ships a clock](#registry-data-ships-a-clock), and a confidently mis-hyphenated ISBN is worse than a
+plain one. So `Isbn` strips hyphens and exposes the parts that *are* derivable. `Iban.formatted` is
+no precedent: grouping by four needs no table. The `isbn` package on pub carries no range data
+either, so it would buy only the two check-digit algorithms, which is the case
 [hard rule 7](./.ai/AGENTS.md#hard-rules) sends to `lib/src/shared/` rather than a micro-dependency.
 
-**What mod-10 cannot do.** Swapping two adjacent digits differing by five leaves the weighted sum
-unchanged, so `9780306401657` passes as readily as `9780306406157`. That is a property of the
-standard, not of this implementation, and mod-11 over the ten-digit form catches every
-transposition. A test pins the blind spot so it does not read as a bug.
+**Its blind spot is mod-10's**, so `9780306401657` passes as readily as `9780306406157`; mod-11 over
+the ten-digit form catches every transposition. See
+[check-digit blind spots](#check-digit-blind-spots).
 
 ---
 
@@ -629,16 +607,14 @@ states about its own lack of a checksum. Naming the gap beats pretending to clos
 **The standard is wider than the registry, so the wider rule wins.** ISO 9362:2014 redefined the
 first four characters as alphanumeric, and ISO 20022 retired its letters-only `AnyBICIdentifier`
 pattern to follow. SWIFT, as registration authority, still issues letters only. Validating against
-current SWIFT practice would ship a clock, the failure mode the [ISBN range table](#isbn-value-type)
-is kept out of core to avoid: a real digit-prefixed BIC already broke a mature validator in
-production. So `parse` enforces the standard and `isSwiftRegistrable` *reports* the narrower shape,
-which is a fact about the code rather than grounds to refuse it.
+current practice would [ship a clock](#registry-data-ships-a-clock), so `parse` enforces the standard
+and `isSwiftRegistrable` *reports* the narrower shape, which is a fact about the code rather than
+grounds to refuse it.
 
 **Eight characters folds to eleven.** A branch code of `XXX` means the primary office, which is
-exactly what an eight-character BIC addresses, so the two spellings denote one party. Storing
-whichever arrived would make them unequal and put one office in a `Set` twice
-([normalise on parse](#normalise-on-parse)). Folding up rather than down also fixes the length at
-eleven, so `branchCode` is never null and `bic8` rebuilds the short form.
+exactly what an eight-character BIC addresses, so the two spellings denote one party and must fold to
+compare equal ([normalise on parse](#normalise-on-parse)). Folding up rather than down also fixes the
+length at eleven, so `branchCode` is never null and `bic8` rebuilds the short form.
 
 **The country list is borrowed, not carried.** `phone_numbers_parser` is already a dependency and
 its `IsoCode` has 245 entries, including the `XK` SWIFT uses for Kosovo; it omits only seven
@@ -656,23 +632,19 @@ those, so an enum naming them would overclaim, and its default case worst of all
 <a id="payment-card-number-value-type"></a>
 ## PaymentCardNumber: a class so it can mask, and a scheme it only reports
 
-**A class, where every other single-`String` type is an extension type.** An extension type cannot
-redeclare `toString` ([extension type vs immutable class](#extension-type-representation)), so
-`'$card'`, a test failure, and a crash-reporter breadcrumb would each print the whole number. Every
-other type here treats that delegation as the feature it is; for a PAN it is a leak. So this one is
-an `@immutable` class rendering `PaymentCardNumber(••••1111)`, with `value` the single member that
-hands the number back. [`Digits`](#typed-digit-subparts) set the precedent, being a class because
-the delegated `==` was wrong for it: same test, different `Object` member. It is defence in depth
-rather than a guarantee, since `value` is one interpolation away and Dart strings cannot be wiped,
-but it moves the leak off the default path.
+**A class, because `toString` must not print the number.** An extension type cannot redeclare it
+([extension type vs immutable class](#extension-type-representation)), so `'$card'`, a test failure
+and a crash-reporter breadcrumb would each carry the whole PAN. So this one is an `@immutable` class
+rendering `PaymentCardNumber(••••1111)`, with `value` the single member that hands the number back.
+Defence in depth rather than a guarantee, since `value` is one interpolation away and Dart strings
+cannot be wiped, but it moves the leak off the default path.
 
 **The scheme is reported, never validated.** ISO/IEC 7812 assigns no brand ranges at all, and the
 IIN-to-network table is registry data whose ranges overlap: `65` is claimed by Discover and RuPay,
 `55` by Mastercard and Diners US/Canada, `60` by RuPay against Discover's `6011`. Gating `parse` on
-it would reject real cards as the registry moved, the failure mode that keeps the
-[ISBN range table](#isbn-value-type) out of core. So the table carries only ranges no other known
-network contests, and a contested one is left out rather than guessed at: `unknown` means "cannot
-say", not "not a card".
+it would [ship a clock](#registry-data-ships-a-clock), so the table carries only ranges no other
+known network contests, and a contested one is left out rather than guessed at: `unknown` means
+"cannot say", not "not a card".
 
 Two getters, because one resolution does not fit. `cardScheme` answers the common case;
 `cardSchemes` answers the co-brands a single value cannot express, `622126`-`622925` being a
@@ -682,14 +654,11 @@ no check digit yet and so cannot parse, while a checkout form still wants the br
 keystroke.
 
 **Eight digits is the floor, though nothing is issued that short.** ISO/IEC 7812 allows 8 to 19; the
-shortest real PAN is a 12-digit Maestro. Enforcing the standard rather than current practice is the
-[`Bic`](#bic-value-type) decision again: practice is a registry that moves, and Luhn already rejects
-most of what the wider window admits.
+shortest real PAN is a 12-digit Maestro. Enforcing the standard over current practice is the
+[same rule](#registry-data-ships-a-clock) again, and Luhn already rejects most of what the wider
+window admits.
 
-**What Luhn cannot do.** Mod-10 misses a `09`/`90` transposition and the twin errors 22/55, 33/66
-and 44/77, because both members of each pair carry the same weighted sum. That is a property of the
-standard, not of this implementation, and tests pin it so it does not read as a bug. The
-[ISBN](#isbn-value-type) mod-10 has a blind spot of the same shape.
+**Luhn's blind spots apply**; see [check-digit blind spots](#check-digit-blind-spots).
 
 ---
 
@@ -698,11 +667,11 @@ standard, not of this implementation, and tests pin it so it does not read as a 
 
 **Every length folds to GTIN-14, and the padding cannot lie.** GS1's own guidance is to store a
 GTIN of any length zero-padded to fourteen digits in one field, and that is exactly what `value`
-holds, so a UPC-A and its EAN-13 spelling are one value and compare equal. The fold is lossless
-because GS1 weights from the *right*: the added zeros carry no weight and shift nobody else's, so
-the check digit that validated the short form still validates the padded one. That property is also
-why the mod-10 had to be lifted out of the ISBN file before this type could exist, since the old
-implementation weighted from the left and so only agreed with GS1 at exactly twelve digits.
+holds, so a UPC-A and its EAN-13 spelling are one value ([normalise on parse](#normalise-on-parse)).
+The fold is lossless because GS1 weights from the *right*: the added zeros carry no weight and shift
+nobody else's, so the check digit that validated the short form still validates the padded one. That
+property is also why the mod-10 had to be lifted out of the ISBN file first, since the old
+implementation weighted from the left and so agreed with GS1 only at exactly twelve digits.
 
 **Three getters and a `shortestForm`, because one answer does not fit.** `value` is the storage
 form. `shortestForm` is the barcode form, what actually gets printed. The per-length `gtin13`,
@@ -711,16 +680,46 @@ form. `shortestForm` is the barcode form, what actually gets printed. The per-le
 Each is `null` when dropping the leading digits would lose a significant one, so the nullability
 answers "does this number fit that length" rather than hiding a truncation.
 
-**No company-prefix / item-reference split.** That boundary comes from GS1's prefix registry, not
-from the digits, and registry data that moves is the failure mode keeping the
-[ISBN range table](#isbn-value-type) out of core too. So a `Gtin` reports its check digit and
-nothing else structural.
+**No company-prefix / item-reference split.** That boundary comes from GS1's prefix registry rather
+than the digits, so it [ships a clock](#registry-data-ships-a-clock). A `Gtin` reports its check
+digit and nothing else structural.
 
 **An ISBN-13 parses as a `Gtin`, deliberately.** It is a GTIN-13 in the Bookland prefix range, so
 refusing it would be wrong. [`Isbn`](#isbn-value-type) is the narrower type: it additionally pins
 the prefix to `978`/`979`, carves out the ISMN range, and rebuilds the ten-digit form. Parse as
-whichever one you mean. The mod-10 blind spot both inherit is described under
-[`PaymentCardNumber`](#payment-card-number-value-type).
+whichever one you mean. Both inherit
+[mod-10's blind spot](#check-digit-blind-spots).
+
+---
+
+<a id="imei-value-type"></a>
+## Imei: printed in full, unlike a card number
+
+**It does not mask, and that is the interesting decision.** An IMEI is personal data under GDPR (a
+persistent hardware identifier), so the [`PaymentCardNumber`](#payment-card-number-value-type)
+argument for a masking `toString` looks like it should apply. It does not, because the two differ in
+what leaking costs. A PAN is an authentication credential: possession of the number is most of what
+it takes to spend the money, so a log line is a breach. An IMEI authenticates nothing. It is printed
+on the box, sits in the settings screen, and the systems that hold one (device inventory, MDM,
+repair intake, insurance claims) exist to display it. A type that redacted by default would fight
+its only callers, and they would reach for `value` on every line and gain nothing. So this stays an
+`extension type`, free at runtime, and privacy stays where it belongs: in what the caller logs.
+
+**The TAC is eight digits with no Final Assembly Code beside it.** Pre-2004 IMEIs were TAC (6) +
+FAC (2) + serial (6); the 2004 revision folded the FAC into the TAC, and every IMEI issued since is
+TAC (8) + serial (6). Since the type has no way to know which era a number came from, and the modern
+reading is right for anything currently in circulation, `tac` is the eight-digit field and there is
+no `fac` getter. `reportingBodyIdentifier` exposes the two leading digits, which is the one
+subdivision of the TAC that has not moved.
+
+**Sixteen digits are named as an IMEISV, not called a miscount.** An IMEISV trades the check digit
+for a two-digit software version, so a sixteen-digit input is a real identifier for the same
+handset, just not this one. That is the [`Isbn`](#isbn-value-type) courtesy to the ISMN range again:
+telling the caller what they actually have beats telling them they cannot count. It is a message
+branch on `ImeiWrongLength` rather than its own variant, because the remedy is identical.
+
+**Luhn's blind spots come along**, so `352099001761481` and `352909001761481` both pass; see
+[check-digit blind spots](#check-digit-blind-spots).
 
 ---
 
@@ -730,21 +729,19 @@ whichever one you mean. The mod-10 blind spot both inherit is described under
 `minted` targets the gap where no clean Dart value type exists. It does not re-model things the
 Dart stdlib or a strong existing package already handles well:
 
-- **Stdlib already covers:** URLs/URIs (`Uri`), IP addresses (`InternetAddress`), instants and
-  durations (`DateTime` / `Duration`), big integers (`BigInt`); in Flutter, `Color`, `Locale`,
-  `TimeOfDay`.
-- **Strong existing packages cover (wrap or reuse, don't reimplement):** phone numbers
-  (`phone_numbers_parser`), money/decimals (`money2`, `decimal`, `rational`), SemVer (`pub_semver`),
-  formatting and ISO code *lists* (`intl`), IANA time zones (`timezone`), hashes (`crypto`).
+- **Stdlib already covers:** URLs/URIs (`Uri`), instants and durations (`DateTime` / `Duration`),
+  big integers (`BigInt`); in Flutter, `Color`, `Locale`, `TimeOfDay`.
+- **Strong existing packages cover (wrap or reuse, don't reimplement):** money/decimals (`money2`,
+  `decimal`, `rational`), SemVer (`pub_semver`), formatting and ISO code *lists* (`intl`,
+  `sealed_countries`, `sealed_currencies`), IANA time zones (`timezone`), hashes (`crypto`).
 
-Two apparent overlaps are actually gaps. `DateTime` models an *instant* (a date, a time, and a
-zone), not a plain calendar date, and Dart has no `LocalDate`, so [`Date`](#date-value-type) fills
-that gap. And the `uuid` package *generates* UUIDs into a `String`; it is not a value *type*, so
-[`Uuid`](#uuid-value-type) types an existing one rather than re-modelling the generator. Each adds
-the missing value; neither re-implements the neighbouring tool.
+Apparent overlaps that are actually gaps. `DateTime` models an *instant*, not a plain calendar date,
+and Dart has no `LocalDate`, so [`Date`](#date-value-type) fills that. The `uuid` package *generates*
+into a `String` rather than being a value type, so [`Uuid`](#uuid-value-type) types an existing one.
+And IP addresses are **not** covered by the stdlib for this package's purposes: `InternetAddress` is
+`dart:io`, so it is unavailable on the web, which a pure-Dart web-safe package cannot build on.
 
-Where `minted` builds *on* such a package (a `Phone` type wrapping `phone_numbers_parser`, or
-`email_validator` for the email grammar, or `iban_validator` for the IBAN registry), it wraps rather
-than reinvents. A pure-Dart, web-safe engine sits in core; only an adapter to another ecosystem goes
-in a companion (see [packaging](#packaging-core-and-companions)). The README carries the full,
-current comparison and the roadmap of gap types still to land.
+Where `minted` builds *on* such a package it wraps rather than reinvents: a pure-Dart, web-safe engine
+sits in core, and only an adapter to another ecosystem goes in a companion (see
+[packaging](#packaging-core-and-companions)). The README carries the current per-type comparison, and
+the [issue tracker](https://github.com/LahaLuhem/minted/issues) holds the gap types still to land.
