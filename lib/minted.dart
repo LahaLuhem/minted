@@ -17,6 +17,8 @@ export 'src/chronology/failures/month_failure.dart';
 export 'src/chronology/failures/weekday_failure.dart';
 export 'src/chronology/month.dart';
 export 'src/chronology/weekday.dart';
+export 'src/commerce/failures/gtin_failure.dart';
+export 'src/commerce/gtin.dart';
 export 'src/contact/email.dart';
 export 'src/contact/failures/email_failure.dart';
 export 'src/contact/failures/phone_number_failure.dart';

@@ -693,6 +693,37 @@ standard, not of this implementation, and tests pin it so it does not read as a 
 
 ---
 
+<a id="gtin-value-type"></a>
+## Gtin: four lengths, one number, padded to fourteen
+
+**Every length folds to GTIN-14, and the padding cannot lie.** GS1's own guidance is to store a
+GTIN of any length zero-padded to fourteen digits in one field, and that is exactly what `value`
+holds, so a UPC-A and its EAN-13 spelling are one value and compare equal. The fold is lossless
+because GS1 weights from the *right*: the added zeros carry no weight and shift nobody else's, so
+the check digit that validated the short form still validates the padded one. That property is also
+why the mod-10 had to be lifted out of the ISBN file before this type could exist, since the old
+implementation weighted from the left and so only agreed with GS1 at exactly twelve digits.
+
+**Three getters and a `shortestForm`, because one answer does not fit.** `value` is the storage
+form. `shortestForm` is the barcode form, what actually gets printed. The per-length `gtin13`,
+`gtin12` and `gtin8` exist because a caller talking to a retail or logistics system needs a
+*specific* length, not the shortest one: UPC-A and EAN-13 are not interchangeable at that boundary.
+Each is `null` when dropping the leading digits would lose a significant one, so the nullability
+answers "does this number fit that length" rather than hiding a truncation.
+
+**No company-prefix / item-reference split.** That boundary comes from GS1's prefix registry, not
+from the digits, and registry data that moves is the failure mode keeping the
+[ISBN range table](#isbn-value-type) out of core too. So a `Gtin` reports its check digit and
+nothing else structural.
+
+**An ISBN-13 parses as a `Gtin`, deliberately.** It is a GTIN-13 in the Bookland prefix range, so
+refusing it would be wrong. [`Isbn`](#isbn-value-type) is the narrower type: it additionally pins
+the prefix to `978`/`979`, carves out the ISMN range, and rebuilds the ten-digit form. Parse as
+whichever one you mean. The mod-10 blind spot both inherit is described under
+[`PaymentCardNumber`](#payment-card-number-value-type).
+
+---
+
 <a id="what-not-covered"></a>
 ## What `minted` deliberately does not cover
 
