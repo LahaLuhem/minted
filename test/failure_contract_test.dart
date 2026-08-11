@@ -182,6 +182,26 @@ void main() {
         typeName: 'Iban',
         message: 'failed the mod-97 check',
       ),
+      'Isin: not the one length': (
+        failure: IsinWrongLength(11),
+        typeName: 'Isin',
+        message: 'expected 12 characters, got 11',
+      ),
+      'Isin: bad charset': (
+        failure: IsinInvalidCharacters(),
+        typeName: 'Isin',
+        message: 'contains characters outside A-Z and 0-9',
+      ),
+      'Isin: a prefix that is not two letters echoes it': (
+        failure: IsinInvalidPrefix('1S'),
+        typeName: 'Isin',
+        message: '"1S" is not two letters',
+      ),
+      'Isin: the Luhn check is named': (
+        failure: IsinChecksumFailed(),
+        typeName: 'Isin',
+        message: 'failed the Luhn check',
+      ),
       'Bic: neither of the two lengths': (
         failure: BicWrongLength(9),
         typeName: 'Bic',
@@ -292,6 +312,19 @@ void main() {
         'a bad day': (
           failure: DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
           rendered: 'DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28)',
+        ),
+        'a wrong ISIN length': (failure: IsinWrongLength(11), rendered: 'IsinWrongLength(11)'),
+        'an ISIN charset failure': (
+          failure: IsinInvalidCharacters(),
+          rendered: 'IsinInvalidCharacters()',
+        ),
+        'a bad ISIN prefix echoes it': (
+          failure: IsinInvalidPrefix('1S'),
+          rendered: 'IsinInvalidPrefix(1S)',
+        ),
+        'the ISIN checksum variant': (
+          failure: IsinChecksumFailed(),
+          rendered: 'IsinChecksumFailed()',
         ),
         'a wrong BIC length': (failure: BicWrongLength(9), rendered: 'BicWrongLength(9)'),
         'a BIC charset failure': (
@@ -442,6 +475,21 @@ void main() {
           failure: DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
           twin: DateDayOutOfRange(year: 2026, month: 2, day: 30, maxDay: 28),
           other: DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29),
+        ),
+        'ISIN length differs by its count': (
+          failure: IsinWrongLength(11),
+          twin: IsinWrongLength(11),
+          other: IsinWrongLength(13),
+        ),
+        'an ISIN prefix differs by its letters': (
+          failure: IsinInvalidPrefix('1S'),
+          twin: IsinInvalidPrefix('1S'),
+          other: IsinInvalidPrefix('2S'),
+        ),
+        'the ISIN checksum variant': (
+          failure: IsinChecksumFailed(),
+          twin: IsinChecksumFailed(),
+          other: IsinInvalidCharacters(),
         ),
         'BIC length differs by its count': (
           failure: BicWrongLength(9),
