@@ -6,6 +6,7 @@
 - \[#3\] PaymentCardNumber (ISO/IEC 7812: Luhn, masked rendering, card schemes reported)
 - \[#16\] Gtin (GS1 GTIN: mod-10 across all four lengths, folded to fourteen digits)
 - add Imei, validating the Luhn check the printed grouping hides
+- \[#18\] Issn (ISO 3297: mod-11 check character, kept in printed NNNN-NNNC form)
 
 ## [1.0.0] - 2026-08-09
 ### Changed
