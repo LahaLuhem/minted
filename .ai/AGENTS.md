@@ -63,8 +63,10 @@ minted/
 │           │                                  phone engine so no country table is carried
 │           └── check_digits/                  One file per standard, all private
 │               ├── digit_values.dart          ASCII '0'-'9' → 0-9, shared by every algorithm
+│               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
 │               ├── iban_check_digits.dart     ISO 13616 mod-97-10
-│               └── isbn_check_digits.dart     ISO 2108 mod-11 (10-digit) and GS1 mod-10 (13)
+│               ├── isbn_check_digit.dart      ISO 2108 mod-11, the ten-digit form only
+│               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
@@ -180,7 +182,9 @@ rules to keep in working memory:
   symbol is public, adding a dependency), stop and ask: present the options with trade-offs, say
   which you'd pick and why, then wait. Small choices compound.
 - **Mark recommendations with `★`.** Prefix your preferred option in every set with `★` so the
-  user can scan and reply by echoing or overriding (e.g. "★ for 1–4, change 5 to B").
+  user can scan and reply by echoing or overriding (e.g. "★ for 1–4, change 5 to B"). A later
+  "do these" about that set means the `★` subset, not every entry; the unstarred ones were listed
+  to be weighed, not actioned. Ask if the wording is genuinely ambiguous.
 - **Document new user-facing features in the README** in the same change. Rationale and trade-offs
   go in `APPENDIX.md`; the README is the user-facing entry point.
 - **Read `analysis_options.yaml` before writing code.** The lint posture is far stricter than the
