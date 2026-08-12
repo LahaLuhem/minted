@@ -312,6 +312,26 @@ void main() {
         typeName: 'Hostname',
         message: 'ends in an all-numeric label, so this is an address, not a hostname',
       ),
+      'IpAddress: unrecognisable text': (
+        failure: IpAddressMalformed(),
+        typeName: 'IpAddress',
+        message: 'not a dotted-quad or IPv6 address',
+      ),
+      'IpAddress: a leading zero names the octal ambiguity': (
+        failure: IpAddressLeadingZero('010'),
+        typeName: 'IpAddress',
+        message: '"010" has a leading zero, which is ambiguous between decimal and octal',
+      ),
+      'IpAddress: a part past its field echoes it': (
+        failure: IpAddressPartOutOfRange('256'),
+        typeName: 'IpAddress',
+        message: '"256" is outside the range its field allows',
+      ),
+      'IpAddress: neither octet count': (
+        failure: IpAddressWrongOctetCount(5),
+        typeName: 'IpAddress',
+        message: 'expected 4 or 16 octets, got 5',
+      ),
     };
 
     scenarioOutline<({MintedFailure failure, String typeName, String message})>(
@@ -473,6 +493,19 @@ void main() {
         'an all-numeric last label': (
           failure: HostnameNumericTld(),
           rendered: 'HostnameNumericTld()',
+        ),
+        'a malformed address': (failure: IpAddressMalformed(), rendered: 'IpAddressMalformed()'),
+        'a leading zero echoes the part': (
+          failure: IpAddressLeadingZero('010'),
+          rendered: 'IpAddressLeadingZero(010)',
+        ),
+        'a part out of range': (
+          failure: IpAddressPartOutOfRange('256'),
+          rendered: 'IpAddressPartOutOfRange(256)',
+        ),
+        'a wrong address octet count': (
+          failure: IpAddressWrongOctetCount(5),
+          rendered: 'IpAddressWrongOctetCount(5)',
         ),
       },
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
@@ -728,6 +761,26 @@ void main() {
           failure: HostnameNumericTld(),
           twin: HostnameNumericTld(),
           other: HostnameNotAscii(),
+        ),
+        'the malformed-address variant': (
+          failure: IpAddressMalformed(),
+          twin: IpAddressMalformed(),
+          other: IpAddressWrongOctetCount(5),
+        ),
+        'a leading zero differs by its part': (
+          failure: IpAddressLeadingZero('010'),
+          twin: IpAddressLeadingZero('010'),
+          other: IpAddressLeadingZero('0100'),
+        ),
+        'an out-of-range part differs by its part': (
+          failure: IpAddressPartOutOfRange('256'),
+          twin: IpAddressPartOutOfRange('256'),
+          other: IpAddressPartOutOfRange('257'),
+        ),
+        'an address octet count differs by its value': (
+          failure: IpAddressWrongOctetCount(5),
+          twin: IpAddressWrongOctetCount(5),
+          other: IpAddressWrongOctetCount(15),
         ),
       },
       outline: (example) {
