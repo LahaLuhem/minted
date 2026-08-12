@@ -45,6 +45,8 @@ export 'src/identifiers/isni.dart';
 export 'src/identifiers/issn.dart';
 export 'src/identifiers/mac_address.dart';
 export 'src/identifiers/uuid.dart';
+export 'src/network/failures/hostname_failure.dart';
+export 'src/network/hostname.dart';
 export 'src/numerics/digit.dart';
 export 'src/numerics/digits.dart';
 export 'src/numerics/failures/digit_failure.dart';
