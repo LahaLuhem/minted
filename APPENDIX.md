@@ -9,6 +9,7 @@ anchor, and keep anchors stable across renames.
 
 - [`AGENTS.md` and `CLAUDE.md` are symlinks into `.ai/`](#ai-files-symlinked)
 - [Pure-Dart package, no Flutter dependency](#pure-dart-not-flutter)
+- [The format gate runs Flutter's Dart, everything else runs Dart stable](#ci-sdk-toolchain)
 - [Parse, don't validate](#parse-dont-validate)
 - [Extension type vs immutable class](#extension-type-representation)
 - [Typed digits: `Digit` and `Digits`](#typed-digit-subparts)
@@ -63,6 +64,40 @@ Anything that would need Flutter (a `FormField` validator, a `TextInputFormatter
 heavy dependency does not go here; it goes in a companion package (see
 [packaging](#packaging-core-and-companions)). The core's dependency list is a promise to every
 downstream user, so it stays as short as the validation honestly requires.
+
+---
+
+<a id="ci-sdk-toolchain"></a>
+## The format gate runs Flutter's Dart, everything else runs Dart stable
+
+**Split along style versus correctness.** `dart format` is the only check whose output must agree
+with the maintainer's machine character for character, so that job takes its Dart from Flutter, the
+channel [`.fvmrc`](../.fvmrc) names. Analyze, test, the dependency validator and the example stay on
+Dart stable through the [`setup-dart` composite](../.github/actions/setup-dart/action.yml).
+
+**What forced it:** Dart stable runs ahead of Flutter's bundled Dart, and the formatter changed
+between them. `sdk: stable` gave CI 3.13.0 against a local 3.12.2, so a green tree met a red gate
+that reformatted fifteen files the pull request had never touched. The decisive property is that a
+format failure must be *reproducible*: whatever CI rejects, `dart format .` locally has to be able to
+fix, which neither Dart stable nor a pinned literal promises once it drifts from the machine the code
+is written on.
+
+**Elsewhere the newer SDK is the point.** `pubspec.yaml` admits `^3.12.0`, so a downstream Dart-only
+user is on 3.13 today and those jobs test what they actually run. The known cost is that the analyzer
+is version-sensitive too, so a Dart-stable-only diagnostic would be fixed slightly blind; explicit
+rules in [`analysis_options.yaml`](../analysis_options.yaml) stop new lints switching themselves on,
+and if it ever stops being tolerable the format job's recipe moves into the composite.
+
+**Installing Flutter contradicts [the section above](#pure-dart-not-flutter) only in appearance:**
+that rule governs the package's dependencies, this is the toolchain. Nothing under `lib/` imports
+Flutter, and the published package stays usable from a plain Dart SDK.
+
+To pin a Dart version instead, Flutter's release metadata carries the mapping:
+
+```bash
+curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
+  | jq -r '.current_release.stable as $h | .releases[] | select(.hash == $h) | .dart_sdk_version'
+```
 
 ---
 
