@@ -908,6 +908,20 @@ promises, so the digits stay. Rendering searches for the shortest fixed-point de
 back as the same `double` rather than using `toString`, which switches to exponential notation below
 `1e-6` — and `1e-7` is a legal latitude but not a legal ISO 6709 field.
 
+**Round-tripping needs both ends exact, and for a while neither was.** The renderer spells at most 20
+fraction digits, so a degree finer than that had no exact spelling and fell back to a truncated one:
+`1e-21` rendered as `+00.00000000000000000000`, which reads back as zero, and a tiny *negative*
+degree rendered with the minus sign the negative-zero rule below exists to remove. Parsing had the
+opposite defect: it rebuilt a decimal field by adding the fraction to the degrees, which rounds a
+second time and lands up to one ulp from converting the whole field at once, so roughly one
+coordinate in four hundred did not survive its own canonical form. The two fixes pair up.
+`_canonical` snaps every stored degree to one the renderer can spell exactly, which is identity for
+anything coarser than `1e-20` and therefore for every coordinate anyone can measure; and a plain
+decimal field is now converted in a single `double.parse`. The sexagesimal path keeps its base-60
+arithmetic, because those digits genuinely have to be folded, and whatever `double` falls out then
+renders and reads back exactly like any other. The snap is also what lets the renderer drop its
+"no exact spelling" fallback outright rather than carry an untestable branch.
+
 **Normalising negative zero is a correctness requirement, not a cosmetic one.** This is the first
 floating-point value in the package, which makes two IEEE 754 facts load-bearing that no `int`- or
 `String`-backed type had to face. `-0.0 == 0.0` is true while the two need not share a hash code, so

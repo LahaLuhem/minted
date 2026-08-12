@@ -193,6 +193,32 @@ void main() {
       }
     });
 
+    // Converting the whole field in one go, rather than adding the fraction to the degrees, which
+    // rounds a second time and lands an ulp away for about one coordinate in four hundred.
+    scenario('a full-precision decimal field parses to the exact double', () {
+      final coordinate = GeoCoordinate.tryParse('+06.523984073660007-006.45826944430357/')!;
+
+      check(coordinate.latitude).equals(6.523984073660007);
+      check(coordinate.longitude).equals(-6.45826944430357);
+    });
+
+    // The canonical form spells at most 20 fraction digits, so a finer degree is snapped to one it
+    // can. Without that, distinct coordinates render alike and the rendering reads back as neither.
+    scenario('a degree finer than the canonical form can spell is snapped to one it can', () {
+      final subAtomic = GeoCoordinate.from(latitude: 3.7182818284590454e-13, longitude: 0);
+
+      check(GeoCoordinate.tryParse(subAtomic.iso6709)!).equals(subAtomic);
+      check(GeoCoordinate.tryParse('+00.00000000000000000001+000.0000/')!.latitude).equals(1e-20);
+      check(GeoCoordinate.tryParse('+00.000000000000000000001+000.0000/')!.latitude).equals(0);
+    });
+
+    scenario('a degree that snaps to zero from below is still a positive zero', () {
+      final southOfNothing = GeoCoordinate.from(latitude: -1e-30, longitude: -1e-30);
+
+      check(southOfNothing.iso6709).equals('+00+000/');
+      check(southOfNothing.hashCode).equals(GeoCoordinate.from(latitude: 0, longitude: 0).hashCode);
+    });
+
     scenario('sexagesimal rebuilds the display form', () {
       check(
         GeoCoordinate.tryParse('+48.8577+002.295/')!.sexagesimal,
