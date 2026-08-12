@@ -150,6 +150,17 @@ void main() {
     IpAddress.parse('192.168.010.1').reasonOrNull?.message,
   ); // "010" has a leading zero, which is ambiguous between decimal and octal
 
+  // `Cidr` holds an `IpAddress` and a prefix length rather than the text, so `contains` masks bits
+  // instead of matching a string prefix. The string version calls 100.0.0.1 part of 10.0.0.0/8.
+  final block = Cidr.tryParse('10.0.0.0/8')!;
+  print(block.asString); // 10.0.0.0/8
+  print(block.lastAddress.value); // 10.255.255.255
+  print(block.contains(IpAddress.tryParse('10.1.2.3')!)); // true
+  print(block.contains(IpAddress.tryParse('100.0.0.1')!)); // false (a text prefix match says true)
+  print(
+    Cidr.parse('192.168.1.5/24').reasonOrNull?.message,
+  ); // has host bits set below the prefix; the network is "192.168.1.0/24"
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

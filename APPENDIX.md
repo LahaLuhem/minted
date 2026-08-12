@@ -41,6 +41,7 @@ anchor, and keep anchors stable across renames.
 - [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
 - [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
+- [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -1164,6 +1165,58 @@ but so does one regex, and a layer catching nothing the simpler layer catches is
 The bounded-int types are no better a fit: an octet is 0-255, a hextet 0-65535, a prefix length
 0-32 or 0-128, a port 0-65535, all bounded at *both* ends, where a non-negative int is bounded only
 below. Dogfooding pays here through composition instead: `Cidr` taking an `IpAddress`.
+
+---
+
+<a id="cidr-value-type"></a>
+## Cidr: a block that masks, not a string that starts with
+
+**The bug this type exists for is `startsWith`.** An allow-list holding `'10.0.0.0/8'` as a string
+gets tested with a prefix match, and a prefix match says `100.0.0.1` is inside it. Containment is a
+question about bits, and the only way to answer it is to mask both sides and compare, which is what
+this type does and what a `String` cannot.
+
+**Host bits are refused, not masked.** `192.168.1.5/24` fails rather than becoming `192.168.1.0/24`.
+Masking is what most tooling does and it would match the normalise-on-parse pattern used everywhere
+else here, but it loses to the rule [`GeoCoordinate`](#geo-coordinate-value-type) already states for
+altitude: a parse that silently loses part of its input is not a parse. The caller wrote a host
+address, and quietly returning a different value than they typed is how a firewall rule ends up
+meaning something nobody reviewed. The failure carries the block they most likely meant, so the
+remedy is in the error rather than left as an exercise. The address-with-prefix concept is a
+genuinely different type, which Python calls `ip_interface`, and can follow if anyone wants it.
+
+**It holds an [`IpAddress`](#ip-address-value-type), and that is the whole point.** The earlier
+shape rule would have made this an extension type over `10.0.0.0/8`, slicing an address back out of
+its own text on every call. Holding the parsed address means the network address cannot be
+malformed, `contains` cannot be handed something that merely looks like one, and the mask is already
+applied: because parsing guarantees the host bits are clear, `network.octets` *is* the masked
+network part, so containment is one comparison rather than two maskings. See [compose from modelled
+parts](#compose-from-modelled-parts) for the general rule this was the first type to follow.
+
+**The engine does nothing here, and that is worth recording.** `ipaddr` earns its place inside
+[`IpAddress`](#ip-address-value-type), where it expands `::` and renders RFC 5952. Its network types
+have no containment test at all, and the one its README shows is `addresses.contains(…)`, a scan
+over a lazy iterable: 16.7 million allocations for a `/8`, and no termination at all for a v6 block.
+Netmask-from-prefix and the host-bits check are elementary bit maths on octets this package already
+exposes, so `Cidr` adds no dependency surface of its own.
+
+**`lastAddress`, not `broadcast`.** IPv6 has no broadcast at all; it uses multicast. `ipaddr` and
+Python both call the top of a block its broadcast address, which is a misnomer inherited from IPv4
+and one this package need not repeat, for the same reason `prefix24` declines the name
+[`oui`](#mac-address-value-type). `netmask` and `hostmask` are absent for a different reason: nobody
+writes a v6 netmask, and `contains` makes both unnecessary.
+
+**One notation in, one out.** `address/prefixLength` and nothing else, so a dotted netmask
+(`/255.255.255.0`, which the engine would accept) and a bare address with no prefix are both
+refused. The prefix goes through the same digits-only gate as the address, since `ipaddr`'s
+`_makePrefix` is another bare `int.tryParse` and would take `/+24`, `/ 24` and `/-0`. A leading zero
+on the prefix *is* accepted and folds to the plain number, unlike a leading zero in an address:
+`/024` carries none of the octal ambiguity that makes `010` dangerous in an octet.
+
+**A family mismatch answers `false` rather than refusing to compile.** That is the accepted cost of
+[one address type for both families](#ip-address-value-type). Two types would have let the compiler
+reject `v4Block.contains(v6Address)` outright; one type can only answer it at runtime. Documented on
+`contains` rather than left to be discovered.
 
 ---
 
