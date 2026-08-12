@@ -55,6 +55,8 @@ export 'src/numerics/digit.dart';
 export 'src/numerics/digits.dart';
 export 'src/numerics/failures/digit_failure.dart';
 export 'src/numerics/failures/digits_failure.dart';
+export 'src/quantities/natural_number.dart';
+export 'src/quantities/uint.dart';
 export 'src/shared/minted_failure.dart';
 export 'src/shared/minted_format_exception.dart';
 export 'src/shared/parse_outcome.dart';

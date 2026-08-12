@@ -23,29 +23,51 @@ import 'package:test/test.dart';
 /// value type, so it must declare neither door. The contract cannot be checked
 /// on one, and a `parse` on an enum would read as a value type while escaping
 /// every check above.
+///
+/// Anything under `lib/src/quantities/` is a *constraint type* (`Uint`,
+/// `NaturalNumber`): a range over a number with no standard defining its text
+/// form, so it declares `tryFrom` and neither parse door. Decided by path,
+/// because the AST cannot reveal that the way it reveals `isEnum`.
 void main() {
-  const notValueTypes = {'shared', 'failures'};
+  const notTypes = {'shared', 'failures'};
+  const constraintSector = 'quantities';
 
-  final valueTypeFiles = Directory('lib/src')
+  final typeFiles = Directory('lib/src')
       .listSync(recursive: true)
       .whereType<File>()
       .where(
         (entity) =>
-            entity.path.endsWith('.dart') && !entity.uri.pathSegments.any(notValueTypes.contains),
+            entity.path.endsWith('.dart') && !entity.uri.pathSegments.any(notTypes.contains),
       )
       .toList();
 
   test('there are value-type sources to check', () {
-    check(valueTypeFiles).isNotEmpty();
+    check(typeFiles).isNotEmpty();
   });
 
-  for (final file in valueTypeFiles) {
+  for (final file in typeFiles) {
     final collector = _SpineCollector();
     parseString(content: file.readAsStringSync()).unit.accept(collector);
+    final isConstraintType = file.uri.pathSegments.contains(constraintSector);
 
     group(file.uri.pathSegments.last, () {
       for (final type in collector.types) {
-        if (type.isEnum) {
+        if (isConstraintType) {
+          test('${type.name} is a constraint type, so it declares no parse door', () {
+            check(
+              type.staticMethods.intersection(_contractDoors),
+              because:
+                  '${type.name} lives under $constraintSector/, so it is a '
+                  'constraint type. Decimal notation is how numbers are '
+                  'written, not a published format, so a parse door here would '
+                  'invent one. Build it with tryFrom.',
+            ).isEmpty();
+          });
+
+          test('${type.name} declares static tryFrom', () {
+            check(type.staticMethods).contains('tryFrom');
+          });
+        } else if (type.isEnum) {
           test('${type.name} is a classification, so it declares no parse door', () {
             check(
               type.staticMethods.intersection(_contractDoors),
@@ -60,12 +82,12 @@ void main() {
           });
 
           continue;
+        } else {
+          test('${type.name} declares static tryParse and parse', () {
+            check(type.staticMethods).contains('tryParse');
+            check(type.staticMethods).contains('parse');
+          });
         }
-
-        test('${type.name} declares static tryParse and parse', () {
-          check(type.staticMethods).contains('tryParse');
-          check(type.staticMethods).contains('parse');
-        });
 
         if (type.isExtensionType) {
           test('${type.name} names its representation `value`', () {
@@ -83,7 +105,8 @@ void main() {
   }
 }
 
-/// The two static doors the value-type contract requires, and a classification must not declare.
+/// The two static doors the value-type contract requires, and neither a classification nor a
+/// constraint type may declare.
 const _contractDoors = {'parse', 'tryParse'};
 
 /// A value type discovered in a source file and the spine members it declares.
