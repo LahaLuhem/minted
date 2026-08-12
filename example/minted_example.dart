@@ -161,6 +161,12 @@ void main() {
     Cidr.parse('192.168.1.5/24').reasonOrNull?.message,
   ); // has host bits set below the prefix; the network is "192.168.1.0/24"
 
+  // `Uint` and `NaturalNumber` are constraint types: a range over a number with no standard text
+  // form, so they take `tryFrom(int)` and no `parse`. Zero is the one value they disagree on.
+  print(Uint.tryFrom(0)?.value); // 0 (an empty cart is a real count)
+  print(NaturalNumber.tryFrom(0)); // null (a page size of zero is not)
+  print(Uint.tryFrom(-1)); // null, rather than wrapping to a huge number the way C would
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
