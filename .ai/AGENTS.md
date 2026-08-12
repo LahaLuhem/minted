@@ -20,8 +20,8 @@ feature: identical method names and the same failure model across every type.
 
 ## Stack
 
-- **Dart ≥ 3.12** (constraint in `pubspec.yaml`, version pinned in `.fvmrc`). 3.12 gets extension
-  types (≥ 3.3) and static dot shorthands (≥ 3.10) as stable features. Primary (declaring)
+- **Dart ≥ 3.12** (constraint in `pubspec.yaml`, toolchain channel named in `.fvmrc`). 3.12 gets
+  extension types (≥ 3.3) and static dot shorthands (≥ 3.10) as stable features. Primary (declaring)
   constructors are *not* used: they are still an experiment in 3.12, and a published package can't
   rely on an experiment flag. See [`APPENDIX.md#sdk-floor`](../APPENDIX.md#sdk-floor). Bump the
   floor only when a new stable language feature is actually consumed, and record why in APPENDIX.
@@ -89,7 +89,7 @@ minted/
 ├── dart_dependency_validator.yaml   Scopes dependency_validator (excludes example/)
 ├── pubspec.yaml                     Deps + cider config + topics
 ├── .pubignore                       Files excluded from `pub publish`
-├── .fvmrc / .editorconfig           Local SDK pin / text-file formatting
+├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
 ├── CHANGELOG.md                     Pipeline-owned; appears on pub.dev
 ├── README.md                        pub.dev landing page
 ├── APPENDIX.md                      Design rationale (anchor-keyed)

@@ -35,7 +35,7 @@ versions stay reserved for 7 days).
 
 - **Read / Edit / Grep / Glob** over `cat` / `sed` / `grep` / `find`. Always.
 - **Bash** only for things without a dedicated tool: `dart`, `git`. The user's shell aliases
-  `dart` to the toolchain serving the `.fvmrc` pin; invoke plain `dart`.
+  `dart` to the toolchain serving the `.fvmrc` channel; invoke plain `dart`.
 - **Lint with `dart --no-version-check analyze .`** — pedantic mode is the contract. Don't
   substitute plain `dart analyze` and ignore what it surfaces.
 - **Agent tool** for wide / open-ended searches or to keep large output out of context.

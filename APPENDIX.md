@@ -97,12 +97,18 @@ and if it ever stops being tolerable the format job's recipe moves into the comp
 that rule governs the package's dependencies, this is the toolchain. Nothing under `lib/` imports
 Flutter, and the published package stays usable from a plain Dart SDK.
 
-To pin a Dart version instead, Flutter's release metadata carries the mapping:
+**When the gate goes red, check which Dart CI is carrying.** Both sides name the `stable` channel,
+but a local FVM install is frozen until the next `fvm install` while CI resolves stable at run time,
+so the two can still drift. Flutter's release metadata gives the mapping:
 
 ```bash
 curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
   | jq -r '.current_release.stable as $h | .releases[] | select(.hash == $h) | .dart_sdk_version'
 ```
+
+Compare that against `dart --version`; `fvm install stable` closes any gap. Pinning that literal on
+both sides would close it too, at the cost of a coordinated bump every release, and pinning CI alone
+would be worse than the channel, since local would still float.
 
 ---
 
