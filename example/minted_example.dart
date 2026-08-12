@@ -139,6 +139,17 @@ void main() {
     Hostname.parse('_sip.example.com').reasonOrNull?.message,
   ); // an underscore makes this a DNS name, not a hostname
 
+  // `IpAddress` canonicalises per RFC 5952, so the four spellings of one v6 address stop being four
+  // map keys. `InternetAddress` cannot do this job: it is `dart:io`, so it is absent on the web.
+  final address = IpAddress.tryParse('2001:0DB8:0:0:0:0:0:1')!;
+  print(address.value); // 2001:db8::1  (leading zeros gone, longest zero run compressed)
+  print(address.version); // IpVersion.v6
+  print(IpAddress.tryParse('10.0.0.1')?.isPrivate); // true  (RFC 1918; fc00::/7 for v6)
+  print(IpAddress.tryParse('0:0:0:0:0:ffff:c000:201')?.value); // ::ffff:192.0.2.1  (RFC 5952 §5)
+  print(
+    IpAddress.parse('192.168.010.1').reasonOrNull?.message,
+  ); // "010" has a leading zero, which is ambiguous between decimal and octal
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
