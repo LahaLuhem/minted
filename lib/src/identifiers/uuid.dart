@@ -3,6 +3,7 @@
 
 import 'dart:typed_data';
 
+import '../shared/hex_bytes.dart';
 import '../shared/minted_format_exception.dart';
 import '../shared/normalisation.dart';
 import '../shared/parse_outcome.dart';
@@ -52,10 +53,9 @@ extension type const Uuid._(String value) {
       : tryParse(
           Iterable.generate(
             _groupByteBoundaries.length - 1,
-            (group) => bytes
-                .getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1])
-                .map(_hex)
-                .join(),
+            (group) => hexDigits(
+              bytes.getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1]),
+            ),
           ).join(hyphen),
         )!;
 
@@ -65,12 +65,12 @@ extension type const Uuid._(String value) {
   /// `5` (name-based, SHA-1), `6` (reordered time), `7` (Unix-epoch time), and `8` (custom); `0` and
   /// `9`-`15` are unused or reserved. Left as an `int` rather than an enum because it is a raw 4-bit
   /// field with reserved ranges an enum could not name honestly.
-  int get version => int.parse(value[_versionIndex], radix: _hexRadix);
+  int get version => int.parse(value[_versionIndex], radix: hexRadix);
 
   /// The [UuidVariant] this UUID belongs to: the layout family named by the variant bits (the first
   /// hex digit of the fourth group).
   UuidVariant get variant {
-    final nibble = int.parse(value[_variantIndex], radix: _hexRadix);
+    final nibble = int.parse(value[_variantIndex], radix: hexRadix);
 
     return switch (nibble) {
       < _rfc9562VariantFloor => .ncs,
@@ -93,14 +93,7 @@ extension type const Uuid._(String value) {
 
   /// The 16 raw bytes (big-endian), the inverse of [fromBytes]. Handy for binary interop (a database
   /// `uuid` column, a byte protocol) where the hex string would waste space.
-  Uint8List get bytes {
-    final hex = value.replaceAll(hyphen, '');
-
-    return .fromList([
-      for (var offset = 0; offset < hex.length; offset += _byteHexLength)
-        int.parse(hex.substring(offset, offset + _byteHexLength), radix: _hexRadix),
-    ]);
-  }
+  Uint8List get bytes => hexBytes(value.replaceAll(hyphen, ''));
 
   /// Orders two UUIDs lexicographically by their canonical form. For [version] `7`, whose leading
   /// bits are a timestamp, this is also creation-time order. Extension types cannot implement
@@ -117,18 +110,13 @@ extension type const Uuid._(String value) {
     return lowerInput;
   }
 
-  // One byte as two lowercase hex digits.
-  static String _hex(int byte) => byte.toRadixString(_hexRadix).padLeft(_byteHexLength, zeroPad);
-
   static final _canonical = RegExp(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
   );
 
   static const _versionIndex = 14;
   static const _variantIndex = 19;
-  static const _hexRadix = 16;
   static const _byteCount = 16;
-  static const _byteHexLength = 2;
   // Cut points bracketing the 4-2-2-2-6 byte groups of the 8-4-4-4-12 hex form (one more than the
   // group count).
   static const _groupByteBoundaries = [0, 4, 6, 8, 10, _byteCount];
