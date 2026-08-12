@@ -35,8 +35,8 @@ final class GeoCoordinate {
 
   const GeoCoordinate._(this.latitude, this.longitude);
 
-  // The only door that constructs, so every instance normalises alike. Negative zero has to go for
-  // == and hashCode to agree: -0.0 equals 0.0 but need not hash alike.
+  // The only door that constructs, so every instance normalises alike. Negative zero has to go so
+  // the rendered forms agree: -0.0 equals 0.0 and hashes alike, but prints as "-0.0000".
   factory GeoCoordinate._canonical(double latitude, double longitude) => GeoCoordinate._(
     _positiveZeroed(latitude),
     _positiveZeroed(longitude == -_maxLongitude ? _maxLongitude : longitude),
@@ -98,6 +98,8 @@ final class GeoCoordinate {
   @override
   String toString() => 'GeoCoordinate(latitude: $latitude, longitude: $longitude)';
 
+  // `-0.0 == 0` holds, so negative zero takes the then-branch and comes back out as positive zero.
+  // ignore: no-equal-then-else
   static double _positiveZeroed(double degrees) => degrees == 0 ? 0 : degrees;
 
   // Why these degrees are out of range, or null when they are not. The one gate from, tryFrom, and
