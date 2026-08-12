@@ -43,6 +43,8 @@ export 'src/identifiers/isbn.dart';
 export 'src/identifiers/isni.dart';
 export 'src/identifiers/issn.dart';
 export 'src/identifiers/uuid.dart';
+export 'src/network/cidr.dart';
+export 'src/network/failures/cidr_failure.dart';
 export 'src/network/failures/hostname_failure.dart';
 export 'src/network/failures/ip_address_failure.dart';
 export 'src/network/failures/mac_address_failure.dart';

@@ -332,6 +332,28 @@ void main() {
         typeName: 'IpAddress',
         message: 'expected 4 or 16 octets, got 5',
       ),
+      'Cidr: unrecognisable text': (
+        failure: CidrMalformed(),
+        typeName: 'Cidr',
+        message: 'not an address followed by / and a prefix length',
+      ),
+      "Cidr: a bad address carries the address type's own reason through": (
+        failure: CidrInvalidAddress(IpAddressLeadingZero('010')),
+        typeName: 'Cidr',
+        message:
+            'the network address is invalid: "010" has a leading zero, '
+            'which is ambiguous between decimal and octal',
+      ),
+      'Cidr: a prefix past the family width names the width': (
+        failure: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33),
+        typeName: 'Cidr',
+        message: 'expected a prefix length of 0 to 32, got 33',
+      ),
+      'Cidr: host bits set offers the block that was meant': (
+        failure: CidrHostBitsSet('192.168.1.0/24'),
+        typeName: 'Cidr',
+        message: 'has host bits set below the prefix; the network is "192.168.1.0/24"',
+      ),
     };
 
     scenarioOutline<({MintedFailure failure, String typeName, String message})>(
@@ -506,6 +528,19 @@ void main() {
         'a wrong address octet count': (
           failure: IpAddressWrongOctetCount(5),
           rendered: 'IpAddressWrongOctetCount(5)',
+        ),
+        'a malformed block': (failure: CidrMalformed(), rendered: 'CidrMalformed()'),
+        'a nested address failure renders the inner one': (
+          failure: CidrInvalidAddress(IpAddressLeadingZero('010')),
+          rendered: 'CidrInvalidAddress(IpAddressLeadingZero(010))',
+        ),
+        'a prefix out of range': (
+          failure: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33),
+          rendered: 'CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33)',
+        ),
+        'host bits set': (
+          failure: CidrHostBitsSet('192.168.1.0/24'),
+          rendered: 'CidrHostBitsSet(192.168.1.0/24)',
         ),
       },
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
@@ -781,6 +816,37 @@ void main() {
           failure: IpAddressWrongOctetCount(5),
           twin: IpAddressWrongOctetCount(5),
           other: IpAddressWrongOctetCount(15),
+        ),
+        'the malformed-block variant': (
+          failure: CidrMalformed(),
+          twin: CidrMalformed(),
+          other: CidrHostBitsSet('192.168.1.0/24'),
+        ),
+        // Equality has to reach through the nesting: two wrappers over different reasons differ.
+        'a nested address failure differs by its inner reason': (
+          failure: CidrInvalidAddress(IpAddressLeadingZero('010')),
+          twin: CidrInvalidAddress(IpAddressLeadingZero('010')),
+          other: CidrInvalidAddress(IpAddressLeadingZero('0100')),
+        ),
+        'a nested address failure differs by the inner variant': (
+          failure: CidrInvalidAddress(IpAddressLeadingZero('010')),
+          twin: CidrInvalidAddress(IpAddressLeadingZero('010')),
+          other: CidrInvalidAddress(IpAddressMalformed()),
+        ),
+        'a prefix range differs by its actual': (
+          failure: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33),
+          twin: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33),
+          other: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 40),
+        ),
+        'a prefix range differs by its family width': (
+          failure: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33),
+          twin: CidrPrefixLengthOutOfRange(maxPrefixLength: 32, actual: 33),
+          other: CidrPrefixLengthOutOfRange(maxPrefixLength: 128, actual: 33),
+        ),
+        'host bits differ by the block offered': (
+          failure: CidrHostBitsSet('192.168.1.0/24'),
+          twin: CidrHostBitsSet('192.168.1.0/24'),
+          other: CidrHostBitsSet('192.168.1.0/25'),
         ),
       },
       outline: (example) {
