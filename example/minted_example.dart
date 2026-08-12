@@ -127,6 +127,18 @@ void main() {
   print(GeoCoordinate.tryParse('+5012-00010/')?.latitude); // 50.2  (degrees and minutes)
   print(GeoCoordinate.tryParse('+46+2/')); // null (an unpadded longitude is a different location)
 
+  // `Hostname` enforces what `Uri` waves through: RFC 1123's grammar and both length limits. Case
+  // and a trailing root dot normalise away, so one name has exactly one value.
+  final host = Hostname.tryParse('WWW.Example.COM.')!;
+  print(host.value); // www.example.com
+  print(host.labels); // [www, example, com]
+  print(host.fqdn); // www.example.com.  (rebuilds the trailing dot, which names the root)
+  print(Hostname.tryParse('bücher.example')); // null (punycode it yourself: we do not do IDNA)
+  print(Hostname.tryParse('192.168.1.1')); // null (an address, not a hostname)
+  print(
+    Hostname.parse('_sip.example.com').reasonOrNull?.message,
+  ); // an underscore makes this a DNS name, not a hostname
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

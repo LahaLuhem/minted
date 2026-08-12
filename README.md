@@ -47,6 +47,7 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
     * [Chronology](#chronology)
     * [Identifiers](#identifiers)
     * [Geography](#geography)
+    * [Network](#network)
     * [Numerics](#numerics)
 - [One shape, every type](#one-shape-every-type)
 - [Handling failures](#handling-failures)
@@ -123,6 +124,12 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | Type            | What it guarantees                                                          | Standard                                             |
 |-----------------|-----------------------------------------------------------------------------|------------------------------------------------------|
 | `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)   |
+
+### Network
+
+| Type       | What it guarantees                                                     | Standard                                                       |
+|------------|-------------------------------------------------------------------------|----------------------------------------------------------------|
+| `Hostname` | the RFC 1123 grammar and both length limits; ASCII only, never an address | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
 
 ### Numerics
 
@@ -246,6 +253,20 @@ MacAddress.tryParse('0:0:5e:0:53:0');           // null: omitted leading zeros a
 // 48- and a 64-bit address are never equal.
 MacAddress.tryParse('00:00:5e:10:00:00:00:00')!.octetCount;   // 8
 
+// Hostname: Uri accepts -bad.com, a..b.com and a 64-character label without complaint. This
+// doesn't. Case and a trailing root dot normalise away, so one name has exactly one value:
+final host = Hostname.tryParse('WWW.Example.COM.')!;
+host.value;   // 'www.example.com'
+host.labels;  // ['www', 'example', 'com']
+host.fqdn;    // 'www.example.com.'   (rebuilds the trailing dot, which names the root)
+
+Hostname.tryParse('xn--bcher-kva.example');   // fine: an A-label is just letters and hyphens
+Hostname.tryParse('bücher.example');          // null: punycode it yourself, we don't do IDNA
+Hostname.tryParse('_sip.example.com');        // null: an underscore makes it a DNS name
+Hostname.tryParse('192.168.1.1');             // null: that's an address, not a hostname
+
+Hostname.parse('-bad.example').reasonOrNull?.message;   // '"-bad" opens or closes with a hyphen'
+
 // GeoCoordinate: the swapped-argument bug is a type problem, so the pair is named at the boundary.
 // ISO 6709 uses the width of the degree field as the unit selector; all three fold to degrees:
 final eiffel = GeoCoordinate.tryParse('+48.8577+002.295/')!;
@@ -314,6 +335,15 @@ does no vendor lookup, and `prefix24` is named for the bits it returns rather th
 can't prove: the first three octets are an OUI only under an MA-L assignment, and an MA-M or MA-S
 address shares them with other organisations. Nor is the type called `Eui48`, which the IEEE reserves
 for the individual, universally-administered subset.
+
+`Hostname` is ASCII-only on purpose. Punycode is not IDNA: RFC 5890 wants IDNA2008 validity, NFC and
+the Bidi rules on top of the encoding, none of which any Dart package implements, so punycoding
+`bücher.example` here would emit what that RFC calls a *fake A-label*. Encode it yourself and
+`xn--bcher-kva.example` parses like any other name. It is also a hostname rather than a DNS name, so
+`_sip._tcp.example.com` is refused, and it is never an address, because RFC 1123 says a host name
+never takes the dotted-decimal form. The registrable-domain part is out for the usual reason: the
+Public Suffix List changes weekly, and [`public_suffix`](https://pub.dev/packages/public_suffix)
+already covers it.
 
 `GeoCoordinate` is a surface coordinate: altitude and a CRS identifier are *refused*, not silently
 dropped. Their sign, units and datum are all defined by the CRS, so an `altitude` field would be one

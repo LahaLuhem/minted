@@ -38,6 +38,7 @@ anchor, and keep anchors stable across renames.
 - [Imei: printed in full, unlike a card number](#imei-value-type)
 - [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
 - [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
+- [Hostname: strict on purpose, in three directions](#hostname-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -1018,6 +1019,60 @@ and an `unspecified` constant for `00:00:00:00:00:00`, which is a real Xerox MA-
 and a parser that guessed would be hand-writing octets the input did not contain. The four accepted
 notations each get their own anchored alternative in one regex, which is what refuses a spelling that
 mixes two separators.
+
+---
+
+<a id="hostname-value-type"></a>
+## Hostname: strict on purpose, in three directions
+
+**ASCII only, because punycode is not IDNA.** The tempting shortcut is to depend on a punycode
+package and fold `bücher.example` to `xn--bcher-kva.example` on parse. RFC 5890 §2.3.2.1 does not
+allow it: an A-label needs punycode validity *plus* IDNA2008 validity, NFC, and the Bidi and Context
+rules, and "if and only if a string meeting the above requirements can be decoded into a U-label is
+it an A-label". The RFC has a name for what you get otherwise, a **fake A-label**. pub.dev carries
+punycode implementations and no IDNA one, so encoding here would advertise a conformance nothing in
+the dependency tree can back. Refusing says the true thing, and an already-encoded A-label parses
+for free, being ordinary letters, digits and hyphens. Same call as
+[`prefix24`](#mac-address-value-type) declining the name `oui`.
+
+**A hostname, not a DNS name.** RFC 1123 is LDH: letters, digits, hyphen. RFC 2181 later liberalised
+*DNS names* to carry essentially any octet, which is why `_acme-challenge.example.com`, DKIM
+selectors and SRV records exist and work. Those are not hostnames, and a type that accepted them
+could not promise its value is usable wherever a host is expected. So the underscore is refused, and
+because that refusal will surprise people, the failure says `an underscore makes this a DNS name,
+not a hostname` rather than lumping it in with a stray character. The permissive counterpart is its
+own issue rather than a flag on this one.
+
+**Never an address.** RFC 1123 §2.1 settles what looks like an open question: "a valid host name can
+never have the dotted-decimal form #.#.#.#, since at least the highest-level component label will be
+alphabetic". The dotted-quad advice in that same section is about what a *resolver* should accept
+from a user, not about what a host name is. Enforcing it needs care, though: read literally, "the
+highest-level label is alphabetic" would refuse `server1`. The rule that actually holds is RFC
+3696's, that a top-level label is never *all*-numeric, which refuses `192.168.1.1` and admits
+`server1`.
+
+**253, not 255.** RFC 1035 §2.3.4 caps a name at 255 octets, but that is the wire form, which spends
+a length octet per label and a null for the root. Presentation form is therefore two shorter, and
+253 is what a string can hold. Both numbers are correct about different things, which is why the
+type names the limit it enforces.
+
+**The trailing dot folds rather than surviving.** RFC 3696 §2 calls `a.b.c` and `a.b.c.` equivalent
+and requires applications to accept the latter, so this is two spellings of one name and gets the
+treatment [`Bic`](#bic-value-type) gives its 8- and 11-character forms. `fqdn` rebuilds the explicit
+spelling. A bare `.` is left alone rather than stripped, so it fails as an empty label instead of
+quietly becoming the empty string.
+
+**Six failure variants, where three is the house average.** Not vocabulary inflation: RFC 1123
+genuinely stacks six independent rules, and each one leaves the caller a different thing to do.
+Punycode it, fix a character, fix a label, shorten a label, shorten the name, or reach for an
+address type. Two of the six branch their message on the payload, the trick
+[`Imei`](#imei-value-type) uses to name a 16-digit input as an IMEISV rather than call it a
+miscount.
+
+**`Uri` is not this, measured rather than assumed.** `Uri.parse` accepts `-bad.com`, `bad-.com`,
+`a..b.com`, `999.999.999.999` and a 64-character label, and percent-encodes `bücher.example` into
+`b%C3%BCcher.example`, which is not what DNS wants. It case-folds and little else, which is the gap
+this type fills.
 
 ---
 
