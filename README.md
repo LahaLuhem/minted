@@ -130,6 +130,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 |------------|-------------------------------------------------------------------------|----------------------------------------------------------------|
 | `Hostname` | the RFC 1123 grammar and both length limits; ASCII only, never an address | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
 | `IpAddress` | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) |
+| `Cidr` | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632) |
 | `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address) |
 
 ### Numerics
@@ -270,6 +271,22 @@ IpAddress.tryParse('127.0.0.1')!.isLoopback;    // true
 IpAddress.parse('192.168.010.1').reasonOrNull?.message;
 // '"010" has a leading zero, which is ambiguous between decimal and octal'
 
+// Cidr: a network block, holding an IpAddress rather than the text, so contains() masks bits
+// instead of matching a string prefix. The string version calls 100.0.0.1 part of 10.0.0.0/8:
+final block = Cidr.tryParse('10.0.0.0/8')!;
+block.network;      // IpAddress('10.0.0.0')   (a parsed address, not a substring)
+block.prefixLength; // 8
+block.lastAddress;  // IpAddress('10.255.255.255')
+block.asString;     // '10.0.0.0/8'   (canonical form)
+
+block.contains(IpAddress.tryParse('10.1.2.3')!);   // true
+block.contains(IpAddress.tryParse('100.0.0.1')!);  // false, where a text prefix match says true
+block.contains(IpAddress.tryParse('::1')!);        // false: a v6 address is never in a v4 block
+
+// host bits set is refused rather than silently masked, and the failure offers what you meant:
+Cidr.parse('192.168.1.5/24').reasonOrNull?.message;
+// 'has host bits set below the prefix; the network is "192.168.1.0/24"'
+
 // Hostname: Uri accepts -bad.com, a..b.com and a 64-character label without complaint. This
 // doesn't. Case and a trailing root dot normalise away, so one name has exactly one value:
 final host = Hostname.tryParse('WWW.Example.COM.')!;
@@ -352,6 +369,13 @@ does no vendor lookup, and `prefix24` is named for the bits it returns rather th
 can't prove: the first three octets are an OUI only under an MA-L assignment, and an MA-M or MA-S
 address shares them with other organisations. Nor is the type called `Eui48`, which the IEEE reserves
 for the individual, universally-administered subset.
+
+`Cidr` refuses host bits rather than masking them: `192.168.1.5/24` fails instead of quietly
+becoming `192.168.1.0/24`, because masking throws away an address you actually wrote, and the
+failure hands you the block you probably meant. It holds an `IpAddress` and a prefix length rather
+than the text, so `contains` masks bits instead of matching characters and a bad address inside a
+block reports *why*. Only `address/prefixLength` parses, so a dotted netmask and a bare address are
+both refused.
 
 `IpAddress` is one type for both families, not two. A v4 and a v6 address are never equal and
 neither is converted to the other, so `version` tells you which you hold, the way `MacAddress` reports
