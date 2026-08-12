@@ -42,6 +42,7 @@ anchor, and keep anchors stable across renames.
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
 - [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
 - [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
+- [Constraint types: a range, not a standard](#constraint-types)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->

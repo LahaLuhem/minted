@@ -63,6 +63,7 @@ minted/
 │       ├── geography/               GeoCoordinate
 │       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
+│       ├── quantities/              Uint, NaturalNumber (constraint types; the path is the contract)
 │       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/
 │           ├── minted_failure.dart            The MintedFailure supertype
@@ -99,6 +100,12 @@ Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `c
 numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
 because `minted.dart` re-exports every type. `test/` mirrors this layout.
+
+**`quantities/` is the one sector chosen by contract rather than by domain.** Everything in it is a
+*constraint type*: a range over a number with no standard text form, so it declares `tryFrom(int)`
+and neither parse door. `conformance_test.dart` decides that **by path**, so the directory is part of
+the contract: putting `Port` under `network/` would silently opt it out. Rationale:
+[`APPENDIX.md#constraint-types`](../APPENDIX.md#constraint-types).
 
 **A type's failure vocabulary goes in its sector's `failures/`, never in the value-type file**, one
 file per type (`finance/failures/iban_failure.dart` holds `IbanFailure` and its variants). The

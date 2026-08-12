@@ -249,6 +249,18 @@ a primitive, and a failure type only if one of those throws. `conformance_test.d
 both ways: a class or extension type without both doors fails, and so does an enum that declares
 either. Rationale: [`APPENDIX.md#weekday-enum`](./APPENDIX.md#weekday-enum).
 
+**Constraint types are not value types either.** The rule that separates them is about standards,
+not numbers:
+
+> A numeric type gets a `parse(String)` door only where a **standard** defines its text form.
+
+`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A pure range over a number (`Uint`,
+`NaturalNumber`) has no such standard, so a parse door would be inventing one. These live under
+`lib/src/quantities/`, declare `tryFrom(int)` and neither parse door, and are told apart by **path**,
+so the directory is part of the contract. One invariant each leaves nothing a failure could say that
+`null` doesn't, so they carry none. Rationale:
+[`APPENDIX.md#constraint-types`](./APPENDIX.md#constraint-types).
+
 **Normalise on parse.** `tryParse` converts input to a single canonical form before constructing
 (trim, case-fold the parts the standard says are case-insensitive, strip separators). Because
 extension-type equality is representation equality, this is what makes
