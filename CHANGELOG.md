@@ -11,6 +11,7 @@
 - \[#25\] Isni (ISO 27729: MOD 11-2, and ORCID iDs reported not gated)
 - \[#26\] GeoCoordinate (ISO 6709: all three field widths, folded to decimal degrees)
 - MacAddress (IEEE 802: 48- and 64-bit, four notations folded to one)
+- Hostname (RFC 1123: LDH grammar, both length limits, ASCII only)
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
