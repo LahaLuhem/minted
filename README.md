@@ -117,7 +117,6 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Imei` | fifteen digits and the Luhn check; TAC and serial read back           | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)      |
 | `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
 | `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/) |
-| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address) |
 
 ### Geography
 
@@ -130,6 +129,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | Type       | What it guarantees                                                     | Standard                                                       |
 |------------|-------------------------------------------------------------------------|----------------------------------------------------------------|
 | `Hostname` | the RFC 1123 grammar and both length limits; ASCII only, never an address | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
+| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address) |
 
 ### Numerics
 
