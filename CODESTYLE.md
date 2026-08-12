@@ -578,6 +578,9 @@ library;
 - **Bare `dart` in command examples, never `fvm dart`.** FVM is a local implementation detail
   (`.fvmrc` pins the SDK). Docs stay tool-agnostic so external contributors aren't forced into
   FVM; scripts under `scripts/` handle the FVM-vs-PATH resolution themselves.
+- **Trim prose to the load-bearing sentence.** The code-comment bar applies to README, APPENDIX and
+  this file too: say the thing, then stop. No restating a point in three phrasings, no caveats
+  nobody asked for. An APPENDIX entry earns more room than a comment, not a licence to ramble.
 - **British spelling in prose and identifiers** (`normalise`, `canonicalise`, `behaviour`), with
   one carve-out: names fixed by the SDK or a dependency stay as they are (`toJson`, `compareTo`,
   `hashCode`). See [`APPENDIX.md#spelling`](./APPENDIX.md#spelling).

@@ -167,6 +167,11 @@ void main() {
   print(NaturalNumber.tryFrom(0)); // null (a page size of zero is not)
   print(Uint.tryFrom(-1)); // null, rather than wrapping to a huge number the way C would
 
+  // The fixed widths bound both ends, and each width is its own type, so a Uint8 cannot be passed
+  // where a Uint4 is wanted.
+  print(Uint8.tryFrom(255)?.value); // 255
+  print(Uint8.tryFrom(256)); // null (refused, not truncated to 0)
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

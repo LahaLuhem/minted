@@ -1221,6 +1221,58 @@ reject `v4Block.contains(v6Address)` outright; one type can only answer it at ru
 
 ---
 
+<a id="constraint-types"></a>
+## Constraint types: a range, not a standard
+
+**A second category, not value types with a relaxed contract.** A constraint type is a pure range
+over a number: no checksum, no notation, no standard. They live under `lib/src/quantities/`, a sector
+chosen by contract rather than by domain, because `conformance_test.dart` tells one from a value type
+**by path**: "is a constraint type" is not something the AST reveals the way `isEnum` is. A `Port`
+filed under `network/` would silently opt out of the check.
+
+**No `parse(String)` door.** Decimal notation is how numbers are written, not a published format for
+"a non-negative integer", so a parse door would invent a text form and then owe it forever. The rule,
+*a numeric type gets `parse(String)` only where a standard defines its text form*, is also why
+[`Date`](#date-value-type) keeps its door without needing an exemption.
+
+**`tryFrom` alone, and no `from`.** The obvious shape was both, matching [`Weekday`](#weekday-enum).
+Rejected on reversibility: adding `from` later is a minor bump, removing it later is a major one, and
+the no-implicit-throws work already schedules every `from` with a nullable sibling for deletion.
+Shipping a door with a known removal date costs more than not shipping one.
+
+**No failure vocabulary, because there is nothing to say.** One invariant per type means a failure
+enum would carry a single variant meaning "out of range", which is what `null` already means. With no
+throwing door there is nothing to carry it either; [`WeekdayFailure`](#per-type-failures) exists only
+because `Weekday.from` throws.
+
+**Two types, not one.** `Uint` (`>= 0`) and `NaturalNumber` (`> 0`) differ by a single value, and
+that value is the point: an empty cart is a real count, a page size of zero is not. One type would
+push the zero check back to every call site, which is the hand-checking this package deletes.
+
+**The names are a compromise, and the dartdoc carries the fix.** `Uint` promises C semantics it does
+not have, and `NaturalNumber` lands on a split convention (ISO 80000-2 counts `0` among the naturals;
+school arithmetic does not). Both were chosen for familiarity over self-description, with the exact
+boundary stated in each dartdoc rather than spelled into a clunkier name. The rejected pair was
+`NonNegativeInt` / `PositiveInt`.
+
+**The fixed widths are separate types, not factories.** `Uint.w8(200)` was the tempting spelling and
+it does range-check correctly, but every result is still a `Uint`, so nothing stops a byte landing in
+a nibble slot; the analyzer stays silent. As separate types it rejects that, and rejects implicit
+widening in both directions, so a `Uint4` needs `Uint8.tryFrom(nibble.value)` to become a byte. The
+verbosity is the guarantee working. (`Uint.4(…)` is not spellable at all: a Dart member name cannot
+start with a digit.)
+
+**A width is not a domain, which is a rule about use rather than an argument against the types.**
+`Uint16` says how many bits a value fits in, not what it means, so two unrelated domains of the same
+width are interchangeable: a port and an IPv6 hextet are both `0`-`65535`. Reach for a `UintN` for an
+actual machine field; a concept with a bound of its own gets its own named type, which may check
+against a width but is never an alias for one.
+
+**No `Uint64`.** Dart ints are JS doubles on the web, so the honest ceiling is 2^53-1 and a type
+advertising 2^64-1 could not keep the promise its name makes. The family stops at 32.
+
+---
+
 <a id="what-not-covered"></a>
 ## What `minted` deliberately does not cover
 
