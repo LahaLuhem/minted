@@ -129,6 +129,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | Type       | What it guarantees                                                     | Standard                                                       |
 |------------|-------------------------------------------------------------------------|----------------------------------------------------------------|
 | `Hostname` | the RFC 1123 grammar and both length limits; ASCII only, never an address | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
+| `IpAddress` | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) |
 | `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address) |
 
 ### Numerics
@@ -253,6 +254,22 @@ MacAddress.tryParse('0:0:5e:0:53:0');           // null: omitted leading zeros a
 // 48- and a 64-bit address are never equal.
 MacAddress.tryParse('00:00:5e:10:00:00:00:00')!.octetCount;   // 8
 
+// IpAddress: four spellings of one v6 address are four different map keys as Strings. RFC 5952
+// says which one is canonical, and InternetAddress can't help you: it's dart:io, so no web.
+final address = IpAddress.tryParse('2001:0DB8:0:0:0:0:0:1')!;
+address.value;    // '2001:db8::1'   (leading zeros gone, longest zero run compressed)
+address.version;  // IpVersion.v6
+address.octets;   // 16 octets (4 for a v4 address)
+
+IpAddress.tryParse('2001:db8::1') == address;   // true
+IpAddress.tryParse('10.0.0.1')!.isPrivate;      // true  (RFC 1918; fc00::/7 for v6)
+IpAddress.tryParse('127.0.0.1')!.isLoopback;    // true
+
+// a leading zero is refused rather than read, because inet_aton calls 010 octal and most
+// parsers call it ten: accept it and one component can filter what another connects to.
+IpAddress.parse('192.168.010.1').reasonOrNull?.message;
+// '"010" has a leading zero, which is ambiguous between decimal and octal'
+
 // Hostname: Uri accepts -bad.com, a..b.com and a 64-character label without complaint. This
 // doesn't. Case and a trailing root dot normalise away, so one name has exactly one value:
 final host = Hostname.tryParse('WWW.Example.COM.')!;
@@ -335,6 +352,13 @@ does no vendor lookup, and `prefix24` is named for the bits it returns rather th
 can't prove: the first three octets are an OUI only under an MA-L assignment, and an MA-M or MA-S
 address shares them with other organisations. Nor is the type called `Eui48`, which the IEEE reserves
 for the individual, universally-administered subset.
+
+`IpAddress` is one type for both families, not two. A v4 and a v6 address are never equal and
+neither is converted to the other, so `version` tells you which you hold, the way `MacAddress` reports
+its width. An IPv4-mapped address stays v6 and keeps its `::ffff:192.0.2.1` spelling, which RFC 5952
+asks for on that prefix. It carries [`ipaddr`](https://pub.dev/packages/ipaddr) for the `::` expansion
+and the RFC 5952 compression, but owns the grammar itself: that engine's part checks are `int.tryParse`,
+which quietly accepts `192.168.+1.1` and `192.168. 1.1`.
 
 `Hostname` is ASCII-only on purpose. Punycode is not IDNA: RFC 5890 wants IDNA2008 validity, NFC and
 the Bidi rules on top of the encoding, none of which any Dart package implements, so punycoding

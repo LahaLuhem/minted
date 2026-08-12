@@ -18,14 +18,12 @@ import 'failures/ip_address_failure.dart';
 ///
 /// Parse, don't validate: `2001:0DB8::0001` and `2001:db8::1` are one address that a `String`
 /// compares as two, and `InternetAddress` cannot help, being `dart:io` and so absent on the web.
-///
-/// **A leading zero is refused, not read.** `inet_aton` reads `010` as octal 8 where most parsers
-/// read decimal 10, so accepting `192.168.010.1` lets one component filter an address another then
-/// connects to. Why: `APPENDIX.md#ip-address-value-type`.
+/// A leading zero is refused rather than read, since it is ambiguous between decimal and octal.
 ///
 /// A v4 and a v6 address are never equal, and neither is converted to the other; [version] reports
 /// which one you hold. An IPv4-mapped address stays v6 and keeps its mixed spelling,
 /// `::ffff:192.0.2.1`, which RFC 5952 §5 asks for on that prefix.
+/// Why: `APPENDIX.md#ip-address-value-type`.
 ///
 /// Normalisation on parse: trimmed, lower-cased, and rendered per RFC 5952 for v6, so leading zeros
 /// go, `::` takes the longest zero run, and a single zero field is never compressed.
@@ -159,9 +157,8 @@ extension type const IpAddress._(String value) {
         '${leading.toRadixString(hexRadix)}:${trailing.toRadixString(hexRadix)}';
   }
 
-  // RFC 5952 §5 keeps the mixed spelling on the IPv4-mapped prefix, which the engine renders as
-  // plain hextets. Tested on the value, not the rendering: `0:0:0:0:ffff:0:0:0` also prints with a
-  // leading `::ffff:` and is not mapped.
+  // RFC 5952 §5 keeps the mixed spelling on the mapped prefix, which the engine renders as hextets.
+  // Tested on the value, not the text: `0:0:0:0:ffff:0:0:0` also prints `::ffff:` and is not mapped.
   static String _canonicalIpv6(IPv6Address address) {
     final packed = address.toBigInt();
     if (packed >> _embeddedV4Bits != _v4MappedPrefix) return address.toString();

@@ -39,6 +39,7 @@ anchor, and keep anchors stable across renames.
 - [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
 - [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
+- [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -1076,6 +1077,59 @@ this type fills.
 
 ---
 
+<a id="ip-address-value-type"></a>
+## IpAddress: a wrapped engine, but not a wrapped grammar
+
+**The engine does the arithmetic; minted does the grammar.** [`ipaddr`](https://pub.dev/packages/ipaddr)
+was picked on the usual bar (pure Dart, MIT, zero dependencies, `platform:web`, current) and it
+implements RFC 5952 compression correctly, including the rule most hand-rolled versions miss: `::`
+must not shorten a *single* zero field. What it does not do is validate. Its octet and hextet gates
+are a bare `int.tryParse`, which accepts a sign and trims whitespace, so `192.168.+1.1`,
+`192.168.-0.1` and `192.168. 1.1` are all addresses as far as it is concerned. So the split is: the
+engine expands `::`, renders RFC 5952 and will do the netmask maths for `Cidr`, and minted owns the
+character-level grammar in front of it. Wrapping a package does not have to mean inheriting its
+leniency, and the wrapper was translating its throws into a `ParseOutcome` anyway.
+
+**A leading zero is refused, not read, and that one is a security decision.** `inet_aton` reads `010`
+as octal 8; almost everything else reads decimal 10. Python's `ipaddress` accepted it until 3.9.5,
+and CVE-2021-29921 exists because one component filtering `010` and another connecting to it
+disagree about which host was meant. Refusing costs nothing, since no correct writer of an address
+pads it.
+
+**One type for both families, with the family reported.** Same call as
+[`MacAddress`](#mac-address-value-type) makes for its two widths: one type, never converted, a getter
+saying which you hold, and the two never equal. Two types would let the compiler refuse
+`v4Network.contains(v6Address)`, which one type can only answer `false` at runtime. That is the
+accepted cost of not tripling the surface, and it is documented where it bites rather than left to be
+discovered.
+
+**IPv4-mapped addresses keep their mixed spelling**, `::ffff:192.0.2.1`, which RFC 5952 §5 asks for
+on that well-known prefix. The engine helps in neither direction: it cannot parse the mixed form at
+all, and renders the mapped range as plain hextets. So minted folds the IPv4 tail into two hextets on
+the way in and restores it on the way out. The mapped test is on the address *value*, not its
+text: `0:0:0:0:ffff:0:0:0` also renders with a leading `::ffff:` and is not mapped, so a string check
+would mis-render it as `::ffff:0.0.0.0`.
+
+**Ordering packs to a number.** Comparing the canonical text would put `192.0.2.10` before
+`192.0.2.9`, since `1` sorts before `9`. So `compareTo` orders by family, then by the address as one
+integer, which is the order anyone sorting a firewall list expects.
+
+**`isLoopback` and `isPrivate` ship; a vendor-style lookup does not.** RFC 1918, RFC 4193's
+`fc00::/7`, `127.0.0.0/8` and `::1` are fixed in their RFCs rather than registry-shaped, so they carry
+no [clock](#registry-data-ships-a-clock), and they are the two questions people currently answer with
+a `startsWith('192.168.')`. Anything needing an arbitrary range is `Cidr.contains`, which composes
+instead of growing a getter per block.
+
+**What `Digit` and `Digits` are not doing here, since the question comes up.** An octet is a value,
+not digit text, so `fromOctets` takes a `Uint8List` like [`MacAddress`](#mac-address-value-type) and
+`Uuid` do. Using `Digits` as the internal strictness gate would reject the signs and whitespace above,
+but so does one regex, and a layer catching nothing the simpler layer catches is the layer to cut.
+The bounded-int types are no better a fit: an octet is 0-255, a hextet 0-65535, a prefix length
+0-32 or 0-128, a port 0-65535, all bounded at *both* ends, where a non-negative int is bounded only
+below. Dogfooding pays here through composition instead: `Cidr` taking an `IpAddress`.
+
+---
+
 <a id="what-not-covered"></a>
 ## What `minted` deliberately does not cover
 
@@ -1091,7 +1145,8 @@ Dart stdlib or a strong existing package already handles well:
 Apparent overlaps that are actually gaps. `DateTime` models an *instant*, not a plain calendar date,
 and Dart has no `LocalDate`, so [`Date`](#date-value-type) fills that. The `uuid` package *generates*
 into a `String` rather than being a value type, so [`Uuid`](#uuid-value-type) types an existing one.
-And IP addresses are **not** covered by the stdlib for this package's purposes: `InternetAddress` is
+And IP addresses are **not** covered by the stdlib for this package's purposes, which is what
+[`IpAddress`](#ip-address-value-type) exists for. `InternetAddress` is
 `dart:io`, so it is unavailable on the web, which a pure-Dart web-safe package cannot build on.
 
 Where `minted` builds *on* such a package it wraps rather than reinvents: a pure-Dart, web-safe engine
