@@ -134,9 +134,16 @@ This is the headline convention: every type in the package presents the **same**
 consumer learns one shape and applies it everywhere. Rationale is in
 [`APPENDIX.md#parse-dont-validate`](./APPENDIX.md#parse-dont-validate).
 
-**Two representations, one contract.**
+**Two representations, one contract.** The deciding question is **not how many primitives the value
+spells, but whether its parts are already types this package models**. Where they are, hold them:
+composing from types that carry their own invariants is safer than re-deriving those invariants out
+of text on every accessor, and it is what makes a part impossible to pass in the wrong slot. `Digits`
+sets the pattern by being an `Iterable<Digit>` rather than an extension type over its characters, and
+`Cidr` follows it by holding an `IpAddress` and a prefix length rather than slicing `10.0.0.0/8`
+apart on demand. Reach for an extension type when the value has **no inner structure worth naming**.
+Rationale: [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-from-modelled-parts).
 
-- **Single primitive (one `String`/`int`) → extension type**, zero runtime cost, private
+- **No modelled parts → extension type** over the one primitive, zero runtime cost, private
   primary constructor:
 
   ```dart
@@ -157,8 +164,8 @@ consumer learns one shape and applies it everywhere. Rationale is in
   }
   ```
 
-- **Multiple parts (or computed sub-parts) → immutable class**, private primary constructor,
-  hand-written `==` / `hashCode` / `toString`:
+- **Modelled parts, or several parts → immutable class** holding them, private primary
+  constructor, hand-written `==` / `hashCode` / `toString`:
 
   ```dart
   @immutable
@@ -186,12 +193,17 @@ consumer learns one shape and applies it everywhere. Rationale is in
   This one ships: [`lib/src/geography/geo_coordinate.dart`](./lib/src/geography/geo_coordinate.dart)
   is the sketch filled in, so keep the two in step.
 
-**One carve-out on the first bullet: a single primitive still takes a class when a delegated
-`Object` member would be wrong for the type.** The delegation below is a feature only while the
+**A second reason to reach for a class, independent of the parts: a delegated `Object` member would
+be wrong for the type.** The delegation an extension type gives you is a feature only while the
 inherited behaviour is the wanted one. `Digits` needs structural `==` that its `Uint8List` will not
-give, and `PaymentCardNumber` needs a `toString` that does not print the card. Both are
-single-valued, both are classes. Rationale:
+give, and `PaymentCardNumber` needs a `toString` that does not print the card. Rationale:
 [`APPENDIX.md#payment-card-number-value-type`](./APPENDIX.md#payment-card-number-value-type).
+
+**Several shipped types predate this rule and sit on the wrong side of it**, holding text where a
+modelled part exists: `Isbn`, `Gtin`, `Imei`, `Issn` and `Isni` slice digits out of a `String` where
+they could hold `Digits`, and `Email` returns a `String` domain that is a `Hostname`. Correcting them
+is breaking, so it is queued for v2 rather than done piecemeal. Do not add to the pile: new types
+follow the rule above.
 
 **Non-negotiable across both shapes:**
 

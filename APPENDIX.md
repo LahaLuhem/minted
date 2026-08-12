@@ -12,6 +12,7 @@ anchor, and keep anchors stable across renames.
 - [The format gate runs Flutter's Dart, everything else runs Dart stable](#ci-sdk-toolchain)
 - [Parse, don't validate](#parse-dont-validate)
 - [Extension type vs immutable class](#extension-type-representation)
+- [Compose from modelled parts, don't re-derive them](#compose-from-modelled-parts)
 - [Typed digits: `Digit` and `Digits`](#typed-digit-subparts)
 - [Why a typed `FormatException`](#why-typed-format-exception)
 - [A throw is for a claim you made in source](#claim-in-source)
@@ -151,6 +152,42 @@ Single-valued ones still take a class when an inherited `Object` member misbehav
 [`PaymentCardNumber`](#payment-card-number-value-type) needs a `toString` that does not print the
 card. Same test, different member. No `Equatable` dependency either way: handwritten equality is a
 few honest lines and the core stays dependency-light.
+
+---
+
+<a id="compose-from-modelled-parts"></a>
+## Compose from modelled parts, don't re-derive them
+
+**The shape question is which parts exist as types, not how many primitives the value spells.** An
+earlier version of the rule in `CODESTYLE.md` said a value spelled by one `String` takes an extension
+type and a value with several parts takes a class. That reads the wrong signal. `10.0.0.0/8` is one
+string, so the old rule made `Cidr` an extension type that would slice an address back out of its own
+text on every call. The part it is slicing out is an [`IpAddress`](#ip-address-value-type), a type
+this package already has, with a canonical form and a parse gate of its own. Holding one is both
+safer and cheaper than re-deriving it.
+
+**Safer, because an invariant held by a part cannot be re-broken by the whole.** A `Cidr` holding an
+`IpAddress` cannot have a malformed network address, whatever anyone does to it later, and its
+`contains` cannot be handed something that merely looks like an address. A `Cidr` holding a `String`
+re-establishes that fact on every accessor, and each re-establishment is a place to get it wrong.
+This is the package's own thesis applied inward: the argument for handing consumers a parsed type
+rather than a `String` does not stop at the API boundary.
+
+**`Digits` had the pattern first.** It is an `Iterable<Digit>` rather than an extension type over its
+characters, so indexing one yields a `Digit` rather than a character a caller must re-check. That was
+recorded as a carve-out about `==` and `Uint8List`, which undersold it: the reason it is right is the
+composition, and the `==` argument is a second, unrelated reason to reach for a class.
+
+**The cost is real and worth paying.** A class hand-writes `==`, `hashCode` and `toString`, and gives
+up the zero-cost representation. Extension types stay right for values with no inner structure worth
+naming: an [`IpAddress`](#ip-address-value-type)'s octets are bytes rather than a modelled type, and
+a [`Hostname`](#hostname-value-type)'s labels are plain strings, so both stay extension types until
+something like a `DnsLabel` exists to hold.
+
+**Types that predate the rule are queued for v2, not fixed piecemeal.** `Isbn`, `Gtin`, `Imei`,
+`Issn` and `Isni` slice digits out of a `String` where `Digits` exists; `Email.domain` returns a
+`String` that is a `Hostname`. Each correction is breaking, so they land together with the rest of
+the v2 signature work rather than one at a time.
 
 ---
 
