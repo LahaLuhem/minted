@@ -21,8 +21,9 @@ import 'failures/geo_coordinate_failure.dart';
 /// Standard: [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709).
 ///
 /// Normalisation on parse: sexagesimal input becomes decimal degrees ([iso6709]), `-180` becomes
-/// `+180` (one meridian, two spellings), and a negative zero becomes positive, the sign the
-/// standard gives the equator and the prime meridian. Altitude and a CRS are refused, not dropped.
+/// `+180` (one meridian, two spellings), a negative zero becomes positive, the sign the standard
+/// gives the equator and the prime meridian, and a degree finer than [iso6709] can spell is snapped
+/// to one it can. Altitude and a CRS are refused, not dropped.
 ///
 /// Equality is by value over [latitude] and [longitude].
 @immutable
@@ -36,10 +37,11 @@ final class GeoCoordinate {
   const GeoCoordinate._(this.latitude, this.longitude);
 
   // The only door that constructs, so every instance normalises alike. Negative zero has to go so
-  // the rendered forms agree: -0.0 equals 0.0 and hashes alike, but prints as "-0.0000".
+  // the rendered forms agree: -0.0 equals 0.0 and hashes alike, but prints as "-0.0000". The snap
+  // runs inside it, because a tiny negative degree rounds to -0.0.
   factory GeoCoordinate._canonical(double latitude, double longitude) => GeoCoordinate._(
-    _positiveZeroed(latitude),
-    _positiveZeroed(longitude == -_maxLongitude ? _maxLongitude : longitude),
+    _positiveZeroed(_renderable(latitude)),
+    _positiveZeroed(_renderable(longitude == -_maxLongitude ? _maxLongitude : longitude)),
   );
 
   /// The coordinate at [latitude] and [longitude] decimal degrees, throwing [MintedFormatException]
@@ -98,9 +100,13 @@ final class GeoCoordinate {
   @override
   String toString() => 'GeoCoordinate(latitude: $latitude, longitude: $longitude)';
 
-  // `-0.0 == 0` holds, so negative zero takes the then-branch and comes back out as positive zero.
-  // ignore: no-equal-then-else
-  static double _positiveZeroed(double degrees) => degrees == 0 ? 0 : degrees;
+  // -0.0 is the one double that is zero and still carries a sign, so it alone needs clearing.
+  static double _positiveZeroed(double degrees) => degrees.isNegative && degrees == 0 ? 0 : degrees;
+
+  // Snapped to a value [iso6709] can spell exactly, so the canonical form always reads back as
+  // itself. Identity above 1e-20 degrees. Why: `APPENDIX.md#geo-coordinate-value-type`.
+  static double _renderable(double degrees) =>
+      double.parse(degrees.toStringAsFixed(_maxFractionDigits));
 
   // Why these degrees are out of range, or null when they are not. The one gate from, tryFrom, and
   // parse funnel through, so a diagnosis and an acceptance cannot disagree.
@@ -147,17 +153,20 @@ final class GeoCoordinate {
     });
     if (sexagesimalPairs.any((pair) => pair >= _sexagesimalBase)) return null;
 
+    final fraction = fieldMatch.group(signGroup + 2) ?? '';
+
     // Degrees, minutes, and seconds are digits of one base-60 number: fold to a count of the
     // smallest unit the fraction joins, and scale down once. One rounding, not one per field.
+    // A plain decimal field skips all of it, because adding the fraction to the degrees rounds a
+    // second time and lands up to one ulp off what converting the whole field gives.
     final degrees = int.parse(whole.substring(0, degreeWidth));
     final smallestUnits = sexagesimalPairs.fold(
       degrees,
       (coarserUnits, pair) => coarserUnits * _sexagesimalBase + pair,
     );
-    final fraction = fieldMatch.group(signGroup + 2);
-    final magnitude =
-        (smallestUnits + (fraction == null ? 0 : double.parse('0$fraction'))) /
-        pow(_sexagesimalBase, pairCount);
+    final magnitude = pairCount == 0
+        ? double.parse('$whole$fraction')
+        : (smallestUnits + double.parse('0$fraction')) / pow(_sexagesimalBase, pairCount);
 
     return fieldMatch.group(signGroup) == hyphen ? -magnitude : magnitude;
   }
@@ -182,14 +191,13 @@ final class GeoCoordinate {
 
   // The shortest fixed-point decimal, over rising decimal-place counts, that reads back as exactly
   // this double. Not toString: it goes exponential below 1e-6, which is not an ISO 6709 field.
-  static String _shortestExact(double magnitude) {
-    final candidates = Iterable.generate(_maxFractionDigits + 1, magnitude.toStringAsFixed);
-
-    return candidates.firstWhere(
-      (candidate) => double.parse(candidate) == magnitude,
-      orElse: () => candidates.last,
-    );
-  }
+  //
+  // No orElse: _renderable snaps every stored degree to something the widest candidate spells, and
+  // seconds arrive as hundredths, so a StateError here would mean that invariant had broken.
+  static String _shortestExact(double magnitude) => Iterable.generate(
+    _maxFractionDigits + 1,
+    magnitude.toStringAsFixed,
+  ).firstWhere((candidate) => double.parse(candidate) == magnitude);
 
   static String _wholePadded(String decimal, int width) {
     final pointIndex = decimal.indexOf('.');
