@@ -63,7 +63,7 @@ minted/
 │       ├── geography/               GeoCoordinate
 │       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
-│       ├── quantities/              Uint, NaturalNumber (constraint types; the path is the contract)
+│       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (the path is the contract)
 │       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/
 │           ├── minted_failure.dart            The MintedFailure supertype

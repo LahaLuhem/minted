@@ -49,6 +49,7 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
     * [Geography](#geography)
     * [Network](#network)
     * [Numerics](#numerics)
+    * [Quantities](#quantities)
 - [One shape, every type](#one-shape-every-type)
 - [Handling failures](#handling-failures)
 - [Caveats](#caveats)
@@ -145,6 +146,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 |-----------------|-----------------------------------------------------------------------|------------------|
 | `Uint` | never negative (`0` or more); a sign, not a width, so nothing wraps | range constraint |
 | `NaturalNumber` | strictly above zero (`1` or more) | range constraint |
+| `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix | range constraint |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
 and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enough.
@@ -171,10 +173,10 @@ Two exceptions, both deliberate. A few types are **classifications** rather than
 something that already parsed, so they give you named cases and an exhaustive `switch` instead of
 `tryParse` / `parse`. `Weekday` still has `from` / `tryFrom` to build one from an ISO day number.
 
-The others are **constraint types** (`Uint`, `NaturalNumber`): a range over a number, with no standard
-defining a text form for one, so a `parse(String)` door would be inventing one. They take
-`tryFrom(int)` instead, and with one invariant each there is nothing a failure could say that `null`
-doesn't, so they carry none.
+The others are **constraint types** (`Uint`, `NaturalNumber`, and the fixed widths): a range over a
+number, with no standard defining a text form for one, so a `parse(String)` door would be inventing
+one. They take `tryFrom(int)` instead, and with one invariant each there is nothing a failure could
+say that `null` doesn't, so they carry none.
 
 <details>
 <summary><b>More examples</b></summary>
@@ -342,6 +344,12 @@ Email.fromComponents(localPart: 'jane', domain: 'example.com');
 Uint.tryFrom(0)?.value;    // 0    (an empty cart is a real count)
 NaturalNumber.tryFrom(0);  // null (a page size of zero is not)
 Uint.tryFrom(-1);          // null, not a wrap-around to a huge number the way C would
+
+// the fixed widths bound both ends, and each width is its own type:
+Uint8.tryFrom(255)?.value;  // 255
+Uint8.tryFrom(256);         // null (refused, not truncated to 0)
+void setNibble(Uint4 field) {}
+setNibble(Uint8.tryFrom(200)!);   // compile error: a Uint8 is not a Uint4
 ```
 
 </details>
@@ -420,9 +428,12 @@ a different place. The human-readable `48°51′27.72″N` form is output-only f
 nothing wraps and there is no ceiling. `NaturalNumber` excludes zero, worth saying because the
 convention is split (ISO 80000-2 counts `0` in, school arithmetic starts at `1`). Both exist because
 that one value is load-bearing, and folding them into one pushes the check back to every call site.
-There is deliberately no `Uint8` / `Uint16` family: naming a type for its storage width makes every
-domain of that width interchangeable, and a port passing for an IPv6 hextet is the primitive obsession
-this package removes.
+
+The fixed widths are separate types rather than named factories on `Uint`, because that is the only
+shape that type-checks: with a `Uint.w8(200)` every result is still a `Uint`, so nothing stops a byte
+landing in a nibble slot. There is no `Uint64`, since Dart ints are JS doubles on the web and the
+honest ceiling is 2^53-1. And a width is not a domain: a port and an IPv6 hextet are both `0`-`65535`,
+so each stays its own named type rather than an alias for `Uint16`.
 
 </details>
 
