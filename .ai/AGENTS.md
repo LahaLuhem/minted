@@ -63,6 +63,7 @@ minted/
 │           ├── minted_failure.dart            The MintedFailure supertype
 │           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
 │           ├── digit_values.dart              ASCII '0'-'9' ↔ 0-9, both directions
+│           ├── hex_bytes.dart                 Hex text ↔ bytes, both directions
 │           ├── normalisation.dart             Separator patterns + the hyphen / zero-pad characters
 │           ├── isbn_prefixes.dart             Bookland 978/979 + the carved-out ISMN range
 │           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)

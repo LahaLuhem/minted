@@ -367,10 +367,9 @@ its input.
 // Prefer (lazy, no intermediate list; each group is a pure function of its index):
 String _grouped(Uint8List bytes) => Iterable.generate(
   _groupByteBoundaries.length - 1,
-  (group) => bytes
-      .getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1])
-      .map(_hex)
-      .join(),
+  (group) => hexDigits(
+    bytes.getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1]),
+  ),
 ).join('-');
 
 // Over (a mutable cursor and an accumulator list built only to be joined):
@@ -378,7 +377,7 @@ String _grouped(Uint8List bytes) {
   final groups = <String>[];
   var offset = 0;
   for (final length in _groupByteLengths) {
-    groups.add(bytes.sublist(offset, offset + length).map(_hex).join());
+    groups.add(hexDigits(bytes.sublist(offset, offset + length)));
     offset += length;
   }
   return groups.join('-');
@@ -390,7 +389,7 @@ The terminal decides it. When the pipeline ends in a *reduction* to one value (`
 *is* a materialised collection (`Uint8List.fromList([for …])`, an embedded table), the
 collection-`for` stays: it is the direct literal form, and a `generate(…).toList()` /
 `map(…).toList()` only bolts on a `.toList()` that reads awkwardly and saves nothing (the collection
-is built either way). So `Uuid.bytes` (a `Uint8List`) keeps its collection-`for`, while
+is built either way). So `hexBytes` (which returns a `Uint8List`) keeps its collection-`for`, while
 `Uuid.fromBytes` (which reduces to a `String`) uses the lazy pipeline.
 
 **Read that carve-out narrowly: it covers a *literal*, where every element is written out and
