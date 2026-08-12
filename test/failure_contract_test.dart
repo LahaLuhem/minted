@@ -62,6 +62,16 @@ void main() {
         typeName: 'Uuid',
         message: 'expected 16 bytes, got 15',
       ),
+      'MacAddress: unrecognisable notation': (
+        failure: MacAddressMalformed(),
+        typeName: 'MacAddress',
+        message: 'not a colon, hyphen, dot-quad or bare-hex MAC address',
+      ),
+      'MacAddress: neither of the two widths': (
+        failure: MacAddressWrongOctetCount(5),
+        typeName: 'MacAddress',
+        message: 'expected 6 or 8 octets, got 5',
+      ),
       'Imei: not the one length': (
         failure: ImeiWrongLength(14),
         typeName: 'Imei',
@@ -299,6 +309,14 @@ void main() {
           failure: UuidWrongByteCount(expected: 16, actual: 15),
           rendered: 'UuidWrongByteCount(expected: 16, actual: 15)',
         ),
+        'a malformed MAC address': (
+          failure: MacAddressMalformed(),
+          rendered: 'MacAddressMalformed()',
+        ),
+        'a wrong octet count': (
+          failure: MacAddressWrongOctetCount(5),
+          rendered: 'MacAddressWrongOctetCount(5)',
+        ),
         'a wrong IMEI length': (failure: ImeiWrongLength(14), rendered: 'ImeiWrongLength(14)'),
         'an IMEI charset failure': (
           failure: ImeiInvalidCharacters(),
@@ -441,6 +459,16 @@ void main() {
           failure: UuidWrongByteCount(expected: 16, actual: 15),
           twin: UuidWrongByteCount(expected: 16, actual: 15),
           other: UuidWrongByteCount(expected: 16, actual: 17),
+        ),
+        'a malformed MAC address': (
+          failure: MacAddressMalformed(),
+          twin: MacAddressMalformed(),
+          other: MacAddressWrongOctetCount(5),
+        ),
+        'an octet count differs by its value': (
+          failure: MacAddressWrongOctetCount(5),
+          twin: MacAddressWrongOctetCount(5),
+          other: MacAddressWrongOctetCount(7),
         ),
         'IMEI length differs by its count': (
           failure: ImeiWrongLength(14),
