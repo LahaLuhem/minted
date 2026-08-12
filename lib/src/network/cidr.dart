@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../shared/minted_format_exception.dart';
 import '../shared/normalisation.dart';
+import '../shared/octet_bits.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/cidr_failure.dart';
 import 'ip_address.dart';
@@ -123,9 +124,9 @@ final class Cidr {
   // The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max
   // rather than clamp, which is declared on num and would widen the shift operand.
   static int _octetMask(int index, int prefixLength) {
-    final coveredBits = min(max(prefixLength - index * _bitsPerOctet, 0), _bitsPerOctet);
+    final coveredBits = min(max(prefixLength - index * bitsPerOctet, 0), bitsPerOctet);
 
-    return _allOctetBits << (_bitsPerOctet - coveredBits) & _allOctetBits;
+    return _allOctetBits << (bitsPerOctet - coveredBits) & _allOctetBits;
   }
 
   static int _maxPrefixLengthFor(IpVersion version) => switch (version) {
@@ -135,7 +136,6 @@ final class Cidr {
 
   static const _prefixSeparator = '/';
   static const _partCount = 2;
-  static const _bitsPerOctet = 8;
   static const _allOctetBits = 0xff;
   static const _maxV4PrefixLength = 32;
   static const _maxV6PrefixLength = 128;

@@ -6,8 +6,10 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:ipaddr/ipaddr.dart';
 
+import '../quantities/uint8.dart';
 import '../shared/hex_bytes.dart';
 import '../shared/minted_format_exception.dart';
+import '../shared/octet_bits.dart';
 import '../shared/parse_outcome.dart';
 import 'failures/ip_address_failure.dart';
 
@@ -107,7 +109,8 @@ extension type const IpAddress._(String value) {
     final zeroPrefixed = octets.firstWhereOrNull(_hasLeadingZero);
     if (zeroPrefixed != null) return IpAddressLeadingZero(zeroPrefixed);
 
-    final outOfRange = octets.firstWhereOrNull((octet) => int.parse(octet) > _maxOctet);
+    // An octet is an unsigned 8-bit field, so Uint8 owns that bound rather than a local copy of 255.
+    final outOfRange = octets.firstWhereOrNull((octet) => Uint8.tryFrom(int.parse(octet)) == null);
 
     return outOfRange != null ? IpAddressPartOutOfRange(outOfRange) : null;
   }
@@ -150,8 +153,8 @@ extension type const IpAddress._(String value) {
     if (!tail.contains(_octetSeparator)) return candidate;
 
     final octets = tail.split(_octetSeparator).map(int.parse).toList();
-    final leading = (octets.first << _bitsPerOctet) | octets[1];
-    final trailing = (octets[2] << _bitsPerOctet) | octets[3];
+    final leading = (octets.first << bitsPerOctet) | octets[1];
+    final trailing = (octets[2] << bitsPerOctet) | octets[3];
 
     return '${candidate.substring(0, lastSeparator + 1)}'
         '${leading.toRadixString(hexRadix)}:${trailing.toRadixString(hexRadix)}';
@@ -168,12 +171,12 @@ extension type const IpAddress._(String value) {
   }
 
   static Uint8List _octetsOf(BigInt packed) => .fromList([
-    for (var shift = _ipv6Bits - _bitsPerOctet; shift >= 0; shift -= _bitsPerOctet)
+    for (var shift = _ipv6Bits - bitsPerOctet; shift >= 0; shift -= bitsPerOctet)
       ((packed >> shift) & _octetMask).toInt(),
   ]);
 
   static BigInt _bigIntOf(Uint8List octets) =>
-      octets.fold(BigInt.zero, (packed, octet) => (packed << _bitsPerOctet) | BigInt.from(octet));
+      octets.fold(BigInt.zero, (packed, octet) => (packed << bitsPerOctet) | BigInt.from(octet));
 
   static final _dottedQuad = RegExp(r'^\d{1,3}(?:\.\d{1,3}){3}$');
   static final _hexAndSeparators = RegExp(r'^[0-9a-f:.]+$');
@@ -185,12 +188,10 @@ extension type const IpAddress._(String value) {
   static const _octetSeparator = '.';
   static const _hextetSeparator = ':';
   static const _zero = '0';
-  static const _maxOctet = 255;
   static const _maxHextetDigits = 4;
   static const _ipv4OctetCount = 4;
   static const _ipv6OctetCount = 16;
   static const _ipv6Bits = 128;
-  static const _bitsPerOctet = 8;
   static const _embeddedV4Bits = 32;
   static const _v4MappedNotation = '::ffff:';
   static const _v6Loopback = '::1';
