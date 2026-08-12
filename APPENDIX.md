@@ -1277,6 +1277,15 @@ against a width but is never an alias for one.
 **No `Uint64`.** Dart ints are JS doubles on the web, so the honest ceiling is 2^53-1 and a type
 advertising 2^64-1 could not keep the promise its name makes. The family stops at 32.
 
+**Neither `binary` nor `fixnum` could stand in.** [`binary`](https://pub.dev/packages/binary) has the
+right shape and even the same `static Uint8? tryFrom(int)`, but that is one door out of seven: in a
+release build `Uint8(999)` wraps to `231` and `fromUnchecked(999)` yields a `Uint8` holding `999`,
+because `debugCheckFixedWithInRange` is assert-only and "in release mode, these assertions are always
+disabled and cannot be enabled". Re-exporting it would ship four unvalidated public doors, one of them
+the default constructor. [`fixnum`](https://pub.dev/packages/fixnum) is a different job entirely:
+`Int32` / `Int64` only, no unsigned type at all, and wrapping arithmetic is its documented feature
+rather than a hazard. Neither carries a `Uint2` or `Uint4`.
+
 ---
 
 <a id="what-not-covered"></a>
