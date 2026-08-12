@@ -27,6 +27,11 @@ feature: identical method names and the same failure model across every type.
   floor only when a new stable language feature is actually consumed, and record why in APPENDIX.
 - **`dart test`** for tests; **`dart --no-version-check analyze .`** for pedantic static analysis
   (pedantic mode is intentional). No Flutter dependency, no platform channels.
+- **CI runs two SDKs on purpose.** The `dart format` gate in `repo.yml` takes its Dart from Flutter
+  (the channel `.fvmrc` names) because formatter output is version-sensitive; every other job uses
+  [`.github/actions/setup-dart`](../.github/actions/setup-dart/action.yml) on Dart stable, which is
+  what downstream Dart-only users have. Route a new job through the composite unless it compares
+  formatter output. Why: [`APPENDIX.md#ci-sdk-toolchain`](../APPENDIX.md#ci-sdk-toolchain).
 - **`dependency_validator`** guards the dependency set; `dart_dependency_validator.yaml` scopes it
   to the published surface and skips the example.
 - **Container-based linters** (`shellcheck` for shell scripts, `actionlint` for workflows, `rumdl`
