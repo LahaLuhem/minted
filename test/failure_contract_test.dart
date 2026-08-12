@@ -272,6 +272,46 @@ void main() {
         typeName: 'GeoCoordinate',
         message: 'longitude 181.0 is outside -180 to 180',
       ),
+      'Hostname: non-ASCII names the remedy rather than the rule': (
+        failure: HostnameNotAscii(),
+        typeName: 'Hostname',
+        message: 'contains non-ASCII, so punycode it to an A-label first',
+      ),
+      'Hostname: an underscore is named as a DNS name, not a stray character': (
+        failure: HostnameInvalidCharacters('_'),
+        typeName: 'Hostname',
+        message: 'an underscore makes this a DNS name, not a hostname',
+      ),
+      'Hostname: any other bad character echoes itself': (
+        failure: HostnameInvalidCharacters('%'),
+        typeName: 'Hostname',
+        message: '"%" is not a letter, digit or hyphen',
+      ),
+      'Hostname: an empty label says which way it happened': (
+        failure: HostnameLabelMalformed(''),
+        typeName: 'Hostname',
+        message: 'has an empty label, so two dots met or one sits at an edge',
+      ),
+      'Hostname: a hyphen at a label edge echoes the label': (
+        failure: HostnameLabelMalformed('-bad'),
+        typeName: 'Hostname',
+        message: '"-bad" opens or closes with a hyphen',
+      ),
+      'Hostname: a label past its own limit': (
+        failure: HostnameLabelTooLong(64),
+        typeName: 'Hostname',
+        message: 'expected at most 63 characters per label, got 64',
+      ),
+      'Hostname: the whole name past its limit': (
+        failure: HostnameTooLong(255),
+        typeName: 'Hostname',
+        message: 'expected at most 253 characters, got 255',
+      ),
+      'Hostname: an all-numeric last label is an address': (
+        failure: HostnameNumericTld(),
+        typeName: 'Hostname',
+        message: 'ends in an all-numeric label, so this is an address, not a hostname',
+      ),
     };
 
     scenarioOutline<({MintedFailure failure, String typeName, String message})>(
@@ -415,6 +455,24 @@ void main() {
         'an out-of-range longitude': (
           failure: GeoCoordinateLongitudeOutOfRange(181),
           rendered: 'GeoCoordinateLongitudeOutOfRange(181.0)',
+        ),
+        'a non-ASCII hostname': (failure: HostnameNotAscii(), rendered: 'HostnameNotAscii()'),
+        'a stray hostname character': (
+          failure: HostnameInvalidCharacters('_'),
+          rendered: 'HostnameInvalidCharacters(_)',
+        ),
+        'a malformed label': (
+          failure: HostnameLabelMalformed('-bad'),
+          rendered: 'HostnameLabelMalformed(-bad)',
+        ),
+        'an overlong label': (
+          failure: HostnameLabelTooLong(64),
+          rendered: 'HostnameLabelTooLong(64)',
+        ),
+        'an overlong hostname': (failure: HostnameTooLong(255), rendered: 'HostnameTooLong(255)'),
+        'an all-numeric last label': (
+          failure: HostnameNumericTld(),
+          rendered: 'HostnameNumericTld()',
         ),
       },
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
@@ -640,6 +698,36 @@ void main() {
           failure: GeoCoordinateLongitudeOutOfRange(181),
           twin: GeoCoordinateLongitudeOutOfRange(181),
           other: GeoCoordinateLongitudeOutOfRange(-181),
+        ),
+        'the non-ASCII variant': (
+          failure: HostnameNotAscii(),
+          twin: HostnameNotAscii(),
+          other: HostnameNumericTld(),
+        ),
+        'a stray character differs by the character': (
+          failure: HostnameInvalidCharacters('_'),
+          twin: HostnameInvalidCharacters('_'),
+          other: HostnameInvalidCharacters('%'),
+        ),
+        'a malformed label differs by where the hyphen sits': (
+          failure: HostnameLabelMalformed('-bad'),
+          twin: HostnameLabelMalformed('-bad'),
+          other: HostnameLabelMalformed('bad-'),
+        ),
+        'an overlong label differs by its length': (
+          failure: HostnameLabelTooLong(64),
+          twin: HostnameLabelTooLong(64),
+          other: HostnameLabelTooLong(65),
+        ),
+        'an overlong hostname differs by its length': (
+          failure: HostnameTooLong(255),
+          twin: HostnameTooLong(255),
+          other: HostnameTooLong(254),
+        ),
+        'the all-numeric-label variant': (
+          failure: HostnameNumericTld(),
+          twin: HostnameNumericTld(),
+          other: HostnameNotAscii(),
         ),
       },
       outline: (example) {
