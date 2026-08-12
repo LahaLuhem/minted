@@ -36,6 +36,7 @@ anchor, and keep anchors stable across renames.
 - [Gtin: four lengths, one number, padded to fourteen](#gtin-value-type)
 - [Imei: printed in full, unlike a card number](#imei-value-type)
 - [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
+- [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -900,6 +901,74 @@ a lenient parser hands back a plausible wrong answer instead of an error.
 **A sole member still earns `lib/src/geography/`.** No existing sector fits a coordinate, and the
 public API is flat regardless because `minted.dart` re-exports everything, so the folder costs
 nothing and is where the next spatial type (Plus Code, MGRS) lands.
+
+---
+
+<a id="mac-address-value-type"></a>
+## MacAddress: two widths, four notations, and no registry
+
+**The type is not called `Eui48`, because an EUI-48 is a narrower thing than a 48-bit MAC address.**
+The IEEE Registration Authority's
+[guidelines for EUI, OUI and CID](https://standards.ieee.org/wp-content/uploads/import/documents/tutorials/eui.pdf)
+retire the term `MAC-48` and warn that `EUI-48` is *not* its replacement, because an EUI-48 "only
+refers to individual, universally/globally unique network addresses". A broadcast, multicast or
+locally-administered address is a MAC address and is not an EUI-48, so a type named for the narrower
+term would refuse most of what its name promises. RFC 9542 §1.1 says the same. This is the
+[`Day` test](#date-value-type) again, applied to a name rather than a field.
+
+**Both widths are kept, and neither is converted, because the conversion is deprecated in its
+entirety.** The same RA document states that "mapping an EUI-48 to an EUI-64 is deprecated", for both
+the `FF-FE` and `FF-FF` fillers, since an address assigned under MA-M or MA-S can collide once
+widened. It does not reverse either: a genuine EUI-64 may legitimately carry `FF-FE` in octets 3-4,
+so no `toEui48()` could tell an encoded address from a native one. That kills the tempting analogy
+with [`Isbn`](#isbn-value-type), whose 978 fold *is* a bijection, and with
+[`Gtin`](#gtin-value-type), where padding is lossless. Accepting both widths costs nothing and
+touches none of it, and an 802.15.4 or Thread address is a MAC address, so a type named `MacAddress`
+that refused it would under-deliver. The cost is that `octets.length` is not a constant, which is why
+this was settled before the type shipped rather than retrofitted: adding the second width later would
+be a soft break for anyone who assumed six.
+
+**The canonical form is colon-separated lower-case, which knowingly collides with IEEE Std 802
+Clause 8.1.** That clause reads a *colon* separator as the bit-reversed representation, a different
+value: IEEE's own worked example has `AC-DE-48-12-7B-80` in hexadecimal representation equal to
+`35:7B:12:48:DE:01` bit-reversed. Taking the colon form as canonical anyway is a considered break,
+not an oversight. RFC 9911 §3 calls lower-case colon the canonical representation, `ether_ntoa` and
+essentially every tool emit it, [`Uuid`](#uuid-value-type) already lower-cases its hex, and IEEE
+802.1's own YANG work has recorded that near-universal practice "seems to technically violate
+subclause 8.1" and asked for the bit-reversal reading to move to an informative annex as historic.
+`ieee802` renders the standard's hyphenated upper-case form for anyone who needs it.
+
+**`prefix24`, not `oui`, because the assignment boundary is not in the address.** The IEEE issues
+three block sizes (RFC 9542 §2.1, Table 1): MA-L at 24 bits, MA-M at 28, MA-S at 36. The RA states
+that "the MA-M does not include assignment of an OUI", and that an OUI-36 assignee "shall not
+truncate the OUI-36 to use as an OUI", since the RA hands the same base prefix to many organisations.
+So for an MA-M or MA-S address the first 24 bits identify nobody, and telling the cases apart needs
+a lookup in three registries. RFC 9542 §2.1.2 adds a second limit: with the local bit set, "the holder
+of an OUI has no special authority" over those bits at all. A getter named `oui` would therefore
+promise what the data cannot support, the same defect [`Isni`](#isni-value-type) avoids by reporting
+the ORCID block rather than gating on it. Vendor lookup is out for the usual reason on top of that:
+the registry is a 4 MB CSV, i.e. [a clock](#registry-data-ships-a-clock).
+
+**The bits need no reversal, though they look as if they should.** I/G and U/L are defined by
+transmission order, which is least-significant-bit-first on Ethernet, while hex is written
+most-significant-first. They coincide, because "the first bit transmitted, of each octet, on the LAN
+medium is the least significant bit of that octet", so a plain mask on the octet's integer value is
+correct. The second hex digit alone therefore fixes both bits, which is what the type's test table
+walks end to end.
+
+**Deliberately not modelled**, each because it would state more than the address does: EUI-48 to
+EUI-64 conversion in either direction; RFC 4291's "Modified EUI-64" (an IETF construct, itself
+superseded by RFC 7217 and RFC 8064); IEEE 802c's SLAP quadrants, since RFC 9542 §2.1.1 notes the
+SLAP is optional with "no automated way to determine" whether a network runs it, so an enum would
+dress a nominal bit pattern as a fact about the wire; vendor lookup; the bit-reversed colon notation;
+and an `unspecified` constant for `00:00:00:00:00:00`, which is a real Xerox MA-L address whose
+"unspecified" meaning is a per-protocol convention rather than an IEEE reservation.
+
+**Input is strict where the wild is loose.** glibc's `ether_ntoa` omits leading zeros, so
+`1:2:3:4:5:6` is real output somewhere, and it is rejected here: it matches no standard's grammar,
+and a parser that guessed would be hand-writing octets the input did not contain. The four accepted
+notations each get their own anchored alternative in one regex, which is what refuses a spelling that
+mixes two separators.
 
 ---
 

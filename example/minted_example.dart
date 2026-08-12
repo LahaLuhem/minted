@@ -108,6 +108,16 @@ void main() {
   print(isni.isInOrcidBlock); // true
   print(Isni.tryParse('0000 0001 2103 2683')?.isInOrcidBlock); // false (an ISNI, not an ORCID iD)
 
+  // `MacAddress` folds the four notations one address gets written in, so the spelling a device or
+  // a log happens to use stops mattering. Both widths parse and neither is mapped onto the other.
+  final mac = MacAddress.tryParse('00-00-5E-00-53-00')!;
+  print(mac.value); // 00:00:5e:00:53:00  (canonical: colon-separated, lower-case)
+  print(mac.ieee802); // 00-00-5E-00-53-00  (the IEEE hyphen form)
+  print(mac.prefix24); // 00:00:5e  (the first three octets, deliberately not called an OUI)
+  print(mac.isLocallyAdministered); // false  (the U/L bit, read back rather than gating the parse)
+  print(MacAddress.tryParse('0000.5e00.5300') == mac); // true (Cisco dot-quad, same address)
+  print(MacAddress.tryParse('0:0:5e:0:53:0')); // null (omitted leading zeros aren't a MAC address)
+
   // `GeoCoordinate` names the pair, because a swapped latitude and longitude is a type bug no range
   // check catches. ISO 6709 picks the unit by field width, and all three widths fold to degrees.
   final eiffelTower = GeoCoordinate.tryParse('+48.8577+002.295/')!;

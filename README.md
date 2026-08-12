@@ -116,6 +116,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Imei` | fifteen digits and the Luhn check; TAC and serial read back           | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)      |
 | `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
 | `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/) |
+| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address) |
 
 ### Geography
 
@@ -228,6 +229,23 @@ PaymentCardNumber.cardSchemesOf('4');   // {CardScheme.visa}
 
 PaymentCardNumber.tryParse('4111111111111112');   // null: fails the Luhn check
 
+// MacAddress: four notations spell one address, so whichever one a device, a log or a config file
+// happens to use stops mattering:
+final mac = MacAddress.tryParse('00-00-5E-00-53-00')!;
+mac.value;                 // '00:00:5e:00:53:00'   (canonical: colon-separated, lower-case)
+mac.ieee802;               // '00-00-5E-00-53-00'   (the IEEE hyphen form, for a Windows-shaped UI)
+mac.bareHex;               // '00005e005300'        (for a database key or a URL)
+mac.prefix24;              // '00:00:5e'   (the first three octets; deliberately not called an OUI)
+mac.isMulticast;           // false   (the I/G bit)
+mac.isLocallyAdministered; // false   (the U/L bit)
+
+MacAddress.tryParse('0000.5e00.5300') == mac;   // true: Cisco's dot-quad is the same address
+MacAddress.tryParse('0:0:5e:0:53:0');           // null: omitted leading zeros aren't a MAC address
+
+// 64-bit addresses parse too, and keep their width: nothing is mapped onto anything else, so a
+// 48- and a 64-bit address are never equal.
+MacAddress.tryParse('00:00:5e:10:00:00:00:00')!.octetCount;   // 8
+
 // GeoCoordinate: the swapped-argument bug is a type problem, so the pair is named at the boundary.
 // ISO 6709 uses the width of the degree field as the unit selector; all three fold to degrees:
 final eiffel = GeoCoordinate.tryParse('+48.8577+002.295/')!;
@@ -288,6 +306,14 @@ assigns no brand ranges, the IIN-to-network table drifts, and some ranges are ge
 claims and says `unknown` otherwise: silence means "can't say", not "not a card". It also masks
 itself, printing `••••1111`, with `value` the one member that hands the number back, so a stray log
 line can't leak a PAN.
+
+`MacAddress` keeps whichever width it parsed and never converts. The IEEE Registration Authority
+deprecated the EUI-48 to EUI-64 mapping outright, and it doesn't reverse anyway (a genuine EUI-64 may
+carry the `FF-FE` filler legitimately), so a 48- and a 64-bit address are simply never equal. It also
+does no vendor lookup, and `prefix24` is named for the bits it returns rather than an assignment it
+can't prove: the first three octets are an OUI only under an MA-L assignment, and an MA-M or MA-S
+address shares them with other organisations. Nor is the type called `Eui48`, which the IEEE reserves
+for the individual, universally-administered subset.
 
 `GeoCoordinate` is a surface coordinate: altitude and a CRS identifier are *refused*, not silently
 dropped. Their sign, units and datum are all defined by the CRS, so an `altitude` field would be one
