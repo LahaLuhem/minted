@@ -575,6 +575,11 @@ void main() {
           twin: IsinWrongLength(11),
           other: IsinWrongLength(13),
         ),
+        'the ISIN charset variant': (
+          failure: IsinInvalidCharacters(),
+          twin: IsinInvalidCharacters(),
+          other: IsinChecksumFailed(),
+        ),
         'an ISIN prefix differs by its letters': (
           failure: IsinInvalidPrefix('1S'),
           twin: IsinInvalidPrefix('1S'),
