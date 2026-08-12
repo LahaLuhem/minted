@@ -188,14 +188,14 @@ composition, and the `==` argument is a second, unrelated reason to reach for a 
 
 **The cost is real and worth paying.** A class hand-writes `==`, `hashCode` and `toString`, and gives
 up the zero-cost representation. Extension types stay right for values with no inner structure worth
-naming: an [`IpAddress`](#ip-address-value-type)'s octets are bytes rather than a modelled type, and
-a [`Hostname`](#hostname-value-type)'s labels are plain strings, so both stay extension types until
-something like a `DnsLabel` exists to hold.
+naming: a [`Hostname`](#hostname-value-type)'s labels are plain strings, so it stays an extension type
+until something like a `DnsLabel` exists to hold.
 
 **Types that predate the rule are queued for v2, not fixed piecemeal.** `Isbn`, `Gtin`, `Imei`,
 `Issn` and `Isni` slice digits out of a `String` where `Digits` exists; `Email.domain` returns a
-`String` that is a `Hostname`. Each correction is breaking, so they land together with the rest of
-the v2 signature work rather than one at a time.
+`String` that is a `Hostname`; and `IpAddress.octets` hands back raw bytes now that
+[`Uint8`](#constraint-types) is a type they could carry. Each correction is breaking, so they land
+together with the rest of the v2 signature work rather than one at a time.
 
 ---
 
@@ -1263,10 +1263,15 @@ boundary stated in each dartdoc rather than spelled into a clunkier name. The re
 
 **The fixed widths are separate types, not factories.** `Uint.w8(200)` was the tempting spelling and
 it does range-check correctly, but every result is still a `Uint`, so nothing stops a byte landing in
-a nibble slot; the analyzer stays silent. As separate types it rejects that, and rejects implicit
-widening in both directions, so a `Uint4` needs `Uint8.tryFrom(nibble.value)` to become a byte. The
-verbosity is the guarantee working. (`Uint.4(…)` is not spellable at all: a Dart member name cannot
-start with a digit.)
+a nibble slot; the analyzer stays silent. As separate types it rejects that, which is the point.
+(`Uint.4(…)` is not spellable at all: a Dart member name cannot start with a digit.)
+
+**Widening is deferred, not impossible.** A `Uint4` currently needs `Uint8.tryFrom(nibble.value)` to
+become a byte, which is friction in the one direction that cannot fail. One `implements` clause per
+type removes it: `Uint2 implements Uint4` up through `Uint32 implements Uint`, with
+`NaturalNumber implements Uint` alongside. Verified to give free widening while still rejecting every
+narrowing, every unbounded-to-fixed hop, and byte-to-natural. Held until #33's `Port` supplies a first
+real caller rather than a guess at one.
 
 **A width is not a domain, which is a rule about use rather than an argument against the types.**
 `Uint16` says how many bits a value fits in, not what it means, so two unrelated domains of the same

@@ -201,8 +201,9 @@ give, and `PaymentCardNumber` needs a `toString` that does not print the card. R
 
 **Several shipped types predate this rule and sit on the wrong side of it**, holding text where a
 modelled part exists: `Isbn`, `Gtin`, `Imei`, `Issn` and `Isni` slice digits out of a `String` where
-they could hold `Digits`, and `Email` returns a `String` domain that is a `Hostname`. Correcting them
-is breaking, so it is queued for v2 rather than done piecemeal. Do not add to the pile: new types
+they could hold `Digits`, `Email` returns a `String` domain that is a `Hostname`, and `IpAddress`
+splits its octets back out of text now that `Uint8` is a type they could carry. Correcting them is
+breaking, so it is queued for v2 rather than done piecemeal. Do not add to the pile: new types
 follow the rule above.
 
 **Non-negotiable across both shapes:**

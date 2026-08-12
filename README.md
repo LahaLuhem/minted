@@ -88,12 +88,12 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Finance
 
-| Type                | What it guarantees                                        | Standard                                                                     |
-|---------------------|-----------------------------------------------------------|------------------------------------------------------------------------------|
-| `Iban`              | structure, country length, and the mod-97 checksum        | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
-| `Bic`               | a SWIFT code: structure and a real country, folded to 11  | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
-| `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
-| `Isin`              | a securities ID: charset, two-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html) |
+| Type                | What it guarantees                                                              | Standard                                                                     |
+|---------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| `Iban`              | structure, country length, and the mod-97 checksum                              | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
+| `Bic`               | a SWIFT code: structure and a real country, folded to 11                        | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
+| `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed                       | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
+| `Isin`              | a securities ID: charset, two-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html)                          |
 
 ### Commerce
 
@@ -111,13 +111,13 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Identifiers
 
-| Type   | What it guarantees                                                    | Standard                                                         |
-|--------|-----------------------------------------------------------------------|------------------------------------------------------------------|
-| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)               |
-| `Isbn` | prefix and check digit; both generations folded to ISBN-13            | [ISO 2108](https://www.isbn-international.org/content/what-isbn) |
-| `Imei` | fifteen digits and the Luhn check; TAC and serial read back           | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)      |
-| `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
-| `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/) |
+| Type   | What it guarantees                                                                 | Standard                                                                 |
+|--------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised              | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)                       |
+| `Isbn` | prefix and check digit; both generations folded to ISBN-13                         | [ISO 2108](https://www.isbn-international.org/content/what-isbn)         |
+| `Imei` | fifteen digits and the Luhn check; TAC and serial read back                        | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
+| `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form            | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
+| `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/)                                       |
 
 ### Geography
 
@@ -127,12 +127,12 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Network
 
-| Type       | What it guarantees                                                     | Standard                                                       |
-|------------|-------------------------------------------------------------------------|----------------------------------------------------------------|
-| `Hostname` | the RFC 1123 grammar and both length limits; ASCII only, never an address | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
-| `IpAddress` | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) |
-| `Cidr` | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632) |
-| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address) |
+| Type         | What it guarantees                                                                       | Standard                                                       |
+|--------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| `Hostname`   | the RFC 1123 grammar and both length limits; ASCII only, never an address                | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
+| `IpAddress`  | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal          | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)             |
+| `Cidr`       | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632)             |
+| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back              | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address)      |
 
 ### Numerics
 
@@ -142,10 +142,10 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Quantities
 
-| Type            | What it guarantees                                                    | Standard         |
-|-----------------|-----------------------------------------------------------------------|------------------|
-| `Uint` | never negative (`0` or more); a sign, not a width, so nothing wraps | range constraint |
-| `NaturalNumber` | strictly above zero (`1` or more) | range constraint |
+| Type               | What it guarantees                                                                      | Standard         |
+|--------------------|-----------------------------------------------------------------------------------------|------------------|
+| `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                     | range constraint |
+| `NaturalNumber`    | strictly above zero (`1` or more)                                                       | range constraint |
 | `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix | range constraint |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
