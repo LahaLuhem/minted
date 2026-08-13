@@ -27,10 +27,12 @@ final class Digits extends Iterable<Digit> {
 
   /// Parses [input] as a run of decimal digits, or returns `null` when any
   /// character is not `0`-`9`. Empty input yields an empty sequence.
+  @Deprecated('Decode the text yourself, then use Digits.tryFrom. Removed in 2.0.0 (#44).')
   static Digits? tryParse(String input) => parse(input).getOrNull();
 
   /// Parses [input] as a run of decimal digits, reporting [DigitsFailure] when
   /// any character is not `0`-`9`. Empty input yields an empty sequence.
+  @Deprecated('Decode the text yourself, then use Digits.tryFrom. Removed in 2.0.0 (#44).')
   static ParseOutcome<DigitsFailure, Digits> parse(String input) {
     final codeUnits = input.codeUnits;
     final parsedDigits = codeUnits.any((code) => decimalValue(code) < 0)
@@ -50,21 +52,26 @@ final class Digits extends Iterable<Digit> {
 
   /// The sequence of the given [values], throwing [MintedFormatException] unless
   /// every value is in `0`-`9`.
+  @Deprecated('Use Digits.tryFrom. Removed in 2.0.0 (#44).')
   static Digits from(Iterable<int> values) =>
       tryFrom(values.toList(growable: false)) ??
       (throw MintedFormatException.from(DigitsFailure.notAllDigits, '$values'));
 
   /// The sequence built from the given `digits` (each already a valid `0`-`9`).
-  static Digits of(Iterable<Digit> digits) => from(digits.map((digit) => digit.value));
+  // Every Digit is in range by construction, so this mints directly rather than re-checking.
+  static Digits of(Iterable<Digit> digits) =>
+      ._(.fromList([for (final digit in digits) digit.value]));
 
+  // Each byte came from a Digit, so tryFrom cannot return null here.
   @override
-  Iterator<Digit> get iterator => _bytes.map(Digit.from).iterator;
+  Iterator<Digit> get iterator => _bytes.map((byte) => Digit.tryFrom(byte)!).iterator;
 
   @override
   int get length => _bytes.length;
 
   /// The [Digit] at [index] (0-based).
-  Digit operator [](int index) => Digit.from(_bytes[index]);
+  // As above: the byte is already a digit's value.
+  Digit operator [](int index) => Digit.tryFrom(_bytes[index])!;
 
   /// The digits as a plain string, e.g. `'12345'` (the canonical form).
   String get asString => .fromCharCodes(_bytes.map(decimalCodeUnit));

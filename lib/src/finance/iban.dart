@@ -7,6 +7,7 @@ import 'package:iban_validator/iban_validator.dart';
 
 import '../numerics/digit.dart';
 import '../shared/check_digits/iban_check_digits.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
@@ -54,8 +55,8 @@ extension type const Iban._(String value) {
   /// [Digit]s; read `.first.value` / `.second.value` for their numeric values.
   // Both positions are digits in a validated IBAN, so tryParse cannot return null here.
   ({Digit first, Digit second}) get checkDigits => (
-    first: .tryParse(value[_checkDigitsStart])!,
-    second: .tryParse(value[_checkDigitsStart + 1])!,
+    first: .tryFrom(decimalValue(value.codeUnitAt(_checkDigitsStart)))!,
+    second: .tryFrom(decimalValue(value.codeUnitAt(_checkDigitsStart + 1)))!,
   );
 
   /// The Basic Bank Account Number: everything after the check digits (the bank-specific part,

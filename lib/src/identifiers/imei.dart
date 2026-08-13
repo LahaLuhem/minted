@@ -4,6 +4,7 @@
 import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
@@ -55,7 +56,7 @@ extension type const Imei._(String value) {
 
   /// The final digit, the Luhn check over the other fourteen.
   // The last character of a validated IMEI is always a digit, so tryParse cannot return null.
-  Digit get checkDigit => .tryParse(value[_checkDigitIndex])!;
+  Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
   /// The printed grouping, as a settings screen and the box both show it, e.g. `35-209900-176148-1`.
   String get formatted =>

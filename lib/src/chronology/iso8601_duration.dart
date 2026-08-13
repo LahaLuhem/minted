@@ -128,8 +128,9 @@ final class Iso8601Duration {
   Duration toDuration({required Date from}) {
     final monthIndex = from.month.value - 1 + years * _monthsPerYear + months;
     final anchoredYear = from.year + monthIndex ~/ _monthsPerYear;
-    final anchoredMonth = Month.from(monthIndex % _monthsPerYear + 1);
-    final anchored = Date(
+    // The modulo pins the index to 1-12, so tryFrom cannot return null here.
+    final anchoredMonth = Month.tryFrom(monthIndex % _monthsPerYear + 1)!;
+    final anchored = Date.of(
       anchoredYear,
       anchoredMonth.value,
       min(from.day, anchoredMonth.daysIn(anchoredYear)),
@@ -228,7 +229,7 @@ final class Iso8601Duration {
 
   static bool _hasFraction(String value) => value.contains('.');
 
-  static int _daysInYear(int year) => Date(year + 1).differenceInDays(Date(year));
+  static int _daysInYear(int year) => Date.of(year + 1).differenceInDays(Date.of(year));
 
   static String _designatorOf(Iso8601DurationComponent component) => switch (component) {
     .years => 'Y',

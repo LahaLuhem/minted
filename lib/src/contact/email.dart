@@ -29,6 +29,7 @@ extension type const Email._(String value) {
 
   /// As [fromComponents], but takes the domain as its dot-separated labels
   /// (`['example', 'com']`), joined with `.`.
+  @Deprecated("Use Email.fromComponents with domainLabels.join('.'). Removed in 2.0.0 (#44).")
   static Email fromDomainLabels({required String localPart, required List<String> domainLabels}) =>
       fromComponents(localPart: localPart, domain: domainLabels.join('.'));
 

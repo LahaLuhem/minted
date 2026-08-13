@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
@@ -83,7 +84,7 @@ final class PaymentCardNumber {
 
   /// The major industry identifier: the leading digit, which ISO/IEC 7812 assigns to an industry.
   // The first character of a validated number is always a digit, so tryParse cannot return null.
-  Digit get majorIndustryIdentifier => .tryParse(value[0])!;
+  Digit get majorIndustryIdentifier => .tryFrom(decimalValue(value.codeUnitAt(0)))!;
 
   /// The six-digit issuer identification number, or `null` when the number is too short to hold one
   /// alongside a check digit.
@@ -97,7 +98,7 @@ final class PaymentCardNumber {
 
   /// The final digit, the Luhn check over the others.
   // Always a digit in a validated number, so tryParse cannot return null.
-  Digit get checkDigit => .tryParse(value[value.length - 1])!;
+  Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(value.length - 1)))!;
 
   /// Everything but [last4] hidden, e.g. `••••1111`. What [toString] renders, so a log line or a
   /// test failure cannot leak the number.

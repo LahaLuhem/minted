@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
 import '../numerics/digits.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/iso_country_code.dart';
@@ -59,7 +60,8 @@ extension type const PhoneNumber._(String value) {
   /// country calling code (the local number you'd dial within the country).
   /// Use [Digits.asString] for the plain string.
   // A validated number's national significant number is digits only, so this cannot be null.
-  Digits get nationalNumber => Digits.tryParse(_parsed.nsn)!;
+  Digits get nationalNumber =>
+      Digits.tryFrom(_parsed.nsn.codeUnits.map(decimalValue).toList(growable: false))!;
 
   /// The number's type (mobile, fixed line, VoIP, ...), or `null` if it matches no known type.
   /// When a number is valid as more than one type, the first match in enum-declaration order is returned.
