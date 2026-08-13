@@ -18,10 +18,11 @@ import 'failures/mac_address_failure.dart';
 /// and no reserved value to refuse, so [isMulticast], [isLocallyAdministered] and [isBroadcast]
 /// read the bits back rather than gating on them.
 ///
-/// **Not an EUI-48**, which the IEEE reserves for an individual, universally-administered address.
-/// Nor is the 64-bit form a widened 48-bit one: mapping between the widths is deprecated, so an
-/// address keeps the width it was parsed at, and the two are never equal.
-/// Why: `APPENDIX.md#mac-address-value-type`.
+/// > [!NOTE]
+/// > **Not an EUI-48**, which the IEEE reserves for an individual, universally-administered
+/// > address. Nor is the 64-bit form a widened 48-bit one: mapping between the widths is
+/// > deprecated, so an address keeps the width it was parsed at, and the two are never equal.
+/// > Why: `APPENDIX.md#mac-address-value-type`.
 ///
 /// Normalisation on parse: whitespace trimmed, hex lower-cased, separator rewritten to a colon, so
 /// the colon, hyphen, Cisco dot-quad (`0000.5e00.5300`) and bare-hex spellings of one address all

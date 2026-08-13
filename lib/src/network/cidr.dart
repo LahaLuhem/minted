@@ -18,9 +18,10 @@ import 'ip_address.dart';
 /// gets hand-rolled as a prefix match on the text, which reads `10.0.0.0/8` as covering `10.1.2.3`
 /// and `100.0.0.1` alike.
 ///
-/// **Host bits must be clear.** `192.168.1.5/24` is refused rather than quietly masked to
-/// `192.168.1.0/24`, because masking discards an address the caller wrote; the failure offers the
-/// block they most likely meant. Why: `APPENDIX.md#cidr-value-type`.
+/// > [!IMPORTANT]
+/// > **Host bits must be clear.** `192.168.1.5/24` is refused rather than quietly masked to
+/// > `192.168.1.0/24`, because masking discards an address the caller wrote; the failure offers
+/// > the block they most likely meant. Why: `APPENDIX.md#cidr-value-type`.
 ///
 /// Holds an [IpAddress] rather than slicing one back out of its own text, so the network address
 /// cannot be malformed and [contains] cannot be handed something that merely looks like an address.
