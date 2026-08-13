@@ -197,6 +197,17 @@ void main() {
   ); // has host bits set below the prefix; the network is "192.168.1.0/24"
   // #endregion
 
+  // `Port` is exactly a `Uint16`'s range, so that type owns the bound. The RFC 6335 band is read
+  // back rather than gated on, the way `MacAddress` reads its bits.
+  // #region port
+  final port = Port.tryFrom(8080)!;
+  print(port.value); // 8080
+  print(port.range); // PortRange.user
+  print(Port.tryFrom(443)!.range); // PortRange.system  (well-known)
+  print(Port.tryFrom(0)!.isWildcard); // true  (bind(0) asks the OS for a free port)
+  print(Port.tryFrom(65536)); // null (one past the 16-bit ceiling)
+  // #endregion
+
   // `Uint` and `NaturalNumber` are constraint types: a range over a number with no standard text
   // form, so they take `tryFrom(int)` and no `parse`. Zero is the one value they disagree on.
   // #region quantities

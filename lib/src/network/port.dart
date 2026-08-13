@@ -14,6 +14,8 @@ import '../quantities/uint16.dart';
 /// > Port `0` is accepted, and [isWildcard] says so: it names no destination.
 ///
 /// [value] is the numeric value; the string form is `value.toString()`.
+///
+/// {@example /example/minted_example.dart#port}
 extension type const Port._(int value) implements Uint16 {
   /// The [Port] with numeric [value], or `null` unless it is in `0`-`65535`.
   static Port? tryFrom(int value) => Uint16.tryFrom(value) == null ? null : ._(value);
