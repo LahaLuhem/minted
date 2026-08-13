@@ -38,12 +38,12 @@ final class GeoCoordinate {
 
   const new _(this.latitude, this.longitude);
 
-  // The only door that constructs, so every instance normalises alike. Negative zero has to go so
-  // the rendered forms agree: -0.0 equals 0.0 and hashes alike, but prints as "-0.0000". The snap
-  // runs inside it, because a tiny negative degree rounds to -0.0.
+  // The only door that constructs, so every instance normalises alike. A negative zero prints as
+  // "-0.0000" here, and the snap runs inside the clearing, because a tiny negative degree rounds
+  // to -0.0.
   factory _canonical(double latitude, double longitude) => GeoCoordinate._(
-    _positiveZeroed(_renderable(latitude)),
-    _positiveZeroed(_renderable(longitude == -_maxLongitude ? _maxLongitude : longitude)),
+    positiveZeroed(_renderable(latitude)),
+    positiveZeroed(_renderable(longitude == -_maxLongitude ? _maxLongitude : longitude)),
   );
 
   /// The coordinate at [latitude] and [longitude] decimal degrees, throwing [MintedFormatException]
@@ -101,9 +101,6 @@ final class GeoCoordinate {
 
   @override
   String toString() => 'GeoCoordinate(latitude: $latitude, longitude: $longitude)';
-
-  // -0.0 is the one double that is zero and still carries a sign, so it alone needs clearing.
-  static double _positiveZeroed(double degrees) => degrees.isNegative && degrees == 0 ? 0 : degrees;
 
   // Snapped to a value [iso6709] can spell exactly, so the canonical form always reads back as
   // itself. Identity above 1e-20 degrees. Why: `APPENDIX.md#geo-coordinate-value-type`.

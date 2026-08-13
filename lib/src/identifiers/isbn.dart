@@ -42,7 +42,7 @@ extension type const Isbn._(String value) {
 
   /// Parses [input] as an ISBN, reporting the [IsbnFailure] that says which check failed.
   static ParseOutcome<IsbnFailure, Isbn> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compactUpperCase(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_toIsbn13(compactInput)));
@@ -62,8 +62,6 @@ extension type const Isbn._(String value) {
   /// The legacy ten-character form (mod-11 check digit, `X` for ten), or `null` for a `979` ISBN,
   /// which never had one.
   String? get isbn10 => prefix != bookland978 ? null : '$body${mod11CheckCharacter(body)}';
-
-  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '').toUpperCase();
 
   static String _withCheckDigit(String twelveDigits) =>
       '$twelveDigits${gs1CheckDigit(twelveDigits)}';

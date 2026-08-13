@@ -1304,8 +1304,9 @@ types instead. The type's home should follow the domain, not the test.
 <a id="constraint-types"></a>
 ## Constraint types: a range, not a standard
 
-**A second category, not value types with a relaxed contract.** A constraint type is a range over a
-number: no checksum, no notation, no standard defining its text form.
+**A second category, not value types with a relaxed contract.** A constraint type is a number with a
+constraint on it and no standard defining its text form: no checksum, no notation. Usually a range;
+[`Percentage`](#percentage-constraint-type) constrains the unit instead.
 
 **The category is named, not derived from the directory.** `conformance_test.dart` lists them in
 `_constraintTypes`, because "is a constraint type" is not something the AST reveals the way `isEnum`

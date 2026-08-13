@@ -102,9 +102,10 @@ numeric building-block primitives under `numerics/` and cross-cutting internals 
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
 because `minted.dart` re-exports every type. `test/` mirrors this layout.
 
-**A *constraint type* is a range over a number with no standard text form**, so it declares
-`tryFrom(int)` and neither parse door. `quantities/` holds the ones that are only a range, but the
-category is not the directory: `Port` lives in `network/` because it belongs there by domain.
+**A *constraint type* is a constrained number with no standard text form**, so it declares `tryFrom`
+and neither parse door. Usually a range; `Percentage` constrains the *unit* instead and bounds
+nothing but finiteness. `quantities/` holds most of them, but the category is not the directory:
+`Port` lives in `network/` because it belongs there by domain.
 `conformance_test.dart` names them in `_constraintTypes`, since the AST cannot reveal the category;
 omitting a name makes the test demand parse doors rather than quietly relax. Rationale:
 [`APPENDIX.md#constraint-types`](../APPENDIX.md#constraint-types).

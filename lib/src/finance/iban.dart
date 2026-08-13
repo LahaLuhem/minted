@@ -26,7 +26,7 @@ extension type const Iban._(String value) {
   /// wrong BBAN length or charset). For assembling from a known-valid source.
   static Iban fromComponents({required String countryCode, required String bban}) {
     final upperCountry = countryCode.toUpperCase();
-    final compactBban = bban.replaceAll(whitespace, '').toUpperCase();
+    final compactBban = unspacedUpperCase(bban);
     final assembledIban = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
     final failure = _failureFor(assembledIban);
 
@@ -41,7 +41,7 @@ extension type const Iban._(String value) {
 
   /// Parses [input] as an IBAN, reporting the [IbanFailure] that says which check failed.
   static ParseOutcome<IbanFailure, Iban> parse(String input) {
-    final normalised = _normalise(input);
+    final normalised = unspacedUpperCase(input);
     final failure = _failureFor(normalised);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(normalised));
@@ -69,8 +69,6 @@ extension type const Iban._(String value) {
     (group) =>
         value.substring(group * _groupSize, math.min((group + 1) * _groupSize, value.length)),
   ).join(' ');
-
-  static String _normalise(String input) => input.replaceAll(whitespace, '').toUpperCase();
 
   // Why already-normalised input is not an IBAN, or null when it is one. The single gate tryParse,
   // parse, and fromComponents funnel through, so a diagnosis and an acceptance can't disagree.

@@ -38,7 +38,7 @@ extension type const Imei._(String value) {
 
   /// Parses [input] as an IMEI, reporting the [ImeiFailure] that says which check failed.
   static ParseOutcome<ImeiFailure, Imei> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compact(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(compactInput));
@@ -61,8 +61,6 @@ extension type const Imei._(String value) {
   String get formatted =>
       '$reportingBodyIdentifier-${value.substring(_reportingBodyLength, _tacLength)}'
       '-$serialNumber-${checkDigit.value}';
-
-  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
 

@@ -37,7 +37,7 @@ extension type const Isni._(String value) {
 
   /// Parses [input] as an ISNI, reporting the [IsniFailure] that says which check failed.
   static ParseOutcome<IsniFailure, Isni> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compactUpperCase(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(compactInput));
@@ -60,8 +60,6 @@ extension type const Isni._(String value) {
   // zero-padded strings order the same way the numbers do.
   bool get isInOrcidBlock =>
       value.compareTo(_orcidBlockStart) >= 0 && value.compareTo(_orcidBlockEnd) <= 0;
-
-  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '').toUpperCase();
 
   // Why already-compacted input is not an ISNI, or null when it is one. The single gate parse and
   // fromBody funnel through; widest check first, so the earliest wrong thing is named.
