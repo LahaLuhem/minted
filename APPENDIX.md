@@ -41,6 +41,7 @@ anchor, and keep anchors stable across renames.
 - [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
 - [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
+- [DnsName: permissive, but not infinitely so](#dns-name-value-type)
 - [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
 - [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
 - [Port: a domain that borrows a width](#port-value-type)
@@ -1126,8 +1127,8 @@ for free, being ordinary letters, digits and hyphens. Same call as
 selectors and SRV records exist and work. Those are not hostnames, and a type that accepted them
 could not promise its value is usable wherever a host is expected. So the underscore is refused, and
 because that refusal will surprise people, the failure says `an underscore makes this a DNS name,
-not a hostname` rather than lumping it in with a stray character. The permissive counterpart is its
-own issue rather than a flag on this one.
+not a hostname` rather than lumping it in with a stray character. The permissive counterpart shipped
+as [`DnsName`](#dns-name-value-type), a second type rather than a flag on this one.
 
 **Never an address.** RFC 1123 §2.1 settles what looks like an open question: "a valid host name can
 never have the dotted-decimal form #.#.#.#, since at least the highest-level component label will be
@@ -1159,6 +1160,47 @@ miscount.
 `a..b.com`, `999.999.999.999` and a 64-character label, and percent-encodes `bücher.example` into
 `b%C3%BCcher.example`, which is not what DNS wants. It case-folds and little else, which is the gap
 this type fills.
+
+---
+
+<a id="dns-name-value-type"></a>
+## DnsName: permissive, but not infinitely so
+
+**RFC 2181 §11 licenses the charset restriction rather than forbidding it.** It says the DNS imposes
+only length limits, and that applications using DNS data may add constraints suited to their
+purposes. Picking a charset is therefore the clause the standard provides, not a defiance of it. The
+invention would be claiming an RFC *requires* the charset.
+
+**Literal any-octet was rejected on the representation, not on taste.** A Dart `String` is UTF-16,
+so a type over one cannot honestly promise RFC 2181's octet freedom: it would advertise a
+conformance the representation cannot hold, the same objection that made
+[`Hostname`](#hostname-value-type) refuse to fake an A-label. It could not safely lower-case either.
+
+**Leading-underscore-only was the tempting middle, and it invents a prohibition.** RFC 8552 §1.1
+says an underscored node name begins with an underscore and stops there: it never defines what may
+follow, nor rules one out elsewhere in a label. Turning "the convention puts one here" into "one
+anywhere else is an error" would make the *permissive* type refuse `a_b.example.com`, which occurs.
+So the charset is LDH plus underscore, and `isUnderscored` **reports** an RFC 8552 attribute leaf
+rather than gating on one, the way [`Port`](#port-value-type) reports its range.
+
+**Two rules are dropped, not relaxed.** RFC 1123's hyphen-edge and all-numeric-label rules are about
+*host names* and RFC 2181 has neither, so `-bad.example.com` and `192.168.1.1` both parse here.
+Worth stating precisely, because the numeric rule only ever inspected the **last** label:
+`4.3.2.1.in-addr.arpa` was always a valid `Hostname`, `arpa` being alphabetic. Reverse DNS never
+needed this type; underscored names did.
+
+**Case-folding survives because the charset is bounded.** RFC 1035 §2.3.3 makes DNS comparison
+case-insensitive, so lower-casing matches `Hostname`. On arbitrary octets "lower-case" has no single
+meaning, which is the second argument for bounding the charset.
+
+**The conversion is asymmetric, and both directions live here.** `fromHostname` is total and
+constructs directly, its input being already normalised and strictly inside these rules;
+`tryToHostname` is a parse. Both sit on `DnsName` because `Hostname` shipped first and stays unaware
+of it, the same call [`Probability`](#probability-constraint-type) made about `Percentage`.
+
+**The shared DNS rules moved to `shared/standards/dns_names.dart`** when this type landed. The
+63/253 limits, the root-dot fold and the ASCII gate were about to exist twice, and the strict and
+permissive types drifting on a limit is the failure that file guards against.
 
 ---
 

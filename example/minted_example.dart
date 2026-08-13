@@ -183,6 +183,17 @@ void main() {
   ); // an underscore makes this a DNS name, not a hostname
   // #endregion
 
+  // `DnsName` is that permissive counterpart: RFC 2181 drops the charset rule, which is why DKIM,
+  // DMARC, ACME and SRV names exist and why `Hostname` cannot hold one.
+  // #region dnsname
+  final dmarc = DnsName.tryParse('_DMARC.Example.COM.')!;
+  print(dmarc.value); // _dmarc.example.com  (same normalisation Hostname applies)
+  print(dmarc.isUnderscored); // true (an RFC 8552 attribute leaf, reported not gated)
+  print(DnsName.tryParse('-bad.example.com')?.value); // -bad.example.com, legal DNS if not a host
+  print(dmarc.tryToHostname()); // null: narrowing is a parse, and this one fails it
+  print(DnsName.fromHostname(host).value); // www.example.com, and widening never fails
+  // #endregion
+
   // `IpAddress` canonicalises per RFC 5952, so the four spellings of one v6 address stop being four
   // map keys. `InternetAddress` cannot do this job: it is `dart:io`, so it is absent on the web.
   // #region ipaddress
