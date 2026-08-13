@@ -18,6 +18,7 @@
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
+- Bump to Dart 3.13 + add verifiable dartdoc examples for every type, with a CI gate
 
 ## [1.0.0] - 2026-08-09
 ### Changed
