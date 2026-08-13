@@ -47,6 +47,28 @@ void main() {
       check(Date(2024, 2, 29).iso8601).equals('2024-02-29');
     });
 
+    scenario('Date.of builds the same value as the unnamed factory, defaults included', () {
+      check(Date.of(2026, 7, 7)).equals(Date(2026, 7, 7));
+      check(Date.of(2026)).equals(Date(2026));
+      check(Date.of(2026, 7)).equals(Date(2026, 7));
+      check(Date.of(2024, 2, 29).iso8601).equals('2024-02-29');
+    });
+
+    scenario('Date.of reports the same failure the unnamed factory does', () {
+      check(() => Date.of(10000))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateYearOutOfRange(10000));
+      check(() => Date.of(2026, 13))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateMonthOutOfRange(13));
+      check(() => Date.of(2026, 2, 29))
+          .throws<MintedFormatException>()
+          .has((error) => error.failure, 'failure')
+          .equals(const DateDayOutOfRange(year: 2026, month: 2, day: 29, maxDay: 28));
+    });
+
     scenario('the factory rejects impossible dates instead of rolling them over', () {
       // DateTime rolls an out-of-range month over into the next year; Date refuses it.
       check(DateTime(2026, 13).year).equals(2027);

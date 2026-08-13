@@ -212,7 +212,8 @@ date.weekday;      // Weekday.tuesday   (.value is 2, matching DateTime.weekday)
 date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
 date.addDays(30);  // Date(2026-08-06)   (throws past the 0000-9999 bound)
 date.tryAddDays(3000000); // null        (the same walk, without the throw)
-date < Date(2027); // true   (Date(2027) is 2027-01-01)
+date < Date.of(2027); // true   (Date.of(2027) is 2027-01-01)
+Date.of(2026, 7, 7);  // the same day from its parts; Date(2026, 7, 7) is the older spelling
 Date.now();        // today in the local zone, the date-only DateTime.now()
 
 // Weekday: seven named days, so a switch over one needs no default arm:
@@ -227,7 +228,7 @@ Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-
 // length until anchored, so toDuration asks for the date:
 final span = Iso8601Duration.tryParse('P1Y2M3DT4H')!;
 span.months;                                       // 2
-span.toDuration(from: Date(2026, 1, 31));          // 427 days and 4 hours
+span.toDuration(from: Date.of(2026, 1, 31));       // 427 days and 4 hours
 Iso8601Duration.tryParse('PT1M')!.iso8601;         // 'PT1M'   (a minute; P1M is a month)
 Iso8601Duration.tryParse('P1Y2W');                 // null: the week form never mixes
 

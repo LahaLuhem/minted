@@ -14,8 +14,8 @@ import 'weekday.dart';
 /// the value never had, which is where bugs creep in
 /// (two "equal" dates comparing unequal over a stray time, or a day sliding across a zone boundary).
 ///
-/// Parse, don't validate: a [Date] exists only if it is a real calendar date. [parse] and the [Date]
-/// factory reject impossible dates (month 13, 30 February, 29 February in a common year) instead of
+/// Parse, don't validate: a [Date] exists only if it is a real calendar date. [parse] and [Date.of]
+/// reject impossible dates (month 13, 30 February, 29 February in a common year) instead of
 /// rolling them over the way [DateTime] does, so any [Date] you hold names a day that genuinely exists.
 /// The canonical form is ISO 8601 `YYYY-MM-DD` ([iso8601]); [year] is held in `0000`-`9999`.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
@@ -35,16 +35,21 @@ final class Date implements Comparable<Date> {
   /// The day of the month, `1` to the last day of [month] (leap-year aware).
   final int day;
 
+  /// The [Date] for [year], [month] and [day]. Identical to [Date.of], which is the spelling to
+  /// reach for: a factory constructor must return its own type, so only the named form can carry a
+  /// richer return type later.
+  factory(int year, [int month = 1, int day = 1]) => Date.of(year, month, day);
+
+  const new _(this.year, this.month, this.day);
+
   /// The [Date] for [year] (`0000`-`9999`), [month] (`1`-`12`), and [day] (bounded by the month),
   /// throwing [MintedFormatException] on an impossible date.
   ///
-  /// Unlike [DateTime], out-of-range parts are rejected, not rolled over: `Date(2026, 13, 1)` throws
-  /// rather than silently becoming 2027-01-01.
-  factory(int year, [int month = 1, int day = 1]) =>
+  /// Unlike [DateTime], out-of-range parts are rejected, not rolled over: `Date.of(2026, 13, 1)`
+  /// throws rather than silently becoming 2027-01-01.
+  factory of(int year, [int month = 1, int day = 1]) =>
       _tryFromParts(year, month, day) ??
       (throw MintedFormatException.from(_partsFailure(year, month, day), '$year-$month-$day'));
-
-  const new _(this.year, this.month, this.day);
 
   /// The calendar date of [dateTime], dropping its time-of-day and time zone.
   ///
