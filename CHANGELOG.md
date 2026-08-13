@@ -16,6 +16,7 @@
 - Cidr (RFC 4632: host bits refused, contains masks bits not text)
 - \[#34\] Add Uint, NaturalNumber and the fixed-width Uint2 to Uint32 constraint types
 - \[#33\] Add Port, a 0-65535 port number
+- Add Iso8601Duration, an ISO 8601 duration with months and years
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
