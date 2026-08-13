@@ -153,7 +153,7 @@ Rationale: [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-fro
 
     /// The value, or the [IbanFailure] saying which check it failed. Never throws.
     static ParseOutcome<IbanFailure, Iban> parse(String input) {
-      final normalised = _normalise(input);
+      final normalised = unspacedUpperCase(input);
       final failure = _failureFor(normalised);
 
       return failure != null ? ParseFailure(failure) : ParseSuccess(._(normalised));
@@ -258,8 +258,9 @@ not numbers:
 
 > A numeric type gets a `parse(String)` door only where a **standard** defines its text form.
 
-`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A range over a number (`Uint`, `Port`) has
-no such standard, so a parse door would invent one. They declare `tryFrom(int)` and neither parse
+`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A constrained number has no such
+standard, so a parse door would invent one, whether the constraint is a range (`Uint`, `Port`) or a
+unit (`Percentage`, which bounds nothing but finiteness). They declare `tryFrom` and neither parse
 door, and `conformance_test.dart` names them in `_constraintTypes`. One invariant each leaves
 nothing a failure could say that `null` doesn't, so they carry none. A type still files by domain:
 `Port` sits in `network/`, not `quantities/`. Rationale:

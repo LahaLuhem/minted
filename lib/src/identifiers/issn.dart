@@ -40,7 +40,7 @@ extension type const Issn._(String value) {
 
   /// Parses [input] as an ISSN, reporting the [IssnFailure] that says which check failed.
   static ParseOutcome<IssnFailure, Issn> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compactUpperCase(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_hyphenated(compactInput)));
@@ -52,8 +52,6 @@ extension type const Issn._(String value) {
   /// The final character, the mod-11 check over the other seven. A `String` rather than a `Digit`,
   /// because ISO 3297 spells the value ten as `X`.
   String get checkCharacter => value.substring(_checkCharacterIndex);
-
-  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '').toUpperCase();
 
   // ISO 3297 fixes the hyphen after the fourth character, so it carries no information and is
   // reinserted rather than stored through parsing.

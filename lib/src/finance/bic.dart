@@ -28,7 +28,7 @@ extension type const Bic._(String value) {
     required String locationCode,
     String branchCode = _primaryOfficeBranch,
   }) {
-    final assembledBic = _compact('$institutionCode$countryCode$locationCode$branchCode');
+    final assembledBic = unspacedUpperCase('$institutionCode$countryCode$locationCode$branchCode');
     final failure = _failureFor(assembledBic);
 
     return failure != null
@@ -44,7 +44,7 @@ extension type const Bic._(String value) {
 
   /// Parses [input] as a BIC, reporting the [BicFailure] that says which check failed.
   static ParseOutcome<BicFailure, Bic> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = unspacedUpperCase(input);
     final failure = _failureFor(compactInput);
 
     return failure != null
@@ -75,8 +75,6 @@ extension type const Bic._(String value) {
   /// Whether SWIFT could have issued this one. ISO 9362 allows digits in [institutionCode] and
   /// puts no restriction on [locationCode]; the registration authority still uses neither freedom.
   bool get isSwiftRegistrable => _swiftRegistrationForm.hasMatch(value);
-
-  static String _compact(String input) => input.replaceAll(whitespace, '').toUpperCase();
 
   // The eight-character form addresses the primary office, which is what XXX spells at eleven.
   static String _withPrimaryOffice(String compactInput) =>

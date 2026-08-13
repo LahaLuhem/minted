@@ -42,7 +42,7 @@ extension type const Gtin._(String value) {
 
   /// Parses [input] as a GTIN, reporting the [GtinFailure] that says which check failed.
   static ParseOutcome<GtinFailure, Gtin> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compact(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_toGtin14(compactInput)));
@@ -70,8 +70,6 @@ extension type const Gtin._(String value) {
   String? _atLength(int length) => value.substring(0, _length14 - length).contains(_nonZeroDigit)
       ? null
       : value.substring(_length14 - length);
-
-  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${gs1CheckDigit(bodyDigits)}';
 

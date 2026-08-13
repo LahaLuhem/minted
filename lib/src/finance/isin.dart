@@ -30,7 +30,7 @@ extension type const Isin._(String value) {
   /// digit. Throws [MintedFormatException] when the parts don't form a valid ISIN.
   // Both parts are alphanumeric, so they stay `String` where a digits-only part would be `Digits`.
   static Isin fromComponents({required String prefix, required String nsin}) {
-    final assembledIsin = _withCheckDigit(_compact('$prefix$nsin'));
+    final assembledIsin = _withCheckDigit(unspacedUpperCase('$prefix$nsin'));
     final failure = _failureFor(assembledIsin);
 
     return failure != null
@@ -44,7 +44,7 @@ extension type const Isin._(String value) {
 
   /// Parses [input] as an ISIN, reporting the [IsinFailure] that says which check failed.
   static ParseOutcome<IsinFailure, Isin> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = unspacedUpperCase(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(compactInput));
@@ -64,8 +64,6 @@ extension type const Isin._(String value) {
   /// The final digit, the Luhn check over the expanded number.
   // The last character of a validated ISIN is always a digit, so tryParse cannot return null.
   Digit get checkDigit => .tryParse(value[_checkDigitIndex])!;
-
-  static String _compact(String input) => input.replaceAll(whitespace, '').toUpperCase();
 
   static String _withCheckDigit(String body) =>
       '$body${luhnCheckDigit(expandedAlphanumerics(body))}';

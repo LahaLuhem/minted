@@ -53,7 +53,7 @@ final class PaymentCardNumber {
   /// Parses [input] as a payment card number, reporting the [PaymentCardNumberFailure] that says
   /// which check failed.
   static ParseOutcome<PaymentCardNumberFailure, PaymentCardNumber> parse(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compact(input);
     final failure = _failureFor(compactInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(compactInput));
@@ -65,7 +65,7 @@ final class PaymentCardNumber {
   /// Empty until enough digits arrive to place a range, and empty for a prefix no listed scheme
   /// claims. Two entries where a range is genuinely co-branded.
   static Set<CardScheme> cardSchemesOf(String input) {
-    final compactInput = _compact(input);
+    final compactInput = compact(input);
 
     return Set.unmodifiable(
       _schemeRanges
@@ -118,8 +118,6 @@ final class PaymentCardNumber {
 
   @override
   String toString() => 'PaymentCardNumber($masked)';
-
-  static String _compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
 

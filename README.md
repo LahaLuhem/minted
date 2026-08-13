@@ -373,6 +373,16 @@ Uint8.tryFrom(255)?.value;  // 255
 Uint8.tryFrom(256);         // null (refused, not truncated to 0)
 void setNibble(Uint4 field) {}
 setNibble(Uint8.tryFrom(200)!);   // compile error: a Uint8 is not a Uint4
+
+// Percentage bounds nothing and names the unit instead, so the door you pick says what you hold:
+final discount = Percentage.tryFrom(15)!;
+discount.value;      // 15.0   (the percent, and the canonical form)
+discount.fraction;   // 0.15   (the same proportion, said the other way)
+discount.of(200);    // 30.0
+
+Percentage.tryFromFraction(0.29)!.value;  // 29.0, where 0.29 * 100 gives 28.999999999999996
+Percentage.tryFrom(-12);                  // fine: churn is a real percentage
+Percentage.tryFrom(double.nan);           // null, and finiteness is the only thing it refuses
 ```
 
 </details>
@@ -470,6 +480,13 @@ shape that type-checks: with a `Uint.w8(200)` every result is still a `Uint`, so
 landing in a nibble slot. There is no `Uint64`, since Dart ints are JS doubles on the web and the
 honest ceiling is 2^53-1. And a width is not a domain: a port and an IPv6 hextet are both `0`-`65535`,
 so each stays its own named type rather than an alias for `Uint16`.
+
+`Percentage` is unbounded on purpose, since 250% growth and -12% churn are real values a `0`-`100`
+bound would refuse. That leaves finiteness as its only invariant, which makes "just a double with a
+label" a fair question; the label is the point, because `15` and `0.15` are both plausible readings
+of the same proportion and neither is checkable at a call site. `.value` holds the percent rather
+than the fraction for an arithmetic reason: `29 / 100` is exactly `0.29`, where `0.29 * 100` is
+`28.999999999999996`, so storing the percent is what makes an ordinary percentage render cleanly.
 
 </details>
 

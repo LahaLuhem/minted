@@ -1,3 +1,5 @@
+import '../shared/normalisation.dart';
+
 /// A proportion in hundredths, where `15` is fifteen percent.
 ///
 /// `15` or `0.15` for the same proportion is the bug this deletes: both readings are plausible and
@@ -14,7 +16,7 @@
 extension type const Percentage._(double value) {
   /// The [Percentage] of [percent] hundredths (`15` is fifteen percent), or `null` unless finite.
   static Percentage? tryFrom(num percent) =>
-      percent.isFinite ? ._(_positiveZeroed(percent.toDouble())) : null;
+      percent.isFinite ? ._(positiveZeroed(percent.toDouble())) : null;
 
   /// The [Percentage] equal to [fraction] of the whole (`0.15` is fifteen percent), or `null`
   /// unless finite.
@@ -34,9 +36,6 @@ extension type const Percentage._(double value) {
 
     return double.parse('${mantissa}e${int.parse(exponent) + _percentDecimalShift}');
   }
-
-  // -0.0 equals 0.0 and hashes alike, so only the rendered form needs the sign cleared.
-  static double _positiveZeroed(double percent) => percent.isNegative && percent == 0 ? 0 : percent;
 
   static const _percentPerWhole = 100;
   static const _percentDecimalShift = 2;
