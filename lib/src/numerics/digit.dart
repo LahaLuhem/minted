@@ -19,10 +19,12 @@ import 'failures/digit_failure.dart';
 extension type const Digit._(int value) {
   /// Parses [input] as a single decimal digit, or returns `null` unless it is
   /// exactly one character in `0`-`9`.
+  @Deprecated('Decode the text yourself, then use Digit.tryFrom. Removed in 2.0.0 (#44).')
   static Digit? tryParse(String input) => parse(input).getOrNull();
 
   /// Parses [input] as a single decimal digit, reporting [DigitFailure] unless
   /// it is exactly one character in `0`-`9`.
+  @Deprecated('Decode the text yourself, then use Digit.tryFrom. Removed in 2.0.0 (#44).')
   static ParseOutcome<DigitFailure, Digit> parse(String input) {
     final parsedValue = input.length != 1 ? null : int.tryParse(input);
     final parsedDigit = parsedValue == null ? null : tryFrom(parsedValue);
@@ -37,6 +39,7 @@ extension type const Digit._(int value) {
 
   /// The [Digit] with numeric [value], throwing [MintedFormatException] unless
   /// it is in `0`-`9`.
+  @Deprecated('Use Digit.tryFrom. Removed in 2.0.0 (#44).')
   static Digit from(int value) =>
       tryFrom(value) ?? (throw MintedFormatException.from(DigitFailure.notADigit, '$value'));
 

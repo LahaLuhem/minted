@@ -38,8 +38,8 @@ void main() {
   final date = Date.tryParse('2026-07-07')!;
   print(date.iso8601); // 2026-07-07
   print(date.month.daysIn(2026)); // 31  (the month is a Month, and knows its length)
-  print(date.addDays(30)); // Date(2026-08-06)
-  print(date.isBefore(Date(2027))); // true
+  print(date.tryAddDays(30)); // Date(2026-08-06)  (null past the 0000-9999 bound)
+  print(date.isBefore(Date.of(2027))); // true
   print(Date.tryParse('2026-13-01')); // null (no 13th month)
   // #endregion
 
@@ -48,8 +48,8 @@ void main() {
   final span = Iso8601Duration.tryParse('P1Y2M3DT4H')!;
   print(span.iso8601); // P1Y2M3DT4H
   print(span.months); // 2
-  print(span.toDuration(from: Date(2026, 1, 31))); // 10252:00:00.000000  (427 days and 4 hours)
-  print(Iso8601Duration.tryParse('P1M')!.toDuration(from: Date(2026, 2))); // 672:00:00 (28 days)
+  print(span.toDuration(from: Date.of(2026, 1, 31))); // 10252:00:00.000000  (427 days and 4 hours)
+  print(Iso8601Duration.tryParse('P1M')!.toDuration(from: Date.of(2026, 2))); // 672:00:00 (28 days)
   print(Iso8601Duration.tryParse('PT1M')!.iso8601); // PT1M  (a minute; P1M is a month)
   print(Iso8601Duration.parse('P1Y2W').reasonOrNull?.message);
   // the week form PnW cannot carry a "Y" component too

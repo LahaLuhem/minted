@@ -33,6 +33,7 @@ extension type const Month._(int value) {
       value >= january.value && value <= december.value ? ._(value) : null;
 
   /// The [Month] with number [value], throwing [MintedFormatException] unless it is in `1`-`12`.
+  @Deprecated('Use Month.tryFrom. Removed in 2.0.0 (#44).')
   static Month from(int value) =>
       tryFrom(value) ?? (throw MintedFormatException.from(MonthFailure.notAMonth, '$value'));
 

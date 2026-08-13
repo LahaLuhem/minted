@@ -38,6 +38,7 @@ final class Date implements Comparable<Date> {
   /// The [Date] for [year], [month] and [day]. Identical to [Date.of], which is the spelling to
   /// reach for: a factory constructor must return its own type, so only the named form can carry a
   /// richer return type later.
+  @Deprecated('Use Date.of. Removed in 2.0.0 (#44).')
   factory(int year, [int month = 1, int day = 1]) => Date.of(year, month, day);
 
   const new _(this.year, this.month, this.day);
@@ -55,7 +56,7 @@ final class Date implements Comparable<Date> {
   ///
   /// Throws [MintedFormatException] only when [dateTime]'s year falls outside `0000`-`9999`
   /// (an extreme [DateTime] can reach beyond it).
-  factory fromDateTime(DateTime dateTime) => Date(dateTime.year, dateTime.month, dateTime.day);
+  factory fromDateTime(DateTime dateTime) => Date.of(dateTime.year, dateTime.month, dateTime.day);
 
   /// Today's date in the local time zone, the date-only sibling of [DateTime.now]. For the UTC day,
   /// use `Date.fromDateTime(DateTime.now().toUtc())`.
@@ -83,7 +84,8 @@ final class Date implements Comparable<Date> {
   String get iso8601 => isoDate(year, month.value, day);
 
   /// The day of the week; [Weekday.value] is the ISO day number, matching [DateTime.weekday].
-  Weekday get weekday => Weekday.from(_utcMidnight.weekday);
+  // DateTime.weekday is always 1-7, so tryFrom cannot return null here.
+  Weekday get weekday => Weekday.tryFrom(_utcMidnight.weekday)!;
 
   /// This date as a [DateTime] at local midnight.
   ///
@@ -101,6 +103,7 @@ final class Date implements Comparable<Date> {
   /// The date [days] days after this one (pass a negative [days] to go back), throwing
   /// [MintedFormatException] when the result leaves `0000`-`9999`. Use [tryAddDays] when [days]
   /// could cross that bound.
+  @Deprecated('Use Date.tryAddDays. Removed in 2.0.0 (#44).')
   Date addDays(int days) => Date.fromDateTime(_utcMidnight.add(Duration(days: days)));
 
   /// The date [days] days before this one, or `null` when the result leaves `0000`-`9999`.
@@ -108,6 +111,7 @@ final class Date implements Comparable<Date> {
 
   /// The date [days] days before this one, throwing [MintedFormatException] when the result leaves
   /// `0000`-`9999`. Use [trySubtractDays] when [days] could cross that bound.
+  @Deprecated('Use Date.trySubtractDays. Removed in 2.0.0 (#44).')
   Date subtractDays(int days) => addDays(-days);
 
   /// The whole number of days from [other] to this date (`this - other`), negative when this

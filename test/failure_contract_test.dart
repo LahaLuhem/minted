@@ -2,6 +2,10 @@
 // the twin identical to the original, so `==` would ride on identity instead of doing any work.
 // ignore_for_file: prefer_const_constructors
 
+// These doors are deprecated for removal in 2.0.0 but still ship in 1.x, so their tests
+// stay until they go; see #44.
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 

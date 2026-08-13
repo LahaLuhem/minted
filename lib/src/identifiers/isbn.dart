@@ -5,6 +5,7 @@ import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/check_digits/mod11_check_character.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
@@ -57,7 +58,7 @@ extension type const Isbn._(String value) {
 
   /// The final digit, the GS1 mod-10 check over the other twelve.
   // The last character of a validated ISBN-13 is always a digit, so tryParse cannot return null.
-  Digit get checkDigit => .tryParse(value[_checkDigitIndex])!;
+  Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
   /// The legacy ten-character form (mod-11 check digit, `X` for ten), or `null` for a `979` ISBN,
   /// which never had one.

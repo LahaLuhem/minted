@@ -47,6 +47,7 @@ enum Weekday implements Comparable<Weekday> {
 
   /// The [Weekday] with ISO day number [value], throwing [MintedFormatException] unless it is in
   /// `1`-`7`.
+  @Deprecated('Use Weekday.tryFrom. Removed in 2.0.0 (#44).')
   static Weekday from(int value) =>
       tryFrom(value) ?? (throw MintedFormatException.from(WeekdayFailure.notAWeekday, '$value'));
 

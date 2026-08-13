@@ -4,6 +4,7 @@
 import '../numerics/digit.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/encoding/alphanumeric_values.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
@@ -63,7 +64,7 @@ extension type const Isin._(String value) {
 
   /// The final digit, the Luhn check over the expanded number.
   // The last character of a validated ISIN is always a digit, so tryParse cannot return null.
-  Digit get checkDigit => .tryParse(value[_checkDigitIndex])!;
+  Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
   static String _withCheckDigit(String body) =>
       '$body${luhnCheckDigit(expandedAlphanumerics(body))}';

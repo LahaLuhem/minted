@@ -4,6 +4,7 @@
 import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
+import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
@@ -63,7 +64,7 @@ extension type const Gtin._(String value) {
 
   /// The final digit, the GS1 mod-10 check over the other thirteen.
   // The last character of a validated GTIN is always a digit, so tryParse cannot return null.
-  Digit get checkDigit => .tryParse(value[_checkDigitIndex])!;
+  Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
   // The same number spelled at [length], or null when dropping the leading digits would lose a
   // significant one.
