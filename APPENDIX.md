@@ -88,10 +88,11 @@ fix, which neither Dart stable nor a pinned literal promises once it drifts from
 is written on.
 
 **Elsewhere the newer SDK is the point.** Those jobs run Dart stable, which is what
-[`pubspec.yaml`](../pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on. The known cost is that the analyzer
-is version-sensitive too, so a Dart-stable-only diagnostic would be fixed slightly blind; explicit
-rules in [`analysis_options.yaml`](../analysis_options.yaml) stop new lints switching themselves on,
-and if it ever stops being tolerable the format job's recipe moves into the composite.
+[`pubspec.yaml`](../pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on.
+The known cost is that the analyzer is version-sensitive too, so a Dart-stable-only diagnostic would
+be fixed slightly blind; explicit rules in [`analysis_options.yaml`](../analysis_options.yaml) stop
+new lints switching themselves on, and if it ever stops being tolerable the format job's recipe moves
+into the composite.
 
 **Installing Flutter contradicts [the section above](#pure-dart-not-flutter) only in appearance:**
 that rule governs the package's dependencies, this is the toolchain. Nothing under `lib/` imports
