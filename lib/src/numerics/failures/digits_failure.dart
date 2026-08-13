@@ -9,7 +9,7 @@ enum DigitsFailure implements MintedFailure {
   /// Something in the input is not a decimal digit `0`-`9`.
   notAllDigits('not all decimal digits 0-9');
 
-  const DigitsFailure(this.message);
+  new(this.message);
 
   @override
   final String message;

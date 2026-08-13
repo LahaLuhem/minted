@@ -10,7 +10,7 @@ import '../../shared/minted_failure.dart';
 /// number back. Two remedies: [DateNotIso8601] means fix the format, the rest mean fix a number.
 @immutable
 sealed class DateFailure implements MintedFailure {
-  const DateFailure();
+  const new();
 
   @override
   String get typeName => 'Date';
@@ -19,7 +19,7 @@ sealed class DateFailure implements MintedFailure {
 /// The text is not the ISO 8601 `YYYY-MM-DD` shape.
 final class DateNotIso8601 extends DateFailure {
   /// Creates the failure.
-  const DateNotIso8601();
+  const new();
 
   @override
   String get message => 'not an ISO 8601 YYYY-MM-DD calendar date';
@@ -40,7 +40,7 @@ final class DateYearOutOfRange extends DateFailure {
   final int year;
 
   /// Creates the failure.
-  const DateYearOutOfRange(this.year);
+  const new(this.year);
 
   @override
   String get message => 'year $year is outside 0000-9999';
@@ -61,7 +61,7 @@ final class DateMonthOutOfRange extends DateFailure {
   final int month;
 
   /// Creates the failure.
-  const DateMonthOutOfRange(this.month);
+  const new(this.month);
 
   @override
   String get message => 'month $month is outside 1-12';
@@ -92,7 +92,7 @@ final class DateDayOutOfRange extends DateFailure {
   final int maxDay;
 
   /// Creates the failure.
-  const DateDayOutOfRange({
+  const new({
     required this.year,
     required this.month,
     required this.day,

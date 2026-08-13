@@ -9,7 +9,7 @@ enum EmailFailure implements MintedFailure {
   /// The input is not a well-formed RFC 5322 address.
   malformed('not a well-formed email address');
 
-  const EmailFailure(this.message);
+  new(this.message);
 
   @override
   final String message;

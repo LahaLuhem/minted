@@ -12,7 +12,7 @@ import '../../shared/minted_failure.dart';
 /// are only the shape and the country registry to fail against.
 @immutable
 sealed class BicFailure implements MintedFailure {
-  const BicFailure();
+  const new();
 
   @override
   String get typeName => 'Bic';
@@ -24,7 +24,7 @@ final class BicWrongLength extends BicFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const BicWrongLength(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected 8 or 11 characters, got $actualLength';
@@ -42,7 +42,7 @@ final class BicWrongLength extends BicFailure {
 /// Something outside `A`-`Z` and `0`-`9` survived normalisation (whitespace is stripped first).
 final class BicInvalidCharacters extends BicFailure {
   /// Creates the failure.
-  const BicInvalidCharacters();
+  const new();
 
   @override
   String get message => 'contains characters outside A-Z and 0-9';
@@ -64,7 +64,7 @@ final class BicUnknownCountry extends BicFailure {
   final String countryCode;
 
   /// Creates the failure.
-  const BicUnknownCountry(this.countryCode);
+  const new(this.countryCode);
 
   @override
   String get message => '"$countryCode" is not a recognised country code';

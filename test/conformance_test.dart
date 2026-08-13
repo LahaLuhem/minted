@@ -111,7 +111,7 @@ const _contractDoors = {'parse', 'tryParse'};
 
 /// A value type discovered in a source file and the spine members it declares.
 class _ValueType {
-  _ValueType(
+  new(
     this.name, {
     required this.isExtensionType,
     required this.isEnum,

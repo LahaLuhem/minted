@@ -11,7 +11,7 @@ import '../../shared/minted_failure.dart';
 /// Three variants: ISO 27729 fixes a length, a charset, and a check character.
 @immutable
 sealed class IsniFailure implements MintedFailure {
-  const IsniFailure();
+  const new();
 
   @override
   String get typeName => 'Isni';
@@ -23,7 +23,7 @@ final class IsniWrongLength extends IsniFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const IsniWrongLength(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected 16 characters, got $actualLength';
@@ -42,7 +42,7 @@ final class IsniWrongLength extends IsniFailure {
 /// it stands for the value ten.
 final class IsniInvalidCharacters extends IsniFailure {
   /// Creates the failure.
-  const IsniInvalidCharacters();
+  const new();
 
   @override
   String get message => 'contains characters outside 0-9 (X only as the check character)';
@@ -60,7 +60,7 @@ final class IsniInvalidCharacters extends IsniFailure {
 /// The check character disagrees with the rest: a character is mistyped or transposed.
 final class IsniChecksumFailed extends IsniFailure {
   /// Creates the failure.
-  const IsniChecksumFailed();
+  const new();
 
   @override
   String get message => 'failed the ISO 7064 MOD 11-2 check';

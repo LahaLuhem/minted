@@ -11,13 +11,13 @@ class MintedFormatException extends FormatException {
   /// specific cause; [message] is the same thing rendered.
   final MintedFailure failure;
 
-  const MintedFormatException._(this.failure, super.message, super.source);
+  const new _(this.failure, super.message, super.source);
 
   /// Builds the exception a value type throws on invalid input, rendering [failure] into a
   /// `Invalid <typeName>: <message>` [message] over the offending [source].
   ///
   /// [source] is optional because `ParseOutcome.getOrThrow` has the failure but not the text that
   /// produced it; the typed [failure] and the message stand on their own without it.
-  factory MintedFormatException.from(MintedFailure failure, [String? source]) =>
+  factory from(MintedFailure failure, [String? source]) =>
       MintedFormatException._(failure, 'Invalid ${failure.typeName}: ${failure.message}', source);
 }

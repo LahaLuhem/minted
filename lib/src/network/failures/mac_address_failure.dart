@@ -12,7 +12,7 @@ import '../../shared/minted_failure.dart';
 /// no reserved address, so nothing else can fail.
 @immutable
 sealed class MacAddressFailure implements MintedFailure {
-  const MacAddressFailure();
+  const new();
 
   @override
   String get typeName => 'MacAddress';
@@ -21,7 +21,7 @@ sealed class MacAddressFailure implements MintedFailure {
 /// The text is none of the four accepted notations, or mixes two of them.
 final class MacAddressMalformed extends MacAddressFailure {
   /// Creates the failure.
-  const MacAddressMalformed();
+  const new();
 
   @override
   String get message => 'not a colon, hyphen, dot-quad or bare-hex MAC address';
@@ -43,7 +43,7 @@ final class MacAddressWrongOctetCount extends MacAddressFailure {
   final int actual;
 
   /// Creates the failure.
-  const MacAddressWrongOctetCount(this.actual);
+  const new(this.actual);
 
   @override
   String get message => 'expected 6 or 8 octets, got $actual';

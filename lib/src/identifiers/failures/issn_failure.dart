@@ -11,7 +11,7 @@ import '../../shared/minted_failure.dart';
 /// Three variants: ISO 3297 gives an ISSN a charset, one length, and a check character.
 @immutable
 sealed class IssnFailure implements MintedFailure {
-  const IssnFailure();
+  const new();
 
   @override
   String get typeName => 'Issn';
@@ -23,7 +23,7 @@ final class IssnWrongLength extends IssnFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const IssnWrongLength(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected 8 characters, got $actualLength';
@@ -42,7 +42,7 @@ final class IssnWrongLength extends IssnFailure {
 /// counts only as the final character, where it stands for the value ten.
 final class IssnInvalidCharacters extends IssnFailure {
   /// Creates the failure.
-  const IssnInvalidCharacters();
+  const new();
 
   @override
   String get message => 'contains characters outside 0-9 (X only as the check character)';
@@ -60,7 +60,7 @@ final class IssnInvalidCharacters extends IssnFailure {
 /// The check character disagrees with the rest of the number: a character is mistyped or transposed.
 final class IssnChecksumFailed extends IssnFailure {
   /// Creates the failure.
-  const IssnChecksumFailed();
+  const new();
 
   @override
   String get message => 'failed the mod-11 check';

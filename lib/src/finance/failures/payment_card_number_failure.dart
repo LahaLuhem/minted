@@ -12,7 +12,7 @@ import '../../shared/minted_failure.dart';
 /// scheme is reported rather than validated, so there is nothing else to fail against.
 @immutable
 sealed class PaymentCardNumberFailure implements MintedFailure {
-  const PaymentCardNumberFailure();
+  const new();
 
   @override
   String get typeName => 'PaymentCardNumber';
@@ -24,7 +24,7 @@ final class PaymentCardNumberWrongLength extends PaymentCardNumberFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const PaymentCardNumberWrongLength(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected 8 to 19 digits, got $actualLength';
@@ -43,7 +43,7 @@ final class PaymentCardNumberWrongLength extends PaymentCardNumberFailure {
 /// Something outside `0`-`9` survived normalisation (spaces and hyphens are stripped first).
 final class PaymentCardNumberInvalidCharacters extends PaymentCardNumberFailure {
   /// Creates the failure.
-  const PaymentCardNumberInvalidCharacters();
+  const new();
 
   @override
   String get message => 'contains characters outside 0-9';
@@ -61,7 +61,7 @@ final class PaymentCardNumberInvalidCharacters extends PaymentCardNumberFailure 
 /// The final digit disagrees with the rest of the number: a digit is mistyped or transposed.
 final class PaymentCardNumberChecksumFailed extends PaymentCardNumberFailure {
   /// Creates the failure.
-  const PaymentCardNumberChecksumFailed();
+  const new();
 
   @override
   String get message => 'failed the Luhn check';

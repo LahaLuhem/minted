@@ -33,7 +33,7 @@ final class Cidr {
   /// How many leading bits the prefix covers: `0` to `32` for v4, `0` to `128` for v6.
   final int prefixLength;
 
-  const Cidr._(this.network, this.prefixLength);
+  const new _(this.network, this.prefixLength);
 
   /// The block at [network] covering [prefixLength] bits, throwing [MintedFormatException] when the
   /// prefix does not fit the family or [network] has bits set below it.

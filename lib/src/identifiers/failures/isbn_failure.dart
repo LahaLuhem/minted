@@ -13,7 +13,7 @@ import '../../shared/minted_failure.dart';
 /// to fail against, each with its own remedy.
 @immutable
 sealed class IsbnFailure implements MintedFailure {
-  const IsbnFailure();
+  const new();
 
   @override
   String get typeName => 'Isbn';
@@ -26,7 +26,7 @@ final class IsbnWrongLength extends IsbnFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const IsbnWrongLength(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected 10 or 13 digits, got $actualLength';
@@ -45,7 +45,7 @@ final class IsbnWrongLength extends IsbnFailure {
 /// only as the last character of the ten-digit form, where it stands for the value ten.
 final class IsbnInvalidCharacters extends IsbnFailure {
   /// Creates the failure.
-  const IsbnInvalidCharacters();
+  const new();
 
   @override
   String get message => 'contains characters outside 0-9 (X only as the ISBN-10 check digit)';
@@ -68,7 +68,7 @@ final class IsbnInvalidPrefix extends IsbnFailure {
   final String prefix;
 
   /// Creates the failure.
-  const IsbnInvalidPrefix(this.prefix);
+  const new(this.prefix);
 
   @override
   String get message => prefix == ismnRange
@@ -88,7 +88,7 @@ final class IsbnInvalidPrefix extends IsbnFailure {
 /// The check digit disagrees with the rest of the number: a character is mistyped or transposed.
 final class IsbnChecksumFailed extends IsbnFailure {
   /// Creates the failure.
-  const IsbnChecksumFailed();
+  const new();
 
   @override
   String get message => 'failed the check-digit test';

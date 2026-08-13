@@ -28,7 +28,7 @@ final class PaymentCardNumber {
   /// the card, so prefer [masked] anywhere the result might be logged.
   final String value;
 
-  const PaymentCardNumber._(this.value);
+  const new _(this.value);
 
   /// Builds a [PaymentCardNumber] from an [iin] and [accountIdentifier], computing the Luhn check
   /// digit. Throws [MintedFormatException] when the parts don't form a valid number. For assembling

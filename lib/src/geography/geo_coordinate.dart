@@ -34,12 +34,12 @@ final class GeoCoordinate {
   /// The longitude in decimal degrees, `-180` to `180`. Negative is west of the prime meridian.
   final double longitude;
 
-  const GeoCoordinate._(this.latitude, this.longitude);
+  const new _(this.latitude, this.longitude);
 
   // The only door that constructs, so every instance normalises alike. Negative zero has to go so
   // the rendered forms agree: -0.0 equals 0.0 and hashes alike, but prints as "-0.0000". The snap
   // runs inside it, because a tiny negative degree rounds to -0.0.
-  factory GeoCoordinate._canonical(double latitude, double longitude) => GeoCoordinate._(
+  factory _canonical(double latitude, double longitude) => GeoCoordinate._(
     _positiveZeroed(_renderable(latitude)),
     _positiveZeroed(_renderable(longitude == -_maxLongitude ? _maxLongitude : longitude)),
   );

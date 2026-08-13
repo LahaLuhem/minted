@@ -38,21 +38,21 @@ final class Date implements Comparable<Date> {
   ///
   /// Unlike [DateTime], out-of-range parts are rejected, not rolled over: `Date(2026, 13, 1)` throws
   /// rather than silently becoming 2027-01-01.
-  factory Date(int year, [int month = 1, int day = 1]) =>
+  factory(int year, [int month = 1, int day = 1]) =>
       _tryFromParts(year, month, day) ??
       (throw MintedFormatException.from(_partsFailure(year, month, day), '$year-$month-$day'));
 
-  const Date._(this.year, this.month, this.day);
+  const new _(this.year, this.month, this.day);
 
   /// The calendar date of [dateTime], dropping its time-of-day and time zone.
   ///
   /// Throws [MintedFormatException] only when [dateTime]'s year falls outside `0000`-`9999`
   /// (an extreme [DateTime] can reach beyond it).
-  factory Date.fromDateTime(DateTime dateTime) => Date(dateTime.year, dateTime.month, dateTime.day);
+  factory fromDateTime(DateTime dateTime) => Date(dateTime.year, dateTime.month, dateTime.day);
 
   /// Today's date in the local time zone, the date-only sibling of [DateTime.now]. For the UTC day,
   /// use `Date.fromDateTime(DateTime.now().toUtc())`.
-  factory Date.now() => Date.fromDateTime(DateTime.now());
+  factory now() => Date.fromDateTime(DateTime.now());
 
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, or returns `null` unless it is exactly
   /// that shape (four-digit year, zero-padded two-digit month and day) and a real date.
