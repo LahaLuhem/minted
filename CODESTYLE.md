@@ -258,11 +258,11 @@ not numbers:
 
 > A numeric type gets a `parse(String)` door only where a **standard** defines its text form.
 
-`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A pure range over a number (`Uint`,
-`NaturalNumber`) has no such standard, so a parse door would be inventing one. These live under
-`lib/src/quantities/`, declare `tryFrom(int)` and neither parse door, and are told apart by **path**,
-so the directory is part of the contract. One invariant each leaves nothing a failure could say that
-`null` doesn't, so they carry none. Rationale:
+`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A range over a number (`Uint`, `Port`) has
+no such standard, so a parse door would invent one. They declare `tryFrom(int)` and neither parse
+door, and `conformance_test.dart` names them in `_constraintTypes`. One invariant each leaves
+nothing a failure could say that `null` doesn't, so they carry none. A type still files by domain:
+`Port` sits in `network/`, not `quantities/`. Rationale:
 [`APPENDIX.md#constraint-types`](./APPENDIX.md#constraint-types).
 
 **Normalise on parse.** `tryParse` converts input to a single canonical form before constructing
