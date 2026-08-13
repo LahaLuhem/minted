@@ -150,6 +150,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `NaturalNumber`    | strictly above zero (`1` or more)                                                       | range constraint |
 | `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix | range constraint |
 | `Percentage`       | which unit you meant, so `15` and `0.15` can't be swapped; finite, and unbounded either side | unit constraint  |
+| `Probability`      | `0` to `1` inclusive, both ends reported rather than refused                             | range constraint |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
 and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enough.
@@ -181,7 +182,8 @@ a number with a constraint on it, and no standard defining a text form for one, 
 door would be inventing one. They take `tryFrom` instead, and with one invariant each there is
 nothing a failure could say that `null` doesn't, so they carry none. `Percentage` is the odd one
 out: it constrains the *unit* rather than a range, so it takes both `tryFrom(15)` and
-`tryFromFraction(0.15)`.
+`tryFromFraction(0.15)`. `Probability` needs only one door, because its `0`-`1` range states the
+convention that `Percentage` has to name.
 
 <details>
 <summary><b>More examples</b></summary>
@@ -383,6 +385,16 @@ discount.of(200);    // 30.0
 Percentage.tryFromFraction(0.29)!.value;  // 29.0, where 0.29 * 100 gives 28.999999999999996
 Percentage.tryFrom(-12);                  // fine: churn is a real percentage
 Percentage.tryFrom(double.nan);           // null, and finiteness is the only thing it refuses
+
+// Probability is the bounded one, and its range states the convention, so one door does:
+final chance = Probability.tryFrom(0.15)!;
+chance.complement.value;    // 0.85   (the event not happening)
+chance.toPercentage();      // Percentage(15.0)   this direction never fails
+Probability.tryFrom(1)!.isCertain;   // true: both ends are members, reported rather than refused
+Probability.tryFrom(1.5);            // null, where a Percentage would take it
+
+// the conversion is asymmetric, which is why both types exist:
+Probability.tryFromPercentage(Percentage.tryFrom(250)!);  // null, 250% is no probability
 ```
 
 </details>
@@ -487,6 +499,14 @@ label" a fair question; the label is the point, because `15` and `0.15` are both
 of the same proportion and neither is checkable at a call site. `.value` holds the percent rather
 than the fraction for an arithmetic reason: `29 / 100` is exactly `0.29`, where `0.29 * 100` is
 `28.999999999999996`, so storing the percent is what makes an ordinary percentage render cleanly.
+
+`Probability` includes both ends. An impossible event has probability `0` and a certain one `1`, and
+an empirical `0/n` lands on the first legitimately, so refusing them would reject correct input;
+`isImpossible` and `isCertain` report them instead, the way `Port` accepts `0` and names it. Its
+`0`-`1` range already states the convention `Percentage` has to name, so it needs only one door.
+Converting to a `Percentage` always works and back can fail, and that asymmetry is the argument for
+both types rather than one. `complement` is the one thing to watch: it never leaves the range, but
+`1 - (1 - x)` is not `x` in IEEE, so a double complement round-trips only sometimes.
 
 </details>
 

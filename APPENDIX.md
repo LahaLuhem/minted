@@ -46,6 +46,7 @@ anchor, and keep anchors stable across renames.
 - [Port: a domain that borrows a width](#port-value-type)
 - [Constraint types: a range, not a standard](#constraint-types)
 - [Percentage: the unit is the whole point](#percentage-constraint-type)
+- [Probability: bounded, and both ends belong](#probability-constraint-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -1426,6 +1427,47 @@ stays [`decimal`'s job](#what-not-covered).
 **The negative zero is cleared for printing only.** `-0.0` already equals `0.0` and hashes alike, so
 equality and lookup need nothing; it is `toString` that would otherwise render `-0.0` for a churn
 figure that came out flat. Same treatment as [`GeoCoordinate`](#geo-coordinate-value-type).
+
+---
+
+<a id="probability-constraint-type"></a>
+## Probability: bounded, and both ends belong
+
+**The only member of the group with a real range**, so it is the one that exercises what
+[constraint types](#constraint-types) decided about range failures. The answer holds: one invariant,
+so `null` says everything a failure enum could, and there is none.
+
+**Both ends are included, and the open interval was the live alternative.** An impossible event has
+probability `0` and a certain one `1`; that is the definition, not an edge case, and an empirical
+`0/n` or an underflowing softmax lands on `0` legitimately. The `(0, 1)` reading has a real
+constituency in Cromwell's rule (never assign a *prior* of exactly 0 or 1), but that is a modelling
+opinion about priors rather than what a probability is, and a type that enforced it would refuse
+correct input. [`isImpossible`](#probability-constraint-type) and `isCertain` report the ends the
+same way [`Port`](#port-value-type) accepts `0` and names it `isWildcard`: the rule that a
+classification reports and does not gate.
+
+**One door, where [`Percentage`](#percentage-constraint-type) needs two.** The `0`-`1` range states
+the convention, so there is no `15`-versus-`0.15` question left to ask and no second entry point to
+disambiguate. This is the clearest evidence the two types are different shapes rather than one type
+spelled twice.
+
+**The conversion is asymmetric, which is the argument for both types.** Every probability is a
+percentage, so `toPercentage` is total. Not every percentage is a probability, since an unbounded
+`Percentage` covers 250% growth, so `tryFromPercentage` is partial. Both live on `Probability`:
+`Percentage` shipped first and stays unaware of it, and putting the partial direction on `Percentage`
+would split one pair across two files.
+
+**A `NaN` falls out for free**, because the bound is written as `>= 0 && <= 1` rather than
+`< 0 || > 1`. Same trick as [`GeoCoordinate`](#geo-coordinate-value-type)'s `_isWithin`. A `-0.0`
+passes that test, so it reaches the representation and gets cleared by `positiveZeroed` for the
+rendered form.
+
+**`complement` is closed but not involutive, and that is worth knowing.** `1 - value` never leaves
+`0`-`1`, verified over a million samples, so it needs no door and cannot fail. But `1 - (1 - x)` is
+not `x` in IEEE: it holds for `0.25` and `0.5`, and fails for `0.1`, `0.2`, `0.3`, `0.15` and `0.29`,
+about a third of ordinary values. Nothing fixes that short of a representation the package already
+[rejected for `Percentage`](#percentage-constraint-type), so it is documented and asserted in the
+tests rather than papered over.
 
 ---
 

@@ -246,6 +246,16 @@ void main() {
   print(Percentage.tryFrom(double.nan)); // null (finiteness is the only invariant)
   // #endregion
 
+  // `Probability` is the bounded one. The range states the convention, so one door is enough.
+  // #region probability
+  final chance = Probability.tryFrom(0.15)!;
+  print(chance.complement.value); // 0.85 (the event not happening)
+  print(chance.toPercentage().value); // 15.0, and this direction never fails
+  print(Probability.tryFrom(1)!.isCertain); // true (both ends are members, reported not refused)
+  print(Probability.tryFrom(1.5)); // null, unlike a Percentage, which is unbounded
+  print(Probability.tryFromPercentage(Percentage.tryFrom(250)!)); // null (the other direction can)
+  // #endregion
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true
