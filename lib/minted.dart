@@ -51,6 +51,7 @@ export 'src/network/failures/mac_address_failure.dart';
 export 'src/network/hostname.dart';
 export 'src/network/ip_address.dart';
 export 'src/network/mac_address.dart';
+export 'src/network/port.dart';
 export 'src/numerics/digit.dart';
 export 'src/numerics/digits.dart';
 export 'src/numerics/failures/digit_failure.dart';

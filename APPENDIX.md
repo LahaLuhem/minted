@@ -1232,11 +1232,15 @@ reject `v4Block.contains(v6Address)` outright; one type can only answer it at ru
 <a id="constraint-types"></a>
 ## Constraint types: a range, not a standard
 
-**A second category, not value types with a relaxed contract.** A constraint type is a pure range
-over a number: no checksum, no notation, no standard. They live under `lib/src/quantities/`, a sector
-chosen by contract rather than by domain, because `conformance_test.dart` tells one from a value type
-**by path**: "is a constraint type" is not something the AST reveals the way `isEnum` is. A `Port`
-filed under `network/` would silently opt out of the check.
+**A second category, not value types with a relaxed contract.** A constraint type is a range over a
+number: no checksum, no notation, no standard defining its text form.
+
+**The category is named, not derived from the directory.** `conformance_test.dart` lists them in
+`_constraintTypes`, because "is a constraint type" is not something the AST reveals the way `isEnum`
+is. Deciding it by path was the first attempt and it forced the wrong filing: `Port` is a network
+concept, and burying it in `quantities/` to satisfy a test would have put the tooling ahead of the
+domain. A name list costs one line per type and leaves filing to the domain. It fails safe too, since
+omitting a name makes the test demand parse doors rather than quietly relax the contract.
 
 **No `parse(String)` door.** Decimal notation is how numbers are written, not a published format for
 "a non-negative integer", so a parse door would invent a text form and then owe it forever. The rule,

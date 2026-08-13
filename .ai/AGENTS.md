@@ -63,7 +63,7 @@ minted/
 │       ├── geography/               GeoCoordinate
 │       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
-│       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (the path is the contract)
+│       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (pure ranges)
 │       ├── …                        New type → its domain-sector dir; one file per type
 │       └── shared/
 │           ├── minted_failure.dart            The MintedFailure supertype
@@ -102,10 +102,11 @@ numeric building-block primitives under `numerics/` and cross-cutting internals 
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
 because `minted.dart` re-exports every type. `test/` mirrors this layout.
 
-**`quantities/` is the one sector chosen by contract rather than by domain.** Everything in it is a
-*constraint type*: a range over a number with no standard text form, so it declares `tryFrom(int)`
-and neither parse door. `conformance_test.dart` decides that **by path**, so the directory is part of
-the contract: putting `Port` under `network/` would silently opt it out. Rationale:
+**A *constraint type* is a range over a number with no standard text form**, so it declares
+`tryFrom(int)` and neither parse door. `quantities/` holds the ones that are only a range, but the
+category is not the directory: `Port` lives in `network/` because it belongs there by domain.
+`conformance_test.dart` names them in `_constraintTypes`, since the AST cannot reveal the category;
+omitting a name makes the test demand parse doors rather than quietly relax. Rationale:
 [`APPENDIX.md#constraint-types`](../APPENDIX.md#constraint-types).
 
 **A type's failure vocabulary goes in its sector's `failures/`, never in the value-type file**, one

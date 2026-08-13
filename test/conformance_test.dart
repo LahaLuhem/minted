@@ -24,13 +24,13 @@ import 'package:test/test.dart';
 /// on one, and a `parse` on an enum would read as a value type while escaping
 /// every check above.
 ///
-/// Anything under `lib/src/quantities/` is a *constraint type* (`Uint`,
-/// `NaturalNumber`): a range over a number with no standard defining its text
-/// form, so it declares `tryFrom` and neither parse door. Decided by path,
-/// because the AST cannot reveal that the way it reveals `isEnum`.
+/// A *constraint type* is a range over a number with no standard defining its
+/// text form, so it declares `tryFrom` and neither parse door. The AST cannot
+/// reveal that the way it reveals `isEnum`, so [_constraintTypes] names them.
+/// A listed name is an opt-in: forget it and this test demands parse doors,
+/// which fails loudly rather than silently relaxing the contract.
 void main() {
   const notTypes = {'shared', 'failures'};
-  const constraintSector = 'quantities';
 
   final typeFiles = Directory('lib/src')
       .listSync(recursive: true)
@@ -51,26 +51,10 @@ void main() {
     // the dartdoc directives (`{@example}`) its parser does not know.
     final parsed = parseString(content: file.readAsStringSync(), throwIfDiagnostics: false);
     parsed.unit.accept(collector);
-    final isConstraintType = file.uri.pathSegments.contains(constraintSector);
 
     group(file.uri.pathSegments.last, () {
       for (final type in collector.types) {
-        if (isConstraintType) {
-          test('${type.name} is a constraint type, so it declares no parse door', () {
-            check(
-              type.staticMethods.intersection(_contractDoors),
-              because:
-                  '${type.name} lives under $constraintSector/, so it is a '
-                  'constraint type. Decimal notation is how numbers are '
-                  'written, not a published format, so a parse door here would '
-                  'invent one. Build it with tryFrom.',
-            ).isEmpty();
-          });
-
-          test('${type.name} declares static tryFrom', () {
-            check(type.staticMethods).contains('tryFrom');
-          });
-        } else if (type.isEnum) {
+        if (type.isEnum) {
           test('${type.name} is a classification, so it declares no parse door', () {
             check(
               type.staticMethods.intersection(_contractDoors),
@@ -85,6 +69,21 @@ void main() {
           });
 
           continue;
+        } else if (_constraintTypes.contains(type.name)) {
+          test('${type.name} is a constraint type, so it declares no parse door', () {
+            check(
+              type.staticMethods.intersection(_contractDoors),
+              because:
+                  '${type.name} is listed as a constraint type. Decimal '
+                  'notation is how numbers are written, not a published '
+                  'format, so a parse door here would invent one. Build it '
+                  'with tryFrom.',
+            ).isEmpty();
+          });
+
+          test('${type.name} declares static tryFrom', () {
+            check(type.staticMethods).contains('tryFrom');
+          });
         } else {
           test('${type.name} declares static tryParse and parse', () {
             check(type.staticMethods).contains('tryParse');
@@ -111,6 +110,19 @@ void main() {
 /// The two static doors the value-type contract requires, and neither a classification nor a
 /// constraint type may declare.
 const _contractDoors = {'parse', 'tryParse'};
+
+/// The constraint types, by name: a range over a number, so `tryFrom` and no parse door. Listed
+/// rather than derived from the directory, because `Port` belongs to `network/` by domain.
+const _constraintTypes = {
+  'NaturalNumber',
+  'Port',
+  'Uint',
+  'Uint2',
+  'Uint4',
+  'Uint8',
+  'Uint16',
+  'Uint32',
+};
 
 /// A value type discovered in a source file and the spine members it declares.
 class _ValueType {
