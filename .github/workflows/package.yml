@@ -27,6 +27,19 @@ jobs:
       # resolvable from the root package, so no `--no-example` scoping needed.
       - run: dart --no-version-check analyze .
 
+  dartdoc:
+    name: Dartdoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-dart
+      # `dart doc` exits 0 even when it warns, so the summary line is the gate.
+      - name: Generate docs, failing on any warning
+        run: |
+          set -o pipefail
+          dart doc --dry-run 2>&1 | tee dartdoc.log
+          grep -qE 'Found 0 warnings and 0 errors' dartdoc.log
+
   deps:
     name: Dependency validator
     runs-on: ubuntu-latest
