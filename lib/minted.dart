@@ -13,8 +13,10 @@ export 'package:phone_numbers_parser/phone_numbers_parser.dart' show PhoneNumber
 
 export 'src/chronology/date.dart';
 export 'src/chronology/failures/date_failure.dart';
+export 'src/chronology/failures/iso8601_duration_failure.dart';
 export 'src/chronology/failures/month_failure.dart';
 export 'src/chronology/failures/weekday_failure.dart';
+export 'src/chronology/iso8601_duration.dart';
 export 'src/chronology/month.dart';
 export 'src/chronology/weekday.dart';
 export 'src/commerce/failures/gtin_failure.dart';

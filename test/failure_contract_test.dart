@@ -32,6 +32,31 @@ void main() {
         typeName: 'Weekday',
         message: 'not a weekday number 1-7',
       ),
+      'Iso8601Duration: unrecognisable text': (
+        failure: Iso8601DurationMalformed(),
+        typeName: 'Iso8601Duration',
+        message: 'not an ISO 8601 duration (expected PnYnMnDTnHnMnS or PnW)',
+      ),
+      'Iso8601Duration: the zero duration is named, not left to P': (
+        failure: Iso8601DurationEmpty(),
+        typeName: 'Iso8601Duration',
+        message: 'has no components; a zero duration is "PT0S", not "P"',
+      ),
+      'Iso8601Duration: a T with nothing after it': (
+        failure: Iso8601DurationDanglingTimeDesignator(),
+        typeName: 'Iso8601Duration',
+        message: 'has a T with no time component after it',
+      ),
+      'Iso8601Duration: the week form names what it clashed with': (
+        failure: Iso8601DurationWeeksNotAlone('Y'),
+        typeName: 'Iso8601Duration',
+        message: 'the week form PnW cannot carry a "Y" component too',
+      ),
+      'Iso8601Duration: a fraction above the smallest component': (
+        failure: Iso8601DurationFractionNotSmallest('Y'),
+        typeName: 'Iso8601Duration',
+        message: 'only the smallest component may be fractional, and "Y" is not it',
+      ),
       'Email is capped at one by its engine': (
         failure: EmailFailure.malformed,
         typeName: 'Email',
@@ -385,6 +410,23 @@ void main() {
           rendered: 'IbanInvalidCharacters()',
         ),
         'the checksum variant': (failure: IbanChecksumFailed(), rendered: 'IbanChecksumFailed()'),
+        'a malformed duration': (
+          failure: Iso8601DurationMalformed(),
+          rendered: 'Iso8601DurationMalformed()',
+        ),
+        'an empty duration': (failure: Iso8601DurationEmpty(), rendered: 'Iso8601DurationEmpty()'),
+        'a dangling time designator': (
+          failure: Iso8601DurationDanglingTimeDesignator(),
+          rendered: 'Iso8601DurationDanglingTimeDesignator()',
+        ),
+        'weeks clashing echoes the designator': (
+          failure: Iso8601DurationWeeksNotAlone('D'),
+          rendered: 'Iso8601DurationWeeksNotAlone(D)',
+        ),
+        'a misplaced fraction echoes the designator': (
+          failure: Iso8601DurationFractionNotSmallest('Y'),
+          rendered: 'Iso8601DurationFractionNotSmallest(Y)',
+        ),
         'a malformed UUID': (failure: UuidMalformed(), rendered: 'UuidMalformed()'),
         'a wrong byte count': (
           failure: UuidWrongByteCount(expected: 16, actual: 15),
@@ -579,6 +621,31 @@ void main() {
           failure: UuidMalformed(),
           twin: UuidMalformed(),
           other: UuidWrongByteCount(expected: 16, actual: 15),
+        ),
+        'duration no-data variants compare by type': (
+          failure: Iso8601DurationEmpty(),
+          twin: Iso8601DurationEmpty(),
+          other: Iso8601DurationMalformed(),
+        ),
+        'the malformed duration variant': (
+          failure: Iso8601DurationMalformed(),
+          twin: Iso8601DurationMalformed(),
+          other: Iso8601DurationEmpty(),
+        ),
+        'the dangling designator variant': (
+          failure: Iso8601DurationDanglingTimeDesignator(),
+          twin: Iso8601DurationDanglingTimeDesignator(),
+          other: Iso8601DurationEmpty(),
+        ),
+        'a week clash differs by its designator': (
+          failure: Iso8601DurationWeeksNotAlone('Y'),
+          twin: Iso8601DurationWeeksNotAlone('Y'),
+          other: Iso8601DurationWeeksNotAlone('D'),
+        ),
+        'a misplaced fraction differs by its designator': (
+          failure: Iso8601DurationFractionNotSmallest('Y'),
+          twin: Iso8601DurationFractionNotSmallest('Y'),
+          other: Iso8601DurationFractionNotSmallest('M'),
         ),
         'byte count differs by its actual': (
           failure: UuidWrongByteCount(expected: 16, actual: 15),
