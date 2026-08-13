@@ -76,7 +76,7 @@ extension type const Hostname._(String value) {
     final overlongLabel = labels.firstWhereOrNull((label) => label.length > maxLabelLength);
     if (overlongLabel != null) return HostnameLabelTooLong(overlongLabel.length);
 
-    return digitsOnly.hasMatch(labels.last) ? const HostnameNumericTld() : null;
+    return !digitsOnly.hasMatch(labels.last) ? null : const HostnameNumericTld();
   }
 
   // The first character that is neither a label character nor the separator, or null when all pass.

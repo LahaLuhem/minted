@@ -131,6 +131,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | Type         | What it guarantees                                                                       | Standard                                                       |
 |--------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------|
 | `Hostname`   | the RFC 1123 grammar and both length limits; ASCII only, never an address                | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
+| `DnsName`    | the permissive counterpart: underscores and the rest of RFC 2181, so DKIM and SRV fit    | [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11)  |
 | `IpAddress`  | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal          | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)             |
 | `Cidr`       | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632)             |
 | `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back              | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address)      |
@@ -340,6 +341,19 @@ Hostname.tryParse('192.168.1.1');             // null: that's an address, not a 
 
 Hostname.parse('-bad.example').reasonOrNull?.message;   // '"-bad" opens or closes with a hyphen'
 
+// DnsName: the permissive counterpart, for the names DKIM, DMARC, ACME and SRV actually use:
+final dmarc = DnsName.tryParse('_DMARC.Example.COM.')!;
+dmarc.value;          // '_dmarc.example.com'   (Hostname's normalisation, Hostname's limits)
+dmarc.isUnderscored;  // true: an RFC 8552 attribute leaf, reported rather than gated on
+
+DnsName.tryParse('_sip._tcp.example.com');   // fine, where Hostname refuses the underscore
+DnsName.tryParse('-bad.example.com');        // fine: legal DNS, just not a legal host
+DnsName.tryParse('bücher.example');          // still null: ASCII only, same IDNA reason
+
+// widening always works, narrowing is a parse, and that asymmetry is why there are two types:
+DnsName.fromHostname(host);   // total
+dmarc.tryToHostname();        // null
+
 // GeoCoordinate: the swapped-argument bug is a type problem, so the pair is named at the boundary.
 // ISO 6709 uses the width of the degree field as the unit selector; all three fold to degrees:
 final eiffel = GeoCoordinate.tryParse('+48.8577+002.295/')!;
@@ -460,6 +474,13 @@ its width. An IPv4-mapped address stays v6 and keeps its `::ffff:192.0.2.1` spel
 asks for on that prefix. It carries [`ipaddr`](https://pub.dev/packages/ipaddr) for the `::` expansion
 and the RFC 5952 compression, but owns the grammar itself: that engine's part checks are `int.tryParse`,
 which quietly accepts `192.168.+1.1` and `192.168. 1.1`.
+
+`DnsName` is the permissive counterpart, not a relaxed `Hostname`. RFC 2181 §11 lets a label hold any
+octet and leaves further limits to the application, so this one keeps ASCII letters, digits, hyphen
+and underscore: enough for every DKIM, DMARC, ACME and SRV name, and narrow enough that lower-casing
+stays safe. It also drops RFC 1123's hyphen-edge and all-numeric-label rules, which are host rules
+rather than DNS ones. Merging the two would delete the strict promise most callers want, so widening
+(`fromHostname`) is total and narrowing (`tryToHostname`) is a parse.
 
 `Hostname` is ASCII-only on purpose. Punycode is not IDNA: RFC 5890 wants IDNA2008 validity, NFC and
 the Bidi rules on top of the encoding, none of which any Dart package implements, so punycoding

@@ -46,7 +46,9 @@ void main() {
     // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a
     // runtime test cannot express.
     scenario('a Port goes where a Uint16 is wanted', () {
-      check(Port.tryFrom(443)! as Uint16).equals(Uint16.tryFrom(443)!);
+      final Uint16 widened = Port.tryFrom(443)!;
+
+      check(widened).equals(Uint16.tryFrom(443)!);
     });
 
     scenario('a Port renders as its bare number', () {

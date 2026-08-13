@@ -11,23 +11,19 @@ import 'hostname.dart';
 /// [RFC 8552](https://www.rfc-editor.org/rfc/rfc8552) for the underscored names that need it.
 ///
 /// Parse, don't validate: `_acme-challenge.example.com`, DKIM selectors and SRV names are what
-/// ACME, DMARC and service discovery actually use, and [Hostname] refuses every one by design. The
-/// alternative is a bare `String` exactly where a type was supposed to help.
+/// ACME, DMARC and service discovery actually use, and [Hostname] refuses every one by design.
 ///
-/// Wider than [Hostname] in three ways: an underscore is allowed, a label may open or close with a
-/// hyphen, and the last label may be all digits, so `192.168.1.1` is a name here where RFC 1123
-/// calls it an address. Still ASCII, for the reason [Hostname] gives, and still bounded by RFC
-/// 2181's lengths. RFC 2181 permits any octet and leaves further limits to the application; this is
-/// that limit.
-/// Why: `APPENDIX.md#dns-name-value-type`.
+/// Three things it takes that [Hostname] refuses: an underscore, a hyphen opening or closing a
+/// label, and an all-numeric last label, so `192.168.1.1` is a name here. Still ASCII, for the
+/// reason [Hostname] gives, and still inside RFC 2181's lengths, which is the application limit
+/// that RFC leaves open. Why: `APPENDIX.md#dns-name-value-type`.
 ///
 /// Normalisation on parse: trimmed, lower-cased (RFC 1035 makes DNS comparison case-insensitive),
 /// and one trailing root dot dropped. [fqdn] rebuilds the trailing-dot spelling.
 ///
 /// {@example /example/minted_example.dart#dnsname}
 extension type const DnsName._(String value) {
-  /// The [DnsName] spelling of [hostname]. Total, because every hostname is a DNS name; the
-  /// narrowing direction is [tryToHostname], which is a parse.
+  /// The [DnsName] spelling of [hostname]. Total, where the narrowing [tryToHostname] is a parse.
   // Already normalised and strictly inside this type's rules, so there is nothing left to check.
   static DnsName fromHostname(Hostname hostname) => ._(hostname.value);
 
