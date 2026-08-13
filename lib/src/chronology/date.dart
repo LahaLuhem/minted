@@ -22,6 +22,8 @@ import 'weekday.dart';
 ///
 /// Ordering is chronological ([compareTo], [isBefore], [isAfter], and `<` / `<=` / `>` / `>=`).
 /// Equality is by value over [year], [month], and [day].
+///
+/// {@example /example/minted_example.dart#date}
 @immutable
 final class Date implements Comparable<Date> {
   /// The year, `0000`-`9999`.

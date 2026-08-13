@@ -29,6 +29,8 @@ import 'failures/ip_address_failure.dart';
 ///
 /// Normalisation on parse: trimmed, lower-cased, and rendered per RFC 5952 for v6, so leading zeros
 /// go, `::` takes the longest zero run, and a single zero field is never compressed.
+///
+/// {@example /example/minted_example.dart#ipaddress}
 extension type const IpAddress._(String value) {
   /// Builds an [IpAddress] from its [octets], 4 for v4 or 16 for v6, throwing
   /// [MintedFormatException] on any other count. The inverse of [octets].

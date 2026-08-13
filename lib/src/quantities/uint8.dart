@@ -6,6 +6,8 @@ library;
 /// Bounded at both ends, unlike [Uint]. Out-of-range input is refused, never truncated to fit.
 ///
 /// [value] is the numeric value; the string form is `value.toString()`.
+///
+/// {@example /example/minted_example.dart#fixedwidths}
 extension type const Uint8._(int value) {
   /// The [Uint8] with numeric [value], or `null` unless it is in `0`-`255`.
   static Uint8? tryFrom(int value) => value < 0 || value > _max ? null : ._(value);

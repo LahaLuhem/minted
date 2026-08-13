@@ -17,6 +17,8 @@ import 'failures/bic_failure.dart';
 /// ISO 9362 carries no checksum, so any well-formed code is accepted, held by an institution or not.
 /// It also permits an [institutionCode] and [locationCode] wider than SWIFT itself issues;
 /// [isSwiftRegistrable] reports that narrower shape rather than rejecting what the standard allows.
+///
+/// {@example /example/minted_example.dart#bic}
 extension type const Bic._(String value) {
   /// Builds a [Bic] from its parts, [branchCode] defaulting to the `XXX` primary office. Throws
   /// [MintedFormatException] when they don't form a valid BIC. For assembling from a known-valid source.

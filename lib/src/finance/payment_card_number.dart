@@ -22,6 +22,8 @@ import 'failures/payment_card_number_failure.dart';
 ///
 /// A class rather than an extension type so [toString] can render [masked] instead of [value]: a PAN
 /// in a log line is a leak. The card scheme is reported, never validated; see [cardScheme].
+///
+/// {@example /example/minted_example.dart#card}
 @immutable
 final class PaymentCardNumber {
   /// The primary account number, digits only. The canonical form, and the one member that reveals

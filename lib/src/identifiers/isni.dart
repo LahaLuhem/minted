@@ -18,6 +18,8 @@ import 'failures/isni_failure.dart';
 ///
 /// An ORCID iD is an ISNI from ORCID's allocated block, so it parses here and [isInOrcidBlock] says
 /// so. Why there is no separate `Orcid`: `APPENDIX.md#isni-value-type`.
+///
+/// {@example /example/minted_example.dart#isni}
 extension type const Isni._(String value) {
   /// Builds an [Isni] from [bodyDigits], the fifteen digits before the check character, computing
   /// that character. Throws [MintedFormatException] when the parts don't form a valid ISNI.

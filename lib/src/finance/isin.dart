@@ -23,6 +23,8 @@ import 'failures/isin_failure.dart';
 /// [prefix] is not required to name a country: `XS` is Euroclear and Clearstream, `EU` is
 /// supranational, and both are as valid as `GB`. [hasCountryPrefix] reports the narrower fact
 /// instead of `parse` refusing what the standard allows.
+///
+/// {@example /example/minted_example.dart#isin}
 extension type const Isin._(String value) {
   /// Builds an [Isin] from its two-letter [prefix] and nine-character [nsin], computing the check
   /// digit. Throws [MintedFormatException] when the parts don't form a valid ISIN.

@@ -20,6 +20,8 @@ import 'failures/gtin_failure.dart';
 ///
 /// Not split into company prefix and item reference: that boundary comes from GS1's prefix
 /// registry, not the digits.
+///
+/// {@example /example/minted_example.dart#gtin}
 extension type const Gtin._(String value) {
   /// Builds a [Gtin] from [bodyDigits], the number without its check digit, computing that digit.
   /// Throws [MintedFormatException] when the parts don't form a valid GTIN. For assembling from a

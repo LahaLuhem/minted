@@ -26,6 +26,8 @@ import 'failures/geo_coordinate_failure.dart';
 /// to one it can. Altitude and a CRS are refused, not dropped.
 ///
 /// Equality is by value over [latitude] and [longitude].
+///
+/// {@example /example/minted_example.dart#geo}
 @immutable
 final class GeoCoordinate {
   /// The latitude in decimal degrees, `-90` to `90`. Negative is south of the equator.

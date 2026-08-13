@@ -13,6 +13,8 @@ import 'failures/phone_number_failure.dart';
 /// Normalisation on parse: the number is resolved to E.164 (`+`, country calling code, national number),
 /// so [value] is comparable and storable. National-format input needs a [tryParse] `region` hint
 /// (ISO 3166-1 alpha-2, e.g. `'GB'`); already-international input (`+…`) parses without one.
+///
+/// {@example /example/minted_example.dart#phone}
 extension type const PhoneNumber._(String value) {
   /// Builds a [PhoneNumber] from its [countryCode] (the calling code without
   /// `+`, e.g. `44`) and its [nationalNumber] digits. Throws

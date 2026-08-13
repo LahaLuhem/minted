@@ -9,6 +9,8 @@ library;
 /// is no upper bound.
 ///
 /// [value] is the numeric value; the string form is `value.toString()`.
+///
+/// {@example /example/minted_example.dart#quantities}
 extension type const Uint._(int value) {
   /// The [Uint] with numeric [value], or `null` when it is negative.
   static Uint? tryFrom(int value) => value < 0 ? null : ._(value);

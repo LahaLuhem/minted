@@ -14,6 +14,8 @@ import 'failures/email_failure.dart';
 /// Normalisation on parse: trimmed, domain lower-cased, local-part case
 /// preserved (RFC 5321 leaves local-part case to the receiving host). So
 /// `a@Example.com == a@example.com` but `A@x.com != a@x.com`.
+///
+/// {@example /example/minted_example.dart#email}
 extension type const Email._(String value) {
   /// Builds an [Email] from its [localPart] and [domain], throwing
   /// [MintedFormatException] if they don't form a valid address. For assembling

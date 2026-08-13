@@ -18,6 +18,8 @@ import 'failures/iban_failure.dart';
 /// Normalisation on parse: whitespace stripped and upper-cased, so [value] is the compact electronic form
 /// and [formatted] rebuilds the grouped paper form.
 /// Country coverage tracks `iban_validator`; see the README caveat.
+///
+/// {@example /example/minted_example.dart#iban}
 extension type const Iban._(String value) {
   /// Builds an [Iban] from its [countryCode] (ISO 3166-1 alpha-2) and [bban], computing the mod-97 check digits.
   /// Throws [MintedFormatException] when the parts don't form a valid IBAN (unknown country,
