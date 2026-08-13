@@ -5,8 +5,9 @@ library;
 ///
 /// Where zero is not a legal answer, reach for [NaturalNumber]. They differ by that one value.
 ///
-/// Despite the borrowed name this constrains the sign, not a machine width: nothing wraps, and there
-/// is no upper bound.
+/// > [!IMPORTANT]
+/// > Despite the borrowed name this constrains the sign, not a machine width: nothing wraps,
+/// > and there is no upper bound.
 ///
 /// [value] is the numeric value; the string form is `value.toString()`.
 ///

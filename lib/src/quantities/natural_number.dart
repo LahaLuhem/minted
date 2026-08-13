@@ -3,11 +3,12 @@ library;
 
 /// An integer strictly greater than zero: `1` or more.
 ///
-/// Where zero is a legal answer, reach for [Uint].
+/// Where zero is a legal answer, reach for [Uint]. There is no upper bound.
 ///
-/// **Zero is excluded**, and that needs saying because the convention is split: ISO 80000-2 counts
-/// `0` among the naturals, school arithmetic starts at `1`. This type takes the second reading.
-/// There is no upper bound.
+/// > [!NOTE]
+/// > **Zero is excluded**, and that needs saying because the convention is split: ISO 80000-2
+/// > counts `0` among the naturals, school arithmetic starts at `1`. This type takes the second
+/// > reading.
 ///
 /// [value] is the numeric value; the string form is `value.toString()`.
 ///
