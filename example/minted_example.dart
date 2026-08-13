@@ -235,6 +235,17 @@ void main() {
   print(Uint8.tryFrom(256)); // null (refused, not truncated to 0)
   // #endregion
 
+  // `Percentage` is the other kind of constraint type: it bounds nothing, and names the unit,
+  // since 15 and 0.15 are both plausible readings of "fifteen percent".
+  // #region percentage
+  final discount = Percentage.tryFrom(15)!; // the percent, which is what `.value` holds
+  print(discount.fraction); // 0.15 (the same proportion, said the other way)
+  print(discount.of(200)); // 30.0
+  print(Percentage.tryFromFraction(0.29)!.value); // 29.0, where 0.29 * 100 is 28.999999999999996
+  print(Percentage.tryFrom(-12)?.value); // -12.0 (churn is real; nothing is bounded)
+  print(Percentage.tryFrom(double.nan)); // null (finiteness is the only invariant)
+  // #endregion
+
   // `parse` hands back the reason instead of throwing, so invalid input needs no try/catch.
   final corrupted = Iban.parse('GB29NWBK60161331926818'); // corrupted final digit
   print(corrupted.isFailure); // true

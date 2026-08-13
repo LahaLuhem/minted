@@ -45,6 +45,7 @@ anchor, and keep anchors stable across renames.
 - [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
 - [Port: a domain that borrows a width](#port-value-type)
 - [Constraint types: a range, not a standard](#constraint-types)
+- [Percentage: the unit is the whole point](#percentage-constraint-type)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
 <!-- TOC end -->
@@ -1367,6 +1368,63 @@ disabled and cannot be enabled". Re-exporting it would ship four unvalidated pub
 the default constructor. [`fixnum`](https://pub.dev/packages/fixnum) is a different job entirely:
 `Int32` / `Int64` only, no unsigned type at all, and wrapping arithmetic is its documented feature
 rather than a hazard. Neither carries a `Uint2` or `Uint4`.
+
+---
+
+<a id="percentage-constraint-type"></a>
+## Percentage: the unit is the whole point
+
+**It stretches the [constraint-type](#constraint-types) category on purpose.** Every other member is
+a range over a number; this one's only invariant is finiteness, and what it pins down is the *unit*.
+The half of the category that decides the shape still holds: no standard defines a text form for a
+percentage, so there is no `parse(String)` door.
+
+**Deliberately unbounded.** `0` to `100` is the obvious range and it is wrong, because 250% growth
+and -12% churn are real values a bound would refuse. That leaves `NaN` and the infinities as the
+only things to reject, which makes "an unbounded Percentage is just a double with a label" a fair
+challenge at review. The label is the entire point: `15` versus `0.15` for the same proportion is
+plausible both ways and checkable at no call site.
+
+**`.value` holds the percent, for arithmetic reasons rather than taste.** `.value` *is* the
+canonical form, so the stored unit is the one that has to render cleanly, and the two conventions
+are not symmetric:
+
+| stored          | derived | result               |
+|-----------------|---------|----------------------|
+| fraction `0.29` | `× 100` | `28.999999999999996` |
+| fraction `0.58` | `× 100` | `57.99999999999999`  |
+| percent `29`    | `/ 100` | `0.29`, exactly      |
+| percent `58`    | `/ 100` | `0.58`, exactly      |
+
+`x / 100` rounds to the nearest double of the true value, which is the double the literal gives;
+`f * 100` compounds the error already in `f`. Store the fraction and `.value` renders
+`57.99999999999999` for something a human wrote as 58%.
+
+**`tryFromFraction` shifts the decimal rather than multiplying**, for that same reason: it re-reads
+the shortest round-tripping decimal two places over via `toStringAsExponential`, so `0.29` lands on
+`29`. The non-finite guard runs first, since a `NaN` has no exponent to bump.
+
+**Two doors, where every other constraint type has one.** The bare door is the percent because the
+name states the unit; the fraction door is spelled out so a caller holding a ratio cannot get it
+wrong. One door would have put `Percentage.tryFrom(ratio * 100)` at the call site, the exact
+multiply the type exists to delete. Not the `from` case [constraint types](#constraint-types)
+refused, because a second input *unit* carries no removal date the way a redundant throwing door
+does.
+
+**`double`, not a fixed-point `int`.** Fixed point was the tempting answer to `0.1 + 0.2`, and three
+things defuse it. Constraint types expose no arithmetic, so nobody sums a `Percentage`. The percent
+convention already makes the common case exact: `10.0 + 20.0` is `30.0` where `0.1 + 0.2` is not.
+And fixed point must pick a precision, so it either refuses `1/3` as a percentage or rounds it
+silently, and with no failure vocabulary only the silent round is available. It would also make
+`.value` read `1500` for 15%, a worse ambiguity than the one being fixed. Exact decimal arithmetic
+stays [`decimal`'s job](#what-not-covered).
+
+**`of` multiplies before it divides.** 7% of 350 is `24.5` as `quantity * value / 100` and
+`24.500000000000004` as `quantity * (value / 100)`, because dividing first rounds twice.
+
+**The negative zero is cleared for printing only.** `-0.0` already equals `0.0` and hashes alike, so
+equality and lookup need nothing; it is `toString` that would otherwise render `-0.0` for a churn
+figure that came out flat. Same treatment as [`GeoCoordinate`](#geo-coordinate-value-type).
 
 ---
 
