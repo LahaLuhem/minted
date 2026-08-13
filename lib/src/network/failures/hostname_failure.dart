@@ -12,7 +12,7 @@ import '../../shared/minted_failure.dart';
 /// charset, two length limits, a label shape, and the not-an-address rule.
 @immutable
 sealed class HostnameFailure implements MintedFailure {
-  const HostnameFailure();
+  const new();
 
   @override
   String get typeName => 'Hostname';
@@ -21,7 +21,7 @@ sealed class HostnameFailure implements MintedFailure {
 /// Something outside ASCII survived normalisation, so this may be an internationalised name.
 final class HostnameNotAscii extends HostnameFailure {
   /// Creates the failure.
-  const HostnameNotAscii();
+  const new();
 
   @override
   String get message => 'contains non-ASCII, so punycode it to an A-label first';
@@ -42,7 +42,7 @@ final class HostnameInvalidCharacters extends HostnameFailure {
   final String character;
 
   /// Creates the failure.
-  const HostnameInvalidCharacters(this.character);
+  const new(this.character);
 
   // An underscore is the one that is valid somewhere else, so it is named rather than lumped in.
   @override
@@ -67,7 +67,7 @@ final class HostnameLabelMalformed extends HostnameFailure {
   final String label;
 
   /// Creates the failure.
-  const HostnameLabelMalformed(this.label);
+  const new(this.label);
 
   @override
   String get message => label.isEmpty
@@ -90,7 +90,7 @@ final class HostnameLabelTooLong extends HostnameFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const HostnameLabelTooLong(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected at most 63 characters per label, got $actualLength';
@@ -112,7 +112,7 @@ final class HostnameTooLong extends HostnameFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const HostnameTooLong(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => 'expected at most 253 characters, got $actualLength';
@@ -130,7 +130,7 @@ final class HostnameTooLong extends HostnameFailure {
 /// The last label is all digits, which RFC 1123 says a host name never is. It is an address.
 final class HostnameNumericTld extends HostnameFailure {
   /// Creates the failure.
-  const HostnameNumericTld();
+  const new();
 
   @override
   String get message => 'ends in an all-numeric label, so this is an address, not a hostname';

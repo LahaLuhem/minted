@@ -8,7 +8,7 @@ enum MonthFailure implements MintedFailure {
   /// The input does not name a month in `1`-`12`.
   notAMonth('not a month number 1-12');
 
-  const MonthFailure(this.message);
+  new(this.message);
 
   @override
   final String message;

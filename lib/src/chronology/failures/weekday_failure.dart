@@ -8,7 +8,7 @@ enum WeekdayFailure implements MintedFailure {
   /// The input does not name a weekday in `1`-`7`.
   notAWeekday('not a weekday number 1-7');
 
-  const WeekdayFailure(this.message);
+  new(this.message);
 
   @override
   final String message;

@@ -9,7 +9,7 @@ import '../../shared/minted_failure.dart';
 /// count known only per call.
 @immutable
 sealed class UuidFailure implements MintedFailure {
-  const UuidFailure();
+  const new();
 
   @override
   String get typeName => 'Uuid';
@@ -18,7 +18,7 @@ sealed class UuidFailure implements MintedFailure {
 /// The text is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
 final class UuidMalformed extends UuidFailure {
   /// Creates the failure.
-  const UuidMalformed();
+  const new();
 
   @override
   String get message => 'not a well-formed UUID (expected 8-4-4-4-12 hex)';
@@ -43,7 +43,7 @@ final class UuidWrongByteCount extends UuidFailure {
   final int actual;
 
   /// Creates the failure.
-  const UuidWrongByteCount({required this.expected, required this.actual});
+  const new({required this.expected, required this.actual});
 
   @override
   String get message => 'expected $expected bytes, got $actual';

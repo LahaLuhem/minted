@@ -10,7 +10,7 @@ import '../../shared/minted_failure.dart';
 /// other two mean fix a number.
 @immutable
 sealed class GeoCoordinateFailure implements MintedFailure {
-  const GeoCoordinateFailure();
+  const new();
 
   @override
   String get typeName => 'GeoCoordinate';
@@ -20,7 +20,7 @@ sealed class GeoCoordinateFailure implements MintedFailure {
 /// Minutes or seconds reaching `60` land here too, being part of the grammar, not a separate range.
 final class GeoCoordinateNotIso6709 extends GeoCoordinateFailure {
   /// Creates the failure.
-  const GeoCoordinateNotIso6709();
+  const new();
 
   @override
   String get message => 'not an ISO 6709 coordinate string';
@@ -41,7 +41,7 @@ final class GeoCoordinateLatitudeOutOfRange extends GeoCoordinateFailure {
   final double latitude;
 
   /// Creates the failure.
-  const GeoCoordinateLatitudeOutOfRange(this.latitude);
+  const new(this.latitude);
 
   @override
   String get message => 'latitude $latitude is outside -90 to 90';
@@ -63,7 +63,7 @@ final class GeoCoordinateLongitudeOutOfRange extends GeoCoordinateFailure {
   final double longitude;
 
   /// Creates the failure.
-  const GeoCoordinateLongitudeOutOfRange(this.longitude);
+  const new(this.longitude);
 
   @override
   String get message => 'longitude $longitude is outside -180 to 180';

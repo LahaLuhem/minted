@@ -15,7 +15,7 @@ enum PhoneNumberFailure implements MintedFailure {
   /// The country is known but the digits do not form a real number for it.
   invalid('not a valid number for its country');
 
-  const PhoneNumberFailure(this.message);
+  new(this.message);
 
   @override
   final String message;

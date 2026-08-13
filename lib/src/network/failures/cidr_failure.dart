@@ -11,7 +11,7 @@ import 'ip_address_failure.dart';
 /// one of them another type's failure.
 @immutable
 sealed class CidrFailure implements MintedFailure {
-  const CidrFailure();
+  const new();
 
   @override
   String get typeName => 'Cidr';
@@ -20,7 +20,7 @@ sealed class CidrFailure implements MintedFailure {
 /// The text is not an address followed by `/` and a decimal prefix length.
 final class CidrMalformed extends CidrFailure {
   /// Creates the failure.
-  const CidrMalformed();
+  const new();
 
   @override
   String get message => 'not an address followed by / and a prefix length';
@@ -44,7 +44,7 @@ final class CidrInvalidAddress extends CidrFailure {
   final IpAddressFailure reason;
 
   /// Creates the failure.
-  const CidrInvalidAddress(this.reason);
+  const new(this.reason);
 
   @override
   String get message => 'the network address is invalid: ${reason.message}';
@@ -68,7 +68,7 @@ final class CidrPrefixLengthOutOfRange extends CidrFailure {
   final int actual;
 
   /// Creates the failure.
-  const CidrPrefixLengthOutOfRange({required this.maxPrefixLength, required this.actual});
+  const new({required this.maxPrefixLength, required this.actual});
 
   @override
   String get message => 'expected a prefix length of 0 to $maxPrefixLength, got $actual';
@@ -94,7 +94,7 @@ final class CidrHostBitsSet extends CidrFailure {
   final String networkAddress;
 
   /// Creates the failure.
-  const CidrHostBitsSet(this.networkAddress);
+  const new(this.networkAddress);
 
   @override
   String get message => 'has host bits set below the prefix; the network is "$networkAddress"';

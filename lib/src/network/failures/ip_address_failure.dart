@@ -9,7 +9,7 @@ import '../../shared/minted_failure.dart';
 /// of the input that failed.
 @immutable
 sealed class IpAddressFailure implements MintedFailure {
-  const IpAddressFailure();
+  const new();
 
   @override
   String get typeName => 'IpAddress';
@@ -18,7 +18,7 @@ sealed class IpAddressFailure implements MintedFailure {
 /// The text is neither a dotted quad nor an RFC 4291 IPv6 address.
 final class IpAddressMalformed extends IpAddressFailure {
   /// Creates the failure.
-  const IpAddressMalformed();
+  const new();
 
   @override
   String get message => 'not a dotted-quad or IPv6 address';
@@ -42,7 +42,7 @@ final class IpAddressLeadingZero extends IpAddressFailure {
   final String part;
 
   /// Creates the failure.
-  const IpAddressLeadingZero(this.part);
+  const new(this.part);
 
   @override
   String get message => '"$part" has a leading zero, which is ambiguous between decimal and octal';
@@ -64,7 +64,7 @@ final class IpAddressPartOutOfRange extends IpAddressFailure {
   final String part;
 
   /// Creates the failure.
-  const IpAddressPartOutOfRange(this.part);
+  const new(this.part);
 
   @override
   String get message => '"$part" is outside the range its field allows';
@@ -85,7 +85,7 @@ final class IpAddressWrongOctetCount extends IpAddressFailure {
   final int actual;
 
   /// Creates the failure.
-  const IpAddressWrongOctetCount(this.actual);
+  const new(this.actual);
 
   @override
   String get message => 'expected 4 or 16 octets, got $actual';

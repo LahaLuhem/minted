@@ -11,7 +11,7 @@ import '../../shared/minted_failure.dart';
 /// Three variants: 3GPP TS 23.003 gives an IMEI a digit charset, one length, and a check digit.
 @immutable
 sealed class ImeiFailure implements MintedFailure {
-  const ImeiFailure();
+  const new();
 
   @override
   String get typeName => 'Imei';
@@ -24,7 +24,7 @@ final class ImeiWrongLength extends ImeiFailure {
   final int actualLength;
 
   /// Creates the failure.
-  const ImeiWrongLength(this.actualLength);
+  const new(this.actualLength);
 
   @override
   String get message => actualLength == _imeisvLength
@@ -48,7 +48,7 @@ final class ImeiWrongLength extends ImeiFailure {
 /// Something outside `0`-`9` survived normalisation (spaces and hyphens are stripped first).
 final class ImeiInvalidCharacters extends ImeiFailure {
   /// Creates the failure.
-  const ImeiInvalidCharacters();
+  const new();
 
   @override
   String get message => 'contains characters outside 0-9';
@@ -66,7 +66,7 @@ final class ImeiInvalidCharacters extends ImeiFailure {
 /// The check digit disagrees with the rest of the number: a digit is mistyped or transposed.
 final class ImeiChecksumFailed extends ImeiFailure {
   /// Creates the failure.
-  const ImeiChecksumFailed();
+  const new();
 
   @override
   String get message => 'failed the Luhn check';

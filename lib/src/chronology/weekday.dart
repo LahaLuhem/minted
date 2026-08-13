@@ -37,7 +37,7 @@ enum Weekday implements Comparable<Weekday> {
   /// Sunday, ISO day `7`.
   sunday(7);
 
-  const Weekday(this.value);
+  new(this.value);
 
   /// The ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
   final int value;

@@ -23,7 +23,7 @@ import 'failures/digits_failure.dart';
 final class Digits extends Iterable<Digit> {
   final Uint8List _bytes;
 
-  const Digits._(this._bytes);
+  const new _(this._bytes);
 
   /// Parses [input] as a run of decimal digits, or returns `null` when any
   /// character is not `0`-`9`. Empty input yields an empty sequence.
