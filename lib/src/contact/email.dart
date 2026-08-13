@@ -21,9 +21,8 @@ extension type const Email._(String value) {
   static Email fromComponents({required String localPart, required String domain}) {
     final source = '$localPart@$domain';
 
-    return parse(
-      source,
-    ).fold((reason) => throw MintedFormatException.from(reason, source), (email) => email);
+    return parse(source)
+        .fold((reason) => throw MintedFormatException.from(reason, source), (email) => email);
   }
 
   /// As [fromComponents], but takes the domain as its dot-separated labels

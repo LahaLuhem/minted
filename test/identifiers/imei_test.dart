@@ -86,9 +86,8 @@ void main() {
     );
 
     scenario('the IMEISV failure says what the number actually is', () {
-      check(
-        Imei.parse('3520990017614810').reasonOrNull?.message,
-      ).equals('16 digits is an IMEISV, not an IMEI');
+      check(Imei.parse('3520990017614810').reasonOrNull?.message)
+          .equals('16 digits is an IMEISV, not an IMEI');
     });
 
     // A property of Luhn, not a gap in ours: an adjacent 0 and 9 sum the same whichever is doubled.

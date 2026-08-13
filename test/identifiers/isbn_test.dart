@@ -115,9 +115,8 @@ void main() {
     );
 
     scenario('the ISMN failure says what the number actually is', () {
-      check(
-        Isbn.parse('9790260000438').reasonOrNull?.message,
-      ).equals('"9790" is the ISMN range for printed music, not an ISBN');
+      check(Isbn.parse('9790260000438').reasonOrNull?.message)
+          .equals('"9790" is the ISMN range for printed music, not an ISBN');
     });
 
     // A property of GS1 mod-10, not a gap in ours: swapping adjacent digits five apart leaves the

@@ -153,9 +153,8 @@ void main() {
         ),
       },
       outline: (example) {
-        check(
-          Isin.fromComponents(prefix: example.prefix, nsin: example.nsin).value,
-        ).equals(example.isin);
+        check(Isin.fromComponents(prefix: example.prefix, nsin: example.nsin).value)
+            .equals(example.isin);
       },
     );
 

@@ -167,9 +167,8 @@ void main() {
         ),
       },
       outline: (example) {
-        check(
-          Cidr.tryParse(example.block)!.contains(IpAddress.tryParse(example.address)!),
-        ).equals(example.contained);
+        check(Cidr.tryParse(example.block)!.contains(IpAddress.tryParse(example.address)!))
+            .equals(example.contained);
       },
     );
 
@@ -192,9 +191,8 @@ void main() {
       final network = IpAddress.tryParse('192.0.2.0')!;
 
       check(Cidr.from(network: network, prefixLength: 24).asString).equals('192.0.2.0/24');
-      check(
-        () => Cidr.from(network: IpAddress.tryParse('192.0.2.5')!, prefixLength: 24),
-      ).throws<MintedFormatException>();
+      check(() => Cidr.from(network: IpAddress.tryParse('192.0.2.5')!, prefixLength: 24))
+          .throws<MintedFormatException>();
       check(() => Cidr.from(network: network, prefixLength: 33)).throws<MintedFormatException>();
     });
 
@@ -215,9 +213,8 @@ void main() {
     });
 
     scenario('parse reports the failure rather than throwing', () {
-      check(
-        Cidr.parse('192.168.1.5/24'),
-      ).equals(const ParseFailure(CidrHostBitsSet('192.168.1.0/24')));
+      check(Cidr.parse('192.168.1.5/24'))
+          .equals(const ParseFailure(CidrHostBitsSet('192.168.1.0/24')));
       check(Cidr.parse('10.0.0.0/8').isSuccess).isTrue();
     });
 

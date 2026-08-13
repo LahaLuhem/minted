@@ -102,25 +102,21 @@ void main() {
     );
 
     scenario('parse reports the failure rather than throwing', () {
-      check(
-        GeoCoordinate.parse('+91+000/'),
-      ).equals(const ParseFailure(GeoCoordinateLatitudeOutOfRange(91)));
-      check(
-        GeoCoordinate.parse('+00+000/'),
-      ).equals(ParseSuccess(GeoCoordinate.from(latitude: 0, longitude: 0)));
+      check(GeoCoordinate.parse('+91+000/'))
+          .equals(const ParseFailure(GeoCoordinateLatitudeOutOfRange(91)));
+      check(GeoCoordinate.parse('+00+000/'))
+          .equals(ParseSuccess(GeoCoordinate.from(latitude: 0, longitude: 0)));
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
       check(GeoCoordinate.tryParse('+91+000/')).isNull();
-      check(
-        GeoCoordinate.tryParse('+48.8577+002.295/'),
-      ).equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295));
+      check(GeoCoordinate.tryParse('+48.8577+002.295/'))
+          .equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295));
     });
 
     scenario('from builds from decimal degrees and tryFrom returns null out of range', () {
-      check(
-        GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).iso6709,
-      ).equals('+48.8577+002.295/');
+      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).iso6709)
+          .equals('+48.8577+002.295/');
       check(GeoCoordinate.tryFrom(latitude: 90, longitude: -180)).isNotNull();
       check(GeoCoordinate.tryFrom(latitude: 90.1, longitude: 0)).isNull();
       check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180.1)).isNull();
@@ -135,9 +131,10 @@ void main() {
           .throws<MintedFormatException>()
           .has((error) => error.message, 'message')
           .equals('Invalid GeoCoordinate: longitude 181.0 is outside -180 to 180');
-      check(
-        () => GeoCoordinate.from(latitude: 91, longitude: 0),
-      ).throws<MintedFormatException>().has((error) => error.source, 'source').equals('91.0, 0.0');
+      check(() => GeoCoordinate.from(latitude: 91, longitude: 0))
+          .throws<MintedFormatException>()
+          .has((error) => error.source, 'source')
+          .equals('91.0, 0.0');
     });
 
     // Latitude's narrower range catches the swaps outright; named parameters catch the rest.
@@ -154,9 +151,8 @@ void main() {
     });
 
     scenario('the antimeridian is one value with two spellings', () {
-      check(
-        GeoCoordinate.from(latitude: 0, longitude: -180),
-      ).equals(GeoCoordinate.from(latitude: 0, longitude: 180));
+      check(GeoCoordinate.from(latitude: 0, longitude: -180))
+          .equals(GeoCoordinate.from(latitude: 0, longitude: 180));
       check(GeoCoordinate.from(latitude: 0, longitude: -180).longitude).equals(180);
     });
 
@@ -170,12 +166,10 @@ void main() {
     });
 
     scenario('equal coordinates are equal by value and hash', () {
-      check(
-        GeoCoordinate.from(latitude: 48.8577, longitude: 2.295),
-      ).equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295));
-      check(
-        GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).hashCode,
-      ).equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).hashCode);
+      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295))
+          .equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295));
+      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).hashCode)
+          .equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).hashCode);
     });
 
     scenario('a transposed pair is not the same coordinate', () {
@@ -220,26 +214,22 @@ void main() {
     });
 
     scenario('sexagesimal rebuilds the display form', () {
-      check(
-        GeoCoordinate.tryParse('+48.8577+002.295/')!.sexagesimal,
-      ).equals('48°51′27.72″N 2°17′42″E');
+      check(GeoCoordinate.tryParse('+48.8577+002.295/')!.sexagesimal)
+          .equals('48°51′27.72″N 2°17′42″E');
       check(GeoCoordinate.tryParse('+00-025/')!.sexagesimal).equals('0°00′00″N 25°00′00″W');
-      check(
-        GeoCoordinate.from(latitude: 5.5 / 3600, longitude: 0).sexagesimal,
-      ).equals('0°00′05.5″N 0°00′00″E');
+      check(GeoCoordinate.from(latitude: 5.5 / 3600, longitude: 0).sexagesimal)
+          .equals('0°00′05.5″N 0°00′00″E');
     });
 
     // Rounding the seconds field instead would print 0°59′60″N.
     scenario('a rounded second carries into the minute and the degree', () {
-      check(
-        GeoCoordinate.from(latitude: 0.99999999, longitude: 0).sexagesimal,
-      ).equals('1°00′00″N 0°00′00″E');
+      check(GeoCoordinate.from(latitude: 0.99999999, longitude: 0).sexagesimal)
+          .equals('1°00′00″N 0°00′00″E');
     });
 
     scenario('toString names both parts, so a transposition is visible', () {
-      check(
-        GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).toString(),
-      ).equals('GeoCoordinate(latitude: 48.8577, longitude: 2.295)');
+      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).toString())
+          .equals('GeoCoordinate(latitude: 48.8577, longitude: 2.295)');
     });
   });
 }

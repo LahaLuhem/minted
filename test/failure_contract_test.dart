@@ -363,9 +363,8 @@ void main() {
         check(example.failure.typeName).equals(example.typeName);
         check(example.failure.message).equals(example.message);
         // The exception derives its message from these two, so this is the rendered form too.
-        check(
-          MintedFormatException.from(example.failure, 'x').message,
-        ).equals('Invalid ${example.typeName}: ${example.message}');
+        check(MintedFormatException.from(example.failure, 'x').message)
+            .equals('Invalid ${example.typeName}: ${example.message}');
       },
     );
 

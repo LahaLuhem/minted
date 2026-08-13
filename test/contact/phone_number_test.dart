@@ -33,9 +33,8 @@ void main() {
     );
 
     scenario('international and national forms of the same number are equal', () {
-      check(
-        PhoneNumber.tryParse('+33 655 5705 76')!,
-      ).equals(PhoneNumber.tryParse('0 655 5705 76', region: 'FR')!);
+      check(PhoneNumber.tryParse('+33 655 5705 76')!)
+          .equals(PhoneNumber.tryParse('0 655 5705 76', region: 'FR')!);
     });
 
     scenario('a phone number exposes its country calling code and national number', () {
@@ -91,21 +90,19 @@ void main() {
           failure: PhoneNumberFailure.invalid,
         ),
       },
-      outline: (example) => check(
-        PhoneNumber.parse(example.input, region: example.region).reasonOrNull,
-      ).equals(example.failure),
+      outline: (example) =>
+          check(PhoneNumber.parse(example.input, region: example.region).reasonOrNull)
+              .equals(example.failure),
     );
 
     scenario('an unknown region is distinguished from an unparseable number', () {
-      check(
-        PhoneNumber.parse('0655570576', region: 'ZZ').reasonOrNull?.message,
-      ).equals('the region hint is not an ISO 3166-1 alpha-2 code');
+      check(PhoneNumber.parse('0655570576', region: 'ZZ').reasonOrNull?.message)
+          .equals('the region hint is not an ISO 3166-1 alpha-2 code');
     });
 
     scenario('parse reports the failure rather than throwing', () {
-      check(
-        PhoneNumber.parse('not-a-number'),
-      ).equals(const ParseFailure(PhoneNumberFailure.unknownCountryCallingCode));
+      check(PhoneNumber.parse('not-a-number'))
+          .equals(const ParseFailure(PhoneNumberFailure.unknownCountryCallingCode));
       check(PhoneNumber.parse('+33 655 5705 76').isSuccess).isTrue();
     });
 

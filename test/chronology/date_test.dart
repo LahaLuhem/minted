@@ -127,9 +127,8 @@ void main() {
     );
 
     scenario('the failure parse reports renders the offending part', () {
-      check(
-        Date.parse('2026-02-30').reasonOrNull?.message,
-      ).equals('day 30 is outside 1-28 for 2026-02');
+      check(Date.parse('2026-02-30').reasonOrNull?.message)
+          .equals('day 30 is outside 1-28 for 2026-02');
     });
 
     scenario('the factory throws MintedFormatException naming the bad part', () {

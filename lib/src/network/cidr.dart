@@ -40,9 +40,8 @@ final class Cidr {
   static Cidr from({required IpAddress network, required int prefixLength}) {
     final source = '${network.value}$_prefixSeparator$prefixLength';
 
-    return parse(
-      source,
-    ).fold((reason) => throw MintedFormatException.from(reason, source), (cidr) => cidr);
+    return parse(source)
+        .fold((reason) => throw MintedFormatException.from(reason, source), (cidr) => cidr);
   }
 
   /// Parses [input] as a CIDR block, or returns `null` when it is not one.
