@@ -19,6 +19,8 @@ import 'failures/issn_failure.dart';
 ///
 /// ISSN-L, the linking ISSN that ties a title's print and online numbers together, needs the ISSN
 /// Register and so is out of scope.
+///
+/// {@example /example/minted_example.dart#issn}
 extension type const Issn._(String value) {
   /// Builds an [Issn] from [bodyDigits], the seven digits before the check character, computing that
   /// character. Throws [MintedFormatException] when the parts don't form a valid ISSN. For assembling

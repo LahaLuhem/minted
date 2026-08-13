@@ -47,7 +47,10 @@ void main() {
 
   for (final file in typeFiles) {
     final collector = _SpineCollector();
-    parseString(content: file.readAsStringSync()).unit.accept(collector);
+    // Structure is all this reads, and `parseString` otherwise throws on any diagnostic, including
+    // the dartdoc directives (`{@example}`) its parser does not know.
+    final parsed = parseString(content: file.readAsStringSync(), throwIfDiagnostics: false);
+    parsed.unit.accept(collector);
     final isConstraintType = file.uri.pathSegments.contains(constraintSector);
 
     group(file.uri.pathSegments.last, () {

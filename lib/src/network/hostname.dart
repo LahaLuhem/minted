@@ -23,6 +23,8 @@ import 'failures/hostname_failure.dart';
 /// Normalisation on parse: trimmed, lower-cased (RFC 1035 makes DNS comparison case-insensitive),
 /// and one trailing root dot dropped, so `EXAMPLE.com.` and `example.com` are one value. [fqdn]
 /// rebuilds the trailing-dot spelling.
+///
+/// {@example /example/minted_example.dart#hostname}
 extension type const Hostname._(String value) {
   /// Builds a [Hostname] from its [labels] (`['www', 'example', 'com']`), throwing
   /// [MintedFormatException] unless they join into a valid one. The inverse of [labels].

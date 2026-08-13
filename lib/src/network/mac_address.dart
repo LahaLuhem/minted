@@ -26,6 +26,8 @@ import 'failures/mac_address_failure.dart';
 /// Normalisation on parse: whitespace trimmed, hex lower-cased, separator rewritten to a colon, so
 /// the colon, hyphen, Cisco dot-quad (`0000.5e00.5300`) and bare-hex spellings of one address all
 /// compare equal. [ieee802] and [bareHex] render two of them back; dot-quad is input-only.
+///
+/// {@example /example/minted_example.dart#mac}
 extension type const MacAddress._(String value) {
   /// Parses [input] as a MAC address, or returns `null` unless it is six or eight octets in one
   /// notation throughout: colon, hyphen, Cisco dot-quad, or bare hex.

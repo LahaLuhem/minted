@@ -27,6 +27,8 @@ import 'failures/uuid_failure.dart';
 /// optional `urn:uuid:` prefix or surrounding `{…}` is stripped, so [value] is always the bare
 /// lowercase canonical form. Because extension-type equality is representation equality, mixed-case,
 /// URN, and brace-wrapped spellings of the same UUID all compare equal. [urn] rebuilds the URN form.
+///
+/// {@example /example/minted_example.dart#uuid}
 extension type const Uuid._(String value) {
   /// Parses [input] as a UUID, or returns `null` unless it is the canonical `8-4-4-4-12` hex form
   /// (case-insensitive), optionally wrapped as `urn:uuid:…` or `{…}`.

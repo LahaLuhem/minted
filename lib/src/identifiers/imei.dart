@@ -18,6 +18,8 @@ import 'failures/imei_failure.dart';
 ///
 /// Rendered in full rather than masked: an IMEI is not a credential, and the systems holding one display
 /// it. Why that differs from a card number: `APPENDIX.md#imei-value-type`.
+///
+/// {@example /example/minted_example.dart#imei}
 extension type const Imei._(String value) {
   /// Builds an [Imei] from its [tac] and [serialNumber], computing the Luhn check digit. Throws
   /// [MintedFormatException] when the parts don't form a valid IMEI. For assembling from a known-valid source.

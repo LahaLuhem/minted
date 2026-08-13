@@ -20,6 +20,8 @@ import 'failures/isbn_failure.dart';
 /// and the two spellings of one book compare equal. [isbn10] rebuilds the legacy form.
 ///
 /// Not hyphenated: the group boundaries come from ISBN International's range table, not the digits.
+///
+/// {@example /example/minted_example.dart#isbn}
 extension type const Isbn._(String value) {
   /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the check
   /// digit. Throws [MintedFormatException] when the parts don't form a valid ISBN. For assembling from
