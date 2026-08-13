@@ -18,6 +18,7 @@
 - \[#33\] Add Port, a 0-65535 port number
 - Add Iso8601Duration, an ISO 8601 duration with months and years
 - \[#32\] Add Percentage
+- \[#35\] Add Probability, 0 to 1 with both ends included
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
