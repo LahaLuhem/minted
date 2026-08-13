@@ -60,6 +60,7 @@ export 'src/numerics/failures/digit_failure.dart';
 export 'src/numerics/failures/digits_failure.dart';
 export 'src/quantities/natural_number.dart';
 export 'src/quantities/percentage.dart';
+export 'src/quantities/probability.dart';
 export 'src/quantities/uint.dart';
 export 'src/quantities/uint16.dart';
 export 'src/quantities/uint2.dart';

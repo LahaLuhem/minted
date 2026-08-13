@@ -114,6 +114,7 @@ const _constraintTypes = {
   'NaturalNumber',
   'Percentage',
   'Port',
+  'Probability',
   'Uint',
   'Uint2',
   'Uint4',
