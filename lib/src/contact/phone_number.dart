@@ -60,8 +60,7 @@ extension type const PhoneNumber._(String value) {
   /// country calling code (the local number you'd dial within the country).
   /// Use [Digits.asString] for the plain string.
   // A validated number's national significant number is digits only, so this cannot be null.
-  Digits get nationalNumber =>
-      Digits.tryFrom(_parsed.nsn.codeUnits.map(decimalValue).toList(growable: false))!;
+  Digits get nationalNumber => Digits.tryFrom(decimalValues(_parsed.nsn))!;
 
   /// The number's type (mobile, fixed line, VoIP, ...), or `null` if it matches no known type.
   /// When a number is valid as more than one type, the first match in enum-declaration order is returned.

@@ -17,3 +17,11 @@ int decimalValue(int codeUnit) =>
 /// Assumes `0`-`9`, which is what a validated digit sequence holds; no check-digit algorithm needs
 /// this direction, only rendering does.
 int decimalCodeUnit(int digitValue) => digitValue + _asciiZero;
+
+/// The values of [input]'s characters, ready for [Digits.tryFrom].
+///
+/// For a validated whole handing back a digits-only part. A non-digit yields -1 as [decimalValue]
+/// does, which makes [Digits.tryFrom] return null rather than minting something that lies.
+List<int> decimalValues(String input) => [
+  for (final codeUnit in input.codeUnits) decimalValue(codeUnit),
+];
