@@ -3,8 +3,8 @@
 /// @docImport 'digits.dart';
 library;
 
-import '../shared/minted_format_exception.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/digit_failure.dart';
 
 /// A single decimal digit, `0`-`9`.

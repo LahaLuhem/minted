@@ -1,7 +1,7 @@
 /// @docImport '../weekday.dart';
 library;
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [Weekday] refused its input. One variant: a closed set of seven has one way to miss.
 enum WeekdayFailure implements MintedFailure {

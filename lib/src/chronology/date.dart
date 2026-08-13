@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
 
-import '../shared/iso_date_format.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/iso_date_format.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/date_failure.dart';
 import 'month.dart';
 import 'weekday.dart';

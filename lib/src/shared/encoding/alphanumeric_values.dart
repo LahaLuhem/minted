@@ -10,8 +10,8 @@ const letterOffset = 10;
 /// else yields -1, so junk fails validation downstream rather than throwing here.
 ///
 /// One convention, two standards: ISO 13616 folds these into IBAN's mod-97, and ISO 6166 spells
-/// them out before running ISIN's Luhn. Sits beside [decimalValue] in `shared/` rather than in
-/// `check_digits/`, because only one of its two callers is a check-digit algorithm.
+/// them out before running ISIN's Luhn. Sits beside [decimalValue] in `shared/encoding/` rather than
+/// in `check_digits/`, because only one of its two callers is a check-digit algorithm.
 int alphanumericValue(int codeUnit) {
   final digitValue = decimalValue(codeUnit);
   if (digitValue >= 0) return digitValue;

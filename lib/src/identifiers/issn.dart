@@ -3,9 +3,9 @@
 
 import '../numerics/digits.dart';
 import '../shared/check_digits/mod11_check_character.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/issn_failure.dart';
 
 /// An ISSN (International Standard Serial Number): validated for characters, the eight-character

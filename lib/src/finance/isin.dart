@@ -2,12 +2,12 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digit.dart';
-import '../shared/alphanumeric_values.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
-import '../shared/iso_country_code.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/encoding/alphanumeric_values.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
+import '../shared/standards/iso_country_code.dart';
 import 'failures/isin_failure.dart';
 
 /// An ISIN (International Securities Identification Number): validated for the twelve-character

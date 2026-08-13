@@ -1,7 +1,7 @@
 /// @docImport '../digit.dart';
 library;
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [Digit] refused its input. One variant: a one-character grammar has one way to fail.
 enum DigitFailure implements MintedFailure {

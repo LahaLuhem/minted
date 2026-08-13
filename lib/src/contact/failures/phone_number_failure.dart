@@ -1,7 +1,7 @@
 /// @docImport '../phone_number.dart';
 library;
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [PhoneNumber] refused its input. Only [unknownCountryCallingCode] comes from the engine:
 /// `phone_numbers_parser` throws one of its five codes in practice, so the rest we check ourselves.

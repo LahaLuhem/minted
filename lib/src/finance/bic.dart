@@ -1,10 +1,10 @@
 // A validated BIC is ASCII [A-Z0-9] only.
 // ignore_for_file: avoid-substring
 
-import '../shared/iso_country_code.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
+import '../shared/standards/iso_country_code.dart';
 import 'failures/bic_failure.dart';
 
 /// A BIC, better known as a SWIFT code: validated for structure and for a real ISO 3166-1 country.

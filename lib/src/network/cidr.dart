@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/octet_bits.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/encoding/octet_bits.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/cidr_failure.dart';
 import 'ip_address.dart';
 

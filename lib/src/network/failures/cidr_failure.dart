@@ -4,7 +4,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 import 'ip_address_failure.dart';
 
 /// Why a [Cidr] refused its input. Sealed, not an enum, because three variants carry what failed,

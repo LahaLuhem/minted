@@ -3,10 +3,10 @@
 
 import 'dart:typed_data';
 
-import '../shared/hex_bytes.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/encoding/hex_bytes.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/uuid_failure.dart';
 
 /// A UUID (Universally Unique IDentifier): 128 bits in the canonical `8-4-4-4-12` hex form, e.g.

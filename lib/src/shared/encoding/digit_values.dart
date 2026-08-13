@@ -1,4 +1,4 @@
-/// @docImport '../numerics/digits.dart';
+/// @docImport '../../numerics/digits.dart';
 library;
 
 const _asciiZero = 0x30;

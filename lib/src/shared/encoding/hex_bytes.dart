@@ -10,7 +10,7 @@ library;
 
 import 'dart:typed_data';
 
-import 'normalisation.dart';
+import '../normalisation/normalisation.dart';
 
 /// The radix hex is written in.
 const hexRadix = 16;

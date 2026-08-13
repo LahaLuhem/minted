@@ -5,9 +5,9 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/geo_coordinate_failure.dart';
 
 /// A point on the Earth's surface: a latitude and a longitude, in decimal degrees.

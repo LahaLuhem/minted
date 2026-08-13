@@ -3,7 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why an [Iso8601Duration] refused its input. Sealed, not an enum, because three variants carry
 /// the part that broke.

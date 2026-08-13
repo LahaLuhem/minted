@@ -3,7 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why an [Isin] refused its input. Sealed, not an enum, because [IsinWrongLength] and [IsinInvalidPrefix]
 /// report values read from the input.

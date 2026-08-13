@@ -1,4 +1,4 @@
-import '../digit_values.dart';
+import '../encoding/digit_values.dart';
 
 const _modulus = 11;
 const _doublingFactor = 2;

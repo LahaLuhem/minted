@@ -3,9 +3,9 @@
 
 import 'package:collection/collection.dart';
 
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/hostname_failure.dart';
 
 /// A hostname: the dot-separated name of a host on a network, e.g. `www.example.com`.

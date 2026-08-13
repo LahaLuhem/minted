@@ -3,7 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why an [Iban] refused its input. Sealed, not an enum, because [IbanUnknownCountry] and
 /// [IbanInvalidLength] report values read from the input.

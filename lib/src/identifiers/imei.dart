@@ -4,9 +4,9 @@
 import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/imei_failure.dart';
 
 /// An IMEI (International Mobile Equipment Identity): validated for digits, the fifteen-digit

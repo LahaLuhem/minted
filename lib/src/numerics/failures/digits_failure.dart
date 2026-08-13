@@ -1,7 +1,7 @@
 /// @docImport '../digits.dart';
 library;
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [Digits] sequence refused its input. One variant: naming which element offended would
 /// not change the remedy.

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:meta/meta.dart';
 
-import '../shared/parse_outcome.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'date.dart';
 import 'failures/iso8601_duration_failure.dart';
 import 'month.dart';

@@ -3,7 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [GeoCoordinate] refused its input. Sealed, not an enum, because the range variants report
 /// the offending number back. Two remedies: [GeoCoordinateNotIso6709] means fix the format, the

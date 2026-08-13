@@ -3,9 +3,9 @@
 
 import '../numerics/digits.dart';
 import '../shared/check_digits/doubling_mod11_check_character.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/isni_failure.dart';
 
 /// An ISNI (International Standard Name Identifier): validated for the sixteen-character length,

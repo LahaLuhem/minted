@@ -2,9 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
 import '../numerics/digits.dart';
-import '../shared/iso_country_code.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
+import '../shared/standards/iso_country_code.dart';
 import 'failures/phone_number_failure.dart';
 
 /// A phone number, validated and stored in its canonical E.164 form (via `phone_numbers_parser`).
