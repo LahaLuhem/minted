@@ -5,10 +5,10 @@ import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/check_digits/mod11_check_character.dart';
-import '../shared/isbn_prefixes.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
+import '../shared/standards/isbn_prefixes.dart';
 import 'failures/isbn_failure.dart';
 
 /// An ISBN (International Standard Book Number): validated for length, prefix, and the ISO 2108

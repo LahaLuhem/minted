@@ -1,8 +1,8 @@
 /// @docImport 'date.dart';
 library;
 
-import '../shared/minted_format_exception.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/month_failure.dart';
 
 /// A month of the year, `1` (January) to `12` (December).

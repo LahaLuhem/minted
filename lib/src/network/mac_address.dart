@@ -3,10 +3,10 @@
 
 import 'dart:typed_data';
 
-import '../shared/hex_bytes.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/encoding/hex_bytes.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/mac_address_failure.dart';
 
 /// A MAC address: the 48- or 64-bit address identifying an IEEE 802 network interface, e.g.

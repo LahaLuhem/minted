@@ -1,7 +1,7 @@
 /// @docImport '../month.dart';
 library;
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [Month] refused its input. One variant: a closed set of twelve has one way to miss.
 enum MonthFailure implements MintedFailure {

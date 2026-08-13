@@ -1,4 +1,4 @@
-import '../shared/normalisation.dart';
+import '../shared/normalisation/normalisation.dart';
 
 /// A proportion in hundredths, where `15` is fifteen percent.
 ///

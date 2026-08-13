@@ -65,18 +65,24 @@ minted/
 │       ├── numerics/                Digit, Digits (numeric building blocks)
 │       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (pure ranges)
 │       ├── …                        New type → its domain-sector dir; one file per type
-│       └── shared/
-│           ├── minted_failure.dart            The MintedFailure supertype
-│           ├── minted_format_exception.dart   Typed FormatException (see APPENDIX)
-│           ├── digit_values.dart              ASCII '0'-'9' ↔ 0-9, both directions
-│           ├── hex_bytes.dart                 Hex text ↔ bytes, both directions
-│           ├── octet_bits.dart                The 8 that IpAddress and Cidr both count in
-│           ├── normalisation.dart             Separator patterns + the hyphen / zero-pad characters
-│           ├── isbn_prefixes.dart             Bookland 978/979 + the carved-out ISMN range
-│           ├── iso_date_format.dart           YYYY-MM-DD / YYYY-MM rendering (private)
-│           ├── iso_country_code.dart          ISO 3166-1 alpha-2 lookup, borrowed from the
-│           │                                  phone engine so no country table is carried
-│           └── check_digits/                  One file per algorithm, all private
+│       └── shared/                    The one non-domain dir; everything else above is a sector
+│           ├── outcomes/             What a parse hands back, and the only public part of shared/
+│           │   ├── parse_outcome.dart          ParseOutcome + ParseSuccess / ParseFailure
+│           │   ├── minted_failure.dart         The MintedFailure supertype
+│           │   └── minted_format_exception.dart   Typed FormatException (see APPENDIX)
+│           ├── encoding/             Characters ↔ numbers, bytes, bits
+│           │   ├── digit_values.dart           ASCII '0'-'9' ↔ 0-9, both directions
+│           │   ├── alphanumeric_values.dart    ASCII '0'-'Z' ↔ 0-35, for mod-97 and ISIN's Luhn
+│           │   ├── hex_bytes.dart              Hex text ↔ bytes, both directions
+│           │   └── octet_bits.dart             The 8 that IpAddress and Cidr both count in
+│           ├── normalisation/        Canonical form in, canonical form out
+│           │   ├── normalisation.dart          Separator patterns, compaction, the pad characters
+│           │   └── iso_date_format.dart        YYYY-MM-DD rendering, shared with DateFailure
+│           ├── standards/            Fixed data a standard defines, not a registry
+│           │   ├── isbn_prefixes.dart          Bookland 978/979 + the carved-out ISMN range
+│           │   └── iso_country_code.dart       ISO 3166-1 alpha-2 lookup, borrowed from the
+│           │                                   phone engine so no country table is carried
+│           └── check_digits/         One file per algorithm, all private
 │               ├── doubling_mod11_check_character.dart  ISO 7064 MOD 11-2: ISNI
 │               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
 │               ├── iban_check_digits.dart     ISO 13616 mod-97-10
@@ -102,6 +108,14 @@ numeric building-block primitives under `numerics/` and cross-cutting internals 
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
 because `minted.dart` re-exports every type. `test/` mirrors this layout.
 
+**Every top-level dir under `lib/src/` is a domain sector, except `shared/`.** That is the whole
+rule, so a second non-domain dir does not get added at that level: a sibling `contract/` would read
+as a sector (and sit one letter from `contact/`). Anything cross-cutting goes in a *subfolder* of
+`shared/` instead, grouped by job: `outcomes/` (the only public part, what a parse hands back),
+`encoding/` (characters to numbers, bytes, bits), `normalisation/`, `standards/` (fixed data a
+standard defines), `check_digits/` (one file per algorithm). Keeping them under one root is also
+what lets `conformance_test.dart` keep excluding them by the `shared` path segment alone.
+
 **A *constraint type* is a constrained number with no standard text form**, so it declares `tryFrom`
 and neither parse door. Usually a range; `Percentage` constrains the *unit* instead and bounds
 nothing but finiteness. `quantities/` holds most of them, but the category is not the directory:
@@ -116,11 +130,12 @@ vocabularies grow to rival the types themselves, and the split on disk is what l
 `conformance_test.dart` tell a value type from a failure by path rather than by inferring it from
 the AST. No `part` / `part of`: sealed variants only have to share a *file*, so a plain import
 suffices, and anything a failure needs from its value type belongs in `shared/` instead (which is
-why [`iso_date_format.dart`](../lib/src/shared/iso_date_format.dart) exists).
+why [`iso_date_format.dart`](../lib/src/shared/normalisation/iso_date_format.dart) exists).
 
 **Check-digit algorithms get one file per *algorithm*** under `shared/check_digits/`, and reach what
-they share (`../digit_values.dart`, ASCII decimal decoding) by plain import, never `part`. That file
-sits in `shared/` rather than inside `check_digits/` because it was never check-digit-specific:
+they share (`../encoding/digit_values.dart`, ASCII decimal decoding) by plain import, never `part`.
+That file sits in `shared/encoding/` rather than inside `check_digits/` because it was never
+check-digit-specific:
 `Digits` decodes with it too, and once a second caller appeared from outside the directory, keeping
 it in there would have meant `numerics/` importing `check_digits/` for something that is not a check
 digit. It carries both directions (`decimalValue`, `decimalCodeUnit`) even though no algorithm needs

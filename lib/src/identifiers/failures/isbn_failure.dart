@@ -3,8 +3,8 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/isbn_prefixes.dart';
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
+import '../../shared/standards/isbn_prefixes.dart';
 
 /// Why an [Isbn] refused its input. Sealed, not an enum, because [IsbnWrongLength] and [IsbnInvalidPrefix]
 /// report values read from the input.

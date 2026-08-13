@@ -7,9 +7,9 @@ import 'package:iban_validator/iban_validator.dart';
 
 import '../numerics/digit.dart';
 import '../shared/check_digits/iban_check_digits.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/normalisation.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/normalisation/normalisation.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/iban_failure.dart';
 
 /// An IBAN: validated for structure, country-specific length, and the mod-97 checksum (via `iban_validator`).

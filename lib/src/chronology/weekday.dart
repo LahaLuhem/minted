@@ -3,7 +3,7 @@ library;
 
 import 'package:collection/collection.dart';
 
-import '../shared/minted_format_exception.dart';
+import '../shared/outcomes/minted_format_exception.dart';
 import 'failures/weekday_failure.dart';
 
 /// A day of the week, Monday to Sunday. [Date.weekday] returns one.

@@ -3,7 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [Gtin] refused its input. Sealed, not an enum, because [GtinWrongLength] reports a value
 /// read from the input.

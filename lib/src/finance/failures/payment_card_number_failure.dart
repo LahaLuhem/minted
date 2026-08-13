@@ -3,7 +3,7 @@ library;
 
 import 'package:meta/meta.dart';
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why a [PaymentCardNumber] refused its input. Sealed, not an enum, because
 /// [PaymentCardNumberWrongLength] reports a value read from the input.

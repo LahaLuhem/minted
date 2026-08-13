@@ -1,4 +1,4 @@
-import '../alphanumeric_values.dart';
+import '../encoding/alphanumeric_values.dart';
 
 const _modulus = 97;
 const _decimalShift = 10; // fold in one digit

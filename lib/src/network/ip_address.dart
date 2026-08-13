@@ -7,10 +7,10 @@ import 'package:collection/collection.dart';
 import 'package:ipaddr/ipaddr.dart';
 
 import '../quantities/uint8.dart';
-import '../shared/hex_bytes.dart';
-import '../shared/minted_format_exception.dart';
-import '../shared/octet_bits.dart';
-import '../shared/parse_outcome.dart';
+import '../shared/encoding/hex_bytes.dart';
+import '../shared/encoding/octet_bits.dart';
+import '../shared/outcomes/minted_format_exception.dart';
+import '../shared/outcomes/parse_outcome.dart';
 import 'failures/ip_address_failure.dart';
 
 /// An IP address, v4 or v6, in canonical text form: `192.0.2.1`, `2001:db8::1`.

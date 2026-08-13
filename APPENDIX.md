@@ -822,7 +822,7 @@ registry lookups wearing a checksum's clothing.
 the two digits of its value (`A`=10 ... `Z`=35) and runs Luhn over the result, so `AU0000XVGZA3`
 weighs eighteen characters rather than the twelve it shows. That is why `luhnCheckDigit` had to be
 length-agnostic before this type could reuse it, and why the `A`=10 mapping moved out of
-`iban_check_digits.dart` into `shared/`: ISO 13616 folds those values into mod-97 and ISO 6166
+`iban_check_digits.dart` into `shared/encoding/`: ISO 13616 folds those values into mod-97 and ISO 6166
 spells them out, but the mapping is one convention shared by two standards.
 
 **The prefix is two letters, not a country.** `XS` is Euroclear and Clearstream, `EU` is

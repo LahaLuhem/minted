@@ -1,7 +1,7 @@
 /// @docImport '../email.dart';
 library;
 
-import '../../shared/minted_failure.dart';
+import '../../shared/outcomes/minted_failure.dart';
 
 /// Why an [Email] refused its input. One variant, and that is the ceiling, not a shortcut:
 /// `email_validator` exposes a single `bool`, so a finer diagnosis would be a guess.
