@@ -43,6 +43,18 @@ void main() {
   print(Date.tryParse('2026-13-01')); // null (no 13th month)
   // #endregion
 
+  // `Iso8601Duration` holds components, because a month has no length until anchored to a date.
+  // #region iso8601Duration
+  final span = Iso8601Duration.tryParse('P1Y2M3DT4H')!;
+  print(span.iso8601); // P1Y2M3DT4H
+  print(span.months); // 2
+  print(span.toDuration(from: Date(2026, 1, 31))); // 10252:00:00.000000  (427 days and 4 hours)
+  print(Iso8601Duration.tryParse('P1M')!.toDuration(from: Date(2026, 2))); // 672:00:00 (28 days)
+  print(Iso8601Duration.tryParse('PT1M')!.iso8601); // PT1M  (a minute; P1M is a month)
+  print(Iso8601Duration.parse('P1Y2W').reasonOrNull?.message);
+  // the week form PnW cannot carry a "Y" component too
+  // #endregion
+
   // `Uuid` types an existing UUID (the `uuid` package generates them). Case, a `urn:uuid:`
   // prefix, and surrounding braces are normalised to the bare lowercase form.
   // #region uuid

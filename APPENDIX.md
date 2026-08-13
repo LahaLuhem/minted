@@ -28,6 +28,7 @@ anchor, and keep anchors stable across renames.
 - [SDK floor](#sdk-floor)
 - [Date: a calendar date, not an instant](#date-value-type)
 - [Weekday: an enum, where Month is an extension type](#weekday-enum)
+- [Iso8601Duration: components, not a scalar](#iso8601-duration-value-type)
 - [Uuid: a typed identifier, not a generator](#uuid-value-type)
 - [Isni: one type, because Orcid would over-promise](#isni-value-type)
 - [Isbn: two generations, one value, no hyphens](#isbn-value-type)
@@ -648,6 +649,40 @@ which are a weekend, so a bare answer would be an opinion wearing a standard's n
 because `MintedFormatException` needs a `MintedFailure` carrying `typeName: 'Weekday'`, and the
 alternative is a shared parameterized failure: a new public shape that would turn later per-type
 growth into a breaking signature change ([failures are per type](#per-type-failures)).
+
+---
+
+<a id="iso8601-duration-value-type"></a>
+## Iso8601Duration: components, not a scalar
+
+**It does not extend `Duration`, and the reason is not that Dart forbids it.** Both `extends` and
+`implements` are allowed. But a subclass must hand `super` a microsecond count, and `P1M` has none,
+so the seed is a fiction every inherited member then reports with confidence: `inDays` answers 30,
+`P1M == Duration(days: 30)` is true, and `P1M > P31D` is false. `toString` can be overridden;
+`inDays`, `==`, `compareTo` and the arithmetic operators read the private field directly and cannot
+be made to say "it depends on the anchor". Inheriting converts "unanswerable without a date" into a
+wrong answer, which is the opposite of what the type is for. `implements` costs more, not less: about
+twenty members written by hand, each facing the same problem.
+
+**Composing a `Duration` for the exact part was the closer call.** Weeks down to seconds are all
+fixed-length, so `years`, `months` and one `Duration` would replace eight fields and drop the
+component enum, roughly 50 lines. It was declined because a fraction of a month is not a fixed
+`Duration`, so `P0.5Y` and `P0.5M` become inexpressible unless those two fields turn into doubles,
+and `P2W` collapses into `P14D` without a flag to hold the form. The components model keeps the
+fidelity; the saving was not worth trading it for.
+
+**`toDuration` takes a required named `from`.** A month is 28 to 31 days, so the anchor is what makes
+the question answerable at all, and a named parameter makes it impossible to supply by accident.
+Calendar components resolve first, clamping the day the way `2026-01-31` plus a month gives
+`2026-02-28`.
+
+**The week form is exclusive because ISO 8601 says so.** `PnW` is an alternative to
+`PnYnMnDTnHnMnS`, not a component of it, so `P1Y2W` is refused rather than read as 54 weeks. Same
+reasoning as [checking the real standard](#check-digits-not-regex) elsewhere: accepting input the
+standard does not define is as wrong as refusing input it does.
+
+**Zero spells itself.** Components that are absent or zero collapse, which would leave bare `P`, and
+`P` is not a duration. The canonical form emits `PT0S`, so it round-trips like every other type's.
 
 ---
 
