@@ -40,16 +40,19 @@ jobs:
           dart doc --dry-run 2>&1 | tee dartdoc.log
           grep -qE 'Found 0 warnings and 0 errors' dartdoc.log
 
-  # TODO(LahaLuhem): re-enable once dependency_validator ships an analyzer that knows the `new`
-  # constructor shorthand, which its bundled one still reads as an experiment. See #52.
-  # deps:
-  #   name: Dependency validator
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v7
-  #     - uses: ./.github/actions/setup-dart
-  #     - run: dart pub global activate dependency_validator
-  #     - run: dart pub global run dependency_validator
+  deps:
+    name: Dependency validator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-dart
+      # Published 5.0.5 caps `analyzer` below the 14.1.0 this package needs to parse. Until
+      # Workiva/dependency_validator#181 releases, run its branch; merging deletes it and fails here
+      - run: |
+          dart pub global activate --source git \
+            https://github.com/Workiva/dependency_validator \
+            --git-ref dependabot/pub/major-0f75c2771b
+      - run: dart pub global run dependency_validator
 
   test:
     name: Unit tests + coverage
