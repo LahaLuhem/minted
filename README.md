@@ -103,11 +103,12 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Chronology
 
-| Type      | What it guarantees                                                 | Standard                                           |
-|-----------|--------------------------------------------------------------------|----------------------------------------------------|
-| `Date`    | a real calendar date: no time, no zone; impossible dates rejected  | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-| `Month`   | a real month `1`-`12` that knows its own length (leap-aware)       | building block                                     |
-| `Weekday` | one of seven named days, ISO-numbered `1` (Monday) to `7` (Sunday) | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| Type              | What it guarantees                                                       | Standard                                           |
+|-------------------|--------------------------------------------------------------------------|----------------------------------------------------|
+| `Date`            | a real calendar date: no time, no zone; impossible dates rejected        | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Month`           | a real month `1`-`12` that knows its own length (leap-aware)             | building block                                     |
+| `Weekday`         | one of seven named days, ISO-numbered `1` (Monday) to `7` (Sunday)       | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Iso8601Duration` | a duration with months and years, which `dart:core` Duration cannot hold | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 
 ### Identifiers
 
@@ -215,6 +216,14 @@ Weekday.from(DateTime.now().weekday);      // bridges back from dart:core
 
 // impossible dates are rejected, not rolled over the way DateTime does:
 Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-01-01)
+
+// Iso8601Duration: months and years, which a dart:core Duration cannot hold. A month has no
+// length until anchored, so toDuration asks for the date:
+final span = Iso8601Duration.tryParse('P1Y2M3DT4H')!;
+span.months;                                       // 2
+span.toDuration(from: Date(2026, 1, 31));          // 427 days and 4 hours
+Iso8601Duration.tryParse('PT1M')!.iso8601;         // 'PT1M'   (a minute; P1M is a month)
+Iso8601Duration.tryParse('P1Y2W');                 // null: the week form never mixes
 
 // Uuid: type an existing UUID (the `uuid` package generates them). Case, a urn:uuid: prefix,
 // and surrounding braces are all normalised away:
@@ -441,6 +450,12 @@ dropped. Their sign, units and datum are all defined by the CRS, so an `altitude
 the type couldn't promise anything about, and validating a CRS needs a registry minted doesn't carry.
 Parsing is strict about the fixed widths, because in ISO 6709 an unpadded longitude isn't a typo, it's
 a different place. The human-readable `48°51′27.72″N` form is output-only for now, via `sexagesimal`.
+
+`Iso8601Duration` holds components rather than one number, and does not extend `Duration`. A
+subclass would have to hand `super` a microsecond count, and `P1M` has none, so every inherited
+member would answer from a fiction: `inDays` would say 30 and `P1M > P31D` would say false. Instead
+`toDuration` demands the anchor that makes the question answerable. The week form is exclusive, per
+the standard, so `P1Y2W` is refused rather than quietly read as 54 weeks.
 
 `Uint` borrows a C name for something C wouldn't recognise: it constrains the *sign*, not a width, so
 nothing wraps and there is no ceiling. `NaturalNumber` excludes zero, worth saying because the

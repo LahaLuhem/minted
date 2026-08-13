@@ -23,6 +23,8 @@ import 'month.dart';
 ///
 /// Normalisation on parse: a decimal comma becomes a point and zero components collapse, so `P1Y0M`
 /// and `P1Y` are one value. [iso8601] is the canonical form.
+///
+/// {@example /example/minted_example.dart#iso8601Duration}
 @immutable
 final class Iso8601Duration {
   /// Whole years.
