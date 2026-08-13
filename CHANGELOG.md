@@ -14,6 +14,7 @@
 - Hostname (RFC 1123: LDH grammar, both length limits, ASCII only)
 - IpAddress (RFC 5952 canonical form, v4 and v6, leading zeros refused)
 - Cidr (RFC 4632: host bits refused, contains masks bits not text)
+- \[#34\] Add Uint, NaturalNumber and the fixed-width Uint2 to Uint32 constraint types
 
 ### Changed
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
