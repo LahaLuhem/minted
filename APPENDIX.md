@@ -42,6 +42,7 @@ anchor, and keep anchors stable across renames.
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
 - [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
 - [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
+- [Port: a domain that borrows a width](#port-value-type)
 - [Constraint types: a range, not a standard](#constraint-types)
 - [What `minted` deliberately does not cover](#what-not-covered)
 
@@ -1226,6 +1227,41 @@ on the prefix *is* accepted and folds to the plain number, unlike a leading zero
 [one address type for both families](#ip-address-value-type). Two types would have let the compiler
 reject `v4Block.contains(v6Address)` outright; one type can only answer it at runtime. Documented on
 `contains` rather than left to be discovered.
+
+---
+
+<a id="port-value-type"></a>
+## Port: a domain that borrows a width
+
+**It borrows [`Uint16`](#constraint-types)'s bound instead of restating it.** A port is `0`-`65535`,
+exactly a 16-bit field, so `Port.tryFrom` delegates and adds no check of its own. The alternative was
+a local `65535`, which is the duplication `IpAddress`'s octet bound was already folded into `Uint8`
+for. Note this only works because the ranges are *identical*: `Digit` declined the same trick over
+`Uint4`, since `0`-`9` sits strictly inside `0`-`15` and the nibble would have caught nothing.
+
+**It `implements Uint16` rather than aliasing it.** The subtype relation is real, since every port is
+a valid 16-bit value, and it buys the one-directional conversion: a `Port` goes where a `Uint16` is
+wanted, never the reverse. An alias would have gone further and made them interchangeable, which is
+the mistake [a width is not a domain](#constraint-types) warns about: an IPv6 hextet is `0`-`65535`
+too, and it is not a port.
+
+**Not a `Uint16` representation.** Holding one would make `.value` a `Uint16`, so reading the number
+becomes `port.value.value`, against the contract's rule that `.value` *is* the canonical form. The
+representation stays an `int`; only the validation is borrowed.
+
+**Port `0` is accepted, and named rather than refused.** It is a real member of the range, and
+`bind(0)` asking the OS for a free port is ordinary. Rejecting it would have cost the exact-`Uint16`
+alignment above and pushed callers into modelling "any port" separately, for a value the type can
+simply describe. `isWildcard` does the describing, since RFC 6335 gives `0` no name of its own,
+listing it among the reserved values "at the edges of each range".
+
+**`range` reports, it does not gate.** The RFC 6335 bands are an IANA assignment policy, not a
+validity rule, so a `PortRange` is read back the way `MacAddress` reads its I/G and U/L bits. Gating
+on it would refuse ports that work.
+
+**It lives in `network/`, which is what forced the constraint-type list.** Filing it by domain broke
+the path-based detection described [below](#constraint-types), and the test now names its constraint
+types instead. The type's home should follow the domain, not the test.
 
 ---
 

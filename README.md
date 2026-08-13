@@ -133,6 +133,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `IpAddress`  | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal          | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)             |
 | `Cidr`       | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632)             |
 | `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back              | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address)      |
+| `Port`       | the 0-65535 bound; the RFC 6335 band read back rather than gated on                      | [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335)             |
 
 ### Numerics
 
@@ -301,6 +302,16 @@ block.contains(IpAddress.tryParse('::1')!);        // false: a v6 address is nev
 Cidr.parse('192.168.1.5/24').reasonOrNull?.message;
 // 'has host bits set below the prefix; the network is "192.168.1.0/24"'
 
+// Port: exactly a Uint16's range, so that type owns the bound. The RFC 6335 band reads back:
+final port = Port.tryFrom(8080)!;
+port.range;                       // PortRange.user
+Port.tryFrom(443)!.range;         // PortRange.system   (well-known)
+Port.tryFrom(0)!.isWildcard;      // true: bind(0) asks the OS for a free port
+Port.tryFrom(65536);              // null, one past the 16-bit ceiling
+
+void listen(Uint16 field) {}
+listen(port);                     // a Port is a Uint16; the reverse is a compile error
+
 // Hostname: Uri accepts -bad.com, a..b.com and a 64-character label without complaint. This
 // doesn't. Case and a trailing root dot normalise away, so one name has exactly one value:
 final host = Hostname.tryParse('WWW.Example.COM.')!;
@@ -401,6 +412,13 @@ failure hands you the block you probably meant. It holds an `IpAddress` and a pr
 than the text, so `contains` masks bits instead of matching characters and a bad address inside a
 block reports *why*. Only `address/prefixLength` parses, so a dotted netmask and a bare address are
 both refused.
+
+`Port` accepts `0`. It is a real member of the 0-65535 range, and `isWildcard` says what it means
+rather than the type refusing it, since `bind(0)` asking the OS for a free port is a normal thing to
+want. `range` reports the RFC 6335 band the same way, read back rather than gating the parse. Its
+range is exactly a `Uint16`'s, so that type owns the bound and `Port` adds none of its own, and it
+`implements Uint16` so a port goes wherever a width is wanted. It stays its own type all the same,
+because a width is not a domain: an IPv6 hextet is `0`-`65535` too and is not a port.
 
 `IpAddress` is one type for both families, not two. A v4 and a v6 address are never equal and
 neither is converted to the other, so `version` tells you which you hold, the way `MacAddress` reports
