@@ -83,9 +83,8 @@ void main() {
     );
 
     scenario('the grouped and compact spellings of one card are equal', () {
-      check(
-        PaymentCardNumber.tryParse('4111 1111 1111 1111')!,
-      ).equals(PaymentCardNumber.tryParse('4111111111111111')!);
+      check(PaymentCardNumber.tryParse('4111 1111 1111 1111')!)
+          .equals(PaymentCardNumber.tryParse('4111111111111111')!);
       check({
         PaymentCardNumber.tryParse('4111111111111111')!,
         PaymentCardNumber.tryParse('4111-1111-1111-1111')!,
@@ -178,9 +177,8 @@ void main() {
     );
 
     scenario('parse reports the failure rather than throwing', () {
-      check(
-        PaymentCardNumber.parse('4111111111111112'),
-      ).equals(const ParseFailure(PaymentCardNumberChecksumFailed()));
+      check(PaymentCardNumber.parse('4111111111111112'))
+          .equals(const ParseFailure(PaymentCardNumberChecksumFailed()));
       check(PaymentCardNumber.parse('4111111111111111').isSuccess).isTrue();
     });
 
@@ -311,9 +309,9 @@ void main() {
         'empty input claims nothing': (input: '', cardSchemes: []),
         'letters claim nothing': (input: 'abcd', cardSchemes: []),
       },
-      outline: (example) => check(
-        PaymentCardNumber.cardSchemesOf(example.input),
-      ).unorderedEquals(example.cardSchemes),
+      outline: (example) =>
+          check(PaymentCardNumber.cardSchemesOf(example.input))
+              .unorderedEquals(example.cardSchemes),
     );
   });
 }

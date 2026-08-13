@@ -55,9 +55,8 @@ void main() {
     });
 
     scenario('an email builds a mailto: URI', () {
-      check(
-        Email.tryParse('jane.doe@example.com')!.mailtoUri.toString(),
-      ).equals('mailto:jane.doe@example.com');
+      check(Email.tryParse('jane.doe@example.com')!.mailtoUri.toString())
+          .equals('mailto:jane.doe@example.com');
     });
 
     scenario('every door reports the one failure the engine can distinguish', () {
@@ -80,9 +79,8 @@ void main() {
     });
 
     scenario('fromComponents assembles and normalises the address', () {
-      check(
-        Email.fromComponents(localPart: 'Jane.Doe', domain: 'Example.COM').value,
-      ).equals('Jane.Doe@example.com');
+      check(Email.fromComponents(localPart: 'Jane.Doe', domain: 'Example.COM').value)
+          .equals('Jane.Doe@example.com');
     });
 
     scenario('fromDomainLabels joins the labels with dots', () {
@@ -92,15 +90,13 @@ void main() {
     });
 
     scenario('fromComponents throws MintedFormatException on invalid parts', () {
-      check(
-        () => Email.fromComponents(localPart: 'a b', domain: 'example.com'),
-      ).throws<MintedFormatException>();
+      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
+          .throws<MintedFormatException>();
     });
 
     scenario('fromDomainLabels throws MintedFormatException on empty labels', () {
-      check(
-        () => Email.fromDomainLabels(localPart: 'jane', domainLabels: []),
-      ).throws<MintedFormatException>();
+      check(() => Email.fromDomainLabels(localPart: 'jane', domainLabels: []))
+          .throws<MintedFormatException>();
     });
 
     scenario('an assembly failure carries the offending parts as its source', () {

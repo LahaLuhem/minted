@@ -164,9 +164,8 @@ void main() {
     });
 
     scenario('urn rebuilds the URN form from the canonical value', () {
-      check(
-        Uuid.tryParse('F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')!.urn,
-      ).equals('urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
+      check(Uuid.tryParse('F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')!.urn)
+          .equals('urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
     });
 
     scenario('bytes and fromBytes round-trip', () {
@@ -182,9 +181,8 @@ void main() {
     scenario('fromBytes throws MintedFormatException unless there are exactly 16 bytes', () {
       check(() => Uuid.fromBytes(Uint8List(15))).throws<MintedFormatException>();
       check(() => Uuid.fromBytes(Uint8List(17))).throws<MintedFormatException>();
-      check(
-        Uuid.fromBytes(Uint8List(16)),
-      ).equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
+      check(Uuid.fromBytes(Uint8List(16)))
+          .equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
     });
 
     scenario('compareTo orders lexicographically by canonical form', () {
@@ -220,9 +218,8 @@ void main() {
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
       check(Uuid.tryParse('not-a-uuid')).isNull();
-      check(
-        Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')?.value,
-      ).equals('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
+      check(Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')?.value)
+          .equals('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
     });
 
     scenario('the failure names the type, not its erased representation', () {

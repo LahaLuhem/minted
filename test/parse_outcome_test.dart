@@ -29,9 +29,8 @@ void main() {
 
     scenario('fold collapses either arm to one type', () {
       check(success.fold((reason) => reason.message, (value) => 'got $value')).equals('got 4');
-      check(
-        failure.fold((reason) => reason.message, (value) => 'got $value'),
-      ).equals('not a well-formed email address');
+      check(failure.fold((reason) => reason.message, (value) => 'got $value'))
+          .equals('not a well-formed email address');
     });
 
     scenario('getOrElse supplies a fallback only on failure', () {
@@ -61,25 +60,23 @@ void main() {
     // It has the failure but never the text that produced it, so source stays null rather than
     // being invented.
     scenario('getOrThrow reports no source, having never seen the input', () {
-      check(
-        failure.getOrThrow,
-      ).throws<MintedFormatException>().has((error) => error.source, 'source').isNull();
+      check(failure.getOrThrow)
+          .throws<MintedFormatException>()
+          .has((error) => error.source, 'source')
+          .isNull();
     });
 
     scenario('map transforms a value and carries a failure across untouched', () {
       check(success.map((value) => value * 2)).equals(const ParseSuccess(8));
-      check(
-        failure.map((value) => value * 2),
-      ).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
+      check(failure.map((value) => value * 2))
+          .equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
     });
 
     scenario('flatMap chains a fallible step, and the first failure short-circuits', () {
-      check(
-        lengthOf('abcd').flatMap((value) => lengthOf('x' * value)),
-      ).equals(const ParseSuccess(4));
-      check(
-        lengthOf('abc').flatMap((_) => lengthOf('xx')),
-      ).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
+      check(lengthOf('abcd').flatMap((value) => lengthOf('x' * value)))
+          .equals(const ParseSuccess(4));
+      check(lengthOf('abc').flatMap((_) => lengthOf('xx')))
+          .equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
     });
 
     scenario('a switch over the two arms is exhaustive, and destructures', () {
@@ -97,9 +94,8 @@ void main() {
       check(success).equals(const ParseSuccess<EmailFailure, int>(4));
       check(success.hashCode).equals(const ParseSuccess<EmailFailure, int>(4).hashCode);
       check(failure).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
-      check(
-        failure.hashCode,
-      ).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed).hashCode);
+      check(failure.hashCode)
+          .equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed).hashCode);
       check(success).not((it) => it.equals(const ParseSuccess<EmailFailure, int>(5)));
     });
 

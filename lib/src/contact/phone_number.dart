@@ -21,9 +21,8 @@ extension type const PhoneNumber._(String value) {
   static PhoneNumber fromComponents({required String countryCode, required Digits nationalNumber}) {
     final source = '+$countryCode${nationalNumber.asString}';
 
-    return parse(
-      source,
-    ).fold((reason) => throw MintedFormatException.from(reason, source), (phone) => phone);
+    return parse(source)
+        .fold((reason) => throw MintedFormatException.from(reason, source), (phone) => phone);
   }
 
   /// Parses [input] as a phone number, or returns `null` when it is not a valid number.

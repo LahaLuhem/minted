@@ -92,12 +92,7 @@ final class DateDayOutOfRange extends DateFailure {
   final int maxDay;
 
   /// Creates the failure.
-  const new({
-    required this.year,
-    required this.month,
-    required this.day,
-    required this.maxDay,
-  });
+  const new({required this.year, required this.month, required this.day, required this.maxDay});
 
   @override
   String get message => 'day $day is outside 1-$maxDay for ${isoYearMonth(year, month)}';

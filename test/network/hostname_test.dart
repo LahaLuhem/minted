@@ -139,12 +139,10 @@ void main() {
     });
 
     scenario('the failure message names the remedy, not just the rule', () {
-      check(
-        Hostname.parse('_sip.example.com').reasonOrNull?.message,
-      ).equals('an underscore makes this a DNS name, not a hostname');
-      check(
-        Hostname.parse('bücher.example').reasonOrNull?.message,
-      ).equals('contains non-ASCII, so punycode it to an A-label first');
+      check(Hostname.parse('_sip.example.com').reasonOrNull?.message)
+          .equals('an underscore makes this a DNS name, not a hostname');
+      check(Hostname.parse('bücher.example').reasonOrNull?.message)
+          .equals('contains non-ASCII, so punycode it to an A-label first');
     });
 
     scenario('compareTo orders lexicographically by canonical form', () {
@@ -159,9 +157,8 @@ void main() {
     });
 
     scenario('parse reports the failure rather than throwing', () {
-      check(
-        Hostname.parse('-bad.example'),
-      ).equals(const ParseFailure(HostnameLabelMalformed('-bad')));
+      check(Hostname.parse('-bad.example'))
+          .equals(const ParseFailure(HostnameLabelMalformed('-bad')));
       check(Hostname.parse('example.com').isSuccess).isTrue();
     });
 

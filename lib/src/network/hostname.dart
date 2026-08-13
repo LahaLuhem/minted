@@ -29,9 +29,8 @@ extension type const Hostname._(String value) {
   static Hostname fromLabels(List<String> labels) {
     final source = labels.join(_labelSeparator);
 
-    return parse(
-      source,
-    ).fold((reason) => throw MintedFormatException.from(reason, source), (hostname) => hostname);
+    return parse(source)
+        .fold((reason) => throw MintedFormatException.from(reason, source), (hostname) => hostname);
   }
 
   /// Parses [input] as a hostname, or returns `null` when it breaks any RFC 1123 rule.

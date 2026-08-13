@@ -157,9 +157,8 @@ void main() {
       check(tenth.compareTo(ninth)).isGreaterThan(0);
       check(ninth.compareTo(IpAddress.tryParse('2001:db8::1')!)).isLessThan(0);
       // Within v6 too, where '::9' sorts lexicographically after '::10' but numerically before it.
-      check(
-        IpAddress.tryParse('2001:db8::9')!.compareTo(IpAddress.tryParse('2001:db8::10')!),
-      ).isLessThan(0);
+      check(IpAddress.tryParse('2001:db8::9')!.compareTo(IpAddress.tryParse('2001:db8::10')!))
+          .isLessThan(0);
       // Comparator test
       // ignore: avoid-passing-self-as-argument
       check(ninth.compareTo(ninth)).equals(0);
