@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
+import '../shared/standards/dns_names.dart';
 import 'failures/hostname_failure.dart';
 
 /// A hostname: the dot-separated name of a host on a network, e.g. `www.example.com`.
@@ -29,7 +30,7 @@ extension type const Hostname._(String value) {
   /// Builds a [Hostname] from its [labels] (`['www', 'example', 'com']`), throwing
   /// [MintedFormatException] unless they join into a valid one. The inverse of [labels].
   static Hostname fromLabels(List<String> labels) {
-    final source = labels.join(_labelSeparator);
+    final source = labels.join(labelSeparator);
 
     return parse(source)
         .fold((reason) => throw MintedFormatException.from(reason, source), (hostname) => hostname);
@@ -41,45 +42,38 @@ extension type const Hostname._(String value) {
 
   /// Parses [input] as a hostname, reporting the [HostnameFailure] that says which rule it broke.
   static ParseOutcome<HostnameFailure, Hostname> parse(String input) {
-    final normalisedInput = _rootStripped(input.trim().toLowerCase());
+    final normalisedInput = rootStripped(input.trim().toLowerCase());
     final failure = _failureFor(normalisedInput);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(normalisedInput));
   }
 
   /// The dot-separated labels, most specific first: `['www', 'example', 'com']`.
-  List<String> get labels => value.split(_labelSeparator);
+  List<String> get labels => value.split(labelSeparator);
 
   /// The fully-qualified spelling, `www.example.com.`, whose trailing dot names the root.
   /// RFC 3696 calls the two equivalent, which is why parse drops it.
-  String get fqdn => '$value$_labelSeparator';
+  String get fqdn => '$value$labelSeparator';
 
   /// Orders two hostnames lexicographically by their canonical form. Extension types cannot
   /// implement `Comparable<Hostname>`, so this is a plain method, not the [Comparable] interface.
   int compareTo(Hostname other) => value.compareTo(other.value);
 
-  // One trailing root dot, which RFC 3696 requires applications to accept. A bare "." is left be,
-  // so it fails as an empty label rather than silently becoming the empty string.
-  static String _rootStripped(String lowerInput) =>
-      lowerInput.length > _labelSeparator.length && lowerInput.endsWith(_labelSeparator)
-      ? lowerInput.substring(0, lowerInput.length - _labelSeparator.length)
-      : lowerInput;
-
   // Ordered so each check can assume the ones before it passed.
   static HostnameFailure? _failureFor(String normalisedInput) {
     final offendingCharacter = _offendingCharacter(normalisedInput);
     if (offendingCharacter != null) {
-      return offendingCharacter.codeUnitAt(0) > _lastAscii
+      return isNonAscii(offendingCharacter)
           ? const HostnameNotAscii()
           : HostnameInvalidCharacters(offendingCharacter);
     }
-    if (normalisedInput.length > _maxLength) return HostnameTooLong(normalisedInput.length);
+    if (normalisedInput.length > maxNameLength) return HostnameTooLong(normalisedInput.length);
 
-    final labels = normalisedInput.split(_labelSeparator);
+    final labels = normalisedInput.split(labelSeparator);
     final malformedLabel = labels.firstWhereOrNull(_isMalformed);
     if (malformedLabel != null) return HostnameLabelMalformed(malformedLabel);
 
-    final overlongLabel = labels.firstWhereOrNull((label) => label.length > _maxLabelLength);
+    final overlongLabel = labels.firstWhereOrNull((label) => label.length > maxLabelLength);
     if (overlongLabel != null) return HostnameLabelTooLong(overlongLabel.length);
 
     return digitsOnly.hasMatch(labels.last) ? const HostnameNumericTld() : null;
@@ -93,10 +87,4 @@ extension type const Hostname._(String value) {
       label.isEmpty || label.startsWith(hyphen) || label.endsWith(hyphen);
 
   static final _allowed = RegExp('[0-9a-z.-]');
-
-  static const _labelSeparator = '.';
-  static const _maxLabelLength = 63;
-  // 253, not the 255 of RFC 1035: the wire form spends a length octet per label plus a root null.
-  static const _maxLength = 253;
-  static const _lastAscii = 0x7f;
 }
