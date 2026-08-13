@@ -208,9 +208,12 @@ follow the rule above.
 
 **Non-negotiable across both shapes:**
 
-1. **Private primary constructor** (`._`). There is no public way to build an instance except
+1. **Private constructor** (`._`). There is no public way to build an instance except
    through parsing, so any instance that exists is well-formed. Never add an *unvalidated* public
-   constructor; it would break the guarantee the whole package sells. A validated named factory
+   constructor; it would break the guarantee the whole package sells. (*Primary constructor* has
+   named a Dart language feature since 3.13, which this package does not use, so this rule is about
+   privacy, not syntax. See [`APPENDIX.md#sdk-floor`](./APPENDIX.md#sdk-floor).) A validated named
+   factory
    (`fromComponents`, `fromDomainLabels`) that assembles caller-supplied parts and runs the same
    validation before `._` is fine, throwing [`MintedFormatException`](./APPENDIX.md#why-typed-format-exception)
    on bad parts: it's a parsing entry point keyed on parts, not a raw constructor, so the guarantee
@@ -457,7 +460,7 @@ sealed hierarchy kept whole in one file already shares a library. Where a failur
 needs `part` to reach its value type's privates, move the shared piece to `shared/` instead.
 
 <a id="idioms-dot-shorthands"></a>
-### Static dot shorthands (Dart 3.10+; stable at the 3.12 floor)
+### Static dot shorthands (Dart 3.10+, so stable at the floor)
 
 Where the context type is known, drop the leading type name; the analyzer resolves the member
 from the parameter, return, or variable type. This covers enum values in patterns and argument
@@ -478,8 +481,9 @@ CardScheme get cardScheme => cardSchemes.singleOrNull ?? .unknown;
 
 Skip it where the context type isn't obvious without re-reading, or where it hurts readability.
 When a prefix disappears from a file entirely, drop it from any `show` clauses too. Note this is
-a stable feature at the 3.12 floor; primary (declaring) constructors are a separate, still-
-experimental feature and are not used (see [`APPENDIX.md#sdk-floor`](./APPENDIX.md#sdk-floor)).
+stable at the floor; primary (declaring) constructors are a separate feature, stable since 3.13 but
+still not used, because `public_member_api_docs` cannot be satisfied on one (see
+[`APPENDIX.md#sdk-floor`](./APPENDIX.md#sdk-floor)).
 
 ---
 
@@ -582,6 +586,12 @@ library;
 - **Trim prose to the load-bearing sentence.** The code-comment bar applies to README, APPENDIX and
   this file too: say the thing, then stop. No restating a point in three phrasings, no caveats
   nobody asked for. An APPENDIX entry earns more room than a comment, not a licence to ramble.
+- **Never restate a value a source file owns.** Point at the file instead: "the `sdk:` constraint in
+  `pubspec.yaml`", not "`^3.13.0`"; "the channel `.fvmrc` names", not "stable". A copied literal
+  drifts silently the moment the source moves, which is how APPENDIX came to claim `^3.12.0` after
+  the floor had already gone up. Prose owns the *reason* for a value; the file owns the value.
+  Facts about a release ("the `new` shorthand needs ≥ 3.13") are not pins and stay, since Dart's
+  history doesn't move.
 - **British spelling in prose and identifiers** (`normalise`, `canonicalise`, `behaviour`), with
   one carve-out: names fixed by the SDK or a dependency stay as they are (`toJson`, `compareTo`,
   `hashCode`). See [`APPENDIX.md#spelling`](./APPENDIX.md#spelling).

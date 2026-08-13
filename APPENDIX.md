@@ -87,8 +87,8 @@ format failure must be *reproducible*: whatever CI rejects, `dart format .` loca
 fix, which neither Dart stable nor a pinned literal promises once it drifts from the machine the code
 is written on.
 
-**Elsewhere the newer SDK is the point.** `pubspec.yaml` admits `^3.12.0`, so a downstream Dart-only
-user is on 3.13 today and those jobs test what they actually run. The known cost is that the analyzer
+**Elsewhere the newer SDK is the point.** Those jobs run Dart stable, which is what
+[`pubspec.yaml`](../pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on. The known cost is that the analyzer
 is version-sensitive too, so a Dart-stable-only diagnostic would be fixed slightly blind; explicit
 rules in [`analysis_options.yaml`](../analysis_options.yaml) stop new lints switching themselves on,
 and if it ever stops being tolerable the format job's recipe moves into the composite.
@@ -547,22 +547,23 @@ nothing on this package's surface, because the value-type API (`parse`, `tryPars
 <a id="sdk-floor"></a>
 ## SDK floor
 
-The floor is **Dart 3.12** (`sdk: ^3.12.0`). Extension types (the mechanism behind every
-single-primitive type) need ≥ 3.3, and static dot shorthands need ≥ 3.10; pinning at 3.12 gets
-both as stable, on-by-default features. The trade-off is reach: 3.12 is recent, so a project on an
-older SDK can't depend on `minted`. For a fresh package that is an acceptable price for building
-on current language features, and since a floor can only be raised (never lowered) without a
-breaking change, starting current avoids churn later.
+The floor lives in [`pubspec.yaml`](../pubspec.yaml)'s `sdk:` constraint and tracks what the package
+actually consumes: extension types need ≥ 3.3, static dot shorthands ≥ 3.10, the `new` constructor
+shorthand ≥ 3.13. The cost is reach, since a project on an older SDK can't depend on `minted`.
+Acceptable for a fresh package, and because a floor can only be raised without a breaking change,
+starting current avoids churn later. Record any bump here.
 
-**Primary (declaring) constructors are deliberately not used**, even though they exist in 3.12.
-They are still an *experiment* there (`--enable-experiment=primary-constructors`, off by default,
-verified against 3.12.2). Experiments are per-compilation and global, so a published package that
-used them would force every downstream consumer to enable the same experiment in their own build,
-and the syntax can still change before it stabilizes. Until the feature ships stable (no flag),
-the private-representation extension type (`extension type const T._(String _value)`) already
-gives the same "private field declared at the constructor" shape with zero experiments; revisit
-the [value-type contract](./CODESTYLE.md#value-type-contract) when it stabilizes. Record any floor
-bump here, since it is breaking for anyone on the older SDK.
+**Primary (declaring) constructors went stable in 3.13 and are still not used**, for a new reason.
+`public_member_api_docs`, which this package enables, treats the implicit primary constructor as an
+undocumented public member and reports it at the class name, where there is no declaration to attach
+a `///` to. Verified: const, non-const and zero-parameter forms are all flagged, while the old form
+with a documented constructor is clean. Satisfying it costs an `// ignore:` per class (and
+`document_ignores` is on, so that needs its own justification, more noise than the docstring it
+replaced) or dropping the lint package-wide. It has a history of firing on constructors with nowhere
+to document ([linter#3655](https://github.com/dart-lang/linter/issues/3655),
+[linter#284](https://github.com/dart-lang/linter/issues/284)), so this is a known pattern, not a
+fresh bug. The other half does work: `dart doc` carries a `///` on a primary-constructor parameter
+through to a field page just like a documented field. Revisit if the lint learns about them.
 
 ---
 
