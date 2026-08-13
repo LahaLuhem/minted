@@ -149,6 +149,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                     | range constraint |
 | `NaturalNumber`    | strictly above zero (`1` or more)                                                       | range constraint |
 | `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix | range constraint |
+| `Percentage`       | which unit you meant, so `15` and `0.15` can't be swapped; finite, and unbounded either side | unit constraint  |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
 and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enough.
@@ -175,10 +176,12 @@ Two exceptions, both deliberate. A few types are **classifications** rather than
 something that already parsed, so they give you named cases and an exhaustive `switch` instead of
 `tryParse` / `parse`. `Weekday` still has `from` / `tryFrom` to build one from an ISO day number.
 
-The others are **constraint types** (`Uint`, `NaturalNumber`, and the fixed widths): a range over a
-number, with no standard defining a text form for one, so a `parse(String)` door would be inventing
-one. They take `tryFrom(int)` instead, and with one invariant each there is nothing a failure could
-say that `null` doesn't, so they carry none.
+The others are **constraint types** (`Uint`, `NaturalNumber`, the fixed widths, and `Percentage`):
+a number with a constraint on it, and no standard defining a text form for one, so a `parse(String)`
+door would be inventing one. They take `tryFrom` instead, and with one invariant each there is
+nothing a failure could say that `null` doesn't, so they carry none. `Percentage` is the odd one
+out: it constrains the *unit* rather than a range, so it takes both `tryFrom(15)` and
+`tryFromFraction(0.15)`.
 
 <details>
 <summary><b>More examples</b></summary>

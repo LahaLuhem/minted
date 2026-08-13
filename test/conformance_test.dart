@@ -112,6 +112,7 @@ const _contractDoors = {'parse', 'tryParse'};
 /// rather than derived from the directory, because `Port` belongs to `network/` by domain.
 const _constraintTypes = {
   'NaturalNumber',
+  'Percentage',
   'Port',
   'Uint',
   'Uint2',
