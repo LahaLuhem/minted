@@ -40,9 +40,8 @@ jobs:
           dart doc --dry-run 2>&1 | tee dartdoc.log
           grep -qE 'Found 0 warnings and 0 errors' dartdoc.log
 
-  # TODO(LahaLuhem): re-enable once dependency_validator parses Dart 3.13. Its analyzer rejects the
-  # `new` constructor shorthand, and `{@example}` trips.
-  # See https://github.com/dart-lang/sdk/issues/63504
+  # TODO(LahaLuhem): re-enable once dependency_validator ships an analyzer that knows the `new`
+  # constructor shorthand, which its bundled one still reads as an experiment. See #52.
   # deps:
   #   name: Dependency validator
   #   runs-on: ubuntu-latest
