@@ -25,6 +25,9 @@
 - \[#18\] Take Digits rather than String for digits-only assembly-factory parts
 - Bump to Dart 3.13 + add verifiable dartdoc examples for every type, with a CI gate
 
+### Deprecated
+- deprecate every door v2 removes, and add the replacements they point at
+
 ## [1.0.0] - 2026-08-09
 ### Changed
 - \[#8\] Replace the throwing parse with ParseOutcome and per-type failures
