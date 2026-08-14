@@ -1,4 +1,4 @@
-/// @docImport 'minted_format_exception.dart';
+/// @docImport 'minted_format_error.dart';
 library;
 
 /// Why a `minted` value type refused its input.
@@ -13,6 +13,6 @@ abstract interface class MintedFailure {
 
   /// What went wrong, e.g. `'failed the mod-97 check'`, for logs.
   ///
-  /// Never names its own type: [MintedFormatException] already prefixes `Invalid <typeName>:`.
+  /// Never names its own type: [MintedFormatError] already prefixes `Invalid <typeName>:`.
   String get message;
 }

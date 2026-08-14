@@ -185,7 +185,7 @@ void main() {
                 Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 3, 2, 6])!)
                     .getOrThrow(),
           )
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsniWrongLength(15));
     });

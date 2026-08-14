@@ -197,7 +197,7 @@ void main() {
               body: Digits.tryFrom([0, 3, 0, 6, 4, 0, 6, 1])!,
             ).getOrThrow(),
           )
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsbnWrongLength(12));
     });

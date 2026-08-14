@@ -87,7 +87,7 @@ void main() {
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com').getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(EmailFailure.malformed);
     });

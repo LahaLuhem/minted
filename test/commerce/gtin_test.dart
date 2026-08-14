@@ -187,7 +187,7 @@ void main() {
 
     scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
       check(() => Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3])!).getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const GtinWrongLength(10));
     });

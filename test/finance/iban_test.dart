@@ -161,7 +161,7 @@ void main() {
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IbanInvalidLength(expected: 22, actual: 12));
     });

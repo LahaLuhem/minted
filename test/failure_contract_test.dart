@@ -372,8 +372,8 @@ void main() {
       outline: (example) {
         check(example.failure.typeName).equals(example.typeName);
         check(example.failure.message).equals(example.message);
-        // The exception derives its message from these two, so this is the rendered form too.
-        check(MintedFormatException.from(example.failure, 'x').message)
+        // The error derives its message from these two, so this is the rendered form too.
+        check(MintedFormatError.from(example.failure).message)
             .equals('Invalid ${example.typeName}: ${example.message}');
       },
     );

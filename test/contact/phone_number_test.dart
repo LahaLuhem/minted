@@ -148,7 +148,7 @@ void main() {
               nationalNumber: Digits.tryFrom([1])!,
             ).getOrThrow(),
           )
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(PhoneNumberFailure.invalid);
     });

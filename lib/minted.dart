@@ -1,10 +1,10 @@
 /// Well-modelled value types (domain primitives) for entities usually left as a
 /// raw `String`: email, IBAN, and more.
 ///
-/// Every type is built on "parse, don't validate": build it through `tryParse`
-/// (returns `null` on invalid input) or `parse` (throws a
-/// `MintedFormatException`), never a public constructor, so any instance that
-/// exists is guaranteed well-formed.
+/// Every type is built on "parse, don't validate": build it through `parse` (returns a
+/// `ParseOutcome`, the value or a typed failure) or `tryParse` (returns `null`), never a public
+/// constructor, so any instance that exists is guaranteed well-formed. No door throws; `getOrThrow`
+/// on an outcome is the caller opting in.
 library;
 
 // PhoneNumber.type returns this; re-exported so consumers need not import the
@@ -67,5 +67,5 @@ export 'src/quantities/uint32.dart';
 export 'src/quantities/uint4.dart';
 export 'src/quantities/uint8.dart';
 export 'src/shared/outcomes/minted_failure.dart';
-export 'src/shared/outcomes/minted_format_exception.dart';
+export 'src/shared/outcomes/minted_format_error.dart';
 export 'src/shared/outcomes/parse_outcome.dart';
