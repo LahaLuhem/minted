@@ -18,6 +18,9 @@ functions deep. (One asterisk on that, see [Caveats](#caveats).)
 It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
 type wears the same small API, so learning one teaches you the rest.
 
+> Heading for 2.0.0, where no door throws implicitly any more? [MIGRATION.md](./MIGRATION.md) has
+> the two-step path, and 1.1.0 deprecates everything that goes.
+
 <details>
 <summary><b>Why "parse, don't validate"?</b></summary>
 
@@ -148,13 +151,13 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Quantities
 
-| Type               | What it guarantees                                                                      | Standard         |
-|--------------------|-----------------------------------------------------------------------------------------|------------------|
-| `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                     | range constraint |
-| `NaturalNumber`    | strictly above zero (`1` or more)                                                       | range constraint |
-| `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix | range constraint |
+| Type               | What it guarantees                                                                           | Standard         |
+|--------------------|----------------------------------------------------------------------------------------------|------------------|
+| `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                          | range constraint |
+| `NaturalNumber`    | strictly above zero (`1` or more)                                                            | range constraint |
+| `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix      | range constraint |
 | `Percentage`       | which unit you meant, so `15` and `0.15` can't be swapped; finite, and unbounded either side | unit constraint  |
-| `Probability`      | `0` to `1` inclusive, both ends reported rather than refused                             | range constraint |
+| `Probability`      | `0` to `1` inclusive, both ends reported rather than refused                                 | range constraint |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
 and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enough.
@@ -213,8 +216,8 @@ final date = Date.tryParse('2026-07-07')!;   // strict ISO 8601 YYYY-MM-DD
 date.iso8601;      // '2026-07-07'   (canonical form)
 date.weekday;      // Weekday.tuesday   (.value is 2, matching DateTime.weekday)
 date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
-date.addDays(30);  // Date(2026-08-06)   (throws past the 0000-9999 bound)
-date.tryAddDays(3000000); // null        (the same walk, without the throw)
+date.tryAddDays(30);      // Date(2026-08-06)
+date.tryAddDays(3000000); // null   (the walk left the 0000-9999 bound)
 date < Date.of(2027); // true   (Date.of(2027) is 2027-01-01)
 Date.of(2026, 7, 7);  // the same day from its parts; Date(2026, 7, 7) is the older spelling
 Date.now();        // today in the local zone, the date-only DateTime.now()
@@ -222,7 +225,7 @@ Date.now();        // today in the local zone, the date-only DateTime.now()
 // Weekday: seven named days, so a switch over one needs no default arm:
 date.weekday.next;                         // Weekday.wednesday   (wraps past Sunday)
 Weekday.friday.daysUntil(Weekday.monday);  // 3   (counts forward round the week)
-Weekday.from(DateTime.now().weekday);      // bridges back from dart:core
+Weekday.tryFrom(DateTime.now().weekday);   // bridges back from dart:core
 
 // impossible dates are rejected, not rolled over the way DateTime does:
 Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-01-01)
@@ -373,11 +376,11 @@ GeoCoordinate.from(latitude: 48.8577, longitude: 2.295);   // named, so it can't
 
 // build from parts you already trust (throws if they don't form a valid whole).
 // a part that is only ever digits takes `Digits`, so junk can't reach the factory at all:
-final prefix = Digits.parse('978').getOrThrow();   // getOrThrow: "I assert this is digits"
-final body = Digits.parse('030640615').getOrThrow();
+final prefix = Digits.tryFrom([9, 7, 8])!;   // digits are ints; the ! is you asserting they fit
+final body = Digits.tryFrom([0, 3, 0, 6, 4, 0, 6, 1, 5])!;
 
 Isbn.fromComponents(prefix: prefix, body: body);   // computes the check digit
-Gtin.fromBody(Digits.parse('400638133393').getOrThrow());
+Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3, 3, 9, 3])!);
 
 // parts that aren't digits stay strings, because `Digits` would be the wrong type:
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // a BBAN is alphanumeric
@@ -601,7 +604,7 @@ The same shape works for any other FP library: `fold` is the exit.
 **Never cast into a minted type.** The single-value types are `extension type`s, which is what makes
 them free: no allocation per value, and equality, `hashCode` and ordering inherited from the
 representation. The price is that the type exists only at compile time, so a cast slips past the
-parser and the compiler allows it.
+parser, and the compiler allows it.
 
 ```dart
 'nope' as Email;             // compiles, succeeds
@@ -612,7 +615,7 @@ rawStrings as List<Email>;   // a whole list at once, no per-element check
 That `Email` blows up the moment you read `.localPart`. So `parse`, `tryParse` and `fromComponents`
 are the only doors in, and a cast into a minted type is a bug. It's also the one place the
 `int.parse` / `Uri.parse` comparison breaks down, since those return real classes that can't be
-forged; worth saying out loud, because a package can't stop its callers from casting. A lint for it
+forged; worth saying out loud, because a package can't stop its callers from casting. Lint for it
 is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The
 class-backed types (`Date`, `Digits`, `PaymentCardNumber`) are ordinary classes, so bad casts throw
 there instead. Why the erasure is
