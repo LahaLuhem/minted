@@ -3,6 +3,8 @@
 
 import 'package:email_validator/email_validator.dart';
 
+import '../network/failures/hostname_failure.dart';
+import '../network/hostname.dart';
 import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/email_failure.dart';
@@ -57,8 +59,14 @@ extension type const Email._(String value) {
   /// Case is preserved from the input.
   String get localPart => value.substring(0, value.lastIndexOf('@'));
 
-  /// The domain, after the last `@`. Always lower-case.
+  /// The domain, after the last `@`. Always lower-case. Not always a [Hostname]: see
+  /// [domainAsHostname].
   String get domain => value.substring(value.lastIndexOf('@') + 1);
+
+  /// The [domain] as a [Hostname], reporting the [HostnameFailure] when it is not one: an address
+  /// literal (`jane@[192.0.2.1]`) and an internationalised domain are valid addresses but not
+  /// hostnames.
+  ParseOutcome<HostnameFailure, Hostname> domainAsHostname() => Hostname.parse(domain);
 
   /// A `mailto:` URI addressing this email.
   Uri get mailtoUri => Uri(scheme: 'mailto', path: value);

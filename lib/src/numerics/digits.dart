@@ -57,8 +57,7 @@ final class Digits extends Iterable<Digit> {
       tryFrom(values.toList(growable: false)) ??
       (throw MintedFormatException.from(DigitsFailure.notAllDigits, '$values'));
 
-  /// The sequence built from the given `digits` (each already a valid `0`-`9`).
-  // Every Digit is in range by construction, so this mints directly rather than re-checking.
+  /// The sequence built from the given `digits`, minted directly: each is already `0`-`9`.
   static Digits of(Iterable<Digit> digits) =>
       ._(.fromList([for (final digit in digits) digit.value]));
 
@@ -70,7 +69,6 @@ final class Digits extends Iterable<Digit> {
   int get length => _bytes.length;
 
   /// The [Digit] at [index] (0-based).
-  // As above: the byte is already a digit's value.
   Digit operator [](int index) => Digit.tryFrom(_bytes[index])!;
 
   /// The digits as a plain string, e.g. `'12345'` (the canonical form).

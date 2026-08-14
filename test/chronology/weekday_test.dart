@@ -1,5 +1,4 @@
-// These doors are deprecated for removal in 2.0.0 but still ship in 1.x, so their tests
-// stay until they go; see #44.
+// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:checks/checks.dart';

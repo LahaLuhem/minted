@@ -35,9 +35,7 @@ final class Date implements Comparable<Date> {
   /// The day of the month, `1` to the last day of [month] (leap-year aware).
   final int day;
 
-  /// The [Date] for [year], [month] and [day]. Identical to [Date.of], which is the spelling to
-  /// reach for: a factory constructor must return its own type, so only the named form can carry a
-  /// richer return type later.
+  /// The [Date] for [year], [month] and [day]. Identical to [Date.of], the spelling to prefer.
   @Deprecated('Use Date.of. Removed in 2.0.0 (#44).')
   factory(int year, [int month = 1, int day = 1]) => Date.of(year, month, day);
 

@@ -1,5 +1,4 @@
-// These doors are deprecated for removal in 2.0.0 but still ship in 1.x, so their tests
-// stay until they go; see #44.
+// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:checks/checks.dart';
@@ -108,6 +107,38 @@ void main() {
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('a b@example.com');
+    });
+
+    // A valid address does not always carry a hostname, which is why the narrowing is partial.
+    scenarioOutline<({String input, String? hostname})>(
+      'domainAsHostname narrows the domain only where it really is a hostname',
+      examples: {
+        'an ordinary domain': (input: 'jane@example.com', hostname: 'example.com'),
+        'a punycode domain, which is ASCII': (
+          input: 'jane@xn--bcher-kva.example',
+          hostname: 'xn--bcher-kva.example',
+        ),
+        'the domain is lower-cased first': (input: 'jane@EXAMPLE.com', hostname: 'example.com'),
+        'an RFC 5321 IPv4 address literal': (input: 'jane@[192.0.2.1]', hostname: null),
+        'an RFC 5321 IPv6 address literal': (input: 'jane@[IPv6:2001:db8::1]', hostname: null),
+        'an internationalised domain, refused for want of IDNA': (
+          input: 'jane@bücher.example',
+          hostname: null,
+        ),
+      },
+      outline: (example) {
+        final parsedEmail = Email.tryParse(example.input);
+
+        check(parsedEmail).isNotNull();
+        check(parsedEmail!.domainAsHostname().getOrNull()?.value).equals(example.hostname);
+      },
+    );
+
+    scenario('domainAsHostname reports why a domain is not a hostname', () {
+      check(Email.tryParse('jane@bücher.example')!.domainAsHostname().reasonOrNull)
+          .isA<HostnameNotAscii>();
+      check(Email.tryParse('jane@[192.0.2.1]')!.domainAsHostname().reasonOrNull)
+          .isA<HostnameInvalidCharacters>();
     });
   });
 }
