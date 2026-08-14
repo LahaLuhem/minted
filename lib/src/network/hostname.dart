@@ -4,7 +4,6 @@
 import 'package:collection/collection.dart';
 
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/dns_names.dart';
 import 'failures/hostname_failure.dart';
@@ -27,14 +26,10 @@ import 'failures/hostname_failure.dart';
 ///
 /// {@example /example/minted_example.dart#hostname}
 extension type const Hostname._(String value) {
-  /// Builds a [Hostname] from its [labels] (`['www', 'example', 'com']`), throwing
-  /// [MintedFormatException] unless they join into a valid one. The inverse of [labels].
-  static Hostname fromLabels(List<String> labels) {
-    final source = labels.join(labelSeparator);
-
-    return parse(source)
-        .fold((reason) => throw MintedFormatException.from(reason, source), (hostname) => hostname);
-  }
+  /// Builds a [Hostname] from its [labels] (`['www', 'example', 'com']`), reporting the
+  /// [HostnameFailure] unless they join into a valid one. The inverse of [labels].
+  static ParseOutcome<HostnameFailure, Hostname> fromLabels(List<String> labels) =>
+      parse(labels.join(labelSeparator));
 
   /// Parses [input] as a hostname, or returns `null` when it breaks any RFC 1123 rule.
   /// See the type docs for the normalisation applied.

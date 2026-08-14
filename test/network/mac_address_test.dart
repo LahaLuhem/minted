@@ -201,21 +201,20 @@ void main() {
       final macAddress = MacAddress.tryParse('ac:de:48:23:45:67')!;
 
       check(macAddress.octets).deepEquals([0xac, 0xde, 0x48, 0x23, 0x45, 0x67]);
-      check(MacAddress.fromOctets(macAddress.octets)).equals(macAddress);
+      check(MacAddress.fromOctets(macAddress.octets).getOrThrow()).equals(macAddress);
     });
 
-    scenario('fromOctets throws MintedFormatException unless there are six or eight octets', () {
-      check(() => MacAddress.fromOctets(Uint8List(5))).throws<MintedFormatException>();
-      check(() => MacAddress.fromOctets(Uint8List(7))).throws<MintedFormatException>();
-      check(MacAddress.fromOctets(Uint8List(6))).equals(MacAddress.tryParse('00:00:00:00:00:00')!);
-      check(MacAddress.fromOctets(Uint8List(8)).octetCount).equals(8);
+    scenario('fromOctets reports a failure unless there are six or eight octets', () {
+      check(MacAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
+      check(MacAddress.fromOctets(Uint8List(7)).isFailure).isTrue();
+      check(MacAddress.fromOctets(Uint8List(6)).getOrThrow())
+          .equals(MacAddress.tryParse('00:00:00:00:00:00')!);
+      check(MacAddress.fromOctets(Uint8List(8)).getOrThrow().octetCount).equals(8);
     });
 
     scenario('the octet-count failure reports what it was handed', () {
-      check(() => MacAddress.fromOctets(Uint8List(7)))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .equals('Invalid MacAddress: expected 6 or 8 octets, got 7');
+      check(MacAddress.fromOctets(Uint8List(7)).reasonOrNull?.message)
+          .equals('expected 6 or 8 octets, got 7');
     });
 
     scenario('prefix24 is the first three octets, and claims nothing beyond that', () {
@@ -257,10 +256,7 @@ void main() {
     scenario('the failure names the type, not its erased representation', () {
       // Extension types erase to String at runtime, so a `<T>`-derived name would read "String".
       check(MacAddress.parse('nope').reasonOrNull?.typeName).equals('MacAddress');
-      check(() => MacAddress.fromOctets(Uint8List(5)))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .startsWith('Invalid MacAddress:');
+      check(MacAddress.fromOctets(Uint8List(5)).reasonOrNull?.typeName).equals('MacAddress');
     });
   });
 }

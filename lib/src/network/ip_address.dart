@@ -9,7 +9,6 @@ import 'package:ipaddr/ipaddr.dart';
 import '../quantities/uint8.dart';
 import '../shared/encoding/hex_bytes.dart';
 import '../shared/encoding/octet_bits.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/ip_address_failure.dart';
 
@@ -32,15 +31,17 @@ import 'failures/ip_address_failure.dart';
 ///
 /// {@example /example/minted_example.dart#ipaddress}
 extension type const IpAddress._(String value) {
-  /// Builds an [IpAddress] from its [octets], 4 for v4 or 16 for v6, throwing
-  /// [MintedFormatException] on any other count. The inverse of [octets].
-  static IpAddress fromOctets(Uint8List octets) {
-    if (octets.length == _ipv4OctetCount) return ._(octets.join(_octetSeparator));
+  /// Builds an [IpAddress] from its [octets], 4 for v4 or 16 for v6, reporting
+  /// [IpAddressWrongOctetCount] on any other count. The inverse of [octets].
+  static ParseOutcome<IpAddressFailure, IpAddress> fromOctets(Uint8List octets) {
+    if (octets.length == _ipv4OctetCount) {
+      return ParseSuccess(._(octets.join(_octetSeparator)));
+    }
     if (octets.length != _ipv6OctetCount) {
-      throw MintedFormatException.from(IpAddressWrongOctetCount(octets.length), '$octets');
+      return ParseFailure(IpAddressWrongOctetCount(octets.length));
     }
 
-    return ._(_canonicalIpv6(.tryParseFromInt(_bigIntOf(octets))!));
+    return ParseSuccess(._(_canonicalIpv6(.tryParseFromInt(_bigIntOf(octets))!)));
   }
 
   /// Parses [input] as an IP address, or returns `null` when it is neither family.

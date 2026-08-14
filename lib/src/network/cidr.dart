@@ -1,10 +1,10 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
 import '../shared/encoding/octet_bits.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/cidr_failure.dart';
 import 'ip_address.dart';
@@ -38,14 +38,12 @@ final class Cidr {
 
   const new _(this.network, this.prefixLength);
 
-  /// The block at [network] covering [prefixLength] bits, throwing [MintedFormatException] when the
+  /// The block at [network] covering [prefixLength] bits, reporting the [CidrFailure] when the
   /// prefix does not fit the family or [network] has bits set below it.
-  static Cidr from({required IpAddress network, required int prefixLength}) {
-    final source = '${network.value}$_prefixSeparator$prefixLength';
-
-    return parse(source)
-        .fold((reason) => throw MintedFormatException.from(reason, source), (cidr) => cidr);
-  }
+  static ParseOutcome<CidrFailure, Cidr> from({
+    required IpAddress network,
+    required int prefixLength,
+  }) => parse('${network.value}$_prefixSeparator$prefixLength');
 
   /// Parses [input] as a CIDR block, or returns `null` when it is not one.
   /// See the type docs for what is refused.
@@ -67,15 +65,16 @@ final class Cidr {
 
   /// The last address the block covers, which for v4 is what other tools call the broadcast
   /// address. Named for what it is, since IPv6 has no broadcast at all.
+  // The octet count comes from an address that already parsed, so fromOctets cannot fail here.
   IpAddress get lastAddress {
     final octets = network.octets;
 
-    return .fromOctets(
-      .fromList([
+    return IpAddress.fromOctets(
+      Uint8List.fromList([
         for (var index = 0; index < octets.length; index++)
           octets[index] | ~_octetMask(index, prefixLength) & _allOctetBits,
       ]),
-    );
+    ).getOrThrow();
   }
 
   /// Whether [address] falls inside this block. A different family is never inside, so a v6 address
@@ -112,15 +111,16 @@ final class Cidr {
         : ParseSuccess(Cidr._(network, prefixLength));
   }
 
+  // As lastAddress: the octets come from a parsed address, so the count is already right.
   static IpAddress _masked(IpAddress address, int prefixLength) {
     final octets = address.octets;
 
-    return .fromOctets(
-      .fromList([
+    return IpAddress.fromOctets(
+      Uint8List.fromList([
         for (var index = 0; index < octets.length; index++)
           octets[index] & _octetMask(index, prefixLength),
       ]),
-    );
+    ).getOrThrow();
   }
 
   // The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max

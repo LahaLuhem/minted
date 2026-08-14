@@ -5,7 +5,6 @@ import 'dart:typed_data';
 
 import '../shared/encoding/hex_bytes.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/mac_address_failure.dart';
 
@@ -48,11 +47,12 @@ extension type const MacAddress._(String value) {
         : ParseSuccess(._(_colonSeparated(strippedHex)));
   }
 
-  /// Builds a [MacAddress] from its [octets], throwing [MintedFormatException] unless there are six
-  /// or eight. Every sequence of either length is valid, so the count is all it rejects.
-  static MacAddress fromOctets(Uint8List octets) => !_octetCounts.contains(octets.length)
-      ? throw MintedFormatException.from(MacAddressWrongOctetCount(octets.length), '$octets')
-      : tryParse(hexDigits(octets))!;
+  /// Builds a [MacAddress] from its [octets], reporting [MacAddressWrongOctetCount] unless there
+  /// are six or eight. Every sequence of either length is valid, so that is all it rejects.
+  static ParseOutcome<MacAddressFailure, MacAddress> fromOctets(Uint8List octets) =>
+      !_octetCounts.contains(octets.length)
+      ? ParseFailure(MacAddressWrongOctetCount(octets.length))
+      : parse(hexDigits(octets));
 
   /// The six or eight raw octets, the inverse of [fromOctets]. For binary interop (a frame header,
   /// a packed database column) where the text form would waste space.
