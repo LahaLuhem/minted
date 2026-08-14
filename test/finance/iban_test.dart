@@ -87,16 +87,12 @@ void main() {
     scenario('the check-digit generator refuses a BBAN with characters outside A-Z and 0-9', () {
       // Our own mod-97-10 generator maps an unknown character to -1 rather than guessing, so the
       // assembled IBAN fails validation instead of getting plausible-looking check digits.
-      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'NWBK-6016133192681'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
+      check(Iban.fromComponents(countryCode: 'GB', bban: 'NWBK-6016133192681').reasonOrNull)
           .equals(const IbanInvalidCharacters());
     });
 
     scenario('fromComponents reports the same vocabulary as parse', () {
-      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
+      check(Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').reasonOrNull)
           .equals(const IbanInvalidLength(expected: 22, actual: 12));
     });
 
@@ -116,13 +112,12 @@ void main() {
     });
 
     scenario('fromComponents computes the check digits and assembles a valid IBAN', () {
-      check(Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819').value)
+      check(Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819').getOrThrow().value)
           .equals('GB29NWBK60161331926819');
     });
 
-    scenario('fromComponents throws MintedFormatException on a wrong-length BBAN', () {
-      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
-          .throws<MintedFormatException>();
+    scenario('fromComponents reports a failure on a wrong-length BBAN, and never throws', () {
+      check(Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').isFailure).isTrue();
     });
 
     // fromComponents runs our own mod-97-10 generator (check_digits.dart); check
@@ -149,21 +144,26 @@ void main() {
         ),
       },
       outline: (example) {
-        check(Iban.fromComponents(countryCode: example.countryCode, bban: example.bban).value)
-            .equals(example.iban);
+        check(
+          Iban.fromComponents(
+            countryCode: example.countryCode,
+            bban: example.bban,
+          ).getOrThrow().value,
+        ).equals(example.iban);
       },
     );
 
     scenario('fromComponents normalises a lower-case, spaced input', () {
-      check(Iban.fromComponents(countryCode: 'gb', bban: 'nwbk 6016 1331 9268 19').value)
-          .equals('GB29NWBK60161331926819');
+      check(
+        Iban.fromComponents(countryCode: 'gb', bban: 'nwbk 6016 1331 9268 19').getOrThrow().value,
+      ).equals('GB29NWBK60161331926819');
     });
 
-    scenario('fromComponents error carries the components as its source', () {
-      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT'))
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
+      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').getOrThrow())
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('GB + TOOSHORT');
+          .has((error) => error.failure, 'failure')
+          .equals(const IbanInvalidLength(expected: 22, actual: 12));
     });
   });
 }

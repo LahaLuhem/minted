@@ -159,7 +159,7 @@ void main() {
                 branchCode: example.branchCode!,
               );
 
-        check(assembledBic.value).equals(example.bic);
+        check(assembledBic.getOrThrow().value).equals(example.bic);
       },
     );
 
@@ -179,26 +179,26 @@ void main() {
       },
       outline: (example) {
         check(
-              () => Bic.fromComponents(
-                institutionCode: example.institutionCode,
-                countryCode: example.countryCode,
-                locationCode: 'FF',
-              ),
-            )
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+          Bic.fromComponents(
+            institutionCode: example.institutionCode,
+            countryCode: example.countryCode,
+            locationCode: 'FF',
+          ).reasonOrNull,
+        ).equals(example.failure);
       },
     );
 
-    scenario('fromComponents error carries the components as its source', () {
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(
-            () =>
-                Bic.fromComponents(institutionCode: 'DEUT', countryCode: 'ZZ', locationCode: 'FF'),
+            () => Bic.fromComponents(
+              institutionCode: 'DEUT',
+              countryCode: 'ZZ',
+              locationCode: 'FF',
+            ).getOrThrow(),
           )
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('DEUT + ZZ + FF + XXX');
+          .has((error) => error.failure, 'failure')
+          .equals(const BicUnknownCountry('ZZ'));
     });
   });
 }

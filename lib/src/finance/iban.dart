@@ -9,7 +9,6 @@ import '../numerics/digit.dart';
 import '../shared/check_digits/iban_check_digits.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/iban_failure.dart';
 
@@ -22,18 +21,18 @@ import 'failures/iban_failure.dart';
 ///
 /// {@example /example/minted_example.dart#iban}
 extension type const Iban._(String value) {
-  /// Builds an [Iban] from its [countryCode] (ISO 3166-1 alpha-2) and [bban], computing the mod-97 check digits.
-  /// Throws [MintedFormatException] when the parts don't form a valid IBAN (unknown country,
-  /// wrong BBAN length or charset). For assembling from a known-valid source.
-  static Iban fromComponents({required String countryCode, required String bban}) {
+  /// Builds an [Iban] from its [countryCode] (ISO 3166-1 alpha-2) and [bban], computing the mod-97
+  /// check digits, reporting the [IbanFailure] when the parts don't form a valid IBAN.
+  static ParseOutcome<IbanFailure, Iban> fromComponents({
+    required String countryCode,
+    required String bban,
+  }) {
     final upperCountry = countryCode.toUpperCase();
     final compactBban = unspacedUpperCase(bban);
     final assembledIban = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
     final failure = _failureFor(assembledIban);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, '$countryCode + $bban')
-        : ._(assembledIban);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledIban));
   }
 
   /// Parses [input] as an IBAN, or returns `null` when it fails the structure,

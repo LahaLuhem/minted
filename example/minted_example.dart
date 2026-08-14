@@ -284,10 +284,8 @@ void main() {
   print(ibanError('ZZ29NWBK60161331926819')); // We do not support IBANs from ZZ
   print(ibanError('gb29 nwbk 6016 1331 9268 19')); // null (it is valid)
 
-  // Assembling from parts you assert are valid still throws: calling it is the assertion.
-  try {
-    Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT');
-  } on MintedFormatException catch (ex) {
-    print(ex.message); // Invalid Iban: expected 22 characters for this country, got 12
-  }
+  // Assembling from parts reports its failure too, so nothing throws unless you ask it to.
+  final assembled = Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT');
+  print(assembled.reasonOrNull?.message); // expected 22 characters for this country, got 12
+  print(assembled.getOrNull()); // null  (getOrThrow() is how you assert instead)
 }

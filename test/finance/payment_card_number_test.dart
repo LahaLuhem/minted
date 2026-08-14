@@ -187,7 +187,7 @@ void main() {
       final assembledNumber = PaymentCardNumber.fromComponents(
         iin: Digits.tryFrom([4, 1, 1, 1, 1, 1])!,
         accountIdentifier: Digits.tryFrom([1, 1, 1, 1, 1, 1, 1, 1, 1])!,
-      );
+      ).getOrThrow();
 
       // The parts of the Visa test number above, so the computed digit is checkable by eye.
       check(assembledNumber.value).equals('4111111111111111');
@@ -210,27 +210,24 @@ void main() {
       },
       outline: (example) {
         check(
-              () => PaymentCardNumber.fromComponents(
-                iin: digitsOf(example.iin),
-                accountIdentifier: digitsOf(example.accountIdentifier),
-              ),
-            )
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+          PaymentCardNumber.fromComponents(
+            iin: digitsOf(example.iin),
+            accountIdentifier: digitsOf(example.accountIdentifier),
+          ).reasonOrNull,
+        ).equals(example.failure);
       },
     );
 
-    scenario('fromComponents error carries the components as its source', () {
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(
             () => PaymentCardNumber.fromComponents(
               iin: Digits.tryFrom([4, 1, 1, 1])!,
               accountIdentifier: Digits.tryFrom([1, 1])!,
-            ),
+            ).getOrThrow(),
           )
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('4111 + 11');
+          .has((error) => error.failure, 'failure')
+          .equals(const PaymentCardNumberWrongLength(7));
     });
 
     // The scheme is reported, not validated, so every row here parses. One row per listed scheme,
