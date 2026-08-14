@@ -134,7 +134,8 @@ void main() {
         'Nature online': (body: '1476468', issn: '1476-4687'),
         'a check character of ten spells X': (body: '1050124', issn: '1050-124X'),
       },
-      outline: (example) => check(Issn.fromBody(digitsOf(example.body)).value).equals(example.issn),
+      outline: (example) =>
+          check(Issn.fromBody(digitsOf(example.body)).getOrThrow().value).equals(example.issn),
     );
 
     scenarioOutline<({String body, IssnFailure failure})>(
@@ -146,18 +147,15 @@ void main() {
         ),
       },
       outline: (example) {
-        check(() => Issn.fromBody(digitsOf(example.body)))
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+        check(Issn.fromBody(digitsOf(example.body)).reasonOrNull).equals(example.failure);
       },
     );
 
-    scenario('fromBody error carries the body as its source', () {
-      check(() => Issn.fromBody(Digits.tryFrom([0, 3, 1, 7, 8])!))
+    scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
+      check(() => Issn.fromBody(Digits.tryFrom([0, 3, 1, 7, 8])!).getOrThrow())
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('03178');
+          .has((error) => error.failure, 'failure')
+          .equals(const IssnWrongLength(6));
     });
   });
 }

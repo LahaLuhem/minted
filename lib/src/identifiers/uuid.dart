@@ -5,7 +5,6 @@ import 'dart:typed_data';
 
 import '../shared/encoding/hex_bytes.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/uuid_failure.dart';
 
@@ -44,22 +43,20 @@ extension type const Uuid._(String value) {
         : ParseSuccess(._(unwrappedInput));
   }
 
-  /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), throwing
-  /// [MintedFormatException] unless there are exactly 16. Every 16-byte sequence is a valid UUID,
-  /// so this only rejects the wrong length. The inverse of [bytes].
-  static Uuid fromBytes(Uint8List bytes) => bytes.length != _byteCount
-      ? throw MintedFormatException.from(
-          UuidWrongByteCount(expected: _byteCount, actual: bytes.length),
-          '$bytes',
-        )
-      : tryParse(
+  /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), reporting
+  /// [UuidWrongByteCount] unless there are exactly 16. Every 16-byte sequence is a valid UUID, so
+  /// that is all it rejects. The inverse of [bytes].
+  // Hands the grouped hex to parse rather than re-deriving the verdict: one gate, one vocabulary.
+  static ParseOutcome<UuidFailure, Uuid> fromBytes(Uint8List bytes) => bytes.length != _byteCount
+      ? ParseFailure(UuidWrongByteCount(expected: _byteCount, actual: bytes.length))
+      : parse(
           Iterable.generate(
             _groupByteBoundaries.length - 1,
             (group) => hexDigits(
               bytes.getRange(_groupByteBoundaries[group], _groupByteBoundaries[group + 1]),
             ),
           ).join(hyphen),
-        )!;
+        );
 
   /// The UUID version, `0`-`15`: the 4-bit version field (the first hex digit of the third group).
   ///

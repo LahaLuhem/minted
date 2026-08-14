@@ -168,7 +168,8 @@ void main() {
         'an EAN-13 body': (body: '400638133393', gtin: '04006381333931'),
         'a GTIN-14 body': (body: '1061414100041', gtin: '10614141000415'),
       },
-      outline: (example) => check(Gtin.fromBody(digitsOf(example.body)).value).equals(example.gtin),
+      outline: (example) =>
+          check(Gtin.fromBody(digitsOf(example.body)).getOrThrow().value).equals(example.gtin),
     );
 
     scenarioOutline<({String body, GtinFailure failure})>(
@@ -180,18 +181,15 @@ void main() {
         ),
       },
       outline: (example) {
-        check(() => Gtin.fromBody(digitsOf(example.body)))
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+        check(Gtin.fromBody(digitsOf(example.body)).reasonOrNull).equals(example.failure);
       },
     );
 
-    scenario('fromBody error carries the body as its source', () {
-      check(() => Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3])!))
+    scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
+      check(() => Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3])!).getOrThrow())
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('400638133');
+          .has((error) => error.failure, 'failure')
+          .equals(const GtinWrongLength(10));
     });
   });
 }

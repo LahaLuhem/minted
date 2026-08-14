@@ -4,7 +4,6 @@
 import '../numerics/digits.dart';
 import '../shared/check_digits/doubling_mod11_check_character.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/isni_failure.dart';
 
@@ -22,13 +21,13 @@ import 'failures/isni_failure.dart';
 /// {@example /example/minted_example.dart#isni}
 extension type const Isni._(String value) {
   /// Builds an [Isni] from [bodyDigits], the fifteen digits before the check character, computing
-  /// that character. Throws [MintedFormatException] when the parts don't form a valid ISNI.
-  static Isni fromBody(Digits bodyDigits) {
+  /// that character, reporting the [IsniFailure] when they don't form a valid ISNI.
+  static ParseOutcome<IsniFailure, Isni> fromBody(Digits bodyDigits) {
     final body = bodyDigits.asString;
     final assembledIsni = '$body${doublingMod11CheckCharacter(body)}';
     final failure = _failureFor(assembledIsni);
 
-    return failure != null ? throw MintedFormatException.from(failure, body) : ._(assembledIsni);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledIsni));
   }
 
   /// Parses [input] as an ISNI, or returns `null` when it fails the length, character, or check

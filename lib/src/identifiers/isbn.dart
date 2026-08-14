@@ -7,7 +7,6 @@ import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/isbn_prefixes.dart';
 import 'failures/isbn_failure.dart';
@@ -24,17 +23,16 @@ import 'failures/isbn_failure.dart';
 ///
 /// {@example /example/minted_example.dart#isbn}
 extension type const Isbn._(String value) {
-  /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the check
-  /// digit. Throws [MintedFormatException] when the parts don't form a valid ISBN. For assembling from
-  /// a known-valid source.
-  static Isbn fromComponents({required Digits prefix, required Digits body}) {
-    final bodyStr = body.asString;
-    final assembledIsbn = _withCheckDigit('${prefix.asString}$bodyStr');
+  /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the
+  /// check digit, reporting the [IsbnFailure] when the parts don't form a valid ISBN.
+  static ParseOutcome<IsbnFailure, Isbn> fromComponents({
+    required Digits prefix,
+    required Digits body,
+  }) {
+    final assembledIsbn = _withCheckDigit('${prefix.asString}${body.asString}');
     final failure = _failureFor(assembledIsbn);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, '${prefix.asString} + $bodyStr')
-        : ._(assembledIsbn);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledIsbn));
   }
 
   /// Parses [input] as an ISBN, or returns `null` when it fails the length, character, prefix, or
