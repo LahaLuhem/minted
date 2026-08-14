@@ -14,7 +14,7 @@
 # tag that already exists. `pub publish --dry-run` runs after the prep commit
 # — it cross-checks pubspec version against CHANGELOG headers AND that no
 # checked-in files are modified, so both signals must be satisfied before the
-# tag is ever created. Failure mid-release auto-reverts via the ERR trap:
+# tag is ever created. Failure mid-release auto-reverts via the EXIT trap:
 # pre-commit failures restore files from HEAD; post-commit failures
 # `git reset --hard HEAD~1` to drop the prep commit. Tag/push failures and
 # (rare) server-side validation failures in publish.yml need manual recovery;
@@ -58,6 +58,9 @@ else
 fi
 
 MAIN_BRANCH="main"
+
+# What a version must look like, for the pubspec read and for the cider guard.
+SEMVER_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'
 
 # Container-based lint checks (tool + args) and the linterpol image tag live in
 # one manifest, shared with .github/workflows/repo.yml so this preflight and CI
@@ -174,6 +177,15 @@ if ! command -v cider >/dev/null 2>&1; then
     err 'cider not on PATH. Install: dart pub global activate cider'
     exit 1
 fi
+# Run it, not just resolve it: a stale snapshot makes `pub global run` rebuild and print resolution
+# chatter, so probing here fails fast and leaves the snapshot warm for the bump.
+if ! cider_probe="$(cider version 2>&1)"; then
+    err 'cider is installed but failed to run. Re-activate: dart pub global activate cider'
+    exit 1
+elif ! printf '%s\n' "$cider_probe" | grep -Eq "$SEMVER_PATTERN"; then
+    err 'cider ran but reported no version. Re-activate: dart pub global activate cider'
+    exit 1
+fi
 log 'cider available.'
 if ! command -v jq >/dev/null 2>&1; then
     err 'jq not on PATH. The preflight reads the lint manifest'
@@ -233,10 +245,16 @@ fi
 [ "$fail" -eq 1 ] && { err 'Git-state preflight failed — aborting.'; exit 1; }
 
 # ---------------------------------------------------------------------------
-# Compute new version from pubspec.yaml (via cider)
+# Compute new version from pubspec.yaml
 # ---------------------------------------------------------------------------
+# From the file, not `cider version`: pub's `MSG : Resolving dependencies...` chatter reached stdout
+# and became the version. Reading it here also leaves the `cider bump` guard two independent sides.
 step 'Compute new version'
-current_version="$(cider version)"
+current_version="$(awk '$1 == "version:" { print $2; exit }' pubspec.yaml)"
+if [[ ! "$current_version" =~ $SEMVER_PATTERN ]]; then
+    err "Could not read a SemVer version from pubspec.yaml; got '${current_version}'."
+    exit 1
+fi
 log "Current version: ${current_version}"
 
 # Plain SemVer arithmetic. Pre-release / build metadata is stripped so the
@@ -336,7 +354,7 @@ fi
 # CHANGELOG" check is meaningful only against the *post-bump* state — running
 # it pre-bump would block the first release (0.0.0 has no `## 0.0.0` entry)
 # and provide no extra signal on later releases. The dry-run runs after the
-# bump + CHANGELOG finalisation in the execute phase, where the ERR trap still
+# bump + CHANGELOG finalisation in the execute phase, where the EXIT trap still
 # auto-reverts those files on failure (cider_phase=1 window).
 
 # ---------------------------------------------------------------------------
@@ -397,6 +415,9 @@ fi
 # `cider_phase=0` after dry-run because the tag + push window is the user's
 # domain by then; automatic cleanup would silently nuke real work if the push
 # happened to be the failing step.
+#
+# On EXIT, not ERR: an explicit `exit 1` is no failing command, so ERR skipped the promised revert.
+# EXIT also fires only once, and the phase-2 `reset --hard HEAD~1` must not run twice.
 cider_phase=0
 # ShellCheck's flow analysis doesn't follow assignments across a quoted trap string.
 # shellcheck disable=SC2154
@@ -413,12 +434,19 @@ trap '
             ;;
     esac
     exit $rc
-' ERR
+' EXIT
 
 cider_phase=1
 
 step "cider bump ${BUMP}"
-bumped_version="$(cider bump "$BUMP")"
+# Raw first so a cider failure still aborts; sed then drops pub's chatter, printing nothing on a
+# no-match rather than tripping pipefail.
+cider_bump_output="$(cider bump "$BUMP")"
+bumped_version="$(
+    printf '%s\n' "$cider_bump_output" |
+        sed -n -E 's/^([0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?)$/\1/p' |
+        tail -n 1
+)"
 if [ "$bumped_version" != "$new_version" ]; then
     err "cider produced '${bumped_version}' but expected '${new_version}'."
     err 'Aborting; pubspec.yaml will be reverted by the trap.'
@@ -444,7 +472,7 @@ cider_phase=2
 #   - no uncommitted modifications to checked-in files
 #   - the tarball builds and validates
 # Running it pre-commit would trip the "checked-in files are modified" warning
-# even though every other check passed. ERR trap reverts via reset HEAD~1 on
+# even though every other check passed. EXIT trap reverts via reset HEAD~1 on
 # failure — keeps the local repo identical to its pre-release state and
 # spares the user from creating + then deleting a remote tag.
 step 'dart pub publish --dry-run'
