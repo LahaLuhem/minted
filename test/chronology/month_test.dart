@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -63,7 +60,7 @@ void main() {
     });
 
     scenario('equal months are equal, whichever way they are built', () {
-      check(Month.from(7)).equals(Month.july);
+      check(Month.tryFrom(7)).equals(Month.july);
       check(Month.tryParse('07')).equals(Month.july);
       check(Month.july == Month.august).isFalse();
     });
@@ -78,17 +75,9 @@ void main() {
       check(Month.tryParse('7')).equals(Month.july);
     });
 
-    scenario('both doors report the same one failure a month has', () {
-      check(Month.parse('13').reasonOrNull).equals(MonthFailure.notAMonth);
-      check(() => Month.from(13))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(MonthFailure.notAMonth);
-    });
-
-    scenario('Month.from throws MintedFormatException on an out-of-range number', () {
-      check(() => Month.from(0)).throws<MintedFormatException>();
-      check(() => Month.from(13)).throws<MintedFormatException>();
+    scenario('tryFrom rejects an out-of-range number', () {
+      check(Month.tryFrom(0)).isNull();
+      check(Month.tryFrom(13)).isNull();
     });
   });
 }

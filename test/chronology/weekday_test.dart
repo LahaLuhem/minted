@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -66,12 +63,9 @@ void main() {
       check(Weekday.sunday.value).equals(Weekday.sunday.index + 1);
     });
 
-    scenario('Weekday.from throws MintedFormatException outside 1-7', () {
-      check(() => Weekday.from(0)).throws<MintedFormatException>();
-      check(() => Weekday.from(8))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(WeekdayFailure.notAWeekday);
+    scenario('tryFrom rejects a day number outside 1-7', () {
+      check(Weekday.tryFrom(0)).isNull();
+      check(Weekday.tryFrom(8)).isNull();
     });
 
     scenario('next and previous wrap at the ends of the week', () {

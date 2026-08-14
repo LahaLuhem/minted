@@ -2,7 +2,7 @@
 // the twin identical to the original, so `==` would ride on identity instead of doing any work.
 // ignore_for_file: prefer_const_constructors
 
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
+// The three failure vocabularies these use lose their last producer in this release; see #44.
 // ignore_for_file: deprecated_member_use_from_same_package
 
 import 'package:checks/checks.dart';

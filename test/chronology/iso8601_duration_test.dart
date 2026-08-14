@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -93,45 +90,45 @@ void main() {
       examples: {
         'a month from a 31-day month clamps the day': (
           input: 'P1M',
-          from: Date(2026, 1, 31),
+          from: Date.of(2026, 1, 31),
           expected: const Duration(days: 28),
         ),
         'the same month is 31 days from March': (
           input: 'P1M',
-          from: Date(2026, 3),
+          from: Date.of(2026, 3),
           expected: const Duration(days: 31),
         ),
         'a leap February is 29 days': (
           input: 'P1M',
-          from: Date(2024, 2),
+          from: Date.of(2024, 2),
           expected: const Duration(days: 29),
         ),
         'a year across a leap day': (
           input: 'P1Y',
-          from: Date(2024),
+          from: Date.of(2024),
           expected: const Duration(days: 366),
         ),
-        'weeks are exact': (input: 'P2W', from: Date(2026), expected: const Duration(days: 14)),
+        'weeks are exact': (input: 'P2W', from: Date.of(2026), expected: const Duration(days: 14)),
         'time components need no calendar': (
           input: 'PT12H30M5S',
-          from: Date(2026),
+          from: Date.of(2026),
           expected: const Duration(hours: 12, minutes: 30, seconds: 5),
         ),
         'a fractional second becomes microseconds': (
           input: 'PT1.5S',
-          from: Date(2026),
+          from: Date.of(2026),
           expected: const Duration(seconds: 1, milliseconds: 500),
         ),
         // A fraction on a calendar component scales that component's real length at the anchor,
         // so half a leap year is half a day longer than half a common one.
         'half a common year': (
           input: 'P0.5Y',
-          from: Date(2026),
+          from: Date.of(2026),
           expected: const Duration(hours: 365 * 12),
         ),
         'half a leap year': (
           input: 'P0.5Y',
-          from: Date(2024),
+          from: Date.of(2024),
           expected: const Duration(hours: 366 * 12),
         ),
       },

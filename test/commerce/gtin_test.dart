@@ -1,10 +1,8 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import '../support/bdd.dart';
+import '../support/digits.dart';
 
 void main() {
   feature('Gtin', () {
@@ -106,8 +104,8 @@ void main() {
     );
 
     scenario('a GTIN exposes its check digit', () {
-      check(Gtin.tryParse('4006381333931')!.checkDigit).equals(Digit.from(1));
-      check(Gtin.tryParse('96385074')!.checkDigit).equals(Digit.from(4));
+      check(Gtin.tryParse('4006381333931')!.checkDigit).equals(Digit.tryFrom(1)!);
+      check(Gtin.tryParse('96385074')!.checkDigit).equals(Digit.tryFrom(4)!);
     });
 
     scenarioOutline<({String input, GtinFailure failure})>(
@@ -170,8 +168,7 @@ void main() {
         'an EAN-13 body': (body: '400638133393', gtin: '04006381333931'),
         'a GTIN-14 body': (body: '1061414100041', gtin: '10614141000415'),
       },
-      outline: (example) =>
-          check(Gtin.fromBody(Digits.parse(example.body).getOrThrow()).value).equals(example.gtin),
+      outline: (example) => check(Gtin.fromBody(digitsOf(example.body)).value).equals(example.gtin),
     );
 
     scenarioOutline<({String body, GtinFailure failure})>(
@@ -183,7 +180,7 @@ void main() {
         ),
       },
       outline: (example) {
-        check(() => Gtin.fromBody(Digits.parse(example.body).getOrThrow()))
+        check(() => Gtin.fromBody(digitsOf(example.body)))
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -191,7 +188,7 @@ void main() {
     );
 
     scenario('fromBody error carries the body as its source', () {
-      check(() => Gtin.fromBody(Digits.parse('400638133').getOrThrow()))
+      check(() => Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3])!))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('400638133');

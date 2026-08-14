@@ -1,10 +1,8 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import '../support/bdd.dart';
+import '../support/digits.dart';
 
 void main() {
   feature('Issn', () {
@@ -136,8 +134,7 @@ void main() {
         'Nature online': (body: '1476468', issn: '1476-4687'),
         'a check character of ten spells X': (body: '1050124', issn: '1050-124X'),
       },
-      outline: (example) =>
-          check(Issn.fromBody(Digits.parse(example.body).getOrThrow()).value).equals(example.issn),
+      outline: (example) => check(Issn.fromBody(digitsOf(example.body)).value).equals(example.issn),
     );
 
     scenarioOutline<({String body, IssnFailure failure})>(
@@ -149,7 +146,7 @@ void main() {
         ),
       },
       outline: (example) {
-        check(() => Issn.fromBody(Digits.parse(example.body).getOrThrow()))
+        check(() => Issn.fromBody(digitsOf(example.body)))
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -157,7 +154,7 @@ void main() {
     );
 
     scenario('fromBody error carries the body as its source', () {
-      check(() => Issn.fromBody(Digits.parse('03178').getOrThrow()))
+      check(() => Issn.fromBody(Digits.tryFrom([0, 3, 1, 7, 8])!))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('03178');

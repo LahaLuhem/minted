@@ -1,7 +1,6 @@
 /// @docImport 'date.dart';
 library;
 
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/month_failure.dart';
 
@@ -31,11 +30,6 @@ extension type const Month._(int value) {
   /// The [Month] with number [value], or `null` unless it is in `1`-`12`.
   static Month? tryFrom(int value) =>
       value >= january.value && value <= december.value ? ._(value) : null;
-
-  /// The [Month] with number [value], throwing [MintedFormatException] unless it is in `1`-`12`.
-  @Deprecated('Use Month.tryFrom. Removed in 2.0.0 (#44).')
-  static Month from(int value) =>
-      tryFrom(value) ?? (throw MintedFormatException.from(MonthFailure.notAMonth, '$value'));
 
   /// The number of days in this month during [year] (`28`-`31`), counting February as `29` in a
   /// leap year (proleptic Gregorian: divisible by 4, except centuries not divisible by 400).

@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -69,7 +66,7 @@ void main() {
 
         check(parsedIsin.prefix).equals(example.prefix);
         check(parsedIsin.nsin).equals(example.nsin);
-        check(parsedIsin.checkDigit).equals(Digit.from(example.checkDigit));
+        check(parsedIsin.checkDigit).equals(Digit.tryFrom(example.checkDigit)!);
       },
     );
 

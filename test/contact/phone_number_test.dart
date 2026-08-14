@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -45,7 +42,7 @@ void main() {
 
       check(parsedPhone.countryCode).equals('33');
       check(parsedPhone.nationalNumber.length).equals(9);
-      check(parsedPhone.nationalNumber.first).equals(Digit.from(6));
+      check(parsedPhone.nationalNumber.first).equals(Digit.tryFrom(6)!);
       check(parsedPhone.nationalNumber.asString).equals('655570576');
     });
 
@@ -118,14 +115,14 @@ void main() {
       check(
         PhoneNumber.fromComponents(
           countryCode: '33',
-          nationalNumber: Digits.tryParse('655570576')!,
+          nationalNumber: Digits.tryFrom([6, 5, 5, 5, 7, 0, 5, 7, 6])!,
         ).value,
       ).equals('+33655570576');
     });
 
     scenario('fromComponents throws MintedFormatException on an invalid number', () {
       check(
-        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryParse('1')!),
+        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryFrom([1])!),
       ).throws<MintedFormatException>();
     });
 
@@ -142,7 +139,10 @@ void main() {
     });
 
     scenario('an assembly failure carries the assembled number as its source', () {
-      check(() => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.from([1])))
+      check(
+            () =>
+                PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryFrom([1])!),
+          )
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('+331');
