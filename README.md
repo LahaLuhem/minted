@@ -219,7 +219,7 @@ date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
 date.tryAddDays(30);      // Date(2026-08-06)
 date.tryAddDays(3000000); // null   (the walk left the 0000-9999 bound)
 date < Date.of(2027); // true   (Date.of(2027) is 2027-01-01)
-Date.of(2026, 7, 7);  // the same day from its parts; Date(2026, 7, 7) is the older spelling
+Date.of(2026, 7, 7);  // the same day from its parts
 Date.now();        // today in the local zone, the date-only DateTime.now()
 
 // Weekday: seven named days, so a switch over one needs no default arm:

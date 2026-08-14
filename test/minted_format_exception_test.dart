@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -29,7 +26,7 @@ void main() {
       // parse reports its failure instead of throwing; the assembly factories are the throwing door.
       check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
           .throws<FormatException>();
-      check(() => Digit.from(10)).throws<FormatException>();
+      check(() => Date.of(2026, 13)).throws<FormatException>();
     });
   });
 }

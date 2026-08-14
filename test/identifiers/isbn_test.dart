@@ -1,10 +1,8 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import '../support/bdd.dart';
+import '../support/digits.dart';
 
 void main() {
   feature('Isbn', () {
@@ -65,7 +63,7 @@ void main() {
 
       check(parsedIsbn.prefix).equals('978');
       check(parsedIsbn.body).equals('030640615');
-      check(parsedIsbn.checkDigit).equals(Digit.from(7));
+      check(parsedIsbn.checkDigit).equals(Digit.tryFrom(7)!);
     });
 
     // The legacy form is rebuilt, not stored, so these check our mod-11 generator against the
@@ -155,10 +153,7 @@ void main() {
       },
       outline: (example) {
         check(
-          Isbn.fromComponents(
-            prefix: Digits.parse(example.prefix).getOrThrow(),
-            body: Digits.parse(example.body).getOrThrow(),
-          ).value,
+          Isbn.fromComponents(prefix: digitsOf(example.prefix), body: digitsOf(example.body)).value,
         ).equals(example.isbn);
       },
     );
@@ -185,8 +180,8 @@ void main() {
       outline: (example) {
         check(
               () => Isbn.fromComponents(
-                prefix: Digits.parse(example.prefix).getOrThrow(),
-                body: Digits.parse(example.body).getOrThrow(),
+                prefix: digitsOf(example.prefix),
+                body: digitsOf(example.body),
               ),
             )
             .throws<MintedFormatException>()
@@ -198,8 +193,8 @@ void main() {
     scenario('fromComponents error carries the components as its source', () {
       check(
             () => Isbn.fromComponents(
-              prefix: Digits.parse('978').getOrThrow(),
-              body: Digits.parse('03064061').getOrThrow(),
+              prefix: Digits.tryFrom([9, 7, 8])!,
+              body: Digits.tryFrom([0, 3, 0, 6, 4, 0, 6, 1])!,
             ),
           )
           .throws<MintedFormatException>()

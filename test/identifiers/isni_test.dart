@@ -1,10 +1,8 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import '../support/bdd.dart';
+import '../support/digits.dart';
 
 void main() {
   feature('Isni', () {
@@ -99,8 +97,10 @@ void main() {
     // Built rather than transcribed, so each carries a real check character. Sixteen digits
     // overflow the web's safe integer range, which is why the block test compares text.
     scenario('the block boundary is inclusive at its lower bound', () {
-      final atStart = Isni.fromBody(Digits.parse('000000015000000').getOrThrow());
-      final justBelow = Isni.fromBody(Digits.parse('000000014999999').getOrThrow());
+      final atStart = Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 0])!);
+      final justBelow = Isni.fromBody(
+        Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 4, 9, 9, 9, 9, 9, 9])!,
+      );
 
       check(atStart.isInOrcidBlock).isTrue();
       check(justBelow.isInOrcidBlock).isFalse();
@@ -160,8 +160,7 @@ void main() {
         'an ORCID iD': (body: '000000021825009', isni: '0000000218250097'),
         'one whose check character is X': (body: '000000021694233', isni: '000000021694233X'),
       },
-      outline: (example) =>
-          check(Isni.fromBody(Digits.parse(example.body).getOrThrow()).value).equals(example.isni),
+      outline: (example) => check(Isni.fromBody(digitsOf(example.body)).value).equals(example.isni),
     );
 
     scenarioOutline<({String body, IsniFailure failure})>(
@@ -174,7 +173,7 @@ void main() {
         'a long body overshoots': (body: '0000000121032683', failure: const IsniWrongLength(17)),
       },
       outline: (example) {
-        check(() => Isni.fromBody(Digits.parse(example.body).getOrThrow()))
+        check(() => Isni.fromBody(digitsOf(example.body)))
             .throws<MintedFormatException>()
             .has((error) => error.failure, 'failure')
             .equals(example.failure);
@@ -182,7 +181,7 @@ void main() {
     );
 
     scenario('fromBody error carries the body as its source', () {
-      check(() => Isni.fromBody(Digits.parse('00000001210326').getOrThrow()))
+      check(() => Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 3, 2, 6])!))
           .throws<MintedFormatException>()
           .has((error) => error.source as String?, 'source')
           .equals('00000001210326');

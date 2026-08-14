@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -41,23 +38,40 @@ void main() {
     );
 
     scenario('the factory builds from parts, defaulting month and day to 1', () {
-      check(Date(2026, 7, 7).iso8601).equals('2026-07-07');
-      check(Date(2026).iso8601).equals('2026-01-01');
-      check(Date(2026, 7).iso8601).equals('2026-07-01');
+      check(Date.of(2026, 7, 7).iso8601).equals('2026-07-07');
+      check(Date.of(2026).iso8601).equals('2026-01-01');
+      check(Date.of(2026, 7).iso8601).equals('2026-07-01');
     });
 
     scenario('the factory accepts a genuine leap day', () {
-      check(Date(2024, 2, 29).iso8601).equals('2024-02-29');
-    });
-
-    scenario('Date.of builds the same value as the unnamed factory, defaults included', () {
-      check(Date.of(2026, 7, 7)).equals(Date(2026, 7, 7));
-      check(Date.of(2026)).equals(Date(2026));
-      check(Date.of(2026, 7)).equals(Date(2026, 7));
       check(Date.of(2024, 2, 29).iso8601).equals('2024-02-29');
     });
 
-    scenario('Date.of reports the same failure the unnamed factory does', () {
+    scenario('the factory rejects impossible dates instead of rolling them over', () {
+      // DateTime rolls an out-of-range month over into the next year; Date refuses it.
+      check(DateTime(2026, 13).year).equals(2027);
+
+      check(() => Date.of(2026, 13)).throws<MintedFormatException>();
+      check(() => Date.of(2026, 2, 29)).throws<MintedFormatException>();
+      check(() => Date.of(2026, 4, 31)).throws<MintedFormatException>();
+    });
+
+    scenario('the factory rejects a year outside 0000-9999', () {
+      check(() => Date.of(10000)).throws<MintedFormatException>();
+      check(() => Date.of(-1)).throws<MintedFormatException>();
+    });
+
+    scenario('parse reports the failure rather than throwing', () {
+      check(Date.parse('2026-13-01')).equals(const ParseFailure(DateMonthOutOfRange(13)));
+      check(Date.parse('2026-07-07')).equals(ParseSuccess(Date.of(2026, 7, 7)));
+    });
+
+    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
+      check(Date.tryParse('2026-13-01')).isNull();
+      check(Date.tryParse('2026-07-07')).equals(Date.of(2026, 7, 7));
+    });
+
+    scenario('the factory reports which part is out of range', () {
       check(() => Date.of(10000))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
@@ -72,47 +86,8 @@ void main() {
           .equals(const DateDayOutOfRange(year: 2026, month: 2, day: 29, maxDay: 28));
     });
 
-    scenario('the factory rejects impossible dates instead of rolling them over', () {
-      // DateTime rolls an out-of-range month over into the next year; Date refuses it.
-      check(DateTime(2026, 13).year).equals(2027);
-
-      check(() => Date(2026, 13)).throws<MintedFormatException>();
-      check(() => Date(2026, 2, 29)).throws<MintedFormatException>();
-      check(() => Date(2026, 4, 31)).throws<MintedFormatException>();
-    });
-
-    scenario('the factory rejects a year outside 0000-9999', () {
-      check(() => Date(10000)).throws<MintedFormatException>();
-      check(() => Date(-1)).throws<MintedFormatException>();
-    });
-
-    scenario('parse reports the failure rather than throwing', () {
-      check(Date.parse('2026-13-01')).equals(const ParseFailure(DateMonthOutOfRange(13)));
-      check(Date.parse('2026-07-07')).equals(ParseSuccess(Date(2026, 7, 7)));
-    });
-
-    scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Date.tryParse('2026-13-01')).isNull();
-      check(Date.tryParse('2026-07-07')).equals(Date(2026, 7, 7));
-    });
-
-    scenario('the factory reports which part is out of range', () {
-      check(() => Date(10000))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(const DateYearOutOfRange(10000));
-      check(() => Date(2026, 13))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(const DateMonthOutOfRange(13));
-      check(() => Date(2026, 2, 29))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(const DateDayOutOfRange(year: 2026, month: 2, day: 29, maxDay: 28));
-    });
-
     scenario('the day bound the failure reports is leap-year aware', () {
-      check(() => Date(2024, 2, 30))
+      check(() => Date.of(2024, 2, 30))
           .throws<MintedFormatException>()
           .has((error) => error.failure, 'failure')
           .equals(const DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29));
@@ -157,92 +132,86 @@ void main() {
     });
 
     scenario('the factory throws MintedFormatException naming the bad part', () {
-      check(() => Date(2026, 13))
+      check(() => Date.of(2026, 13))
           .throws<MintedFormatException>()
           .has((error) => error.message, 'message')
           .equals('Invalid Date: month 13 is outside 1-12');
     });
 
     scenario('equal dates are equal by value and hash', () {
-      check(Date(2026, 7, 7)).equals(Date(2026, 7, 7));
-      check(Date(2026, 7, 7).hashCode).equals(Date(2026, 7, 7).hashCode);
-      check(Date.tryParse('2026-07-07')!).equals(Date(2026, 7, 7));
+      check(Date.of(2026, 7, 7)).equals(Date.of(2026, 7, 7));
+      check(Date.of(2026, 7, 7).hashCode).equals(Date.of(2026, 7, 7).hashCode);
+      check(Date.tryParse('2026-07-07')!).equals(Date.of(2026, 7, 7));
     });
 
     scenario('different dates are not equal', () {
-      check(Date(2026, 7, 7) == Date(2026, 7, 8)).isFalse();
+      check(Date.of(2026, 7, 7) == Date.of(2026, 7, 8)).isFalse();
     });
 
     scenario('dates order chronologically', () {
-      check(Date(2026, 7, 7).isBefore(Date(2026, 7, 8))).isTrue();
-      check(Date(2026, 7, 7).isAfter(Date(2026, 7, 6))).isTrue();
-      check(Date(2025, 12, 31) < Date(2026)).isTrue();
+      check(Date.of(2026, 7, 7).isBefore(Date.of(2026, 7, 8))).isTrue();
+      check(Date.of(2026, 7, 7).isAfter(Date.of(2026, 7, 6))).isTrue();
+      check(Date.of(2025, 12, 31) < Date.of(2026)).isTrue();
       // Checking bounds
       // ignore: avoid-self-compare
-      check(Date(2026, 7, 7) <= Date(2026, 7, 7)).isTrue();
+      check(Date.of(2026, 7, 7) <= Date.of(2026, 7, 7)).isTrue();
       // Checking bounds
       // ignore: avoid-self-compare
-      check(Date(2026, 7, 7) >= Date(2026, 7, 7)).isTrue();
-      check(Date(2026, 7, 8) > Date(2026, 7, 7)).isTrue();
+      check(Date.of(2026, 7, 7) >= Date.of(2026, 7, 7)).isTrue();
+      check(Date.of(2026, 7, 8) > Date.of(2026, 7, 7)).isTrue();
     });
 
     scenario('sorting orders by year, then month, then day', () {
-      final dates = [Date(2026, 3, 15), Date(2024, 5, 9), Date(2026, 3, 2)]..sort();
+      final dates = [Date.of(2026, 3, 15), Date.of(2024, 5, 9), Date.of(2026, 3, 2)]..sort();
 
-      check(dates).deepEquals([Date(2024, 5, 9), Date(2026, 3, 2), Date(2026, 3, 15)]);
+      check(dates).deepEquals([Date.of(2024, 5, 9), Date.of(2026, 3, 2), Date.of(2026, 3, 15)]);
     });
 
     scenario('weekday matches the Gregorian calendar', () {
-      check(Date(2000).weekday).equals(Weekday.saturday); // 2000-01-01 was a Saturday
-      check(Date(2024).weekday).equals(Weekday.monday); // 2024-01-01 was a Monday
-      check(Date(2024).weekday.value).equals(DateTime.monday); // and bridges back to dart:core
+      check(Date.of(2000).weekday).equals(Weekday.saturday); // 2000-01-01 was a Saturday
+      check(Date.of(2024).weekday).equals(Weekday.monday); // 2024-01-01 was a Monday
+      check(Date.of(2024).weekday.value).equals(DateTime.monday); // and bridges back to dart:core
     });
 
-    scenario('addDays and subtractDays cross month, year, and leap boundaries', () {
-      check(Date(2026, 1, 31).addDays(1)).equals(Date(2026, 2));
-      check(Date(2026, 12, 31).addDays(1)).equals(Date(2027));
-      check(Date(2024, 2, 28).addDays(1)).equals(Date(2024, 2, 29)); // leap year
-      check(Date(2023, 2, 28).addDays(1)).equals(Date(2023, 3)); // common year
-      check(Date(2026, 3).subtractDays(1)).equals(Date(2026, 2, 28));
-      check(Date(2026, 7, 7).addDays(0)).equals(Date(2026, 7, 7));
-      check(Date(2026, 7, 7).subtractDays(3)).equals(Date(2026, 7, 7).addDays(-3));
+    scenario('day arithmetic crosses month, year, and leap boundaries', () {
+      check(Date.of(2026, 1, 31).tryAddDays(1)).equals(Date.of(2026, 2));
+      check(Date.of(2026, 12, 31).tryAddDays(1)).equals(Date.of(2027));
+      check(Date.of(2024, 2, 28).tryAddDays(1)).equals(Date.of(2024, 2, 29)); // leap year
+      check(Date.of(2023, 2, 28).tryAddDays(1)).equals(Date.of(2023, 3)); // common year
+      check(Date.of(2026, 3).trySubtractDays(1)).equals(Date.of(2026, 2, 28));
+      check(Date.of(2026, 7, 7).tryAddDays(0)).equals(Date.of(2026, 7, 7));
+      check(Date.of(2026, 7, 7).trySubtractDays(3)).equals(Date.of(2026, 7, 7).tryAddDays(-3));
     });
 
-    scenario('day arithmetic throws when it walks off either end of 0000-9999', () {
-      check(() => Date(9999, 12, 31).addDays(1))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(const DateYearOutOfRange(10000));
-      check(() => Date(0).subtractDays(1))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
-          .equals(const DateYearOutOfRange(-1));
+    scenario('day arithmetic yields null when it walks off either end of 0000-9999', () {
+      check(Date.of(9999, 12, 31).tryAddDays(1)).isNull();
+      check(Date.of(0).trySubtractDays(1)).isNull();
     });
 
     scenario('the try variants return null at the bound instead of throwing', () {
-      check(Date(9999, 12, 31).tryAddDays(1)).isNull();
-      check(Date(2026, 8, 4).tryAddDays(3000000)).isNull();
-      check(Date(0).trySubtractDays(1)).isNull();
+      check(Date.of(9999, 12, 31).tryAddDays(1)).isNull();
+      check(Date.of(2026, 8, 4).tryAddDays(3000000)).isNull();
+      check(Date.of(0).trySubtractDays(1)).isNull();
     });
 
     scenario('the try variants agree with the throwing ones inside the bound', () {
-      check(Date(2026, 1, 31).tryAddDays(1)).equals(Date(2026, 2));
-      check(Date(2026, 3).trySubtractDays(1)).equals(Date(2026, 2, 28));
-      check(Date(9999, 12, 30).tryAddDays(1)).equals(Date(9999, 12, 31));
-      check(Date(0, 1, 2).trySubtractDays(1)).equals(Date(0));
+      check(Date.of(2026, 1, 31).tryAddDays(1)).equals(Date.of(2026, 2));
+      check(Date.of(2026, 3).trySubtractDays(1)).equals(Date.of(2026, 2, 28));
+      check(Date.of(9999, 12, 30).tryAddDays(1)).equals(Date.of(9999, 12, 31));
+      check(Date.of(0, 1, 2).trySubtractDays(1)).equals(Date.of(0));
     });
 
     scenario('differenceInDays counts whole days, signed by order', () {
-      check(Date(2026).differenceInDays(Date(2025))).equals(365); // 2025 is a common year
-      check(Date(2025).differenceInDays(Date(2024))).equals(366); // 2024 is a leap year
-      check(Date(2026, 7, 10).differenceInDays(Date(2026, 7, 7))).equals(3);
-      check(Date(2026).differenceInDays(Date(2026))).equals(0);
-      check(Date(2025).differenceInDays(Date(2026))).equals(-365);
+      check(Date.of(2026).differenceInDays(Date.of(2025))).equals(365); // 2025 is a common year
+      check(Date.of(2025).differenceInDays(Date.of(2024))).equals(366); // 2024 is a leap year
+      check(Date.of(2026, 7, 10).differenceInDays(Date.of(2026, 7, 7))).equals(3);
+      check(Date.of(2026).differenceInDays(Date.of(2026))).equals(0);
+      check(Date.of(2025).differenceInDays(Date.of(2026))).equals(-365);
     });
 
     scenario('fromDateTime keeps the calendar date and drops the time and zone', () {
-      check(Date.fromDateTime(DateTime(2026, 7, 7, 13, 30))).equals(Date(2026, 7, 7));
-      check(Date.fromDateTime(DateTime.utc(2026, 7, 7, 23, 59, 59))).equals(Date(2026, 7, 7));
+      check(Date.fromDateTime(DateTime(2026, 7, 7, 13, 30))).equals(Date.of(2026, 7, 7));
+      check(Date.fromDateTime(DateTime.utc(2026, 7, 7, 23, 59, 59))).equals(Date.of(2026, 7, 7));
     });
 
     scenario('now gives today in the local time zone', () {
@@ -257,7 +226,7 @@ void main() {
     });
 
     scenario('toDateTime returns local midnight', () {
-      final dateTime = Date(2026, 7, 7).toDateTime();
+      final dateTime = Date.of(2026, 7, 7).toDateTime();
 
       check(dateTime).equals(DateTime(2026, 7, 7));
       check(dateTime.hour).equals(0);
@@ -265,19 +234,19 @@ void main() {
     });
 
     scenario('toString wraps the canonical form and pads short years', () {
-      check(Date(2026, 7, 7).toString()).equals('Date(2026-07-07)');
-      check(Date(5).toString()).equals('Date(0005-01-01)');
+      check(Date.of(2026, 7, 7).toString()).equals('Date(2026-07-07)');
+      check(Date.of(5).toString()).equals('Date(0005-01-01)');
     });
 
     scenario('the canonical form round-trips through parse', () {
-      for (final date in [Date(2026, 7, 7), Date(2000), Date(2024, 2, 29)]) {
+      for (final date in [Date.of(2026, 7, 7), Date.of(2000), Date.of(2024, 2, 29)]) {
         check(Date.tryParse(date.iso8601)!).equals(date);
       }
     });
 
     scenario('the month getter is a Month that knows its length', () {
-      check(Date(2026, 7, 7).month).equals(Month.july);
-      check(Date(2024, 2, 29).month.daysIn(2024)).equals(29);
+      check(Date.of(2026, 7, 7).month).equals(Month.july);
+      check(Date.of(2024, 2, 29).month.daysIn(2024)).equals(29);
     });
   });
 }

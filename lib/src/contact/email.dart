@@ -29,12 +29,6 @@ extension type const Email._(String value) {
         .fold((reason) => throw MintedFormatException.from(reason, source), (email) => email);
   }
 
-  /// As [fromComponents], but takes the domain as its dot-separated labels
-  /// (`['example', 'com']`), joined with `.`.
-  @Deprecated("Use Email.fromComponents with domainLabels.join('.'). Removed in 2.0.0 (#44).")
-  static Email fromDomainLabels({required String localPart, required List<String> domainLabels}) =>
-      fromComponents(localPart: localPart, domain: domainLabels.join('.'));
-
   /// Parses [input] as an email address, or returns `null` when it is not well-formed.
   /// See the type docs for the normalisation applied.
   static Email? tryParse(String input) => parse(input).getOrNull();

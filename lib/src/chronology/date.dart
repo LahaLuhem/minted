@@ -35,10 +35,6 @@ final class Date implements Comparable<Date> {
   /// The day of the month, `1` to the last day of [month] (leap-year aware).
   final int day;
 
-  /// The [Date] for [year], [month] and [day]. Identical to [Date.of], the spelling to prefer.
-  @Deprecated('Use Date.of. Removed in 2.0.0 (#44).')
-  factory(int year, [int month = 1, int day = 1]) => Date.of(year, month, day);
-
   const new _(this.year, this.month, this.day);
 
   /// The [Date] for [year] (`0000`-`9999`), [month] (`1`-`12`), and [day] (bounded by the month),
@@ -98,19 +94,8 @@ final class Date implements Comparable<Date> {
     return _tryFromParts(shiftedUtc.year, shiftedUtc.month, shiftedUtc.day);
   }
 
-  /// The date [days] days after this one (pass a negative [days] to go back), throwing
-  /// [MintedFormatException] when the result leaves `0000`-`9999`. Use [tryAddDays] when [days]
-  /// could cross that bound.
-  @Deprecated('Use Date.tryAddDays. Removed in 2.0.0 (#44).')
-  Date addDays(int days) => Date.fromDateTime(_utcMidnight.add(Duration(days: days)));
-
   /// The date [days] days before this one, or `null` when the result leaves `0000`-`9999`.
   Date? trySubtractDays(int days) => tryAddDays(-days);
-
-  /// The date [days] days before this one, throwing [MintedFormatException] when the result leaves
-  /// `0000`-`9999`. Use [trySubtractDays] when [days] could cross that bound.
-  @Deprecated('Use Date.trySubtractDays. Removed in 2.0.0 (#44).')
-  Date subtractDays(int days) => addDays(-days);
 
   /// The whole number of days from [other] to this date (`this - other`), negative when this
   /// date is the earlier one.
@@ -155,7 +140,7 @@ final class Date implements Comparable<Date> {
   @override
   String toString() => 'Date($iso8601)';
 
-  // UTC midnight, used for day arithmetic: a UTC day is always 24 hours, so addDays and
+  // UTC midnight, used for day arithmetic: a UTC day is always 24 hours, so tryAddDays and
   // differenceInDays can't be skewed by a daylight-saving transition the way a local day can.
   DateTime get _utcMidnight => DateTime.utc(year, month.value, day);
 

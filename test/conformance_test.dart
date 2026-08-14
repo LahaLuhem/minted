@@ -111,6 +111,8 @@ const _contractDoors = {'parse', 'tryParse'};
 /// The constraint types, by name: a range over a number, so `tryFrom` and no parse door. Listed
 /// rather than derived from the directory, because `Port` belongs to `network/` by domain.
 const _constraintTypes = {
+  'Digit',
+  'Digits',
   'NaturalNumber',
   'Percentage',
   'Port',

@@ -1,10 +1,8 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import '../support/bdd.dart';
+import '../support/digits.dart';
 
 void main() {
   feature('PaymentCardNumber', () {
@@ -187,8 +185,8 @@ void main() {
 
     scenario('fromComponents computes the check digit', () {
       final assembledNumber = PaymentCardNumber.fromComponents(
-        iin: Digits.parse('411111').getOrThrow(),
-        accountIdentifier: Digits.parse('111111111').getOrThrow(),
+        iin: Digits.tryFrom([4, 1, 1, 1, 1, 1])!,
+        accountIdentifier: Digits.tryFrom([1, 1, 1, 1, 1, 1, 1, 1, 1])!,
       );
 
       // The parts of the Visa test number above, so the computed digit is checkable by eye.
@@ -213,8 +211,8 @@ void main() {
       outline: (example) {
         check(
               () => PaymentCardNumber.fromComponents(
-                iin: Digits.parse(example.iin).getOrThrow(),
-                accountIdentifier: Digits.parse(example.accountIdentifier).getOrThrow(),
+                iin: digitsOf(example.iin),
+                accountIdentifier: digitsOf(example.accountIdentifier),
               ),
             )
             .throws<MintedFormatException>()
@@ -226,8 +224,8 @@ void main() {
     scenario('fromComponents error carries the components as its source', () {
       check(
             () => PaymentCardNumber.fromComponents(
-              iin: Digits.parse('4111').getOrThrow(),
-              accountIdentifier: Digits.parse('11').getOrThrow(),
+              iin: Digits.tryFrom([4, 1, 1, 1])!,
+              accountIdentifier: Digits.tryFrom([1, 1])!,
             ),
           )
           .throws<MintedFormatException>()

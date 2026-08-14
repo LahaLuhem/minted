@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -53,7 +50,7 @@ void main() {
       final parsedIban = Iban.tryParse('GB29NWBK60161331926819')!;
 
       check(parsedIban.countryCode).equals('GB');
-      check(parsedIban.checkDigits).equals((first: Digit.from(2), second: Digit.from(9)));
+      check(parsedIban.checkDigits).equals((first: Digit.tryFrom(2)!, second: Digit.tryFrom(9)!));
       check(parsedIban.bban).equals('NWBK60161331926819');
     });
 

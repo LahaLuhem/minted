@@ -1,6 +1,3 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -86,19 +83,8 @@ void main() {
           .equals('Jane.Doe@example.com');
     });
 
-    scenario('fromDomainLabels joins the labels with dots', () {
-      check(
-        Email.fromDomainLabels(localPart: 'jane', domainLabels: ['mail', 'example', 'com']).value,
-      ).equals('jane@mail.example.com');
-    });
-
     scenario('fromComponents throws MintedFormatException on invalid parts', () {
       check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
-          .throws<MintedFormatException>();
-    });
-
-    scenario('fromDomainLabels throws MintedFormatException on empty labels', () {
-      check(() => Email.fromDomainLabels(localPart: 'jane', domainLabels: []))
           .throws<MintedFormatException>();
     });
 

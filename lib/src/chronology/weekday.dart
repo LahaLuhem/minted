@@ -3,9 +3,6 @@ library;
 
 import 'package:collection/collection.dart';
 
-import '../shared/outcomes/minted_format_exception.dart';
-import 'failures/weekday_failure.dart';
-
 /// A day of the week, Monday to Sunday. [Date.weekday] returns one.
 ///
 /// [value] is the ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday];
@@ -44,12 +41,6 @@ enum Weekday implements Comparable<Weekday> {
 
   /// The [Weekday] with ISO day number [value], or `null` unless it is in `1`-`7`.
   static Weekday? tryFrom(int value) => values.firstWhereOrNull((day) => day.value == value);
-
-  /// The [Weekday] with ISO day number [value], throwing [MintedFormatException] unless it is in
-  /// `1`-`7`.
-  @Deprecated('Use Weekday.tryFrom. Removed in 2.0.0 (#44).')
-  static Weekday from(int value) =>
-      tryFrom(value) ?? (throw MintedFormatException.from(WeekdayFailure.notAWeekday, '$value'));
 
   /// The next day of the week, wrapping from Sunday round to Monday.
   Weekday get next => plusDays(1);

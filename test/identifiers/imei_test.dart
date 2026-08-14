@@ -1,10 +1,8 @@
-// Deprecated for 2.0.0 but still shipping in 1.x, so the tests stay until removal; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import '../support/bdd.dart';
+import '../support/digits.dart';
 
 void main() {
   feature('Imei', () {
@@ -52,7 +50,7 @@ void main() {
       check(parsedImei.tac).equals('35209900');
       check(parsedImei.reportingBodyIdentifier).equals('35');
       check(parsedImei.serialNumber).equals('176148');
-      check(parsedImei.checkDigit).equals(Digit.from(1));
+      check(parsedImei.checkDigit).equals(Digit.tryFrom(1)!);
     });
 
     scenario('formatted rebuilds the printed grouping', () {
@@ -126,8 +124,8 @@ void main() {
       outline: (example) {
         check(
           Imei.fromComponents(
-            tac: Digits.parse(example.tac).getOrThrow(),
-            serialNumber: Digits.parse(example.serialNumber).getOrThrow(),
+            tac: digitsOf(example.tac),
+            serialNumber: digitsOf(example.serialNumber),
           ).value,
         ).equals(example.imei);
       },
@@ -150,8 +148,8 @@ void main() {
       outline: (example) {
         check(
               () => Imei.fromComponents(
-                tac: Digits.parse(example.tac).getOrThrow(),
-                serialNumber: Digits.parse(example.serialNumber).getOrThrow(),
+                tac: digitsOf(example.tac),
+                serialNumber: digitsOf(example.serialNumber),
               ),
             )
             .throws<MintedFormatException>()
@@ -163,8 +161,8 @@ void main() {
     scenario('fromComponents error carries the components as its source', () {
       check(
             () => Imei.fromComponents(
-              tac: Digits.parse('352099').getOrThrow(),
-              serialNumber: Digits.parse('176148').getOrThrow(),
+              tac: Digits.tryFrom([3, 5, 2, 0, 9, 9])!,
+              serialNumber: Digits.tryFrom([1, 7, 6, 1, 4, 8])!,
             ),
           )
           .throws<MintedFormatException>()
