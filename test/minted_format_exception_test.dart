@@ -22,9 +22,9 @@ void main() {
           .equals(const IbanChecksumFailed());
     });
 
-    scenario('it extends FormatException, so on FormatException catches assembly failures', () {
-      // parse reports its failure instead of throwing; the assembly factories are the throwing door.
-      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
+    scenario('it extends FormatException, so on FormatException catches an asserted failure', () {
+      // Nothing throws at input any more; getOrThrow is the caller opting in.
+      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com').getOrThrow())
           .throws<FormatException>();
       check(() => Date.of(2026, 13)).throws<FormatException>();
     });

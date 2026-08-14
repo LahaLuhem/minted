@@ -3,7 +3,6 @@ import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers
 
 import '../numerics/digits.dart';
 import '../shared/encoding/digit_values.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/iso_country_code.dart';
 import 'failures/phone_number_failure.dart';
@@ -17,16 +16,12 @@ import 'failures/phone_number_failure.dart';
 ///
 /// {@example /example/minted_example.dart#phone}
 extension type const PhoneNumber._(String value) {
-  /// Builds a [PhoneNumber] from its [countryCode] (the calling code without
-  /// `+`, e.g. `44`) and its [nationalNumber] digits. Throws
-  /// [MintedFormatException] if they don't form a valid number. For assembling
-  /// from a known-valid source.
-  static PhoneNumber fromComponents({required String countryCode, required Digits nationalNumber}) {
-    final source = '+$countryCode${nationalNumber.asString}';
-
-    return parse(source)
-        .fold((reason) => throw MintedFormatException.from(reason, source), (phone) => phone);
-  }
+  /// Builds a [PhoneNumber] from its [countryCode] (the calling code without `+`, e.g. `44`) and its
+  /// [nationalNumber] digits, reporting the [PhoneNumberFailure] when they don't form a valid number.
+  static ParseOutcome<PhoneNumberFailure, PhoneNumber> fromComponents({
+    required String countryCode,
+    required Digits nationalNumber,
+  }) => parse('+$countryCode${nationalNumber.asString}');
 
   /// Parses [input] as a phone number, or returns `null` when it is not a valid number.
   ///

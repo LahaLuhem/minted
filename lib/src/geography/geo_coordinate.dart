@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:meta/meta.dart';
 
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/geo_coordinate_failure.dart';
 
@@ -46,23 +45,22 @@ final class GeoCoordinate {
     positiveZeroed(_renderable(longitude == -_maxLongitude ? _maxLongitude : longitude)),
   );
 
-  /// The coordinate at [latitude] and [longitude] decimal degrees, throwing [MintedFormatException]
-  /// when either leaves its range. Named parameters, so a transposed pair cannot be written by
-  /// accident.
-  static GeoCoordinate from({required double latitude, required double longitude}) {
+  /// The coordinate at [latitude] and [longitude] decimal degrees, reporting the
+  /// [GeoCoordinateFailure] when either leaves its range. Named parameters, so a transposed pair
+  /// cannot be written by accident.
+  static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> from({
+    required double latitude,
+    required double longitude,
+  }) {
     final failure = _rangeFailure(latitude, longitude);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, '$latitude, $longitude')
-        : ._canonical(latitude, longitude);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._canonical(latitude, longitude));
   }
 
   /// The coordinate at [latitude] and [longitude] decimal degrees, or `null` when either leaves its
-  /// range. A `NaN` is out of range on both.
+  /// range. A `NaN` is out of range on both. Derived from [from], so the two cannot diverge.
   static GeoCoordinate? tryFrom({required double latitude, required double longitude}) =>
-      _rangeFailure(latitude, longitude) != null
-      ? null
-      : GeoCoordinate._canonical(latitude, longitude);
+      from(latitude: latitude, longitude: longitude).getOrNull();
 
   /// Parses [input] as an ISO 6709 latitude and longitude, or returns `null` unless it is exactly
   /// that shape (signed, fixed-width, closed by `/`, no altitude) and both parts are in range.

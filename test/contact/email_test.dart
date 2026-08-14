@@ -62,9 +62,7 @@ void main() {
     scenario('every door reports the one failure the engine can distinguish', () {
       // email_validator exposes a single bool, so a finer diagnosis would be a guess.
       check(Email.parse('nope').reasonOrNull).equals(EmailFailure.malformed);
-      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
+      check(Email.fromComponents(localPart: 'a b', domain: 'example.com').reasonOrNull)
           .equals(EmailFailure.malformed);
     });
 
@@ -79,20 +77,19 @@ void main() {
     });
 
     scenario('fromComponents assembles and normalises the address', () {
-      check(Email.fromComponents(localPart: 'Jane.Doe', domain: 'Example.COM').value)
+      check(Email.fromComponents(localPart: 'Jane.Doe', domain: 'Example.COM').getOrThrow().value)
           .equals('Jane.Doe@example.com');
     });
 
-    scenario('fromComponents throws MintedFormatException on invalid parts', () {
-      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
-          .throws<MintedFormatException>();
+    scenario('fromComponents reports a failure on invalid parts, and never throws', () {
+      check(Email.fromComponents(localPart: 'a b', domain: 'example.com').isFailure).isTrue();
     });
 
-    scenario('an assembly failure carries the offending parts as its source', () {
-      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com'))
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
+      check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com').getOrThrow())
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('a b@example.com');
+          .has((error) => error.failure, 'failure')
+          .equals(EmailFailure.malformed);
     });
 
     // A valid address does not always carry a hostname, which is why the narrowing is partial.
