@@ -131,8 +131,9 @@ That is what `Uri` does for URLs and `int.parse` does for integers, and it is wh
 type does for its domain. The mechanics that enforce it:
 
 - The primary constructor is **private** (`._`). No caller can build an instance directly.
-- The only ways in are `parse` (returns a [`ParseOutcome`](#parse-outcome)), `tryParse` (returns
-  `T?`), and the assembly factories (which throw). All run the same full check.
+- The only ways in are `parse` and the assembly factories (both return a
+  [`ParseOutcome`](#parse-outcome)), and `tryParse` (returns `T?`). All run the same full check, and
+  none of them throws.
 - Therefore, an instance of `Iban` is a proof that the string passed mod-97; a `PaymentCardNumber`
   is a proof that it passed Luhn. Downstream code stops re-checking and stops carrying "is this
   string actually valid?" as an open question.
@@ -193,15 +194,27 @@ recorded as a carve-out about `==` and `Uint8List`, which undersold it: the reas
 composition, and the `==` argument is a second, unrelated reason to reach for a class.
 
 **The cost is real and worth paying.** A class hand-writes `==`, `hashCode` and `toString`, and gives
-up the zero-cost representation. Extension types stay right for values with no inner structure worth
-naming: a [`Hostname`](#hostname-value-type)'s labels are plain strings, so it stays an extension type
-until something like a `DnsLabel` exists to hold.
+up the zero-cost representation, so an extension type stays right wherever the value has no inner
+structure worth naming.
 
-**Types that predate the rule are queued for v2, not fixed piecemeal.** `Isbn`, `Gtin`, `Imei`,
-`Issn` and `Isni` slice digits out of a `String` where `Digits` exists; `Email.domain` returns a
-`String` that is a `Hostname`; and `IpAddress.octets` hands back raw bytes now that
-[`Uint8`](#constraint-types) is a type they could carry. Each correction is breaking, so they land
-together with the rest of the v2 signature work rather than one at a time.
+**Where the audit landed, and why each type sits where it does.** `Isbn` and `Imei` keep their
+`String` representation and hand back `Digits` from their digit-segment getters, which is the whole
+benefit (the round trip type-checks) without the two costs of holding one: hand-written equality,
+and `print` rendering `Digits(978…)` instead of the identifier. The rest are correctly extension
+types over text, each for its own reason:
+
+- `Iban`'s `bban`, `Isin`'s `nsin` and `Bic`'s codes are alphanumeric, and there is no alphanumeric
+  type to hold. Minting one was declined: see [the door table](#parse-outcome).
+- `Hostname` and `DnsName` labels have no type either, because a label's validity is **positional**.
+  `Hostname` refuses an all-numeric *last* label, so a valid label at one index is invalid at
+  another, and no per-label type can express that.
+- `Email.domain` is not always a hostname. An RFC 5321 address literal (`jane@[192.0.2.1]`) and an
+  internationalised domain are both valid addresses whose domain a `Hostname` refuses, so the getter
+  stays text and [`domainAsHostname`](#hostname-value-type) offers the partial narrowing.
+- `IpAddress.octets` stays a `Uint8List`, which already enforces `0`-`255` by construction, so
+  `List<Uint8>` would catch nothing while taxing every arithmetic use with `.value`.
+- `Gtin`, `Issn` and `Isni` expose no digit-segment getter at all: their public surface is render
+  helpers, and a check character can be `X`, which a `Digits` cannot hold.
 
 ---
 
@@ -214,27 +227,24 @@ rather than a raw `String`, so "these are digits" is a fact of the type instead 
 each caller re-checks. Neither `Digit` nor `Digits` is a domain entity from a standard; they are
 the building blocks the standard types are cut from.
 
-**They travel inbound too, not only outbound.** For a while these types were returned by getters but
-never accepted by a parameter, so every assembly factory took `String` for parts it knew were digits.
-That was the package declining to eat its own cooking, and it had a concrete cost: the charset failure
-stayed reachable through a door whose caller was already asserting validity. So a digits-only part of
-an assembly factory is a `Digits` (`Isbn.fromComponents`, `PaymentCardNumber.fromComponents`,
-`Gtin.fromBody`, `Imei.fromComponents`, `Issn.fromBody`), and the corresponding
-`*InvalidCharacters` variant becomes unreachable from that door while staying live for `parse`. Parts
-that are genuinely alphanumeric keep `String`: an IBAN's `bban` and a BIC's institution code are
-`[A-Z0-9]`, so `Digits` there would be a narrower type, not a stronger one, and there is no
-alphanumeric sibling to reach for yet.
+**They travel both ways, and that is what makes the round trip compose.** `Isbn.prefix` and
+`Imei.tac` hand back a `Digits`, and `Isbn.fromComponents` and `Imei.fromComponents` take one, so
+`Imei.fromComponents(tac: imei.tac, serialNumber: imei.serialNumber)` type-checks. It did not, while
+the getters returned `String` and the parameters took `Digits`: the two halves of one type disagreed
+about what its parts were. Parts that are genuinely alphanumeric keep `String`, because `Digits`
+there would be a narrower type rather than a stronger one, and no alphanumeric type exists to hold
+them.
 
-**`getOrThrow` is what makes that spelling bearable, and it belongs on the outcome.** Building a
-`Digits` from a literal to hand to a factory used to mean `Digits.tryParse('978')!`, which throws
-away the `DigitsFailure` the parse just produced and leaves a bare null-check error in its place.
-The first fix attempted was a per-type `Digits.fromString`, and it was wrong: the
-[door table](#parse-outcome) has four kinds, and a throwing factory whose parameter is a single
-`String` that *is* the whole value is none of them, it is `parse`'s own signature wearing a throw.
-So the door moved onto `ParseOutcome` instead, where one method serves every type and nothing grows
-a fifth kind. It carries the failure but not the text that produced it, so
-`MintedFormatException.source` is null there; the typed reason and the rendered message are what
-matter for a bug in the caller's own source.
+**A `Digits` is not text, and interpolating one says so.** It hand-writes `toString`, so `'$prefix'`
+renders `Digits(978)`. Nothing diagnoses that (interpolation takes any `Object`), so rendered output
+reaches for `.asString`. This is the same delegation cost that keeps these types `String`-backed
+rather than `Digits`-backed: an extension type over `Digits` would make `print(isbn)` render
+`Digits(9780306406157)`.
+
+**Building one from text is the caller's job.** There is no `Digits.parse`, because decimal notation
+is not a published format for "a digit sequence", so a door there would invent one. Inside the
+package `shared/encoding/digit_values.dart` decodes a code-unit range straight into values, which is
+how a validated whole hands back a digits-only part without allocating a substring.
 
 `Digit` (a single `0`-`9`) is an `extension type` over `int`, so it erases at runtime and costs
 nothing per value; `.value` is the number. Arity decides how each consumer exposes its digits.
@@ -252,7 +262,8 @@ there.
 
 `Digits` is an `@immutable` class, not an extension type, for two reasons. Value equality: an
 extension type's `==` delegates to its representation and can't be overridden, and `Uint8List` uses
-*identity* equality, so `Digits.parse('12')` would never equal another `Digits.parse('12')`; the
+*identity* equality, so `Digits.tryFrom([1, 2])` would never equal another `Digits.tryFrom([1, 2])`;
+the
 class hand-writes structural `==`/`hashCode` over the bytes (its first use of `package:meta`, for
 `@immutable`). Encapsulation: the `Uint8List` is private, so a denser backing (nibble-packed BCD at
 two digits per byte, or tighter) can replace it behind the same `Iterable<Digit>` / `operator []` /
@@ -262,47 +273,50 @@ a volume identifiers rarely reach, and the unpacked bytes read as the digits und
 ---
 
 <a id="why-typed-format-exception"></a>
-## Why a typed `FormatException`
+## Why the thrown type is an `Error`
 
-The **assembly factories** (`fromComponents`, `from`, `fromBytes`, `Date(y, m, d)`) throw
-`MintedFormatException`, which **extends** `dart:core`'s `FormatException`. `parse` does not throw;
-it returns a [`ParseOutcome`](#parse-outcome). Two goals at once:
+Nothing in the package throws at input: every fallible door reports its failure in its return type.
+The one throw left is [`ParseOutcome.getOrThrow`](#parse-outcome), which a caller types
+deliberately, and it raises `MintedFormatError`.
 
-- **Stdlib-consistent.** The package sells itself as "like `Uri`", and `int.parse` / `Uri.parse`
-  / `DateTime.parse` all throw `FormatException`. Anyone already writing `on FormatException`
-  catches ours too. It carries the offending `source` and an optional `offset`, same as the base.
-- **Discriminable.** Extending (rather than throwing the base type) lets a caller write
-  `on MintedFormatException` to catch specifically this package's parse failures, and lets us
-  attach a consistent, informative message (`'Invalid Iban: failed mod-97 check'`) via a shared
-  `MintedFormatException.from(failure, source)` factory, which renders the message from the typed
-  `MintedFailure` it carries. That failure's `typeName` is an explicit string, not a `<T>`, because
-  the value types are extension types that erase to their representation at runtime, so a `'$T'` in
-  the message would render `String`, not `Iban`.
+**An `Error`, not an `Exception`.** Reaching it means someone asserted a value was valid and was
+wrong, which is a bug in their source rather than a condition to branch on. That is what Dart's
+`Error` means (`RangeError`, `StateError`, `ArgumentError`), and it is why `on FormatException` no
+longer catches it. Earlier versions extended `FormatException` for stdlib consistency, which made
+sense while the assembly factories threw on bad input; once they stopped, the only thing that
+argument protected was catch-as-control-flow.
 
-A failed assembly is still a runtime condition, so it is a `throw`, never an `assert` (see
-[CODESTYLE class structure](./CODESTYLE.md#class-structure)): `assert` is stripped in release, and
-these guard the type's core guarantee.
+**It carries the typed [`MintedFailure`](#per-type-failures)** and renders `Invalid <typeName>:
+<message>` from it, so a caller can switch on the cause or log the text. That `typeName` is an
+explicit string rather than a `'$T'`, because the value types erase to their representation at
+runtime and `'$T'` would render `String`, not `Iban`. It carries no `source`: the outcome has the
+failure but never the text that produced it, so inventing one would be a lie.
+
+A `throw` rather than an `assert`, since `assert` is stripped in release and this guards the type's
+core guarantee (see [CODESTYLE class structure](./CODESTYLE.md#class-structure)).
 
 ---
 
 <a id="claim-in-source"></a>
-## A throw is for a claim you made in source
+## A throw is for a claim you made in source, and you have to type it
 
-The line between the two doors is **who is responsible for the failure**, not what the parameter
-type is.
+The line is **who is responsible for the failure**, and the answer decides who writes the throw.
 
-`parse` takes text you did not control: a form field, a CSV cell, a JSON payload. Invalid input is
-an expected outcome there, and the caller *must* handle it, so it belongs in the return type where
-the compiler can insist. That is `ParseOutcome`.
+Every door reports: `parse` takes text you did not control, and an assembly factory takes parts you
+believe in, but in both cases the caller may be wrong, so both return a `ParseOutcome` and the
+compiler insists on a decision.
 
-The assembly factories take parts the caller already believes in. Writing `Date(2026, 7, 7)` or
-`Iban.fromComponents(countryCode: 'GB', bban: …)` is a claim, made in source, that those parts are
-good. A violated claim is a bug in the calling code, not a condition to branch on, and there is no
-remedy to write at the call site. Forcing an outcome there would make every caller write an arm
-they cannot act on, and they would write `case _ => null` next to the arm that mattered.
+**An earlier version of this had the assembly factories throw**, reasoning that
+`Iban.fromComponents(countryCode: 'GB', bban: …)` *is* a claim made in source, so a violation is a
+bug rather than a branch. The claim half of that is still true; what was wrong was letting the door
+make it on the caller's behalf. A signature reading `Iban fromComponents(...)` promises totality and
+then blows up, and the caller never opted in. Now they spell it: `fromComponents(...).getOrThrow()`
+is the same assertion, made visible, in eleven characters. Prevent-by-design beats an exception
+trickling through call sites that never asked for one.
 
-This is the line every comparable system draws: Rust separates `Result` from `panic!`, Haskell
-separates `Either` from `error`, and ribs ships `Either.catching` for crossing it deliberately.
+This is still the line every comparable system draws, only with the crossing made explicit: Rust
+separates `Result` from `panic!`, Haskell separates `Either` from `error`, and ribs ships
+`Either.catching` for crossing it deliberately. `getOrThrow` is this package's crossing.
 
 ---
 
@@ -313,21 +327,28 @@ separates `Either` from `error`, and ribs ships `Either.catching` for crossing i
 It is deliberately `Either`-shaped so FP-style code reads natively, but named for the domain rather
 than `Left` / `Right`, because the package is general-purpose.
 
-**The door table**, which governs what any new member returns. One rule decides every row: *a throw
-is for a claim you made in source; the outcome is for data you did not control.*
+**The door table**, which governs what any new member returns. Two rules decide every row: *a door
+that can fail says so in its return type*, and *a type gets a `parse(String)` door only where a
+standard defines its text form.*
 
 | Door | Example | Returns |
 |------|---------|---------|
 | Parse text | `Iban.parse(String)` | `ParseOutcome<F, T>` |
 | Parse text, cheaply | `Iban.tryParse(String)` | `T?` |
-| Assemble from parts you assert are valid | `Date(2026, 7, 7)`, `Isbn.fromComponents`, `Digits.from`, `Uuid.fromBytes` | `T`, throws `MintedFormatException` |
-| Range-check a primitive | `Digit.tryFrom(int)`, `Digits.tryFrom(List<int>)` | `T?` |
-| Assert against an outcome you already hold | `Digits.parse('978').getOrThrow()` | `T`, throws `MintedFormatException` |
+| Assemble from parts | `Isbn.fromComponents`, `Uuid.fromBytes`, `Date.of` | `ParseOutcome<F, T>` |
+| Range-check a primitive | `Digit.tryFrom(int)`, `Uint.tryFrom(int)` | `T?` |
+| Assert against an outcome | `Isbn.parse('…').getOrThrow()` | `T`, throws `MintedFormatError` |
+| Cannot fail | `Digits.of(Iterable<Digit>)`, `Date.now()` | `T` |
 
-The last row is the one that arrived late, and its absence caused a real mistake: with no way to
-assert against an outcome, a type that wanted one grew its own throwing `String` door instead, which
-is just `parse`'s signature with a throw bolted on. `getOrThrow` lives on the sealed base, so the
-table stays five rows however many value types land.
+The last row matters as much as the others: never wrap a total function in an outcome. And nothing
+grows a *sixth* kind, because a per-type throwing door is only `parse`'s signature with a throw
+bolted on: `getOrThrow` lives on the sealed base, so one method serves every value type.
+
+**A door returns `T?` only where there is no vocabulary to discard.** A range check has one
+invariant, so `null` says everything a failure could, which is why the constraint types carry none.
+Everywhere a `XFailure` exists, the fallible doors return it; the alternative, deciding per door by
+counting how many variants are currently reachable, would make *enriching* a vocabulary a breaking
+change.
 
 **Why not depend on an FP library.** `ribs_core`'s `Either` was considered and rejected because the
 dependency would be **viral in the public API**: unlike `iban_validator` it appears in every
@@ -597,10 +618,16 @@ check that leaves `Date` doing the real validation, and a type named `Day` that 
 overpromises on its name. `year` would be only a thin bounded `int`. This is the
 [typing-versus-honesty balance](#typing-versus-honesty) resolved per field.
 
-**A validating factory, not a raw constructor.** `Date(2026, 7, 7)` validates and throws
-`MintedFormatException`, backed by a private `Date._`. A plain `const` constructor cannot promise the
-guarantee, because its `assert`s are stripped in release builds, so `Date(2026, 13, 40)` would leak
-into production. The cost is that `Date(...)` is not `const`; neither is `DateTime(...)`.
+**A validating factory, not a raw constructor.** `Date.of(2026, 7, 7)` validates and reports, backed
+by a private `Date._`. A plain `const` constructor cannot promise the guarantee, because its
+`assert`s are stripped in release builds, so `Date.of(2026, 13, 40)` would leak into production. The
+cost is that `Date.of(...)` is not `const`; neither is `DateTime(...)`.
+
+**Named, because a factory constructor cannot return an outcome.** `Date(y, m, d)` was the spelling
+until v2, and a factory constructor must return its own type, so only the named form could grow the
+`ParseOutcome` return every other door has. Its failure type is the parts-only subset
+(`DateComponentFailure`), so a caller assembling from parts has no shape arm to fold: the shape was
+never in question.
 
 **Reject, don't roll over.** Where `DateTime(2026, 13, 1)` silently becomes 2027-01-01, `Date`
 rejects it. Rolling an out-of-range part over invents a different value instead of refusing a bad
@@ -647,11 +674,11 @@ assume, and the origin-free arithmetic (`next`, `plusDays`, `daysUntil`, all mod
 safer default. Same reason there is no `isWeekend`: ISO 8601 numbers the days and says nothing about
 which are a weekend, so a bare answer would be an opinion wearing a standard's name.
 
-**Failure vocabulary for a type that never parses.** `WeekdayFailure` exists for one use,
-`Weekday.from` throwing outside `1`-`7`, and never reaches a `ParseOutcome`. It stays anyway,
-because `MintedFormatException` needs a `MintedFailure` carrying `typeName: 'Weekday'`, and the
-alternative is a shared parameterized failure: a new public shape that would turn later per-type
-growth into a breaking signature change ([failures are per type](#per-type-failures)).
+**No failure vocabulary, because nothing produces one.** `WeekdayFailure` existed for a single use,
+`Weekday.from` throwing outside `1`-`7`. Once that door went (a range check needs only `tryFrom`,
+and `null` says everything one invariant can), the type had no producer left and went with it. Same
+story for `DigitFailure` and `DigitsFailure`: a vocabulary with no producer is public surface
+carrying nothing.
 
 ---
 
@@ -1369,9 +1396,9 @@ the no-implicit-throws work already schedules every `from` with a nullable sibli
 Shipping a door with a known removal date costs more than not shipping one.
 
 **No failure vocabulary, because there is nothing to say.** One invariant per type means a failure
-enum would carry a single variant meaning "out of range", which is what `null` already means. With no
-throwing door there is nothing to carry it either; [`WeekdayFailure`](#per-type-failures) exists only
-because `Weekday.from` throws.
+enum would carry a single variant meaning "out of range", which is what `null` already means. The
+same reasoning caught up with `Digit`, `Digits` and `Weekday` in v2: once their throwing doors went,
+their vocabularies had no producer and went too.
 
 **Two types, not one.** `Uint` (`>= 0`) and `NaturalNumber` (`> 0`) differ by a single value, and
 that value is the point: an empty cart is a real count, a page size of zero is not. One type would

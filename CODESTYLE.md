@@ -199,12 +199,15 @@ inherited behaviour is the wanted one. `Digits` needs structural `==` that its `
 give, and `PaymentCardNumber` needs a `toString` that does not print the card. Rationale:
 [`APPENDIX.md#payment-card-number-value-type`](./APPENDIX.md#payment-card-number-value-type).
 
-**Several shipped types predate this rule and sit on the wrong side of it**, holding text where a
-modelled part exists: `Isbn`, `Gtin`, `Imei`, `Issn` and `Isni` slice digits out of a `String` where
-they could hold `Digits`, `Email` returns a `String` domain that is a `Hostname`, and `IpAddress`
-splits its octets back out of text now that `Uint8` is a type they could carry. Correcting them is
-breaking, so it is queued for v2 rather than done piecemeal. Do not add to the pile: new types
-follow the rule above.
+**The rule is about the parts a caller sees, not the representation.** `Isbn` and `Imei` are
+`String`-backed and hand back `Digits` from their digit-segment getters, which is what makes the
+round trip compose without either type giving up its zero-cost representation or its `print` form.
+Every other shipped type is correctly an extension type over text: `Iban`'s `bban`, `Isin`'s `nsin`
+and `Bic`'s codes are alphanumeric with no type to become; `Hostname` and `DnsName` labels have none
+either, since a label's validity depends on its position; `Email.domain` is not always a hostname
+(an address literal and an IDN are both valid); and `IpAddress.octets` is a `Uint8List`, which
+already enforces `0`-`255`. Rationale for each:
+[`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-from-modelled-parts).
 
 **Non-negotiable across both shapes:**
 
@@ -213,31 +216,29 @@ follow the rule above.
    constructor; it would break the guarantee the whole package sells. (*Primary constructor* has
    named a Dart language feature since 3.13, which this package does not use, so this rule is about
    privacy, not syntax. See [`APPENDIX.md#sdk-floor`](./APPENDIX.md#sdk-floor).) A validated named
-   factory
-   (`fromComponents`, `fromDomainLabels`) that assembles caller-supplied parts and runs the same
-   validation before `._` is fine, throwing [`MintedFormatException`](./APPENDIX.md#why-typed-format-exception)
-   on bad parts: it's a parsing entry point keyed on parts, not a raw constructor, so the guarantee
-   holds.
+   factory (`fromComponents`, `fromBody`) that assembles caller-supplied parts and runs the same
+validation before `._` is fine: it's a parsing entry point keyed on parts, not a raw constructor, so
+the guarantee holds.
 2. **`static ParseOutcome<F, T> parse(String input)`** is the primary door and never throws: it
    returns the value or the type's own [`MintedFailure`](./APPENDIX.md#per-type-failures). It does
    the work; the other two derive from it.
 3. **`static T? tryParse(String input)`** is `parse(input).getOrNull()`, so the two can't diverge.
    It stays nullable because `??`, `?.` and `whereType` are worth a dedicated path.
-4. **Assembly factories throw**, and they are the only things that do: `fromComponents`, `from`,
-   `fromBytes`, `Date(y, m, d)`. Calling one *is* the caller asserting the parts are valid, so a
-   violation is a bug in their source, not bad input. See
+4. **No door throws.** Assembly factories (`fromComponents`, `fromBody`, `fromBytes`, `Date.of`)
+   return the same `ParseOutcome` as `parse`, so a caller sees in the signature that the parts can
+   be refused. `ParseOutcome.getOrThrow` is the single door that throws, and only because a caller
+   typed it: that is them asserting, and a violated assertion raises `MintedFormatError`, an `Error`
+   because it is a bug in their source rather than input to handle. Rationale:
    [`APPENDIX.md#claim-in-source`](./APPENDIX.md#claim-in-source).
    **Their parameters take the package's own types, not raw primitives.** A part that is only ever
-   decimal digits is a `Digits`; a part that is genuinely alphanumeric, like an IBAN's `bban` or an
-   email's `domain`, stays a `String`, because `Digits` there would be the wrong type rather than a
-   stronger one. This is the package eating its own cooking: a factory taking `String` for a
-   digits-only part ships the exact primitive obsession the library exists to remove, and it leaves
-   the charset failure reachable from a door whose caller is already asserting. Rationale:
+   decimal digits is a `Digits`; a part that is genuinely alphanumeric, like an IBAN's `bban`, stays
+a `String`, because `Digits` there would be the wrong type rather than a stronger one. That also
+makes the round trip compose: `Imei.fromComponents(tac: imei.tac, …)` type-checks, because the
+getter hands back what the factory takes. Rationale:
    [`APPENDIX.md#typed-digit-subparts`](./APPENDIX.md#typed-digit-subparts).
-   **Never add a per-type throwing door to make that convenient.** The spelling is
-   `Digits.parse('978').getOrThrow()`: `getOrThrow` lives on `ParseOutcome`, so every type gets one
-   assert-in-source door and no type grows a fifth entry to the door table above. Reach for it rather
-   than `getOrNull()!`, which discards the typed reason.
+   **A `Digits` reads as `Digits(978)` when interpolated**, not `978`, since it hand-writes
+`toString`. Interpolating one is silent (no diagnostic), so reach for `.asString` in any rendered
+output.
 5. **Value equality.** Extension types inherit it from the representation for free (see below);
    classes hand-write `==` + `hashCode` over their parts. No `Equatable` dependency.
 6. **A canonical string form.** `.value` for extension types (the representation), a named getter
