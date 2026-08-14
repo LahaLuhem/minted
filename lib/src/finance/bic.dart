@@ -2,7 +2,6 @@
 // ignore_for_file: avoid-substring
 
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/iso_country_code.dart';
 import 'failures/bic_failure.dart';
@@ -20,9 +19,9 @@ import 'failures/bic_failure.dart';
 ///
 /// {@example /example/minted_example.dart#bic}
 extension type const Bic._(String value) {
-  /// Builds a [Bic] from its parts, [branchCode] defaulting to the `XXX` primary office. Throws
-  /// [MintedFormatException] when they don't form a valid BIC. For assembling from a known-valid source.
-  static Bic fromComponents({
+  /// Builds a [Bic] from its parts, [branchCode] defaulting to the `XXX` primary office, reporting
+  /// the [BicFailure] when they don't form a valid BIC.
+  static ParseOutcome<BicFailure, Bic> fromComponents({
     required String institutionCode,
     required String countryCode,
     required String locationCode,
@@ -32,11 +31,8 @@ extension type const Bic._(String value) {
     final failure = _failureFor(assembledBic);
 
     return failure != null
-        ? throw MintedFormatException.from(
-            failure,
-            '$institutionCode + $countryCode + $locationCode + $branchCode',
-          )
-        : ._(_withPrimaryOffice(assembledBic));
+        ? ParseFailure(failure)
+        : ParseSuccess(._(_withPrimaryOffice(assembledBic)));
   }
 
   /// Parses [input] as a BIC, or returns `null` when it fails the length, character, or country checks.

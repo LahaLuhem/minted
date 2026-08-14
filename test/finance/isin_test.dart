@@ -153,13 +153,14 @@ void main() {
         ),
       },
       outline: (example) {
-        check(Isin.fromComponents(prefix: example.prefix, nsin: example.nsin).value)
+        check(Isin.fromComponents(prefix: example.prefix, nsin: example.nsin).getOrThrow().value)
             .equals(example.isin);
       },
     );
 
     scenario('fromComponents normalises a spaced, lower-case input', () {
-      check(Isin.fromComponents(prefix: 'au', nsin: '0000 XVGZA').value).equals('AU0000XVGZA3');
+      check(Isin.fromComponents(prefix: 'au', nsin: '0000 XVGZA').getOrThrow().value)
+          .equals('AU0000XVGZA3');
     });
 
     scenarioOutline<({String prefix, String nsin, IsinFailure failure})>(
@@ -182,18 +183,16 @@ void main() {
         ),
       },
       outline: (example) {
-        check(() => Isin.fromComponents(prefix: example.prefix, nsin: example.nsin))
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
+        check(Isin.fromComponents(prefix: example.prefix, nsin: example.nsin).reasonOrNull)
             .equals(example.failure);
       },
     );
 
-    scenario('fromComponents error carries the components as its source', () {
-      check(() => Isin.fromComponents(prefix: 'US', nsin: '03783310'))
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
+      check(() => Isin.fromComponents(prefix: 'US', nsin: '03783310').getOrThrow())
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('US + 03783310');
+          .has((error) => error.failure, 'failure')
+          .equals(const IsinWrongLength(11));
     });
   });
 }

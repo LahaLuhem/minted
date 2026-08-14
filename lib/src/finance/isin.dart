@@ -6,7 +6,6 @@ import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/encoding/alphanumeric_values.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/iso_country_code.dart';
 import 'failures/isin_failure.dart';
@@ -28,15 +27,16 @@ import 'failures/isin_failure.dart';
 /// {@example /example/minted_example.dart#isin}
 extension type const Isin._(String value) {
   /// Builds an [Isin] from its two-letter [prefix] and nine-character [nsin], computing the check
-  /// digit. Throws [MintedFormatException] when the parts don't form a valid ISIN.
+  /// digit, reporting the [IsinFailure] when the parts don't form a valid ISIN.
   // Both parts are alphanumeric, so they stay `String` where a digits-only part would be `Digits`.
-  static Isin fromComponents({required String prefix, required String nsin}) {
+  static ParseOutcome<IsinFailure, Isin> fromComponents({
+    required String prefix,
+    required String nsin,
+  }) {
     final assembledIsin = _withCheckDigit(unspacedUpperCase('$prefix$nsin'));
     final failure = _failureFor(assembledIsin);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, '$prefix + $nsin')
-        : ._(assembledIsin);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledIsin));
   }
 
   /// Parses [input] as an ISIN, or returns `null` when it fails the length, character, prefix, or

@@ -9,7 +9,6 @@ import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/payment_card_number_failure.dart';
 
@@ -34,17 +33,15 @@ final class PaymentCardNumber {
   const new _(this.value);
 
   /// Builds a [PaymentCardNumber] from an [iin] and [accountIdentifier], computing the Luhn check
-  /// digit. Throws [MintedFormatException] when the parts don't form a valid number. For assembling
-  /// from a known-valid source.
-  static PaymentCardNumber fromComponents({
+  /// digit, reporting the [PaymentCardNumberFailure] when the parts don't form a valid number.
+  static ParseOutcome<PaymentCardNumberFailure, PaymentCardNumber> fromComponents({
     required Digits iin,
     required Digits accountIdentifier,
   }) {
-    final parts = '${iin.asString} + ${accountIdentifier.asString}';
     final assembledNumber = _withCheckDigit('${iin.asString}${accountIdentifier.asString}');
     final failure = _failureFor(assembledNumber);
 
-    return failure != null ? throw MintedFormatException.from(failure, parts) : ._(assembledNumber);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledNumber));
   }
 
   /// Parses [input] as a payment card number, or returns `null` when it fails the length, character,
