@@ -190,10 +190,12 @@ void main() {
     scenario('from builds from typed parts and throws when they do not form a block', () {
       final network = IpAddress.tryParse('192.0.2.0')!;
 
-      check(Cidr.from(network: network, prefixLength: 24).asString).equals('192.0.2.0/24');
-      check(() => Cidr.from(network: IpAddress.tryParse('192.0.2.5')!, prefixLength: 24))
-          .throws<MintedFormatException>();
-      check(() => Cidr.from(network: network, prefixLength: 33)).throws<MintedFormatException>();
+      check(Cidr.from(network: network, prefixLength: 24).getOrThrow().asString)
+          .equals('192.0.2.0/24');
+      check(Cidr.from(network: IpAddress.tryParse('192.0.2.5')!, prefixLength: 24).reasonOrNull)
+          .isA<CidrHostBitsSet>();
+      check(Cidr.from(network: network, prefixLength: 33).reasonOrNull)
+          .isA<CidrPrefixLengthOutOfRange>();
     });
 
     scenario('equal blocks are equal by value and hash, and differ by either part', () {
@@ -225,10 +227,12 @@ void main() {
 
     scenario('the failure names the type', () {
       check(Cidr.parse('nope').reasonOrNull?.typeName).equals('Cidr');
-      check(() => Cidr.from(network: IpAddress.tryParse('192.0.2.5')!, prefixLength: 24))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .startsWith('Invalid Cidr:');
+      check(
+        Cidr.from(
+          network: IpAddress.tryParse('192.0.2.5')!,
+          prefixLength: 24,
+        ).reasonOrNull?.typeName,
+      ).equals('Cidr');
     });
   });
 }

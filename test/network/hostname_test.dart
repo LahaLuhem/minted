@@ -129,13 +129,13 @@ void main() {
       check(Hostname.tryParse('localhost')!.fqdn).equals('localhost.');
     });
 
-    scenario('fromLabels round-trips through labels and throws on parts that do not form one', () {
-      final hostname = Hostname.fromLabels(['www', 'example', 'com']);
+    scenario('fromLabels round-trips through labels and reports parts that do not form one', () {
+      final hostname = Hostname.fromLabels(['www', 'example', 'com']).getOrThrow();
 
       check(hostname.value).equals('www.example.com');
-      check(Hostname.fromLabels(hostname.labels)).equals(hostname);
-      check(() => Hostname.fromLabels(['bad-', 'example'])).throws<MintedFormatException>();
-      check(() => Hostname.fromLabels(['192', '168', '1', '1'])).throws<MintedFormatException>();
+      check(Hostname.fromLabels(hostname.labels).getOrThrow()).equals(hostname);
+      check(Hostname.fromLabels(['bad-', 'example']).reasonOrNull).isA<HostnameLabelMalformed>();
+      check(Hostname.fromLabels(['192', '168', '1', '1']).reasonOrNull).isA<HostnameNumericTld>();
     });
 
     scenario('the failure message names the remedy, not just the rule', () {
@@ -170,10 +170,7 @@ void main() {
     scenario('the failure names the type, not its erased representation', () {
       // Extension types erase to String at runtime, so a `<T>`-derived name would read "String".
       check(Hostname.parse('_x.example').reasonOrNull?.typeName).equals('Hostname');
-      check(() => Hostname.fromLabels(['-bad']))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .startsWith('Invalid Hostname:');
+      check(Hostname.fromLabels(['-bad']).reasonOrNull?.typeName).equals('Hostname');
     });
   });
 }

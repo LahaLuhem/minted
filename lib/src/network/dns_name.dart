@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import '../shared/standards/dns_names.dart';
 import 'failures/dns_name_failure.dart';
@@ -27,14 +26,10 @@ extension type const DnsName._(String value) {
   // Already normalised and strictly inside this type's rules, so there is nothing left to check.
   static DnsName fromHostname(Hostname hostname) => ._(hostname.value);
 
-  /// Builds a [DnsName] from its [labels] (`['_dmarc', 'example', 'com']`), throwing
-  /// [MintedFormatException] unless they join into a valid one. The inverse of [labels].
-  static DnsName fromLabels(List<String> labels) {
-    final source = labels.join(labelSeparator);
-
-    return parse(source)
-        .fold((reason) => throw MintedFormatException.from(reason, source), (dnsName) => dnsName);
-  }
+  /// Builds a [DnsName] from its [labels] (`['_dmarc', 'example', 'com']`), reporting the
+  /// [DnsNameFailure] unless they join into a valid one. The inverse of [labels].
+  static ParseOutcome<DnsNameFailure, DnsName> fromLabels(List<String> labels) =>
+      parse(labels.join(labelSeparator));
 
   /// Parses [input] as a DNS name, or returns `null` when it breaks a charset or length rule.
   /// See the type docs for the normalisation applied.

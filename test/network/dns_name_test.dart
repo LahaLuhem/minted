@@ -118,11 +118,12 @@ void main() {
       },
     );
 
-    scenario('fromLabels is the inverse of labels, and throws on parts that do not join', () {
-      check(DnsName.fromLabels(['_dmarc', 'example', 'com']).value).equals('_dmarc.example.com');
+    scenario('fromLabels is the inverse of labels, and reports parts that do not join', () {
+      check(DnsName.fromLabels(['_dmarc', 'example', 'com']).getOrThrow().value)
+          .equals('_dmarc.example.com');
       check(DnsName.tryParse('_sip._tcp.example.com')!.labels)
           .deepEquals(['_sip', '_tcp', 'example', 'com']);
-      check(() => DnsName.fromLabels(['a b', 'example'])).throws<MintedFormatException>();
+      check(DnsName.fromLabels(['a b', 'example']).reasonOrNull).isA<DnsNameInvalidCharacters>();
     });
 
     scenario('the failure names the type, not its erased representation', () {

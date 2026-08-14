@@ -115,15 +115,15 @@ void main() {
 
       check(v4.octets).deepEquals([192, 0, 2, 1]);
       check(v6.octets.length).equals(16);
-      check(IpAddress.fromOctets(v4.octets)).equals(v4);
-      check(IpAddress.fromOctets(v6.octets)).equals(v6);
+      check(IpAddress.fromOctets(v4.octets).getOrThrow()).equals(v4);
+      check(IpAddress.fromOctets(v6.octets).getOrThrow()).equals(v6);
     });
 
-    scenario('fromOctets throws MintedFormatException unless there are 4 or 16 octets', () {
-      check(() => IpAddress.fromOctets(Uint8List(5))).throws<MintedFormatException>();
-      check(() => IpAddress.fromOctets(Uint8List(15))).throws<MintedFormatException>();
-      check(IpAddress.fromOctets(Uint8List(4)).value).equals('0.0.0.0');
-      check(IpAddress.fromOctets(Uint8List(16)).value).equals('::');
+    scenario('fromOctets reports a failure unless there are 4 or 16 octets', () {
+      check(IpAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
+      check(IpAddress.fromOctets(Uint8List(15)).isFailure).isTrue();
+      check(IpAddress.fromOctets(Uint8List(4)).getOrThrow().value).equals('0.0.0.0');
+      check(IpAddress.fromOctets(Uint8List(16)).getOrThrow().value).equals('::');
     });
 
     scenario('isLoopback covers 127.0.0.0/8 and ::1, and nothing else', () {
@@ -184,10 +184,8 @@ void main() {
     scenario('the failure names the type, not its erased representation', () {
       // Extension types erase to String at runtime, so a `<T>`-derived name would read "String".
       check(IpAddress.parse('nope').reasonOrNull?.typeName).equals('IpAddress');
-      check(() => IpAddress.fromOctets(Uint8List(5)))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .equals('Invalid IpAddress: expected 4 or 16 octets, got 5');
+      check(IpAddress.fromOctets(Uint8List(5)).reasonOrNull?.message)
+          .equals('expected 4 or 16 octets, got 5');
     });
   });
 }
