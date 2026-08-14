@@ -130,11 +130,12 @@ final class Iso8601Duration {
     final anchoredYear = from.year + monthIndex ~/ _monthsPerYear;
     // The modulo pins the index to 1-12, so tryFrom cannot return null here.
     final anchoredMonth = Month.tryFrom(monthIndex % _monthsPerYear + 1)!;
+    // Asserts, as it did before: an anchor past 9999 throws rather than silently clamping.
     final anchored = Date.of(
       anchoredYear,
       anchoredMonth.value,
       min(from.day, anchoredMonth.daysIn(anchoredYear)),
-    );
+    ).getOrThrow();
 
     final wholeDays = anchored.differenceInDays(from) + weeks * _daysPerWeek + days;
     final whole = Duration(days: wholeDays, hours: hours, minutes: minutes, seconds: seconds);
@@ -229,7 +230,8 @@ final class Iso8601Duration {
 
   static bool _hasFraction(String value) => value.contains('.');
 
-  static int _daysInYear(int year) => Date.of(year + 1).differenceInDays(Date.of(year));
+  static int _daysInYear(int year) =>
+      Date.of(year + 1).getOrThrow().differenceInDays(Date.of(year).getOrThrow());
 
   static String _designatorOf(Iso8601DurationComponent component) => switch (component) {
     .years => 'Y',
