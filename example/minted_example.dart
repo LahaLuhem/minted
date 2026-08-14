@@ -113,7 +113,7 @@ void main() {
   // #region imei
   final imei = Imei.tryParse('35-209900-176148-1')!;
   print(imei.value); // 352099001761481
-  print(imei.tac); // 35209900  (which model, not which unit)
+  print(imei.tac.asString); // 35209900  (a Digits: which model, not which unit)
   print(imei.formatted); // 35-209900-176148-1
   print(
     Imei.parse('3520990017614810').reasonOrNull?.message,

@@ -47,12 +47,13 @@ extension type const Isbn._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_toIsbn13(compactInput)));
   }
 
-  /// The three-digit GS1 prefix, `978` or `979`.
-  String get prefix => value.substring(0, _prefixLength);
+  /// The three-digit GS1 prefix, `978` or `979`. Read [Digits.asString] for the plain text.
+  // A validated ISBN is all digits, so tryFrom cannot return null here or in body.
+  Digits get prefix => .tryFrom(decimalValues(value, 0, _prefixLength))!;
 
-  /// The nine digits between the prefix and the check digit: registration group, registrant and publication,
-  /// run together. Splitting them needs a range table this package does not carry.
-  String get body => value.substring(_prefixLength, _checkDigitIndex);
+  /// The nine digits between the prefix and the check digit: registration group, registrant and
+  /// publication, run together. Splitting them needs a range table this package does not carry.
+  Digits get body => .tryFrom(decimalValues(value, _prefixLength, _checkDigitIndex))!;
 
   /// The final digit, the GS1 mod-10 check over the other twelve.
   // The last character of a validated ISBN-13 is always a digit, so tryParse cannot return null.
@@ -60,7 +61,13 @@ extension type const Isbn._(String value) {
 
   /// The legacy ten-character form (mod-11 check digit, `X` for ten), or `null` for a `979` ISBN,
   /// which never had one.
-  String? get isbn10 => prefix != bookland978 ? null : '$body${mod11CheckCharacter(body)}';
+  String? get isbn10 {
+    if (prefix.asString != bookland978) return null;
+
+    final bodyText = body.asString;
+
+    return '$bodyText${mod11CheckCharacter(bodyText)}';
+  }
 
   static String _withCheckDigit(String twelveDigits) =>
       '$twelveDigits${gs1CheckDigit(twelveDigits)}';

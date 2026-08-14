@@ -61,9 +61,12 @@ void main() {
     scenario('an ISBN exposes its prefix, body, and check digit', () {
       final parsedIsbn = Isbn.tryParse('978-0-306-40615-7')!;
 
-      check(parsedIsbn.prefix).equals('978');
-      check(parsedIsbn.body).equals('030640615');
+      check(parsedIsbn.prefix.asString).equals('978');
+      check(parsedIsbn.body.asString).equals('030640615');
       check(parsedIsbn.checkDigit).equals(Digit.tryFrom(7)!);
+      // The parts feed straight back in, which is what the Digits typing buys.
+      check(Isbn.fromComponents(prefix: parsedIsbn.prefix, body: parsedIsbn.body).getOrThrow())
+          .equals(parsedIsbn);
     });
 
     // The legacy form is rebuilt, not stored, so these check our mod-11 generator against the

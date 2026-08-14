@@ -18,8 +18,13 @@ int decimalValue(int codeUnit) =>
 /// this direction, only rendering does.
 int decimalCodeUnit(int digitValue) => digitValue + _asciiZero;
 
-/// The values of [input]'s characters, ready for [Digits.tryFrom]. A non-digit yields -1, as
-/// [decimalValue] does, so [Digits.tryFrom] returns null rather than minting something that lies.
-List<int> decimalValues(String input) => [
-  for (final codeUnit in input.codeUnits) decimalValue(codeUnit),
+/// The values of [input]'s characters from [start] to [end] (exclusive, the whole string when
+/// omitted), ready for [Digits.tryFrom].
+///
+/// The range is read straight off the code units, so a validated whole can hand back a digits-only
+/// part without allocating a substring. A non-digit yields -1, as [decimalValue] does, so
+/// [Digits.tryFrom] returns null rather than minting something that lies.
+List<int> decimalValues(String input, [int start = 0, int? end]) => [
+  for (var index = start; index < (end ?? input.length); index++)
+    decimalValue(input.codeUnitAt(index)),
 ];
