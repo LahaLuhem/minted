@@ -16,6 +16,13 @@ sealed class DateFailure implements MintedFailure {
   String get typeName => 'Date';
 }
 
+/// Why one of a date's parts was refused: the subset [Date.of] can report, where the shape is not in
+/// question. Lets a caller assembling from parts switch without an arm for [DateNotIso8601].
+@immutable
+sealed class DateComponentFailure extends DateFailure {
+  const new();
+}
+
 /// The text is not the ISO 8601 `YYYY-MM-DD` shape.
 final class DateNotIso8601 extends DateFailure {
   /// Creates the failure.
@@ -35,7 +42,7 @@ final class DateNotIso8601 extends DateFailure {
 }
 
 /// The year falls outside `0000`-`9999`, the range a [Date] can hold.
-final class DateYearOutOfRange extends DateFailure {
+final class DateYearOutOfRange extends DateComponentFailure {
   /// The offending year.
   final int year;
 
@@ -56,7 +63,7 @@ final class DateYearOutOfRange extends DateFailure {
 }
 
 /// The month falls outside `1`-`12`.
-final class DateMonthOutOfRange extends DateFailure {
+final class DateMonthOutOfRange extends DateComponentFailure {
   /// The offending month number.
   final int month;
 
@@ -78,7 +85,7 @@ final class DateMonthOutOfRange extends DateFailure {
 
 /// The day falls outside `1`-[maxDay]. The bound is leap-year aware, so 29 February is out of
 /// range in a common year and in range in a leap one.
-final class DateDayOutOfRange extends DateFailure {
+final class DateDayOutOfRange extends DateComponentFailure {
   /// The year the day was given for.
   final int year;
 

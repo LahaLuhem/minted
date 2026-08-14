@@ -90,45 +90,49 @@ void main() {
       examples: {
         'a month from a 31-day month clamps the day': (
           input: 'P1M',
-          from: Date.of(2026, 1, 31),
+          from: Date.of(2026, 1, 31).getOrThrow(),
           expected: const Duration(days: 28),
         ),
         'the same month is 31 days from March': (
           input: 'P1M',
-          from: Date.of(2026, 3),
+          from: Date.of(2026, 3).getOrThrow(),
           expected: const Duration(days: 31),
         ),
         'a leap February is 29 days': (
           input: 'P1M',
-          from: Date.of(2024, 2),
+          from: Date.of(2024, 2).getOrThrow(),
           expected: const Duration(days: 29),
         ),
         'a year across a leap day': (
           input: 'P1Y',
-          from: Date.of(2024),
+          from: Date.of(2024).getOrThrow(),
           expected: const Duration(days: 366),
         ),
-        'weeks are exact': (input: 'P2W', from: Date.of(2026), expected: const Duration(days: 14)),
+        'weeks are exact': (
+          input: 'P2W',
+          from: Date.of(2026).getOrThrow(),
+          expected: const Duration(days: 14),
+        ),
         'time components need no calendar': (
           input: 'PT12H30M5S',
-          from: Date.of(2026),
+          from: Date.of(2026).getOrThrow(),
           expected: const Duration(hours: 12, minutes: 30, seconds: 5),
         ),
         'a fractional second becomes microseconds': (
           input: 'PT1.5S',
-          from: Date.of(2026),
+          from: Date.of(2026).getOrThrow(),
           expected: const Duration(seconds: 1, milliseconds: 500),
         ),
         // A fraction on a calendar component scales that component's real length at the anchor,
         // so half a leap year is half a day longer than half a common one.
         'half a common year': (
           input: 'P0.5Y',
-          from: Date.of(2026),
+          from: Date.of(2026).getOrThrow(),
           expected: const Duration(hours: 365 * 12),
         ),
         'half a leap year': (
           input: 'P0.5Y',
-          from: Date.of(2024),
+          from: Date.of(2024).getOrThrow(),
           expected: const Duration(hours: 366 * 12),
         ),
       },

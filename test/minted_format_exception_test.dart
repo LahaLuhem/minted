@@ -26,7 +26,7 @@ void main() {
       // Nothing throws at input any more; getOrThrow is the caller opting in.
       check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com').getOrThrow())
           .throws<FormatException>();
-      check(() => Date.of(2026, 13)).throws<FormatException>();
+      check(() => Date.of(2026, 13).getOrThrow()).throws<FormatException>();
     });
   });
 }

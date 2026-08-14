@@ -1,7 +1,6 @@
 import 'package:meta/meta.dart';
 
 import '../shared/normalisation/iso_date_format.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/date_failure.dart';
 import 'month.dart';
@@ -38,23 +37,30 @@ final class Date implements Comparable<Date> {
   const new _(this.year, this.month, this.day);
 
   /// The [Date] for [year] (`0000`-`9999`), [month] (`1`-`12`), and [day] (bounded by the month),
-  /// throwing [MintedFormatException] on an impossible date.
+  /// reporting which part is out of range on an impossible date.
   ///
   /// Unlike [DateTime], out-of-range parts are rejected, not rolled over: `Date.of(2026, 13, 1)`
-  /// throws rather than silently becoming 2027-01-01.
-  factory of(int year, [int month = 1, int day = 1]) =>
-      _tryFromParts(year, month, day) ??
-      (throw MintedFormatException.from(_partsFailure(year, month, day), '$year-$month-$day'));
+  /// reports [DateMonthOutOfRange] rather than silently becoming 2027-01-01. The failure type is
+  /// the parts-only subset, so there is no shape arm to fold here.
+  static ParseOutcome<DateComponentFailure, Date> of(int year, [int month = 1, int day = 1]) {
+    final parsedDate = _tryFromParts(year, month, day);
+
+    return parsedDate == null
+        ? ParseFailure(_partsFailure(year, month, day))
+        : ParseSuccess(parsedDate);
+  }
 
   /// The calendar date of [dateTime], dropping its time-of-day and time zone.
   ///
-  /// Throws [MintedFormatException] only when [dateTime]'s year falls outside `0000`-`9999`
-  /// (an extreme [DateTime] can reach beyond it).
-  factory fromDateTime(DateTime dateTime) => Date.of(dateTime.year, dateTime.month, dateTime.day);
+  /// Fails only when [dateTime]'s year falls outside `0000`-`9999` (an extreme [DateTime] can reach
+  /// beyond it); its month and day are always in range.
+  static ParseOutcome<DateComponentFailure, Date> fromDateTime(DateTime dateTime) =>
+      of(dateTime.year, dateTime.month, dateTime.day);
 
   /// Today's date in the local time zone, the date-only sibling of [DateTime.now]. For the UTC day,
   /// use `Date.fromDateTime(DateTime.now().toUtc())`.
-  factory now() => Date.fromDateTime(DateTime.now());
+  // The local clock is always inside 0000-9999, so this cannot fail.
+  factory now() => fromDateTime(DateTime.now()).getOrThrow();
 
   /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, or returns `null` unless it is exactly
   /// that shape (four-digit year, zero-padded two-digit month and day) and a real date.
@@ -170,7 +176,7 @@ final class Date implements Comparable<Date> {
 
   // Which part of the given date is out of range. Reached only after _tryFromParts returns null,
   // so exactly one of these conditions holds.
-  static DateFailure _partsFailure(int year, int month, int day) {
+  static DateComponentFailure _partsFailure(int year, int month, int day) {
     if (year < 0 || year > _maxYear) return DateYearOutOfRange(year);
 
     final parsedMonth = Month.tryFrom(month);
