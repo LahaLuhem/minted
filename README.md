@@ -72,6 +72,9 @@ final email = Email.tryParse('Jane.Doe@Example.COM')!;
 email.value;   // 'Jane.Doe@example.com'   (domain lower-cased for you)
 email.domain;  // 'example.com'
 
+// the domain is a String because it isn't always a hostname (address literals, IDNs):
+email.domainAsHostname().getOrNull();   // Hostname('example.com'), null for those
+
 Email.tryParse('not-an-email');   // null, nothing thrown
 ```
 
