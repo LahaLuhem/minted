@@ -40,30 +40,28 @@ void main() {
 
     scenario('getOrThrow passes a value through and throws the typed failure otherwise', () {
       check(success.getOrThrow()).equals(4);
-      check(failure.getOrThrow).throws<MintedFormatException>();
+      check(failure.getOrThrow).throws<MintedFormatError>();
     });
 
     // The whole reason it exists over `getOrNull()!`: the typed reason survives, so a violated
     // claim-in-source says which type refused and why instead of "null check on a null value".
     scenario('getOrThrow keeps the reason that getOrNull would have discarded', () {
       check(failure.getOrThrow)
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(EmailFailure.malformed);
 
       check(failure.getOrThrow)
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.message, 'message')
           .equals('Invalid Email: not a well-formed email address');
     });
 
-    // It has the failure but never the text that produced it, so source stays null rather than
-    // being invented.
-    scenario('getOrThrow reports no source, having never seen the input', () {
+    scenario('getOrThrow raises the typed failure it was holding', () {
       check(failure.getOrThrow)
-          .throws<MintedFormatException>()
-          .has((error) => error.source, 'source')
-          .isNull();
+          .throws<MintedFormatError>()
+          .has((error) => error.failure, 'failure')
+          .equals(EmailFailure.malformed);
     });
 
     scenario('map transforms a value and carries a failure across untouched', () {

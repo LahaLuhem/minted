@@ -190,7 +190,7 @@ void main() {
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => Isin.fromComponents(prefix: 'US', nsin: '03783310').getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsinWrongLength(11));
     });

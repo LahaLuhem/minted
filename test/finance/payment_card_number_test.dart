@@ -225,7 +225,7 @@ void main() {
               accountIdentifier: Digits.tryFrom([1, 1])!,
             ).getOrThrow(),
           )
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const PaymentCardNumberWrongLength(7));
     });

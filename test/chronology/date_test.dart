@@ -132,7 +132,7 @@ void main() {
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => Date.of(2026, 13).getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.message, 'message')
           .equals('Invalid Date: month 13 is outside 1-12');
     });

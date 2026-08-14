@@ -162,7 +162,7 @@ void main() {
               serialNumber: Digits.tryFrom([1, 7, 6, 1, 4, 8])!,
             ).getOrThrow(),
           )
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const ImeiWrongLength(13));
     });

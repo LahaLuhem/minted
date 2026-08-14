@@ -196,7 +196,7 @@ void main() {
               locationCode: 'FF',
             ).getOrThrow(),
           )
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const BicUnknownCountry('ZZ'));
     });

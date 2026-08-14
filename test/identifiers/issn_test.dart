@@ -153,7 +153,7 @@ void main() {
 
     scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
       check(() => Issn.fromBody(Digits.tryFrom([0, 3, 1, 7, 8])!).getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IssnWrongLength(6));
     });

@@ -131,7 +131,7 @@ void main() {
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => GeoCoordinate.from(latitude: 91, longitude: 0).getOrThrow())
-          .throws<MintedFormatException>()
+          .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const GeoCoordinateLatitudeOutOfRange(91));
     });
