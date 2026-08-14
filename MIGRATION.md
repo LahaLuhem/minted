@@ -52,9 +52,8 @@ the last row above has no replacement.
 
 ### Doors return an outcome
 
-Nineteen doors keep their names and change their return type from `T` to
-`ParseOutcome<XFailure, T>`. There is no deprecation for this, since the replacement has the same
-name as the thing it replaces.
+Twenty doors keep their names and change their return type from `T` to `ParseOutcome<XFailure, T>`.
+There is no deprecation for this, since the replacement has the same name as the thing it replaces.
 
 <details>
 <summary>The full list</summary>
@@ -62,10 +61,10 @@ name as the thing it replaces.
 `fromComponents` on `Email`, `PhoneNumber`, `Iban`, `Bic`, `Isin`, `PaymentCardNumber`, `Isbn` and
 `Imei`; `fromBody` on `Issn`, `Isni` and `Gtin`; `GeoCoordinate.from`; `Cidr.from`;
 `Hostname.fromLabels`; `DnsName.fromLabels`; `Uuid.fromBytes`; `MacAddress.fromOctets`;
-`IpAddress.fromOctets`; `Date.fromDateTime`.
+`IpAddress.fromOctets`; `Date.of`; `Date.fromDateTime`.
 
-`Date.of` is the twentieth, and the only rename: a factory constructor must return its own type, so
-`Date(y, m, d)` could never have carried an outcome.
+Two of those keep a nullable sibling, so nothing forces you through the outcome:
+`GeoCoordinate.tryFrom` is now derived from `from`, and `tryParse` still sits beside every `parse`.
 </details>
 
 Three ways to take one, depending on what the call site wants:
@@ -73,7 +72,7 @@ Three ways to take one, depending on what the call site wants:
 ```dart
 final outcome = Iban.fromComponents(countryCode: 'GB', bban: bban);
 
-outcome.getOrThrow();                       // assert the parts are good, as 1.x did
+outcome.getOrThrow();                       // assert the parts are good, as 1.x did implicitly
 outcome.getOrNull();                        // null on failure
 outcome.fold((reason) => log(reason.message), (iban) => send(iban));   // handle both
 ```
@@ -91,7 +90,9 @@ force. Rewrite those blocks to fold the outcome instead.
 ### Five getters hand back `Digits`
 
 `Isbn.prefix`, `Isbn.body`, `Imei.tac`, `Imei.reportingBodyIdentifier` and `Imei.serialNumber`
-return `Digits` rather than `String`. Add `.asString` for the old value.
+return `Digits` rather than `String`. Add `.asString` for the old value, and **watch for
+interpolation**: `'$prefix'` now renders `Digits(978)`, and nothing warns you, because interpolation
+takes any `Object`.
 
 This is what makes the round trip compile: those parts feed straight back into `fromComponents`,
 which has taken `Digits` since 1.0.0.

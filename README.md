@@ -18,8 +18,8 @@ functions deep. (One asterisk on that, see [Caveats](#caveats).)
 It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
 type wears the same small API, so learning one teaches you the rest.
 
-> Heading for 2.0.0, where no door throws implicitly any more? [MIGRATION.md](./MIGRATION.md) has
-> the two-step path, and 1.1.0 deprecates everything that goes.
+> Coming from 1.x? [MIGRATION.md](./MIGRATION.md) is the path: no door throws any more, so the
+> compiler points at each place that needs a decision.
 
 <details>
 <summary><b>Why "parse, don't validate"?</b></summary>
@@ -173,10 +173,10 @@ Learn one type and you've learned them all. Each one gives you:
 - **value equality**: `a == b` compares content, not identity
 - a **canonical form** to read back (`.value` on most types, `.asString` on `Digits`), normalised on
   parse so equal values really are equal
-- an **assembly factory** for parts you assert are valid (`fromComponents`, `from`, `of`). These
-  *do* throw `MintedFormatException`, which extends `FormatException`, because calling one is you
-  claiming the parts are good. `.getOrThrow()` on an outcome is the same claim, made against text:
-  it throws the typed failure where `getOrNull()!` would throw it away
+- an **assembly factory** for parts you already have (`fromComponents`, `fromBody`, `fromBytes`),
+  returning the same `ParseOutcome` as `parse`. Nothing in the package throws unless you ask:
+  `.getOrThrow()` is you claiming the parts are good, and it raises the typed failure where
+  `getOrNull()!` would throw it away
 - getters that fit the type: `email.domain`, `iban.checkDigits`, `phone.nationalNumber`
 
 Two exceptions, both deliberate. A few types are **classifications** rather than parsed values.
@@ -374,13 +374,18 @@ GeoCoordinate.tryParse('+485127.72+0021742/') == eiffel;   // true
 GeoCoordinate.tryParse('+46+2/');   // null: an unpadded longitude is a different location
 GeoCoordinate.from(latitude: 48.8577, longitude: 2.295);   // named, so it can't be written swapped
 
-// build from parts you already trust (throws if they don't form a valid whole).
+// build from parts, getting the same outcome parse gives you.
 // a part that is only ever digits takes `Digits`, so junk can't reach the factory at all:
 final prefix = Digits.tryFrom([9, 7, 8])!;   // digits are ints; the ! is you asserting they fit
 final body = Digits.tryFrom([0, 3, 0, 6, 4, 0, 6, 1, 5])!;
 
-Isbn.fromComponents(prefix: prefix, body: body);   // computes the check digit
-Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3, 3, 9, 3])!);
+Isbn.fromComponents(prefix: prefix, body: body).getOrThrow();   // computes the check digit
+Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3, 3, 9, 3])!).reasonOrNull;   // or fold it
+
+// the digit getters hand back `Digits` too, so a part round-trips into the factory it came from:
+final isbn = Isbn.tryParse('9780306406157')!;
+Isbn.fromComponents(prefix: isbn.prefix, body: isbn.body);   // type-checks, no re-parsing
+isbn.prefix.asString;   // '978'   (interpolating a Digits renders `Digits(978)`, so ask for text)
 
 // parts that aren't digits stay strings, because `Digits` would be the wrong type:
 Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819'); // a BBAN is alphanumeric
@@ -571,15 +576,16 @@ switch (Iban.parse(input)) {
 
 Three other doors, when you don't need the reason:
 
-| You want                                 | Use                                    | On failure                         |
-|------------------------------------------|----------------------------------------|------------------------------------|
-| The value or nothing                     | `Iban.tryParse(input)`                 | `null`                             |
-| The value or a fallback                  | `Iban.parse(input).getOrElse(() => …)` | the fallback                       |
-| To assemble from parts you already trust | `Iban.fromComponents(…)`               | **throws** `MintedFormatException` |
+| You want               | Use                                    | On failure                     |
+|------------------------|----------------------------------------|--------------------------------|
+| The value or nothing   | `Iban.tryParse(input)`                 | `null`                         |
+| The value or a default | `Iban.parse(input).getOrElse(() => x)` | the default                    |
+| The value, asserted    | `Iban.parse(input).getOrThrow()`       | **throws** `MintedFormatError` |
 
-That last row is the only thing in the package that throws, and deliberately: calling it is *you*
-asserting the parts are valid, so a failure is a bug in your code rather than bad input. The
-exception extends `FormatException` and carries the same typed `failure`.
+That last row is the only thing in the package that throws, and only because you typed it: calling
+`getOrThrow` is *you* asserting the value is valid, so a failure is a bug in your code rather than
+bad input. It is an `Error` for that reason, so `on FormatException` will not catch it, and it
+carries the same typed `failure`. Every other door reports instead, assembly factories included.
 
 <details>
 <summary><b>Using an FP library? Three lines.</b></summary>
@@ -627,5 +633,5 @@ a deliberate trade rather than an oversight:
 Issues and pull requests are welcome, and the
 [issue tracker](https://github.com/LahaLuhem/minted/issues) is where the types still to land are
 kept. If you're adding one, hold it to the shared value-type contract (parse-don't-validate, a
-private constructor, `MintedFormatException`, value equality) and bring the official standard test
+private constructor, an outcome-returning door, value equality) and bring the official standard test
 vectors along.
