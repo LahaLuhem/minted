@@ -2,9 +2,6 @@
 // the twin identical to the original, so `==` would ride on identity instead of doing any work.
 // ignore_for_file: prefer_const_constructors
 
-// The three failure vocabularies these use lose their last producer in this release; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -15,25 +12,10 @@ void main() {
     // Every failure the package can report. A variant missing here is one nothing pins the wording
     // of, and the message is what reaches a log or a fallback UI.
     final rendering = <String, ({MintedFailure failure, String typeName, String message})>{
-      'Digit has one way to fail': (
-        failure: DigitFailure.notADigit,
-        typeName: 'Digit',
-        message: 'not a decimal digit 0-9',
-      ),
-      'Digits has one way to fail': (
-        failure: DigitsFailure.notAllDigits,
-        typeName: 'Digits',
-        message: 'not all decimal digits 0-9',
-      ),
       'Month has one way to fail': (
         failure: MonthFailure.notAMonth,
         typeName: 'Month',
         message: 'not a month number 1-12',
-      ),
-      'Weekday has one way to fail': (
-        failure: WeekdayFailure.notAWeekday,
-        typeName: 'Weekday',
-        message: 'not a weekday number 1-7',
       ),
       'Iso8601Duration: unrecognisable text': (
         failure: Iso8601DurationMalformed(),

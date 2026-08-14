@@ -1,6 +1,3 @@
-// The three failure vocabularies these use lose their last producer in this release; see #44.
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
@@ -113,7 +110,7 @@ void main() {
 
     scenario('an extension type survives as the success value', () {
       // Extension types erase to their representation, so this pins that T works for them too.
-      final outcome = ParseSuccess<DigitFailure, Digit>(Digit.tryFrom(7)!);
+      final outcome = ParseSuccess<MonthFailure, Digit>(Digit.tryFrom(7)!);
 
       check(outcome.getOrNull()?.value).equals(7);
     });
