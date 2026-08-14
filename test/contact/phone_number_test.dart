@@ -116,14 +116,17 @@ void main() {
         PhoneNumber.fromComponents(
           countryCode: '33',
           nationalNumber: Digits.tryFrom([6, 5, 5, 5, 7, 0, 5, 7, 6])!,
-        ).value,
+        ).getOrThrow().value,
       ).equals('+33655570576');
     });
 
-    scenario('fromComponents throws MintedFormatException on an invalid number', () {
+    scenario('fromComponents reports a failure on an invalid number, and never throws', () {
       check(
-        () => PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryFrom([1])!),
-      ).throws<MintedFormatException>();
+        PhoneNumber.fromComponents(
+          countryCode: '33',
+          nationalNumber: Digits.tryFrom([1])!,
+        ).reasonOrNull,
+      ).equals(PhoneNumberFailure.invalid);
     });
 
     scenario('the region hint is case-insensitive', () {
@@ -138,14 +141,16 @@ void main() {
       check(PhoneNumber.tryParse('+33 6 55 57 05 76')!.formatNational()).equals('6 55 57 05 76');
     });
 
-    scenario('an assembly failure carries the assembled number as its source', () {
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(
-            () =>
-                PhoneNumber.fromComponents(countryCode: '33', nationalNumber: Digits.tryFrom([1])!),
+            () => PhoneNumber.fromComponents(
+              countryCode: '33',
+              nationalNumber: Digits.tryFrom([1])!,
+            ).getOrThrow(),
           )
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('+331');
+          .has((error) => error.failure, 'failure')
+          .equals(PhoneNumberFailure.invalid);
     });
   });
 }

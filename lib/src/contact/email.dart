@@ -5,7 +5,6 @@ import 'package:email_validator/email_validator.dart';
 
 import '../network/failures/hostname_failure.dart';
 import '../network/hostname.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/email_failure.dart';
 
@@ -19,15 +18,12 @@ import 'failures/email_failure.dart';
 ///
 /// {@example /example/minted_example.dart#email}
 extension type const Email._(String value) {
-  /// Builds an [Email] from its [localPart] and [domain], throwing
-  /// [MintedFormatException] if they don't form a valid address. For assembling
-  /// from a known-valid source.
-  static Email fromComponents({required String localPart, required String domain}) {
-    final source = '$localPart@$domain';
-
-    return parse(source)
-        .fold((reason) => throw MintedFormatException.from(reason, source), (email) => email);
-  }
+  /// Builds an [Email] from its [localPart] and [domain], reporting [EmailFailure] when they don't
+  /// form a valid address.
+  static ParseOutcome<EmailFailure, Email> fromComponents({
+    required String localPart,
+    required String domain,
+  }) => parse('$localPart@$domain');
 
   /// Parses [input] as an email address, or returns `null` when it is not well-formed.
   /// See the type docs for the normalisation applied.
