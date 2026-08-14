@@ -9,26 +9,19 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
-/// Enforces the value-type contract structurally.
+/// Enforces structurally what the value-type contract cannot state in the type system, over every
+/// public type under `lib/src/` outside `shared/` and the per-category `failures/` directories.
 ///
-/// Every value type (each public type declared anywhere under `lib/src/`
-/// except `lib/src/shared/` and the per-category `failures/` directories) must
-/// expose the shared spine: static `tryParse` and `parse` factories, and, for
-/// an extension type, a representation named `value`. Static factories can't be
-/// enforced by an abstract class in Dart (they're static and not inherited), so
-/// this test is that enforcement: a new type that forgets part of the contract
-/// fails the build.
+/// 1. **Nothing throws but an [Error].** A fallible door reports its failure in its return type, so
+///    a `throw` here would be a door lying about what it can do. An `Error` is allowed through
+///    because it says a caller asserted something false, which is a bug rather than input to handle.
+/// 2. **An extension type names its representation `value`**, so the canonical form is `.value`.
+/// 3. **A classification declares no parse door.** An `enum` in this space is derived from something
+///    already parsed, and a `parse` on one would read as a value type while escaping every check.
 ///
-/// An enum in that space is a *classification* (`Weekday`, `UuidVariant`), not a
-/// value type, so it must declare neither door. The contract cannot be checked
-/// on one, and a `parse` on an enum would read as a value type while escaping
-/// every check above.
-///
-/// A *constraint type* is a range over a number with no standard defining its
-/// text form, so it declares `tryFrom` and neither parse door. The AST cannot
-/// reveal that the way it reveals `isEnum`, so [_constraintTypes] names them.
-/// A listed name is an opt-in: forget it and this test demands parse doors,
-/// which fails loudly rather than silently relaxing the contract.
+/// It deliberately requires no door to *exist*. Prescribing a spine (`parse` and `tryParse` on
+/// everything) needed one carve-out per category, and each was a shape forced on a domain that did
+/// not want it. Forbidding dishonesty needs none.
 void main() {
   const notTypes = {'shared', 'failures'};
 
@@ -46,45 +39,30 @@ void main() {
   });
 
   for (final file in typeFiles) {
-    final collector = _SpineCollector();
+    final collector = _TypeCollector();
     parseString(content: file.readAsStringSync()).unit.accept(collector);
 
     group(file.uri.pathSegments.last, () {
       for (final type in collector.types) {
+        test('${type.name} throws nothing that is not an Error', () {
+          check(
+            type.nonErrorThrows,
+            because:
+                '${type.name} throws something that is not an Error. A fallible door reports its '
+                'failure instead: return a ParseOutcome, or a nullable for a plain range check. '
+                'ParseOutcome.getOrThrow is where a caller opts into a throw.',
+          ).isEmpty();
+        });
+
         if (type.isEnum) {
           test('${type.name} is a classification, so it declares no parse door', () {
             check(
-              type.staticMethods.intersection(_contractDoors),
+              type.staticMethods.intersection(_parseDoors),
               because:
-                  '${type.name} is an enum, so the value-type contract cannot '
-                  'be enforced on it: this test only checks classes and '
-                  'extension types. A parse door here would read as a value '
-                  'type while escaping every check. Either model it as an '
-                  'extension type or an immutable class, or keep it a '
-                  'classification and build it with from / tryFrom.',
+                  '${type.name} is an enum, so it is derived from something that already parsed. '
+                  'Build it with tryFrom; a parse door would read as a value type while escaping '
+                  'every check here.',
             ).isEmpty();
-          });
-
-          continue;
-        } else if (_constraintTypes.contains(type.name)) {
-          test('${type.name} is a constraint type, so it declares no parse door', () {
-            check(
-              type.staticMethods.intersection(_contractDoors),
-              because:
-                  '${type.name} is listed as a constraint type. Decimal '
-                  'notation is how numbers are written, not a published '
-                  'format, so a parse door here would invent one. Build it '
-                  'with tryFrom.',
-            ).isEmpty();
-          });
-
-          test('${type.name} declares static tryFrom', () {
-            check(type.staticMethods).contains('tryFrom');
-          });
-        } else {
-          test('${type.name} declares static tryParse and parse', () {
-            check(type.staticMethods).contains('tryParse');
-            check(type.staticMethods).contains('parse');
           });
         }
 
@@ -93,9 +71,8 @@ void main() {
             check(
               type.representationIsValue,
               because:
-                  '${type.name} is an extension type; its representation must '
-                  'be named `value` so the canonical form is `.value` '
-                  'everywhere.',
+                  '${type.name} is an extension type; its representation must be named `value` so '
+                  'the canonical form is `.value` everywhere.',
             ).isTrue();
           });
         }
@@ -104,28 +81,13 @@ void main() {
   }
 }
 
-/// The two static doors the value-type contract requires, and neither a classification nor a
-/// constraint type may declare.
-const _contractDoors = {'parse', 'tryParse'};
+/// The doors a classification may not declare.
+const _parseDoors = {'parse', 'tryParse'};
 
-/// The constraint types, by name: a range over a number, so `tryFrom` and no parse door. Listed
-/// rather than derived from the directory, because `Port` belongs to `network/` by domain.
-const _constraintTypes = {
-  'Digit',
-  'Digits',
-  'NaturalNumber',
-  'Percentage',
-  'Port',
-  'Probability',
-  'Uint',
-  'Uint2',
-  'Uint4',
-  'Uint8',
-  'Uint16',
-  'Uint32',
-};
+/// A thrown name ending in `Error` is a bug signal rather than input handling, so it is allowed.
+final _errorThrow = RegExp(r'\b\w*Error\b');
 
-/// A value type discovered in a source file and the spine members it declares.
+/// A type discovered in a source file, and what the three rules need to know about it.
 class _ValueType {
   new(
     this.name, {
@@ -139,63 +101,72 @@ class _ValueType {
   final bool isEnum;
   final bool representationIsValue;
   final Set<String> staticMethods = {};
+
+  /// The source of every `throw` not naming an `Error`, so a failure can quote what it found.
+  final List<String> nonErrorThrows = [];
 }
 
-/// Collects the value types declared in one compilation unit and their static
-/// member names, using only AST primitives stable across analyzer versions.
-class _SpineCollector extends RecursiveAstVisitor<void> {
+/// Collects the types declared in one compilation unit, using only AST primitives stable across
+/// analyzer versions.
+class _TypeCollector extends RecursiveAstVisitor<void> {
   final List<_ValueType> types = [];
   _ValueType? _current;
 
   @override
   void visitExtensionTypeDeclaration(ExtensionTypeDeclaration node) {
     final source = node.toSource();
-    final type = _ValueType(
-      _nameFrom(source, r'extension\s+type\s+(?:const\s+)?([A-Za-z_$][\w$]*)'),
-      isExtensionType: true,
-      isEnum: false,
-      representationIsValue: RegExp(r'\._\([^)]*\bvalue\b[^)]*\)').hasMatch(source),
+
+    _enter(
+      _ValueType(
+        _nameFrom(source, r'extension\s+type\s+(?:const\s+)?([A-Za-z_$][\w$]*)'),
+        isExtensionType: true,
+        isEnum: false,
+        representationIsValue: RegExp(r'\._\([^)]*\bvalue\b[^)]*\)').hasMatch(source),
+      ),
+      () => super.visitExtensionTypeDeclaration(node),
     );
-    types.add(type);
-    _current = type;
-    super.visitExtensionTypeDeclaration(node);
-    _current = null;
   }
 
   @override
-  void visitClassDeclaration(ClassDeclaration node) {
-    final name = _nameFrom(node.toSource(), r'class\s+([A-Za-z_$][\w$]*)');
-    final type = _ValueType(
-      name,
+  void visitClassDeclaration(ClassDeclaration node) => _enter(
+    _ValueType(
+      _nameFrom(node.toSource(), r'class\s+([A-Za-z_$][\w$]*)'),
       isExtensionType: false,
       isEnum: false,
       representationIsValue: true,
-    );
-    types.add(type);
-    _current = type;
-    super.visitClassDeclaration(node);
-    _current = null;
-  }
+    ),
+    () => super.visitClassDeclaration(node),
+  );
 
   @override
-  void visitEnumDeclaration(EnumDeclaration node) {
-    final name = _nameFrom(node.toSource(), r'enum\s+([A-Za-z_$][\w$]*)');
-    final type = _ValueType(
-      name,
+  void visitEnumDeclaration(EnumDeclaration node) => _enter(
+    _ValueType(
+      _nameFrom(node.toSource(), r'enum\s+([A-Za-z_$][\w$]*)'),
       isExtensionType: false,
       isEnum: true,
       representationIsValue: true,
-    );
-    types.add(type);
-    _current = type;
-    super.visitEnumDeclaration(node);
-    _current = null;
-  }
+    ),
+    () => super.visitEnumDeclaration(node),
+  );
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
     if (node.isStatic) _current?.staticMethods.add(node.name.lexeme);
     super.visitMethodDeclaration(node);
+  }
+
+  @override
+  void visitThrowExpression(ThrowExpression node) {
+    final thrown = node.expression.toSource();
+    if (!_errorThrow.hasMatch(thrown)) _current?.nonErrorThrows.add(thrown);
+    super.visitThrowExpression(node);
+  }
+
+  void _enter(_ValueType type, void Function() visitBody) {
+    types.add(type);
+    _current = type;
+    visitBody();
+    _current = null;
   }
 }
 
