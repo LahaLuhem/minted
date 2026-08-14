@@ -18,6 +18,9 @@ functions deep. (One asterisk on that, see [Caveats](#caveats).)
 It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
 type wears the same small API, so learning one teaches you the rest.
 
+> Heading for 2.0.0, where no door throws implicitly any more? [MIGRATION.md](./MIGRATION.md) has
+> the two-step path, and 1.1.0 deprecates everything that goes.
+
 <details>
 <summary><b>Why "parse, don't validate"?</b></summary>
 
@@ -148,13 +151,13 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Quantities
 
-| Type               | What it guarantees                                                                      | Standard         |
-|--------------------|-----------------------------------------------------------------------------------------|------------------|
-| `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                     | range constraint |
-| `NaturalNumber`    | strictly above zero (`1` or more)                                                       | range constraint |
-| `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix | range constraint |
+| Type               | What it guarantees                                                                           | Standard         |
+|--------------------|----------------------------------------------------------------------------------------------|------------------|
+| `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                          | range constraint |
+| `NaturalNumber`    | strictly above zero (`1` or more)                                                            | range constraint |
+| `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix      | range constraint |
 | `Percentage`       | which unit you meant, so `15` and `0.15` can't be swapped; finite, and unbounded either side | unit constraint  |
-| `Probability`      | `0` to `1` inclusive, both ends reported rather than refused                             | range constraint |
+| `Probability`      | `0` to `1` inclusive, both ends reported rather than refused                                 | range constraint |
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
 and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enough.
@@ -601,7 +604,7 @@ The same shape works for any other FP library: `fold` is the exit.
 **Never cast into a minted type.** The single-value types are `extension type`s, which is what makes
 them free: no allocation per value, and equality, `hashCode` and ordering inherited from the
 representation. The price is that the type exists only at compile time, so a cast slips past the
-parser and the compiler allows it.
+parser, and the compiler allows it.
 
 ```dart
 'nope' as Email;             // compiles, succeeds
@@ -612,7 +615,7 @@ rawStrings as List<Email>;   // a whole list at once, no per-element check
 That `Email` blows up the moment you read `.localPart`. So `parse`, `tryParse` and `fromComponents`
 are the only doors in, and a cast into a minted type is a bug. It's also the one place the
 `int.parse` / `Uri.parse` comparison breaks down, since those return real classes that can't be
-forged; worth saying out loud, because a package can't stop its callers from casting. A lint for it
+forged; worth saying out loud, because a package can't stop its callers from casting. Lint for it
 is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The
 class-backed types (`Date`, `Digits`, `PaymentCardNumber`) are ordinary classes, so bad casts throw
 there instead. Why the erasure is
