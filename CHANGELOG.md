@@ -1,4 +1,4 @@
-## [Unreleased]
+## [2.0.0] - 2026-08-14
 ### Changed
 - nothing throws: every fallible door returns a ParseOutcome
 - assembly factories return ParseOutcome instead of throwing, all 20 of them
@@ -57,7 +57,7 @@
 - Digit
 - Digits
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/1.1.0...HEAD
+[2.0.0]: https://github.com/LahaLuhem/minted/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/LahaLuhem/minted/compare/0.0.2...1.0.0
 [0.0.2]: https://github.com/LahaLuhem/minted/compare/0.0.1...0.0.2
