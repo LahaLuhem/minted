@@ -45,13 +45,15 @@ extension type const Imei._(String value) {
   }
 
   /// The eight-digit Type Allocation Code: which model of equipment this is, not which unit.
-  String get tac => value.substring(0, _tacLength);
+  /// Read [Digits.asString] for the plain text.
+  // A validated IMEI is all digits, so tryFrom cannot return null in any of these three.
+  Digits get tac => .tryFrom(decimalValues(value, 0, _tacLength))!;
 
   /// The two leading digits of [tac], naming the body that allocated it (`35` is BABT, `01` PTCRB).
-  String get reportingBodyIdentifier => value.substring(0, _reportingBodyLength);
+  Digits get reportingBodyIdentifier => .tryFrom(decimalValues(value, 0, _reportingBodyLength))!;
 
   /// The six digits the manufacturer assigns to one unit of the model [tac] names.
-  String get serialNumber => value.substring(_tacLength, _checkDigitIndex);
+  Digits get serialNumber => .tryFrom(decimalValues(value, _tacLength, _checkDigitIndex))!;
 
   /// The final digit, the Luhn check over the other fourteen.
   // The last character of a validated IMEI is always a digit, so tryParse cannot return null.
@@ -59,8 +61,9 @@ extension type const Imei._(String value) {
 
   /// The printed grouping, as a settings screen and the box both show it, e.g. `35-209900-176148-1`.
   String get formatted =>
-      '$reportingBodyIdentifier-${value.substring(_reportingBodyLength, _tacLength)}'
-      '-$serialNumber-${checkDigit.value}';
+      '${reportingBodyIdentifier.asString}-'
+      '${value.substring(_reportingBodyLength, _tacLength)}'
+      '-${serialNumber.asString}-${checkDigit.value}';
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
 

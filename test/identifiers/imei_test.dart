@@ -47,10 +47,17 @@ void main() {
     scenario('an IMEI exposes its TAC, allocating body, serial, and check digit', () {
       final parsedImei = Imei.tryParse('352099001761481')!;
 
-      check(parsedImei.tac).equals('35209900');
-      check(parsedImei.reportingBodyIdentifier).equals('35');
-      check(parsedImei.serialNumber).equals('176148');
+      check(parsedImei.tac.asString).equals('35209900');
+      check(parsedImei.reportingBodyIdentifier.asString).equals('35');
+      check(parsedImei.serialNumber.asString).equals('176148');
       check(parsedImei.checkDigit).equals(Digit.tryFrom(1)!);
+      // The parts feed straight back in, which is what the Digits typing buys.
+      check(
+        Imei.fromComponents(
+          tac: parsedImei.tac,
+          serialNumber: parsedImei.serialNumber,
+        ).getOrThrow(),
+      ).equals(parsedImei);
     });
 
     scenario('formatted rebuilds the printed grouping', () {
