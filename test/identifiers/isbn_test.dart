@@ -153,7 +153,10 @@ void main() {
       },
       outline: (example) {
         check(
-          Isbn.fromComponents(prefix: digitsOf(example.prefix), body: digitsOf(example.body)).value,
+          Isbn.fromComponents(
+            prefix: digitsOf(example.prefix),
+            body: digitsOf(example.body),
+          ).getOrThrow().value,
         ).equals(example.isbn);
       },
     );
@@ -179,27 +182,24 @@ void main() {
       },
       outline: (example) {
         check(
-              () => Isbn.fromComponents(
-                prefix: digitsOf(example.prefix),
-                body: digitsOf(example.body),
-              ),
-            )
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+          Isbn.fromComponents(
+            prefix: digitsOf(example.prefix),
+            body: digitsOf(example.body),
+          ).reasonOrNull,
+        ).equals(example.failure);
       },
     );
 
-    scenario('fromComponents error carries the components as its source', () {
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(
             () => Isbn.fromComponents(
               prefix: Digits.tryFrom([9, 7, 8])!,
               body: Digits.tryFrom([0, 3, 0, 6, 4, 0, 6, 1])!,
-            ),
+            ).getOrThrow(),
           )
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('978 + 03064061');
+          .has((error) => error.failure, 'failure')
+          .equals(const IsbnWrongLength(12));
     });
   });
 }

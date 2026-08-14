@@ -6,7 +6,6 @@ import '../numerics/digits.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/imei_failure.dart';
 
@@ -22,16 +21,16 @@ import 'failures/imei_failure.dart';
 ///
 /// {@example /example/minted_example.dart#imei}
 extension type const Imei._(String value) {
-  /// Builds an [Imei] from its [tac] and [serialNumber], computing the Luhn check digit. Throws
-  /// [MintedFormatException] when the parts don't form a valid IMEI. For assembling from a known-valid source.
-  static Imei fromComponents({required Digits tac, required Digits serialNumber}) {
-    final serialNumStr = serialNumber.asString;
-    final assembledImei = _withCheckDigit('${tac.asString}$serialNumStr');
+  /// Builds an [Imei] from its [tac] and [serialNumber], computing the Luhn check digit, reporting
+  /// the [ImeiFailure] when the parts don't form a valid IMEI.
+  static ParseOutcome<ImeiFailure, Imei> fromComponents({
+    required Digits tac,
+    required Digits serialNumber,
+  }) {
+    final assembledImei = _withCheckDigit('${tac.asString}${serialNumber.asString}');
     final failure = _failureFor(assembledImei);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, '${tac.asString} + $serialNumStr')
-        : ._(assembledImei);
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledImei));
   }
 
   /// Parses [input] as an IMEI, or returns `null` when it fails the length, character, or Luhn tests.

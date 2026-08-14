@@ -6,7 +6,6 @@ import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/gtin_failure.dart';
 
@@ -24,17 +23,13 @@ import 'failures/gtin_failure.dart';
 ///
 /// {@example /example/minted_example.dart#gtin}
 extension type const Gtin._(String value) {
-  /// Builds a [Gtin] from [bodyDigits], the number without its check digit, computing that digit.
-  /// Throws [MintedFormatException] when the parts don't form a valid GTIN. For assembling from a
-  /// known-valid source.
-  static Gtin fromBody(Digits bodyDigits) {
-    final body = bodyDigits.asString;
-    final assembledGtin = _withCheckDigit(body);
+  /// Builds a [Gtin] from [bodyDigits], the number without its check digit, computing that digit,
+  /// reporting the [GtinFailure] when they don't form a valid GTIN.
+  static ParseOutcome<GtinFailure, Gtin> fromBody(Digits bodyDigits) {
+    final assembledGtin = _withCheckDigit(bodyDigits.asString);
     final failure = _failureFor(assembledGtin);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, body)
-        : ._(_toGtin14(assembledGtin));
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(_toGtin14(assembledGtin)));
   }
 
   /// Parses [input] as a GTIN, or returns `null` when it fails the length, character, or check-digit

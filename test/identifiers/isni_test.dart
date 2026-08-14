@@ -97,10 +97,11 @@ void main() {
     // Built rather than transcribed, so each carries a real check character. Sixteen digits
     // overflow the web's safe integer range, which is why the block test compares text.
     scenario('the block boundary is inclusive at its lower bound', () {
-      final atStart = Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 0])!);
+      final atStart = Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 0])!)
+          .getOrThrow();
       final justBelow = Isni.fromBody(
         Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 4, 9, 9, 9, 9, 9, 9])!,
-      );
+      ).getOrThrow();
 
       check(atStart.isInOrcidBlock).isTrue();
       check(justBelow.isInOrcidBlock).isFalse();
@@ -160,7 +161,8 @@ void main() {
         'an ORCID iD': (body: '000000021825009', isni: '0000000218250097'),
         'one whose check character is X': (body: '000000021694233', isni: '000000021694233X'),
       },
-      outline: (example) => check(Isni.fromBody(digitsOf(example.body)).value).equals(example.isni),
+      outline: (example) =>
+          check(Isni.fromBody(digitsOf(example.body)).getOrThrow().value).equals(example.isni),
     );
 
     scenarioOutline<({String body, IsniFailure failure})>(
@@ -173,18 +175,19 @@ void main() {
         'a long body overshoots': (body: '0000000121032683', failure: const IsniWrongLength(17)),
       },
       outline: (example) {
-        check(() => Isni.fromBody(digitsOf(example.body)))
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+        check(Isni.fromBody(digitsOf(example.body)).reasonOrNull).equals(example.failure);
       },
     );
 
-    scenario('fromBody error carries the body as its source', () {
-      check(() => Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 3, 2, 6])!))
+    scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
+      check(
+            () =>
+                Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 3, 2, 6])!)
+                    .getOrThrow(),
+          )
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('00000001210326');
+          .has((error) => error.failure, 'failure')
+          .equals(const IsniWrongLength(15));
     });
   });
 }

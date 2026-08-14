@@ -175,13 +175,13 @@ void main() {
         0xf8, 0x1d, 0x4f, 0xae, 0x7d, 0xec, 0x11, 0xd0, //
         0xa7, 0x65, 0x00, 0xa0, 0xc9, 0x1e, 0x6b, 0xf6,
       ]);
-      check(Uuid.fromBytes(uuid.bytes)).equals(uuid);
+      check(Uuid.fromBytes(uuid.bytes).getOrThrow()).equals(uuid);
     });
 
-    scenario('fromBytes throws MintedFormatException unless there are exactly 16 bytes', () {
-      check(() => Uuid.fromBytes(Uint8List(15))).throws<MintedFormatException>();
-      check(() => Uuid.fromBytes(Uint8List(17))).throws<MintedFormatException>();
-      check(Uuid.fromBytes(Uint8List(16)))
+    scenario('fromBytes reports a failure unless there are exactly 16 bytes', () {
+      check(Uuid.fromBytes(Uint8List(15)).isFailure).isTrue();
+      check(Uuid.fromBytes(Uint8List(17)).isFailure).isTrue();
+      check(Uuid.fromBytes(Uint8List(16)).getOrThrow())
           .equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
     });
 
@@ -198,17 +198,13 @@ void main() {
 
     scenario('malformed text and a wrong byte count are distinct failures', () {
       check(Uuid.parse('not-a-uuid').reasonOrNull).equals(const UuidMalformed());
-      check(() => Uuid.fromBytes(Uint8List(15)))
-          .throws<MintedFormatException>()
-          .has((error) => error.failure, 'failure')
+      check(Uuid.fromBytes(Uint8List(15)).reasonOrNull)
           .equals(const UuidWrongByteCount(expected: 16, actual: 15));
     });
 
     scenario('the byte-count failure reports what it was handed', () {
-      check(() => Uuid.fromBytes(Uint8List(17)))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .equals('Invalid Uuid: expected 16 bytes, got 17');
+      check(Uuid.fromBytes(Uint8List(17)).reasonOrNull?.message)
+          .equals('expected 16 bytes, got 17');
     });
 
     scenario('parse reports the failure rather than throwing', () {
@@ -225,10 +221,7 @@ void main() {
     scenario('the failure names the type, not its erased representation', () {
       // Extension types erase to String at runtime, so a `<T>`-derived name would read "String".
       check(Uuid.parse('nope').reasonOrNull?.typeName).equals('Uuid');
-      check(() => Uuid.fromBytes(Uint8List(15)))
-          .throws<MintedFormatException>()
-          .has((error) => error.message, 'message')
-          .startsWith('Invalid Uuid:');
+      check(Uuid.fromBytes(Uint8List(15)).reasonOrNull?.typeName).equals('Uuid');
     });
   });
 }

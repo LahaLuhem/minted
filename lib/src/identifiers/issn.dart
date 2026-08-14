@@ -4,7 +4,6 @@
 import '../numerics/digits.dart';
 import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/normalisation/normalisation.dart';
-import '../shared/outcomes/minted_format_exception.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/issn_failure.dart';
 
@@ -23,16 +22,13 @@ import 'failures/issn_failure.dart';
 /// {@example /example/minted_example.dart#issn}
 extension type const Issn._(String value) {
   /// Builds an [Issn] from [bodyDigits], the seven digits before the check character, computing that
-  /// character. Throws [MintedFormatException] when the parts don't form a valid ISSN. For assembling
-  /// from a known-valid source.
-  static Issn fromBody(Digits bodyDigits) {
+  /// character, reporting the [IssnFailure] when they don't form a valid ISSN.
+  static ParseOutcome<IssnFailure, Issn> fromBody(Digits bodyDigits) {
     final body = bodyDigits.asString;
     final assembledIssn = '$body${mod11CheckCharacter(body)}';
     final failure = _failureFor(assembledIssn);
 
-    return failure != null
-        ? throw MintedFormatException.from(failure, body)
-        : ._(_hyphenated(assembledIssn));
+    return failure != null ? ParseFailure(failure) : ParseSuccess(._(_hyphenated(assembledIssn)));
   }
 
   /// Parses [input] as an ISSN, or returns `null` when it fails the length, character, or check tests.

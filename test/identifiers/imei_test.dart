@@ -126,7 +126,7 @@ void main() {
           Imei.fromComponents(
             tac: digitsOf(example.tac),
             serialNumber: digitsOf(example.serialNumber),
-          ).value,
+          ).getOrThrow().value,
         ).equals(example.imei);
       },
     );
@@ -147,27 +147,24 @@ void main() {
       },
       outline: (example) {
         check(
-              () => Imei.fromComponents(
-                tac: digitsOf(example.tac),
-                serialNumber: digitsOf(example.serialNumber),
-              ),
-            )
-            .throws<MintedFormatException>()
-            .has((error) => error.failure, 'failure')
-            .equals(example.failure);
+          Imei.fromComponents(
+            tac: digitsOf(example.tac),
+            serialNumber: digitsOf(example.serialNumber),
+          ).reasonOrNull,
+        ).equals(example.failure);
       },
     );
 
-    scenario('fromComponents error carries the components as its source', () {
+    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(
             () => Imei.fromComponents(
               tac: Digits.tryFrom([3, 5, 2, 0, 9, 9])!,
               serialNumber: Digits.tryFrom([1, 7, 6, 1, 4, 8])!,
-            ),
+            ).getOrThrow(),
           )
           .throws<MintedFormatException>()
-          .has((error) => error.source as String?, 'source')
-          .equals('352099 + 176148');
+          .has((error) => error.failure, 'failure')
+          .equals(const ImeiWrongLength(13));
     });
   });
 }
