@@ -25,16 +25,19 @@ It is a [pub workspace](https://dart.dev/tools/pub/workspaces): one resolution, 
 `pubspec.lock`, shared by every member.
 
 ```bash
-dart pub get                       # once at the root, resolves every member
-dart --no-version-check analyze .  # the whole workspace in one pass
-dart format .                      # ditto; page width comes from the root analysis_options.yaml
+dart pub get             # once at the root; resolves every member
+dart run melos run       # lists what you can run
+dart run melos run test  # every member's suite, fanned out
 ```
 
-Tests are per-package, since the workspace root holds no `test/` of its own:
+[Melos](https://melos.invertase.dev) is the entrypoint so you don't have to remember which commands
+are workspace-wide and which are per-package: `analyze` and `format` run once from the root, `test`
+and `coverage` fan out over the members. It is a script runner here and nothing more, since releases
+go through `cider` and [`scripts/release.sh`](./scripts/README.md).
 
-```bash
-cd packages/minted && dart test
-```
+The plain commands still work if you prefer them. Just note that `analyze` and `format` want the
+root, while anything reading a single pubspec (`dart test`, `cider`, `dart pub publish`,
+`dependency_validator`) wants the member, via `cd packages/minted` or `dart pub -C packages/minted`.
 
 Contributor docs live at the root because they cover every package: [AGENTS.md](./AGENTS.md) for
 hard rules and repo layout, [CODESTYLE.md](./CODESTYLE.md) for style, and

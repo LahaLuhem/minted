@@ -11,3 +11,43 @@ environment:
 
 workspace:
   - packages/minted
+
+dev_dependencies:
+  melos: ^8.3.0
+
+# Melos is the script runner here, and only that. Versioning, changelogs, tags and publishing stay
+# with cider + scripts/release.sh + the OIDC tag workflow: `melos version` derives changelogs from
+# conventional commits and would overwrite the curated `## Unreleased` blocks, and `melos publish`
+# uses laptop credentials where the tag pipeline uses OIDC. Pub workspaces already do the package
+# linking `melos bootstrap` used to, so a plain `dart pub get` is still the setup step.
+melos:
+  scripts:
+    analyze:
+      description: Analyze every member in one pass, from the workspace root.
+      run: dart --no-version-check analyze .
+
+    format:
+      description: Check formatting repo-wide, the same gate CI and release.sh apply.
+      run: dart format --output=none --set-exit-if-changed .
+
+    test:
+      description: Run each member's suite. The workspace root holds no test/ of its own.
+      exec: dart test
+      packageFilters:
+        dirExists: test
+
+    coverage:
+      description: >-
+        Tests plus an lcov per member, for checking the 95% gate before pushing. Needs
+        `dart pub global activate coverage` once, same as CI. CI additionally re-anchors the
+        SF: paths so Coveralls can resolve them, which is pointless locally.
+      exec:
+        command: >-
+          dart test --coverage=coverage &&
+          dart pub global run coverage:format_coverage --lcov --check-ignore
+          --in=coverage --report-on=lib
+          --packages="$MELOS_ROOT_PATH/.dart_tool/package_config.json"
+          -o coverage/lcov.info
+        concurrency: 1
+      packageFilters:
+        dirExists: test
