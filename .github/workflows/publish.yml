@@ -17,11 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
-      # Resolved once at the workspace root, which covers every member.
+      # One root resolution covers every member.
       - name: Install dependencies
         run: dart pub get
-      # `-C` picks the member to publish. Hard-coded while `minted` is the only one; the tag-driven
-      # routing that replaces it arrives with the multi-package pipeline.
+      # `-C` picks the member. Hard-coded until tag-driven routing arrives with the split.
       - name: Publish dry-run
         run: dart pub -C packages/minted publish --dry-run
       - name: Publish to pub.dev
