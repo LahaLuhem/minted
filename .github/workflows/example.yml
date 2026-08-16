@@ -11,15 +11,27 @@ concurrency:
 permissions:
   contents: read
 
-# The example is a single file resolved against its own package (no example
-# pubspec). `analyze` already covers it via package.yml's `dart analyze .`; this
-# workflow smoke-runs it so a broken snippet in the docs can't merge green.
+# Examples are single files resolved against their own package (no example pubspec). `analyze`
+# already covers them via package.yml's `dart analyze .`; this smoke-runs each one so a broken
+# snippet in the docs can't merge green. Globbed rather than matrixed, which would mean a second
+# copy of package.yml's `members` job.
 jobs:
   run:
-    name: Run example
+    name: Run examples
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       # Root `dart pub get` resolves every workspace member, so no working-directory needed.
       - uses: ./.github/actions/setup-dart
-      - run: dart run packages/minted/example/minted_example.dart
+      - name: Run every package example
+        run: |
+          shopt -s nullglob
+          examples=(packages/*/example/*.dart)
+          if [ "${#examples[@]}" -eq 0 ]; then
+            echo '::error::No example found under packages/*/example/.'
+            exit 1
+          fi
+          for example in "${examples[@]}"; do
+            echo "== ${example}"
+            dart run "$example"
+          done

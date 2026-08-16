@@ -2,11 +2,11 @@
 # ===========================================================================
 # release.sh
 #
-# Cut a versioned release of minted. Bumps the pubspec.yaml `version:` with
-# `cider`, finalises the CHANGELOG.md `## Unreleased` section into a dated
-# `## <new_version>` block, commits both files, creates a SemVer tag, and
-# pushes commit + tag atomically. The tag push triggers
-# .github/workflows/publish.yml, which then publishes to pub.dev via OIDC.
+# Cut a versioned release of one workspace member. Offers the packages whose
+# CHANGELOG opens with a populated `## Unreleased` block, bumps the chosen
+# one's `version:` with `cider`, dates that block, commits both files, tags
+# `<package>-<version>` and pushes commit + tag atomically. The tag push
+# triggers .github/workflows/publish.yml, which publishes to pub.dev via OIDC.
 #
 # Laptop-only — does not run inside CI. Safe by default: preflight refuses to
 # proceed on a dirty tree, wrong branch, origin mismatch, missing tooling,
@@ -20,9 +20,9 @@
 # (rare) server-side validation failures in publish.yml need manual recovery;
 # the script prints the recipe.
 #
-# Tags are pushed without a `v` prefix, matching the trigger pattern in
-# .github/workflows/publish.yml (`[0-9]+.[0-9]+.[0-9]+`) and pub.dev's
-# canonical `{{version}}` convention.
+# Tags are `<package>-<version>`, no `v` prefix: publish.yml routes on the
+# package half, and pub.dev is configured per package with a matching
+# `<package>-{{version}}` tag pattern.
 #
 # Note: if `.fvm/flutter_sdk/bin/dart` exists (FVM users), the script
 # prepends it to PATH so plain `dart` resolves to the `.fvmrc`-pinned SDK.
@@ -32,10 +32,10 @@
 # CODESTYLE.md.
 #
 # Usage:
-#   scripts/release.sh                # fully interactive
-#   scripts/release.sh patch          # bump type set, confirm on TTY
-#   scripts/release.sh patch --yes    # non-interactive (CI-style)
-#   scripts/release.sh --dry-run      # full preflight + plan, no side effects
+#   scripts/release.sh                      # fully interactive
+#   scripts/release.sh patch                # bump type set, confirm on TTY
+#   scripts/release.sh patch -p minted --yes  # non-interactive (CI-style)
+#   scripts/release.sh --dry-run            # full preflight + plan, no side effects
 # ===========================================================================
 set -euo pipefail
 
@@ -59,9 +59,9 @@ fi
 
 MAIN_BRANCH="main"
 
-# The member being released. Hard-coded while `minted` is the only publishable package; this is the
-# seam the "pick a package with a populated ## Unreleased" prompt replaces.
-PACKAGE_DIR="packages/minted"
+# Set by the selection step below, from the packages that have unreleased work.
+PACKAGE_DIR=""
+PACKAGE_NAME=""
 
 # What a version must look like, for the pubspec read and for the cider guard.
 SEMVER_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'
@@ -73,9 +73,42 @@ SEMVER_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'
 LINT_MANIFEST="${REPO_ROOT}/.github/lint-checks.json"
 
 BUMP=""
+PACKAGE=""
 YES=0
 DRY_RUN=0
 TAG_MESSAGE=""
+
+# Notes under a package's first `## ` heading, when that heading is `## Unreleased`; empty
+# otherwise, so "no output" means "nothing to release here".
+#
+# Keep the regex a literal: `awk -v` unescapes its value, turning `\[?` into the character class
+# `[?unreleased]`, which leaves `^## ` matching every heading there is.
+unreleased_notes() {
+    awk '
+        # Only the first heading counts. A dated one on top means the last release consumed
+        # everything, whatever sits further down.
+        /^## / {
+            if (!seen++ && tolower($0) ~ /^## \[?unreleased\]?/) { collecting = 1; next }
+            exit
+        }
+        collecting { print }
+    ' "$1"
+}
+
+# Publishable members with notes waiting, one directory per line. cider dates the heading on
+# release, so a package drops off this list by construction once it ships.
+pending_packages() {
+    local dir
+    for dir in packages/*/; do
+        [ -f "${dir}pubspec.yaml" ] && [ -f "${dir}CHANGELOG.md" ] || continue
+        grep -qE '^publish_to: *none' "${dir}pubspec.yaml" && continue
+        [ -n "$(unreleased_notes "${dir}CHANGELOG.md" | tr -d '[:space:]-')" ] || continue
+        printf '%s\n' "${dir%/}"
+    done
+}
+
+# The tag is built from the declared name, not the directory: they match by convention only.
+package_name_of() { awk '$1 == "name:" { print $2; exit }' "${1}/pubspec.yaml"; }
 
 usage() {
     cat <<'USAGE'
@@ -88,6 +121,9 @@ Arguments:
   BUMP            one of: major, minor, patch  (prompted if omitted on a TTY)
 
 Options:
+  -p, --package NAME      which workspace member to release. Must be one with a
+                          populated `## Unreleased` block. Prompted if omitted on
+                          a TTY and more than one qualifies; required otherwise.
   -y, --yes               skip the confirmation prompt (required for non-TTY)
   -n, --dry-run           run full preflight + print the plan, no side effects
   -m, --tag-message MSG   attach MSG as the tag message (creates an annotated,
@@ -101,30 +137,38 @@ Preflight (all must pass):
   - jq on PATH (reads the lint manifest, .github/lint-checks.json)
   - docker on PATH + daemon running (runs the lint checks via linterpol)
   - working tree clean, on `main`, in sync with origin/main (fetches first)
-  - CHANGELOG.md has a non-empty `## Unreleased` (or `## [Unreleased]`) section
+  - at least one package has a non-empty `## Unreleased` (or `## [Unreleased]`)
   - every check in .github/lint-checks.json clean (via linterpol image)
-  - `dart format --output=none --set-exit-if-changed .` clean
-  - `dart --no-version-check analyze .` clean
-  - `dart test` green
+  - `dart format --output=none --set-exit-if-changed .` clean (repo-wide)
+  - `dart --no-version-check analyze .` clean (repo-wide)
+  - `dart test` green (inside the selected package)
   - computed tag unused locally AND on origin
 
-Sequence:
-  cider bump <BUMP>                                (pubspec.yaml version → new)
-  cider release                                    (CHANGELOG.md ## Unreleased → ## <new> dated today)
-  git add  pubspec.yaml CHANGELOG.md
-  git commit -m "Prep for release <new>"
-  dart pub publish --dry-run                       (validates clean committed state; resets HEAD~1 on fail)
-  git tag <new>                                    (lightweight by default; annotated when -m given)
-  git push --atomic origin HEAD:main <new>         (triggers publish.yml)
+Sequence, with PKG the selected member and DIR its directory:
+  cider bump <BUMP>                                (DIR/pubspec.yaml version → new)
+  cider release                                    (DIR/CHANGELOG.md ## Unreleased → ## <new> dated today)
+  git add  DIR/pubspec.yaml DIR/CHANGELOG.md
+  git commit -m "Prep for release PKG-<new>"
+  dart pub -C DIR publish --dry-run                (validates clean committed state; resets HEAD~1 on fail)
+  git tag PKG-<new>                                (lightweight by default; annotated when -m given)
+  git push --atomic origin HEAD:main PKG-<new>     (triggers publish.yml, which routes on PKG)
 
 Non-interactive example:
-  scripts/release.sh patch --yes
+  scripts/release.sh patch --package minted --yes
 USAGE
 }
 
 while (($#)); do
     case "$1" in
         major|minor|patch) BUMP="$1" ;;
+        -p|--package)
+            shift
+            if [ $# -eq 0 ] || [ -z "${1}" ]; then
+                printf '%s requires a non-empty NAME argument\n' "${0##*/} -p/--package" >&2
+                exit 2
+            fi
+            PACKAGE="$1"
+            ;;
         -y|--yes)          YES=1 ;;
         -n|--dry-run)      DRY_RUN=1 ;;
         -m|--tag-message)
@@ -159,6 +203,68 @@ prompt_bump() {
         esac
     done
 }
+
+prompt_package() {
+    local index reply
+    printf 'Packages with unreleased notes:\n' >&2
+    for index in "${!PENDING[@]}"; do
+        printf '  %d) %s\n' "$((index + 1))" "$(package_name_of "${PENDING[$index]}")" >&2
+    done
+    while :; do
+        printf 'Release which? [1-%d]: ' "${#PENDING[@]}" >&2
+        read -r reply
+        if [[ "$reply" =~ ^[0-9]+$ ]] && [ "$reply" -ge 1 ] && [ "$reply" -le "${#PENDING[@]}" ]; then
+            printf '%s\n' "${PENDING[$((reply - 1))]}"
+            return 0
+        fi
+        printf 'Please enter a number between 1 and %d.\n' "${#PENDING[@]}" >&2
+    done
+}
+
+# Names of every candidate, for the "which did you mean" error paths.
+pending_names() {
+    local dir
+    for dir in "${PENDING[@]}"; do err "  $(package_name_of "$dir")"; done
+}
+
+# ---------------------------------------------------------------------------
+# Resolve PACKAGE — which member to release
+# ---------------------------------------------------------------------------
+# A plain loop, not `mapfile`: stock macOS still ships bash 3.2, which has none.
+PENDING=()
+while IFS= read -r pending_dir; do
+    PENDING+=("$pending_dir")
+done < <(pending_packages)
+
+if [ "${#PENDING[@]}" -eq 0 ]; then
+    err 'No package has notes waiting under "## Unreleased", so there is nothing to release.'
+    err 'Add them to that package CHANGELOG first, e.g.:'
+    err '  ## Unreleased'
+    err '  - Describe the change.'
+    exit 1
+fi
+
+if [ -n "$PACKAGE" ]; then
+    for pending_dir in "${PENDING[@]}"; do
+        [ "$(package_name_of "$pending_dir")" = "$PACKAGE" ] && PACKAGE_DIR="$pending_dir"
+    done
+    if [ -z "$PACKAGE_DIR" ]; then
+        err "'${PACKAGE}' is not a package with unreleased notes. Ready to release:"
+        pending_names
+        exit 2
+    fi
+elif [ "${#PENDING[@]}" -eq 1 ]; then
+    PACKAGE_DIR="${PENDING[0]}"
+elif is_tty; then
+    PACKAGE_DIR="$(prompt_package)"
+else
+    err 'More than one package has unreleased notes; name one with --package.'
+    pending_names
+    exit 2
+fi
+
+PACKAGE_NAME="$(package_name_of "$PACKAGE_DIR")"
+log "Selected ${PACKAGE_NAME} (${PACKAGE_DIR})."
 
 # ---------------------------------------------------------------------------
 # Resolve BUMP
@@ -254,7 +360,7 @@ fi
 # ---------------------------------------------------------------------------
 # From the file, not `cider version`: pub's `MSG : Resolving dependencies...` chatter reached stdout
 # and became the version. Reading it here also leaves the `cider bump` guard two independent sides.
-step 'Compute new version'
+step "Compute new version for ${PACKAGE_NAME}"
 current_version="$(awk '$1 == "version:" { print $2; exit }' "${PACKAGE_DIR}/pubspec.yaml")"
 if [[ ! "$current_version" =~ $SEMVER_PATTERN ]]; then
     err "Could not read a SemVer version from ${PACKAGE_DIR}/pubspec.yaml; got '${current_version}'."
@@ -273,45 +379,26 @@ case "$BUMP" in
 esac
 log "New version:     ${new_version}  (${BUMP} bump)"
 
+# Pub names cannot contain a hyphen, so publish.yml splits this back apart on the first one,
+# `minted-3.0.0-beta.1` included.
+TAG="${PACKAGE_NAME}-${new_version}"
+log "Tag:             ${TAG}"
+
 # ---------------------------------------------------------------------------
 # Preflight: tag collision (no `v` prefix — matches publish.yml + pub.dev)
 # ---------------------------------------------------------------------------
 step 'Preflight: tag collision'
-if git rev-parse "refs/tags/${new_version}" >/dev/null 2>&1; then
-    err "Tag '${new_version}' already exists locally."
+if git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1; then
+    err "Tag '${TAG}' already exists locally."
     exit 1
-elif git ls-remote --tags origin "refs/tags/${new_version}" | grep -q .; then
-    err "Tag '${new_version}' already exists on origin."
+elif git ls-remote --tags origin "refs/tags/${TAG}" | grep -q .; then
+    err "Tag '${TAG}' already exists on origin."
     exit 1
 else
-    log "Tag '${new_version}' is unused locally and on origin."
+    log "Tag '${TAG}' is unused locally and on origin."
 fi
 
-# ---------------------------------------------------------------------------
-# Preflight: `## Unreleased` populated in CHANGELOG.md
-# ---------------------------------------------------------------------------
-step 'Preflight: CHANGELOG'
-if ! grep -qiE '^## \[?Unreleased\]?' "${PACKAGE_DIR}/CHANGELOG.md" 2>/dev/null; then
-    err "${PACKAGE_DIR}/CHANGELOG.md is missing a '## Unreleased' section."
-    err 'Add notes for this release first, e.g.:'
-    err '  ## Unreleased'
-    err '  - Describe the change.'
-    exit 1
-fi
-
-unreleased_block="$(awk '
-    BEGIN{found=0}
-    tolower($0) ~ /^## \[?unreleased\]?/{found=1; next}
-    found && /^## /{exit}
-    found{print}
-' "${PACKAGE_DIR}/CHANGELOG.md")"
-
-if [ -z "$(printf '%s' "$unreleased_block" | tr -d '[:space:]-')" ]; then
-    err "${PACKAGE_DIR}/CHANGELOG.md has '## Unreleased' but no entries beneath it."
-    err 'Populate the section before re-running.'
-    exit 1
-fi
-log "'## Unreleased' populated."
+# No CHANGELOG preflight here: reaching this point means `pending_packages` already passed it.
 
 # ---------------------------------------------------------------------------
 # Preflight: lint / format / analyze / test (cheapest → slowest)
@@ -373,18 +460,18 @@ else
     tag_kind_note="(lightweight; pass -m \"MSG\" to annotate)"
 fi
 cat <<PLAN
-Releasing workspace member: ${PACKAGE_DIR}
+Releasing ${PACKAGE_NAME} from ${PACKAGE_DIR}
 
 Will execute, in order:
   1. cider bump ${BUMP}                                    (${PACKAGE_DIR}/pubspec.yaml: ${current_version} → ${new_version})
   2. cider release                                         (${PACKAGE_DIR}/CHANGELOG.md: ## Unreleased → ## ${new_version} [dated today])
   3. git add  ${PACKAGE_DIR}/{pubspec.yaml,CHANGELOG.md}
-  4. git commit -m "Prep for release ${new_version}"
+  4. git commit -m "Prep for release ${TAG}"
   5. dart pub -C ${PACKAGE_DIR} publish --dry-run          (validate clean committed state; reset HEAD~1 on failure)
-  6. git tag ${new_version}                                ${tag_kind_note}
-  7. git push --atomic origin HEAD:${MAIN_BRANCH} ${new_version}   (triggers .github/workflows/publish.yml)
+  6. git tag ${TAG}                                        ${tag_kind_note}
+  7. git push --atomic origin HEAD:${MAIN_BRANCH} ${TAG}   (triggers .github/workflows/publish.yml)
 
-publish.yml will then build & publish ${new_version} to pub.dev via OIDC.
+publish.yml routes on the '${PACKAGE_NAME}' half of the tag and publishes ${new_version} via OIDC.
 PLAN
 
 if [ "$DRY_RUN" -eq 1 ]; then
@@ -467,8 +554,8 @@ step 'cider release'
 step "git add ${PACKAGE_DIR}/{pubspec.yaml,CHANGELOG.md}"
 git add "${PACKAGE_DIR}/pubspec.yaml" "${PACKAGE_DIR}/CHANGELOG.md"
 
-step "git commit -m \"Prep for release ${new_version}\""
-git commit -m "Prep for release ${new_version}"
+step "git commit -m \"Prep for release ${TAG}\""
+git commit -m "Prep for release ${TAG}"
 
 # Commit landed. Trap switches to "reset HEAD~1" mode for the dry-run window.
 cider_phase=2
@@ -488,16 +575,16 @@ dart pub -C "$PACKAGE_DIR" publish --dry-run
 
 # Past this point: trap no longer auto-reverts. Manual recovery if the
 # tag/push fails:
-#   git tag -d ${new_version} 2>/dev/null
+#   git tag -d ${TAG} 2>/dev/null
 #   git reset --hard HEAD~1
 cider_phase=0
 
-step "git tag ${new_version}"
+step "git tag ${TAG}"
 if [ -n "${TAG_MESSAGE}" ]; then
     # Annotated tag with explicit message — gpg signing honours user's git
     # config (`tag.gpgSign`, `user.signingKey`, etc.) because `git tag -m`
     # produces an annotated object that the config can attach a signature to.
-    git tag -m "${TAG_MESSAGE}" "${new_version}"
+    git tag -m "${TAG_MESSAGE}" "${TAG}"
 else
     # Lightweight tag — just a ref pointer, no body, no signature. The
     # per-command `-c tag.gpgSign=false` overrides the user's global
@@ -505,12 +592,12 @@ else
     # auto-promote a plain `git tag NAME` into a signed-annotated tag and
     # demand a message via the editor. This bypass is the documented intent
     # of "no -m → lightweight" — the user explicitly opted in by omitting -m.
-    git -c tag.gpgSign=false tag "${new_version}"
+    git -c tag.gpgSign=false tag "${TAG}"
 fi
 
-step "git push --atomic origin HEAD:${MAIN_BRANCH} ${new_version}"
-git push --atomic origin "HEAD:${MAIN_BRANCH}" "${new_version}"
+step "git push --atomic origin HEAD:${MAIN_BRANCH} ${TAG}"
+git push --atomic origin "HEAD:${MAIN_BRANCH}" "${TAG}"
 
-step "Released ${new_version}"
-log "Pushed commit + tag '${new_version}' to origin/${MAIN_BRANCH}."
+step "Released ${TAG}"
+log "Pushed commit + tag '${TAG}' to origin/${MAIN_BRANCH}."
 log "Watch .github/workflows/publish.yml for the pub.dev upload."

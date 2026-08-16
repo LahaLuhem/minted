@@ -11,9 +11,8 @@
 Audience: maintainers and contributors who want to understand or invoke the release
 flow. End users of the package don't need anything in this directory.
 
-Cuts a versioned release of one workspace member, named by `PACKAGE_DIR` at the top of
-the script. It is hard-coded to `packages/minted` today, and is the seam a "pick the
-package with a populated `## Unreleased`" prompt replaces once there are siblings.
+Cuts a versioned release of one workspace member, chosen from those with unreleased notes
+(see [Which package](#which-package)).
 
 Bumps the `version:` field in the member's `pubspec.yaml` via `cider`, finalises the
 `## Unreleased` block in its `CHANGELOG.md` into a dated section, commits both files,
@@ -27,13 +26,23 @@ Laptop-only — does not run inside CI.
 
 ```bash
 scripts/release.sh                                # fully interactive
-scripts/release.sh patch                          # bump type set, confirm on TTY
-scripts/release.sh patch --yes                    # non-interactive (CI-style)
+scripts/release.sh patch                          # bump type set, package + confirm on TTY
+scripts/release.sh patch -p minted --yes          # non-interactive (CI-style)
 scripts/release.sh --dry-run                      # full preflight + plan, no side effects
 scripts/release.sh minor -m "Big new feature"     # annotated tag with this message
 ```
 
 `BUMP` is one of `major`, `minor`, `patch`. The script prompts on a TTY if omitted.
+
+### Which package
+
+Candidates are the members whose `CHANGELOG.md` **opens** with a populated `## Unreleased`
+block. `cider release` dates that heading, so a package drops off the list once it ships; one
+sitting *below* a dated heading doesn't count, since the release above it consumed everything.
+
+One candidate is picked automatically, several prompt, `--package NAME` chooses outright, and
+naming one with nothing pending errors with the list. Releasing two packages means running
+twice: a tag and a CI run each, no lockstep.
 
 ### Tag mode
 
@@ -56,7 +65,12 @@ will not survive the next release. The workspace-root `pubspec.yaml` carries no
 `version:` at all, so it is outside this entirely.
 
 The `## Unreleased` block in `CHANGELOG.md` is the script's **input** — curated by
-hand between releases. The script bails if it's empty.
+hand between releases. The script bails if no package has one.
+
+Entries land there automatically: on merge,
+[`changelog.yml`](../.github/workflows/changelog.yml) runs `cider log` in each package the PR
+touched, so one spanning two writes its title into both. Titles therefore need to read sensibly
+in every package they touch, or the PR wants splitting. A root-only PR gets no entry.
 
 The `cider:` block in `pubspec.yaml` is static configuration (link templates, URLs)
 and sits outside the pipeline-owned set — hand-editable.
@@ -68,9 +82,17 @@ and sits outside the pipeline-owned set — hand-editable.
 
 ## Tag format
 
-`<MAJOR>.<MINOR>.<PATCH>` — no `v` prefix. Matches the trigger pattern in
-[`../.github/workflows/publish.yml`](../.github/workflows/publish.yml)
-(`[0-9]+.[0-9]+.[0-9]+`) and pub.dev's canonical `{{version}}` convention.
+`<package>-<MAJOR>.<MINOR>.<PATCH>`, no `v` prefix, e.g. `minted-2.1.0`. Pub names cannot
+contain a hyphen, so [`publish.yml`](../.github/workflows/publish.yml) splits on the first one
+to pick the member, `minted-3.0.0-beta.1` included.
+
+> **Each package needs a matching tag pattern on pub.dev**, set under
+> `pub.dev/packages/<name>/admin` to `<name>-{{version}}`. `minted` predates the workspace and
+> is still `{{version}}`, so **it has to change when this lands**, or the next tag publishes
+> nothing.
+
+Before publishing, the version half is checked against the member's `pubspec.yaml`, and a
+version already on pub.dev is skipped rather than re-published.
 
 ## Preflight
 

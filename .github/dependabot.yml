@@ -12,16 +12,19 @@
 # Minor + patch bumps are grouped into one PR per ecosystem to cut noise; major
 # bumps still arrive as individual PRs so they can be reviewed in isolation.
 #
-# No `/example` entry: the example is a single-file demo with no pubspec of its
-# own, so there is nothing separate for Dependabot to resolve there.
+# No `/example` entry: the examples are single-file demos with no pubspec of
+# their own, so there is nothing separate for Dependabot to resolve there.
 version: 2
 
 updates:
-  # --- Dart: published library ---
-  # Bumps the version constraints in the root pubspec.yaml. pub.dev packages
+  # --- Dart: the workspace ---
+  # `/` is the root (melos and any other shared dev dependency); `/packages/*`
+  # is every member, where the published constraints live. pub.dev packages
   # only — git / path deps are not eligible.
   - package-ecosystem: "pub"
-    directory: "/"
+    directories:
+      - "/"
+      - "/packages/*"
     schedule:
       interval: "weekly"
     groups:
