@@ -387,6 +387,37 @@ log "Tag:             ${TAG}"
 # ---------------------------------------------------------------------------
 # Preflight: tag collision (no `v` prefix — matches publish.yml + pub.dev)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Preflight: sibling constraints match what this tree builds against
+# ---------------------------------------------------------------------------
+# A package built against a sibling's current major must not claim an older one. pub.dev cannot
+# unpublish, so a constraint that is wrong at upload is wrong permanently. The case this exists for:
+# siblings carried `minted: '>=2.0.0 <4.0.0'` through the v3 split, because a workspace refuses to
+# resolve `^3.0.0` while core still declares 2.0.0, and tightening it afterwards is easy to forget.
+step 'Preflight: sibling constraints'
+constraint_fail=0
+while IFS= read -r member; do
+    member_name="$(package_name_of "$member")"
+    [ "$member_name" = "$PACKAGE_NAME" ] && continue
+
+    # The dependency line for this member, if the selected package declares one.
+    declared_on="$(awk -v dep="  ${member_name}:" '$0 ~ "^" dep { print; exit }' \
+        "${PACKAGE_DIR}/pubspec.yaml")"
+    [ -n "$declared_on" ] || continue
+
+    # First version in the constraint is its lower bound, for `^X.Y.Z` and `>=X.Y.Z <W.0.0` alike.
+    wanted_major="$(printf '%s' "$declared_on" | grep -oE '[0-9]+' | head -n1)"
+    member_major="$(awk '$1 == "version:" { print $2; exit }' "${member}/pubspec.yaml" |
+        grep -oE '^[0-9]+')"
+    if [ -n "$wanted_major" ] && [ -n "$member_major" ] && [ "$wanted_major" -lt "$member_major" ]; then
+        err "${PACKAGE_NAME} wants ${member_name} ${declared_on#*: }, but this tree builds against"
+        err "${member_name} ${member_major}.x. Tighten the constraint before publishing."
+        constraint_fail=1
+    fi
+done < <(for dir in packages/*/; do printf '%s\n' "${dir%/}"; done)
+[ "$constraint_fail" -eq 1 ] && { err 'Sibling-constraint preflight failed — aborting.'; exit 1; }
+log 'Sibling constraints match the tree.'
+
 step 'Preflight: tag collision'
 if git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1; then
     err "Tag '${TAG}' already exists locally."
