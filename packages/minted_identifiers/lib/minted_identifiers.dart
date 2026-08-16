@@ -1,6 +1,19 @@
 /// Standardised identifiers as well-modelled value types.
 ///
-/// Deliberately empty: the types arrive when the v3 split moves them out of
-/// `package:minted`. The package exists first so the workspace tooling, the release
-/// picker and the publish routing are proven before anything moves.
+/// Every type is built on "parse, don't validate": build one through `parse`
+/// (returning a `ParseOutcome`) or `tryParse` (returning `null`), never a public
+/// constructor, so any instance that exists is guaranteed well-formed.
 library;
+
+export 'src/failures/gtin_failure.dart';
+export 'src/failures/imei_failure.dart';
+export 'src/failures/isbn_failure.dart';
+export 'src/failures/isni_failure.dart';
+export 'src/failures/issn_failure.dart';
+export 'src/failures/uuid_failure.dart';
+export 'src/gtin.dart';
+export 'src/imei.dart';
+export 'src/isbn.dart';
+export 'src/isni.dart';
+export 'src/issn.dart';
+export 'src/uuid.dart';

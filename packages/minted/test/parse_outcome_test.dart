@@ -2,16 +2,17 @@ import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import 'support/bdd.dart';
+import 'support/failures.dart';
 
 /// Stands in for a real `parse` until the value types return outcomes: even lengths succeed.
-ParseOutcome<EmailFailure, int> lengthOf(String input) =>
-    input.length.isEven ? ParseSuccess(input.length) : const ParseFailure(EmailFailure.malformed);
+ParseOutcome<TestFailure, int> lengthOf(String input) =>
+    input.length.isEven ? ParseSuccess(input.length) : const ParseFailure(TestFailure.malformed);
 
 void main() {
   feature('ParseOutcome', () {
     // Typed as the sealed base, which is what `parse` will hand back.
-    const ParseOutcome<EmailFailure, int> success = ParseSuccess(4);
-    const ParseOutcome<EmailFailure, int> failure = ParseFailure(EmailFailure.malformed);
+    const ParseOutcome<TestFailure, int> success = ParseSuccess(4);
+    const ParseOutcome<TestFailure, int> failure = ParseFailure(TestFailure.malformed);
 
     scenario('the two arms report which they are', () {
       check(success.isSuccess).isTrue();
@@ -24,13 +25,13 @@ void main() {
       check(success.getOrNull()).equals(4);
       check(success.reasonOrNull).isNull();
       check(failure.getOrNull()).isNull();
-      check(failure.reasonOrNull).equals(EmailFailure.malformed);
+      check(failure.reasonOrNull).equals(TestFailure.malformed);
     });
 
     scenario('fold collapses either arm to one type', () {
       check(success.fold((reason) => reason.message, (value) => 'got $value')).equals('got 4');
       check(failure.fold((reason) => reason.message, (value) => 'got $value'))
-          .equals('not a well-formed email address');
+          .equals('not a well-formed test value');
     });
 
     scenario('getOrElse supplies a fallback only on failure', () {
@@ -49,37 +50,37 @@ void main() {
       check(failure.getOrThrow)
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
-          .equals(EmailFailure.malformed);
+          .equals(TestFailure.malformed);
 
       check(failure.getOrThrow)
           .throws<MintedFormatError>()
           .has((error) => error.message, 'message')
-          .equals('Invalid Email: not a well-formed email address');
+          .equals('Invalid TestValue: not a well-formed test value');
     });
 
     scenario('getOrThrow raises the typed failure it was holding', () {
       check(failure.getOrThrow)
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
-          .equals(EmailFailure.malformed);
+          .equals(TestFailure.malformed);
     });
 
     scenario('map transforms a value and carries a failure across untouched', () {
       check(success.map((value) => value * 2)).equals(const ParseSuccess(8));
       check(failure.map((value) => value * 2))
-          .equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
+          .equals(const ParseFailure<TestFailure, int>(TestFailure.malformed));
     });
 
     scenario('flatMap chains a fallible step, and the first failure short-circuits', () {
       check(lengthOf('abcd').flatMap((value) => lengthOf('x' * value)))
           .equals(const ParseSuccess(4));
       check(lengthOf('abc').flatMap((_) => lengthOf('xx')))
-          .equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
+          .equals(const ParseFailure<TestFailure, int>(TestFailure.malformed));
     });
 
     scenario('a switch over the two arms is exhaustive, and destructures', () {
       // No default arm: the compiler accepting this is the guarantee being tested.
-      String describe(ParseOutcome<EmailFailure, int> outcome) => switch (outcome) {
+      String describe(ParseOutcome<TestFailure, int> outcome) => switch (outcome) {
         ParseSuccess(:final value) => 'ok $value',
         ParseFailure(:final reason) => 'no: ${reason.message}',
       };
@@ -89,12 +90,12 @@ void main() {
     });
 
     scenario('outcomes are equal by their contents, and hash together', () {
-      check(success).equals(const ParseSuccess<EmailFailure, int>(4));
-      check(success.hashCode).equals(const ParseSuccess<EmailFailure, int>(4).hashCode);
-      check(failure).equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed));
+      check(success).equals(const ParseSuccess<TestFailure, int>(4));
+      check(success.hashCode).equals(const ParseSuccess<TestFailure, int>(4).hashCode);
+      check(failure).equals(const ParseFailure<TestFailure, int>(TestFailure.malformed));
       check(failure.hashCode)
-          .equals(const ParseFailure<EmailFailure, int>(EmailFailure.malformed).hashCode);
-      check(success).not((it) => it.equals(const ParseSuccess<EmailFailure, int>(5)));
+          .equals(const ParseFailure<TestFailure, int>(TestFailure.malformed).hashCode);
+      check(success).not((it) => it.equals(const ParseSuccess<TestFailure, int>(5)));
     });
 
     scenario('a success and a failure are never equal', () {
@@ -103,12 +104,12 @@ void main() {
 
     scenario('both arms render their contents, not Instance of', () {
       check(success.toString()).equals('ParseSuccess(4)');
-      check(failure.toString()).equals('ParseFailure(EmailFailure.malformed)');
+      check(failure.toString()).equals('ParseFailure(TestFailure.malformed)');
     });
 
     scenario('an extension type survives as the success value', () {
       // Extension types erase to their representation, so this pins that T works for them too.
-      final outcome = ParseSuccess<MonthFailure, Digit>(Digit.tryFrom(7)!);
+      final outcome = ParseSuccess<TestFailure, Digit>(Digit.tryFrom(7)!);
 
       check(outcome.getOrNull()?.value).equals(7);
     });

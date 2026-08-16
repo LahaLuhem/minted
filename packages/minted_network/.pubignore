@@ -1,0 +1,19 @@
+# .pubignore — exclude maintainer-only / generated / non-consumer files from the
+# published tarball. Syntax is .gitignore-compatible. Patterns are unanchored unless
+# prefixed with `/`, so e.g. `test/` matches both `test/` at the package root AND
+# `example/test/`.
+#
+# Only what sits inside this directory needs an entry: the tarball is this directory, and the
+# workspace's shared tooling and docs live at the repo root where pub never looks.
+
+# Test sources.
+test/
+
+# Local-dev config — consumer machines have their own.
+dart_dependency_validator.yaml
+
+# Build / coverage / IDE artefacts.
+build/
+coverage/
+*.iml
+.idea/

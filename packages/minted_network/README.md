@@ -6,5 +6,12 @@ Part of the [minted](https://github.com/LahaLuhem/minted) family: pure-Dart valu
 built on *parse, don't validate*, so anything that came through the parser is well-formed
 by construction.
 
-> Not usable yet. The types land here when `minted` 3.0.0 splits them out; until then they
-> live in [`minted`](https://pub.dev/packages/minted).
+Holds `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port`.
+
+Every value it hands you is well-formed by construction: build one through `parse`, which
+returns a `ParseOutcome` carrying either the value or a typed failure, or `tryParse`, which
+returns `null`. No door throws.
+
+The shared vocabulary (`ParseOutcome`, `MintedFailure`, `Digit`, `Digits`, the `Uint` tower)
+comes from [`minted`](https://pub.dev/packages/minted), which this package depends on. Take
+only the domains you use: nothing here drags in another domain's engine.

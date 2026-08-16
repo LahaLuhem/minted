@@ -29,20 +29,17 @@ resolution: workspace
 
 
 
+# Every engine left with the types that wrapped it: email_validator and phone_numbers_parser to
+# minted_contact, iban_validator and country_code to minted_finance, ipaddr to minted_network.
+# What remains is the point of the split, a core that costs a consumer nothing they don't use.
 dependencies:
   collection: ^1.19.1
-  country_code: ^1.1.0
-  email_validator: ^3.0.0
-  iban_validator: ^1.0.2
-  ipaddr: ^2.1.1
   meta: ^1.19.0
-  phone_numbers_parser: ^9.0.25
 
 
 
 
 dev_dependencies:
-  analyzer: ^14.1.0
   checks: ^0.3.1
   test: ^1.31.2
 

@@ -1,5 +1,3 @@
-/// @docImport '../contact/phone_number.dart';
-/// @docImport '../finance/iban.dart';
 /// @docImport 'digits.dart';
 library;
 
@@ -7,8 +5,9 @@ library;
 ///
 /// A building-block value type. Where a validated whole exposes a digit-only
 /// part, that part is a [Digit] (or a [Digits] sequence) so "these are digits"
-/// is a fact of the type, not an assumption every caller re-checks: an [Iban]'s
-/// check digits and a [PhoneNumber]'s national number both read as [Digit]s.
+/// is a fact of the type, not an assumption every caller re-checks: an IBAN's
+/// check digits and a phone number's national number both read as [Digit]s,
+/// over in `minted_finance` and `minted_contact`.
 ///
 /// [value] is the numeric value (`0`-`9`); the string form is `value.toString()`
 /// or interpolation (`'$digit'`). No parse door: decimal notation is how numbers
