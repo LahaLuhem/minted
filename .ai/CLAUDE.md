@@ -105,11 +105,11 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 
 ## Definition of done
 
-- `dart --no-version-check analyze .` clean (pedantic mode). Run from the workspace root: it covers
-  every member in one pass, as does `dart format`.
-- `dart format --output=none --set-exit-if-changed .` clean.
-- `dart test` green, including the official standard test vectors for any standardised type. Run it
-  inside the package (`cd packages/minted`); the workspace root holds no `test/`.
+- `dart run melos run analyze` clean (pedantic mode) — wraps `dart --no-version-check analyze .`
+  at the workspace root, covering every member in one pass.
+- `dart run melos run format` clean.
+- `dart run melos run test` green, including the official standard test vectors for any
+  standardised type. It fans out over members; the workspace root holds no `test/` of its own.
 - New / changed types honour the [value-type contract](CODESTYLE.md#value-type-contract):
   private constructor, `tryParse` + `parse`, `MintedFormatException`, value equality, canonical
   string form, documented normalisation.

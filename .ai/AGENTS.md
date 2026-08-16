@@ -123,6 +123,14 @@ test` does not: the root holds no `test/`, so run it in the package (`cd package
 that reads a single pubspec — `cider`, `dart pub publish`, `dependency_validator` — needs the member
 directory too, via `cd` or `dart pub -C packages/minted`.
 
+**Melos wraps that split, so prefer `dart run melos run <script>`** (`analyze`, `format`, `test`,
+`coverage`; `dart run melos run` on its own lists them). The scripts live under the `melos:` key of
+the root `pubspec.yaml` and each one already knows whether it belongs at the root or per-package.
+Melos is a script runner here and nothing else: `melos version` and `melos publish` are deliberately
+unused, because versioning and publishing belong to cider, `scripts/release.sh` and the OIDC tag
+workflow. `melos bootstrap` is not needed either, since pub workspaces do the package linking it
+used to.
+
 Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `commerce/`, …), with
 numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
