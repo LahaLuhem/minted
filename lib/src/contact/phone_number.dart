@@ -4,7 +4,6 @@ import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers
 import '../numerics/digits.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/outcomes/parse_outcome.dart';
-import '../shared/standards/iso_country_code.dart';
 import 'failures/phone_number_failure.dart';
 
 /// A phone number, validated and stored in its canonical E.164 form (via `phone_numbers_parser`).
@@ -33,7 +32,12 @@ extension type const PhoneNumber._(String value) {
   /// Parses [input] as a phone number, reporting the [PhoneNumberFailure] that says which check
   /// failed. See [tryParse] for the `region` hint.
   static ParseOutcome<PhoneNumberFailure, PhoneNumber> parse(String input, {String? region}) {
-    final callerCountry = region == null ? null : isoCountryCodeFor(region);
+    // Resolved here rather than through the shared country check: that one answers a bool, and the
+    // engine wants one of its own enum values handed back.
+    final upperRegion = region?.toUpperCase();
+    final callerCountry = upperRegion == null
+        ? null
+        : phone_numbers.IsoCode.values.firstWhereOrNull((code) => code.name == upperRegion);
     if (region != null && callerCountry == null) return const ParseFailure(.unknownRegion);
 
     final phone_numbers.PhoneNumber parsed;

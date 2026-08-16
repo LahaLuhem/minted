@@ -83,7 +83,7 @@ extension type const Bic._(String value) {
       BicWrongLength(compactInput.length),
     _ when !_alphanumeric.hasMatch(compactInput) => const BicInvalidCharacters(),
     // Digits landing in the country slot reach here too: they name no country either.
-    _ when isoCountryCodeFor(_countryCodeOf(compactInput)) == null => BicUnknownCountry(
+    _ when !isIsoCountryCode(_countryCodeOf(compactInput)) => BicUnknownCountry(
       _countryCodeOf(compactInput),
     ),
     _ => null,
