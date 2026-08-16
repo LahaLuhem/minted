@@ -134,9 +134,8 @@ void main() {
       check(Bic.parse('DEUTDEFF').isSuccess).isTrue();
     });
 
-    // Both slots are well-formed, so only the country decides. These are the two edges a
-    // numbering-plan list gets wrong in opposite directions: AQ is ISO-assigned but has no phone
-    // numbers, AC is only reserved, never assigned.
+    // The two edges a numbering-plan list gets wrong in opposite directions: AQ is ISO-assigned
+    // but has no phone numbers, AC is only reserved, never assigned.
     scenario('the country check reads the ISO registry, not a numbering-plan list', () {
       check(Bic.tryParse('DEUTAQFF')?.value).equals('DEUTAQFFXXX');
       check(Bic.tryParse('DEUTACFF')).isNull();

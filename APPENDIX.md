@@ -554,11 +554,9 @@ the decision turns on *what a dependency is for*, not merely whether there is on
   `fromJson` is just `parse`, needs no extra dependency, so it can live in core as
   `package:minted/json.dart` without forcing anything on anyone.
 
-Companions are built when actually needed. **They live in this repo, which became a pub workspace
-in the run-up to v3**: one resolution and one root lockfile, with each published package a directory
-under `packages/`. The earlier plan put them in separate repositories; a workspace won because the
-v3 split turns the domain sectors themselves into packages, and keeping a sector's types, tests and
-changelog in one tree beats coordinating a release across eight repos.
+Companions are built when actually needed, and **live in this repo, a pub workspace since the
+run-up to v3**. Separate repositories were the earlier plan; the workspace won because v3 turns the
+sectors themselves into packages, and one tree beats coordinating a release across eight repos.
 
 ---
 

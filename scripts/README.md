@@ -11,10 +11,9 @@
 Audience: maintainers and contributors who want to understand or invoke the release
 flow. End users of the package don't need anything in this directory.
 
-Cuts a versioned release of one workspace member. The member is `PACKAGE_DIR` at the
-top of the script, currently hard-coded to `packages/minted` because it is the only
-publishable package; that variable is the seam a "pick the package whose CHANGELOG has
-a populated `## Unreleased`" prompt replaces once there are siblings.
+Cuts a versioned release of one workspace member, named by `PACKAGE_DIR` at the top of
+the script. It is hard-coded to `packages/minted` today, and is the seam a "pick the
+package with a populated `## Unreleased`" prompt replaces once there are siblings.
 
 Bumps the `version:` field in the member's `pubspec.yaml` via `cider`, finalises the
 `## Unreleased` block in its `CHANGELOG.md` into a dated section, commits both files,
@@ -84,9 +83,8 @@ The script refuses to proceed unless every check passes:
   via the linterpol image: `shellcheck`, `actionlint`, `rumdl`, `ryl`, no local installs).
 - Working tree clean, on `main`, in sync with `origin/main` (fetches first).
 - The member's `CHANGELOG.md` has a non-empty `## Unreleased` (or `## [Unreleased]`) section.
-- `dart format` and `dart analyze` clean, both run repo-wide from the root so they cover
-  every member in one pass; `dart test` green, run inside the member because the
-  workspace root holds no `test/`.
+- `dart format` and `dart analyze` clean, run repo-wide from the root; `dart test` green,
+  run inside the member.
 - The target tag does not already exist locally or on the remote.
 
 `dart pub publish --dry-run` is *not* in preflight. It cross-checks three things
