@@ -71,9 +71,9 @@ server, a CLI, a web app, and a Flutter app alike, which is exactly the set of p
 primitives (email, IBAN, card numbers) show up.
 
 Anything that would need Flutter (a `FormField` validator, a `TextInputFormatter`) or another
-heavy dependency does not go here; it goes in a companion package (see
-[packaging](#packaging-core-and-companions)). The core's dependency list is a promise to every
-downstream user, so it stays as short as the validation honestly requires.
+heavy dependency does not go here; it goes in an adapter package (see
+[packaging](#packaging-core-and-companions)). Every package's dependency list is a promise to its
+downstream users, so each stays as short as the validation honestly requires.
 
 ---
 
@@ -503,7 +503,7 @@ still rejected, for four reasons independent of any version:
 - **No audience for the payoff.** Gherkin earns its keep when non-technical stakeholders read and
   write `.feature` files. This package's consumers are Dart developers, and the specification is
   already the published standard plus the dartdoc plus the structural
-  [`conformance_test.dart`](./packages/minted/test/conformance_test.dart).
+  [`conformance_test.dart`](./packages/minted_conformance/test/conformance_test.dart).
 - **Ceremony over pure functions.** A value type is a single-call, stateless parse. `World` context
   and multistep flows mean inventing a stateful world to carry one input across three steps.
 - **It degrades `dart test`.** A whole feature reports as one opaque test, so scenario counting,
@@ -531,32 +531,36 @@ check-digit algorithm out of one, without a semver event.
 ---
 
 <a id="packaging-core-and-companions"></a>
-## Packaging: engine dependencies in core, adapters in companions
+## Packaging: one package per domain, engines beside the types that wrap them
 
-The constraint is that no *opinionated* dependency is forced on a consumer who just wants the value
-types. In Dart, dependencies are declared per package, not per library: the moment any file in
-`minted` imports a package, that package lands in *every* consumer's resolution and lockfile, even
-someone who only touches one type. Tree-shaking drops unused *code* from a release binary, but not
-the entry in the dependency graph. So "one package with optional heavy libraries" is not possible;
-the decision turns on *what a dependency is for*, not merely whether there is one.
+No consumer should resolve a dependency for a type they never touch. Dart declares dependencies per
+package, not per library, so the moment any file in a package imports something, it lands in every
+consumer's lockfile. Tree-shaking is no answer: measured, a program importing all of `minted` and
+using only `Date` compiles byte-identical to hello-world, yet the lockfile still lists all seven
+dependencies. Dead code is free; a dependency-graph entry is not.
 
-- **Engine dependencies live in the core.** A dependency that a core value type is *built on* may sit
-  in core, provided it is pure Dart, web-safe, and free of a heavy transitive closure: `Email`
-  wraps `email_validator`, `Iban` wraps `iban_validator`, `PhoneNumber` wraps
-  `phone_numbers_parser`. These are the parser or registry the type needs to exist. The guard still
-  rejects a heavy or platform-bound engine: a type whose only parser dragged in Flutter or a large
-  runtime would go to a companion instead.
-- **Adapter dependencies go in companions.** A dependency that *adapts* the value types to another
-  ecosystem is genuinely opt-in and must never burden core: `fpdart` (Option / Either), `hive`
-  (persistence), a Flutter form-field validator. Each becomes its own package (`minted_fpdart`,
-  `minted_hive`, `minted_flutter`), depending on core plus its one integration dependency.
-- **Zero-dependency integrations can be opt-in libraries in core.** JSON via plain methods, where
-  `fromJson` is just `parse`, needs no extra dependency, so it can live in core as
-  `package:minted/json.dart` without forcing anything on anyone.
+One package therefore cannot hold optional heavy libraries, which is what v3 splits:
 
-Companions are built when actually needed, and **live in this repo, a pub workspace since the
-run-up to v3**. Separate repositories were the earlier plan; the workspace won because v3 turns the
-sectors themselves into packages, and one tree beats coordinating a release across eight repos.
+- **Each domain is a package, and its engine goes with it.** `email_validator` and
+  `phone_numbers_parser` are in `minted_contact`, `iban_validator` and `country_code` in
+  `minted_finance`, `ipaddr` in `minted_network`. The engine is the parser or registry the type
+  needs to exist, so it belongs wherever that type does.
+- **Core carries only what every domain speaks**: the outcome vocabulary and the numeric
+  primitives, on `collection` and `meta`. A chronology consumer resolves three packages where the
+  single package cost seven.
+- **Adapters stay separate**, as they always would have: `fpdart`, `hive`, a Flutter form-field
+  validator. Each becomes `minted_fpdart` and friends, on core plus its one integration dependency.
+- **Zero-dependency integrations can be opt-in libraries** rather than packages. JSON, where
+  `fromJson` is just `parse`, needs nothing extra, so `package:minted/json.dart` would force
+  nothing on anyone.
+
+All of it lives in one repo, a pub workspace since the run-up to v3. Separate repositories were the
+earlier plan; one tree won because a release across eight repos is worse than a release picker in
+one, and because a type and its tests should move together.
+
+The cost is real and was accepted: seven publish surfaces, and helpers used by more than one
+package become `package:minted/internal.dart`, which carries no semver promise but cannot break
+within a major.
 
 ---
 

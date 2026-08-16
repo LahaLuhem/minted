@@ -1,3 +1,5 @@
+// ignore_for_file: prefer-match-file-name
+
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 

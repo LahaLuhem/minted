@@ -2,16 +2,17 @@
   "url": "https://context7.com/lahaluhem/minted",
   "public_key": "pk_zRQqaALefsVNkJ7uS6fVf",
   "projectTitle": "minted",
-  "description": "Well-modelled Dart value types (domain primitives) for what is usually left as a raw String, int or double: email, IBAN, UUID, IP address, calendar dates and other ISO/RFC/GS1-standardised values, plus constraint types like Port and Percentage. Parse, don't validate: every instance is guaranteed well-formed.",
+  "description": "Pure-Dart value types (domain primitives) for what is usually left as a raw String, int or double: email, IBAN, UUID, IP address, calendar dates and other ISO/RFC/GS1-standardised values, plus constraint types like Port and Percentage. Parse, don't validate: every instance is guaranteed well-formed. Split across minted (core) and the minted_* domain packages.",
   "folders": [],
   "excludeFolders": [
-    "build",
-    "test",
-    "scripts",
+    ".ai",
+    ".dart_tool",
     ".github",
     ".idea",
-    ".dart_tool",
-    ".ai"
+    "build",
+    "packages/minted_conformance",
+    "scripts",
+    "test"
   ],
   "excludeFiles": [
     "CHANGELOG.md",
@@ -27,7 +28,7 @@
     "Types normalise on parse, so equality is canonical: `Iban.parse('gb82 west ...') == Iban.parse('GB82WEST...')`. Compare parsed values, never the raw strings you parsed them from.",
     "Check-digit types validate the real standard, not a regex shape: IBAN mod-97, card numbers Luhn, ISBN/EAN/ISSN check digits. A value that parses has passed its checksum.",
     "`Percentage` names the unit that a raw double cannot: `Percentage.tryFrom(15)` and `Percentage.tryFromFraction(0.15)` are the same proportion, `.value` holds the percent, `.fraction` the fraction, and `.of(200)` applies it. It is unbounded on purpose (250% growth and -12% churn are real), so finiteness is its only invariant.",
-    "Pure Dart with minimal dependencies, so it runs in CLI, server, web and Flutter. Opinionated integrations (JSON, fpdart, Hive, Flutter form validators) are opt-in companion packages, never forced on core consumers."
+    "Split by domain since 3.0.0. `minted` holds the shared vocabulary (ParseOutcome, MintedFailure, MintedFormatError, Digit, Digits, the Uint tower, NaturalNumber, Percentage, Probability); the types live in minted_chronology, minted_contact, minted_finance, minted_geography, minted_identifiers and minted_network. Each depends on minted and carries only its own engine, so a consumer resolves nothing for a domain it does not use. Import the domain package, e.g. `package:minted_finance/minted_finance.dart` for Iban. Opinionated integrations (fpdart, Hive, Flutter validators) remain opt-in adapter packages."
   ],
   "previousVersions": []
 }
