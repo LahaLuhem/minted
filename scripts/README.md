@@ -1,6 +1,8 @@
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
 - [Usage](#usage)
+- [First publish of a package](#first-publish-of-a-package)
+- [Cutover to the split packages (one-time)](#cutover-to-the-split-packages-one-time)
 - [What's pipeline-owned vs. hand-editable](#whats-pipeline-owned-vs-hand-editable)
 - [Tag format](#tag-format)
 - [Preflight](#preflight)
@@ -56,6 +58,37 @@ no-`-m` path the script runs `git tag` with `-c tag.gpgSign=false` applied to th
 invocation, so plain `release.sh minor` never opens an editor or demands a message.
 Lightweight tags can't be signed (there's no body to sign), so the bypass is
 mechanically necessary, not a stylistic choice.
+
+## First publish of a package
+
+pub.dev can only configure automated publishing for a package that already exists, so a package's
+**first** version goes up by hand and every later one goes through the tag pipeline:
+
+```bash
+dart pub -C packages/<name> publish
+```
+
+Then set that package's tag pattern to `<name>-{{version}}` under
+`pub.dev/packages/<name>/admin`, same publisher as the rest. From its second release on,
+`scripts/release.sh` is the only route.
+
+Tag the version you just published anyway, so the history is uniform. `publish.yml` checks pub.dev
+first and exits green when the version is already up, so the tag costs nothing.
+
+## Cutover to the split packages (one-time)
+
+Order matters: siblings cannot claim `minted ^3.0.0` until core actually declares it, because a
+workspace refuses to resolve a constraint no member satisfies. The preflight refuses to release a
+package whose sibling constraint is older than what the tree builds against, so a forgotten step 2
+fails loudly instead of shipping a wrong constraint that pub.dev can never take back.
+
+1. **Release core.** `scripts/release.sh major --package minted` takes 2.0.0 to 3.0.0 and publishes
+   through the tag pipeline as usual. Its own pub.dev tag pattern must already be `minted-{{version}}`
+   (see [Tag format](#tag-format)).
+2. **Tighten every sibling** from `minted: '>=2.0.0 <4.0.0'` to `minted: ^3.0.0`, one commit. Each
+   pubspec carries a comment saying so.
+3. **Publish each sibling** by hand, per *First publish* above, then configure its tag pattern.
+   `minted_contact` depends on `minted_network`, so publish network first; the rest are independent.
 
 ## What's pipeline-owned vs. hand-editable
 
