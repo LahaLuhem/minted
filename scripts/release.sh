@@ -59,6 +59,11 @@ fi
 
 MAIN_BRANCH="main"
 
+# The workspace member being released. Hard-coded while `minted` is the only publishable package;
+# this is the seam the "pick a package with a populated ## Unreleased" prompt replaces, so
+# everything below reads paths through it rather than assuming the repo root.
+PACKAGE_DIR="packages/minted"
+
 # What a version must look like, for the pubspec read and for the cider guard.
 SEMVER_PATTERN='^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'
 
@@ -178,8 +183,10 @@ if ! command -v cider >/dev/null 2>&1; then
     exit 1
 fi
 # Run it, not just resolve it: a stale snapshot makes `pub global run` rebuild and print resolution
-# chatter, so probing here fails fast and leaves the snapshot warm for the bump.
-if ! cider_probe="$(cider version 2>&1)"; then
+# chatter, so probing here fails fast and leaves the snapshot warm for the bump. Run from the
+# member: `cider version` reads the pubspec it stands in, and the workspace root carries no
+# `version:` field, so probing at the root fails on a null check rather than a missing cider.
+if ! cider_probe="$(cd "$PACKAGE_DIR" && cider version 2>&1)"; then
     err 'cider is installed but failed to run. Re-activate: dart pub global activate cider'
     exit 1
 elif ! printf '%s\n' "$cider_probe" | grep -Eq "$SEMVER_PATTERN"; then
@@ -250,9 +257,9 @@ fi
 # From the file, not `cider version`: pub's `MSG : Resolving dependencies...` chatter reached stdout
 # and became the version. Reading it here also leaves the `cider bump` guard two independent sides.
 step 'Compute new version'
-current_version="$(awk '$1 == "version:" { print $2; exit }' pubspec.yaml)"
+current_version="$(awk '$1 == "version:" { print $2; exit }' "${PACKAGE_DIR}/pubspec.yaml")"
 if [[ ! "$current_version" =~ $SEMVER_PATTERN ]]; then
-    err "Could not read a SemVer version from pubspec.yaml; got '${current_version}'."
+    err "Could not read a SemVer version from ${PACKAGE_DIR}/pubspec.yaml; got '${current_version}'."
     exit 1
 fi
 log "Current version: ${current_version}"
@@ -286,8 +293,8 @@ fi
 # Preflight: `## Unreleased` populated in CHANGELOG.md
 # ---------------------------------------------------------------------------
 step 'Preflight: CHANGELOG'
-if ! grep -qiE '^## \[?Unreleased\]?' CHANGELOG.md 2>/dev/null; then
-    err "CHANGELOG.md is missing a '## Unreleased' section."
+if ! grep -qiE '^## \[?Unreleased\]?' "${PACKAGE_DIR}/CHANGELOG.md" 2>/dev/null; then
+    err "${PACKAGE_DIR}/CHANGELOG.md is missing a '## Unreleased' section."
     err 'Add notes for this release first, e.g.:'
     err '  ## Unreleased'
     err '  - Describe the change.'
@@ -299,10 +306,10 @@ unreleased_block="$(awk '
     tolower($0) ~ /^## \[?unreleased\]?/{found=1; next}
     found && /^## /{exit}
     found{print}
-' CHANGELOG.md)"
+' "${PACKAGE_DIR}/CHANGELOG.md")"
 
 if [ -z "$(printf '%s' "$unreleased_block" | tr -d '[:space:]-')" ]; then
-    err "CHANGELOG.md has '## Unreleased' but no entries beneath it."
+    err "${PACKAGE_DIR}/CHANGELOG.md has '## Unreleased' but no entries beneath it."
     err 'Populate the section before re-running.'
     exit 1
 fi
@@ -345,7 +352,9 @@ if ! dart --no-version-check analyze .; then
 fi
 
 step 'Preflight: dart test'
-if ! dart test; then
+# Format and analyze above run repo-wide from the root, which covers every member in one pass;
+# tests are per-package, since the workspace root holds no test/ of its own.
+if ! (cd "$PACKAGE_DIR" && dart test); then
     err 'Test suite failed.'
     exit 1
 fi
@@ -367,12 +376,14 @@ else
     tag_kind_note="(lightweight; pass -m \"MSG\" to annotate)"
 fi
 cat <<PLAN
+Releasing workspace member: ${PACKAGE_DIR}
+
 Will execute, in order:
-  1. cider bump ${BUMP}                                    (pubspec.yaml: ${current_version} → ${new_version})
-  2. cider release                                         (CHANGELOG.md: ## Unreleased → ## ${new_version} [dated today])
-  3. git add  pubspec.yaml CHANGELOG.md
+  1. cider bump ${BUMP}                                    (${PACKAGE_DIR}/pubspec.yaml: ${current_version} → ${new_version})
+  2. cider release                                         (${PACKAGE_DIR}/CHANGELOG.md: ## Unreleased → ## ${new_version} [dated today])
+  3. git add  ${PACKAGE_DIR}/{pubspec.yaml,CHANGELOG.md}
   4. git commit -m "Prep for release ${new_version}"
-  5. dart pub publish --dry-run                            (validate clean committed state; reset HEAD~1 on failure)
+  5. dart pub -C ${PACKAGE_DIR} publish --dry-run          (validate clean committed state; reset HEAD~1 on failure)
   6. git tag ${new_version}                                ${tag_kind_note}
   7. git push --atomic origin HEAD:${MAIN_BRANCH} ${new_version}   (triggers .github/workflows/publish.yml)
 
@@ -425,8 +436,8 @@ trap '
     rc=$?
     case "$cider_phase" in
         1)
-            printf "[release] failure mid-release — restoring pubspec.yaml + CHANGELOG.md from HEAD\n" >&2
-            git checkout HEAD -- pubspec.yaml CHANGELOG.md 2>/dev/null || true
+            printf "[release] failure mid-release — restoring %s pubspec.yaml + CHANGELOG.md from HEAD\n" "$PACKAGE_DIR" >&2
+            git checkout HEAD -- "${PACKAGE_DIR}/pubspec.yaml" "${PACKAGE_DIR}/CHANGELOG.md" 2>/dev/null || true
             ;;
         2)
             printf "[release] failure post-commit — git reset --hard HEAD~1 to drop the prep commit\n" >&2
@@ -441,7 +452,7 @@ cider_phase=1
 step "cider bump ${BUMP}"
 # Raw first so a cider failure still aborts; sed then drops pub's chatter, printing nothing on a
 # no-match rather than tripping pipefail.
-cider_bump_output="$(cider bump "$BUMP")"
+cider_bump_output="$(cd "$PACKAGE_DIR" && cider bump "$BUMP")"
 bumped_version="$(
     printf '%s\n' "$cider_bump_output" |
         sed -n -E 's/^([0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?)$/\1/p' |
@@ -454,10 +465,10 @@ if [ "$bumped_version" != "$new_version" ]; then
 fi
 
 step 'cider release'
-cider release
+(cd "$PACKAGE_DIR" && cider release)
 
-step 'git add pubspec.yaml CHANGELOG.md'
-git add pubspec.yaml CHANGELOG.md
+step "git add ${PACKAGE_DIR}/{pubspec.yaml,CHANGELOG.md}"
+git add "${PACKAGE_DIR}/pubspec.yaml" "${PACKAGE_DIR}/CHANGELOG.md"
 
 step "git commit -m \"Prep for release ${new_version}\""
 git commit -m "Prep for release ${new_version}"
@@ -475,8 +486,8 @@ cider_phase=2
 # even though every other check passed. EXIT trap reverts via reset HEAD~1 on
 # failure — keeps the local repo identical to its pre-release state and
 # spares the user from creating + then deleting a remote tag.
-step 'dart pub publish --dry-run'
-dart pub publish --dry-run
+step "dart pub -C ${PACKAGE_DIR} publish --dry-run"
+dart pub -C "$PACKAGE_DIR" publish --dry-run
 
 # Past this point: trap no longer auto-reverts. Manual recovery if the
 # tag/push fails:

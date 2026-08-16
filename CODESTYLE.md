@@ -191,7 +191,7 @@ Rationale: [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-fro
   }
   ```
 
-  This one ships: [`lib/src/geography/geo_coordinate.dart`](./lib/src/geography/geo_coordinate.dart)
+  This one ships: [`lib/src/geography/geo_coordinate.dart`](./packages/minted/lib/src/geography/geo_coordinate.dart)
   is the sketch filled in, so keep the two in step.
 
 **A second reason to reach for a class, independent of the parts: a delegated `Object` member would
@@ -545,7 +545,7 @@ library;
   `.isNull()`, `.throws<…>()`), matching every suite in the package; not `package:matcher`'s
   `expect`.
 - **Behavioural framing comes from a local helper, not a framework.**
-  [`test/support/bdd.dart`](./test/support/bdd.dart) is a small Gherkin vocabulary over
+  [`test/support/bdd.dart`](./packages/minted/test/support/bdd.dart) is a small Gherkin vocabulary over
   `package:test`: `feature` (a `group`), `scenario` (a single test), and `scenarioOutline` (one
   test per example row). Why no BDD framework:
   [`APPENDIX.md#behavioural-tests-helper`](./APPENDIX.md#behavioural-tests-helper).

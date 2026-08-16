@@ -49,8 +49,29 @@ feature: identical method names and the same failure model across every type.
 
 ## Repo layout
 
+The repo is a [pub workspace](https://dart.dev/tools/pub/workspaces): one resolution, one root
+`pubspec.lock`, shared by every member. The root holds tooling, docs and CI and no Dart code of its
+own; each published package is a directory under `packages/`.
+
 ```text
-minted/
+minted/                              Workspace root
+├── pubspec.yaml                     `workspace:` member list; publish_to: none, no version
+├── analysis_options.yaml            Strict-mode + opinionated lints; members inherit by proximity
+├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
+├── .rumdl.toml / .yamllint.yaml     Markdown + YAML lint config
+├── .github/                         Workflows + lint-checks.json, the shared lint manifest
+├── scripts/                         release.sh + its README
+├── README.md                        Family index; the GitHub landing page
+├── APPENDIX.md                      Design rationale (anchor-keyed)
+├── CODESTYLE.md                     Library-package code style
+├── context7.json                    Doc-indexer config for context7.com
+├── .ai/                             This file + CLAUDE.md (symlinked to repo root)
+└── packages/                        One directory per published package
+    └── minted/                      The only one today; the v3 siblings join it here
+```
+
+```text
+packages/minted/                     The published package
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   └── src/
@@ -87,17 +108,20 @@ minted/
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
-├── analysis_options.yaml            Strict-mode + opinionated lints
+├── pubspec.yaml                     Deps + cider config + topics + `resolution: workspace`
 ├── dart_dependency_validator.yaml   Scopes dependency_validator (excludes example/)
-├── pubspec.yaml                     Deps + cider config + topics
 ├── .pubignore                       Files excluded from `pub publish`
-├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
 ├── CHANGELOG.md                     Pipeline-owned; appears on pub.dev
+├── MIGRATION.md                     Version-to-version upgrade guide; ships in the tarball
 ├── README.md                        pub.dev landing page
-├── APPENDIX.md                      Design rationale (anchor-keyed)
-├── CODESTYLE.md                     Library-package code style
-└── .ai/                             This file + CLAUDE.md (symlinked to repo root)
+└── LICENSE                          Per-package copy, so pub.dev detects it on this package
 ```
+
+**Commands run from the root; tests run from the member.** One `dart pub get` at the root resolves
+every member, and `dart analyze .` / `dart format .` cover the whole workspace in one pass. `dart
+test` does not: the root holds no `test/`, so run it in the package (`cd packages/minted`). Anything
+that reads a single pubspec — `cider`, `dart pub publish`, `dependency_validator` — needs the member
+directory too, via `cd` or `dart pub -C packages/minted`.
 
 Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `commerce/`, …), with
 numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
@@ -135,7 +159,8 @@ vocabularies grow to rival the types themselves, and the split on disk is what l
 the AST. No `part` / `part of`: sealed variants only have to share a *file*, so a plain import
 suffices, and anything a failure needs from its value type belongs in a helper subfolder instead
 (which is why
-[`iso_date_format.dart`](../lib/src/chronology/normalisation/iso_date_format.dart) exists, in
+[`iso_date_format.dart`](../packages/minted/lib/src/chronology/normalisation/iso_date_format.dart)
+exists, in
 `chronology/` because only that sector uses it).
 
 **Check-digit algorithms get one file per *algorithm***, in the `check_digits/` of whichever root

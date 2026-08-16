@@ -11,7 +11,7 @@ concurrency:
 permissions:
   contents: read
 
-# The example is a single file resolved against the root package (no example
+# The example is a single file resolved against its own package (no example
 # pubspec). `analyze` already covers it via package.yml's `dart analyze .`; this
 # workflow smoke-runs it so a broken snippet in the docs can't merge green.
 jobs:
@@ -20,5 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # Root `dart pub get` resolves every workspace member, so no working-directory needed.
       - uses: ./.github/actions/setup-dart
-      - run: dart run example/minted_example.dart
+      - run: dart run packages/minted/example/minted_example.dart

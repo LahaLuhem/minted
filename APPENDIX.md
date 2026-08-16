@@ -82,8 +82,8 @@ downstream user, so it stays as short as the validation honestly requires.
 
 **Split along style versus correctness.** `dart format` is the only check whose output must agree
 with the maintainer's machine character for character, so that job takes its Dart from Flutter, the
-channel [`.fvmrc`](../.fvmrc) names. Analyze, test, the dependency validator and the example stay on
-Dart stable through the [`setup-dart` composite](../.github/actions/setup-dart/action.yml).
+channel [`.fvmrc`](./.fvmrc) names. Analyze, test, the dependency validator and the example stay on
+Dart stable through the [`setup-dart` composite](./.github/actions/setup-dart/action.yml).
 
 **What forced it:** Dart stable runs ahead of Flutter's bundled Dart, and the formatter changed
 between them. `sdk: stable` gave CI 3.13.0 against a local 3.12.2, so a green tree met a red gate
@@ -93,9 +93,9 @@ fix, which neither Dart stable nor a pinned literal promises once it drifts from
 is written on.
 
 **Elsewhere the newer SDK is the point.** Those jobs run Dart stable, which is what
-[`pubspec.yaml`](../pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on.
+[`pubspec.yaml`](./packages/minted/pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on.
 The known cost is that the analyzer is version-sensitive too, so a Dart-stable-only diagnostic would
-be fixed slightly blind; explicit rules in [`analysis_options.yaml`](../analysis_options.yaml) stop
+be fixed slightly blind; explicit rules in [`analysis_options.yaml`](./analysis_options.yaml) stop
 new lints switching themselves on, and if it ever stops being tolerable the format job's recipe moves
 into the composite.
 
@@ -491,7 +491,7 @@ which is the concrete case the rule exists to avoid.
 ## Behavioural tests: a helper, not a framework
 
 Tests read as behaviour (Given/When/Then, one named case per row), but that framing comes from a
-tiny in-repo helper, not a BDD framework. [`test/support/bdd.dart`](./test/support/bdd.dart) is
+tiny in-repo helper, not a BDD framework. [`test/support/bdd.dart`](./packages/minted/test/support/bdd.dart) is
 about 25 lines of `feature` / `scenario` / `scenarioOutline` over `package:test`, with the
 assertions still written in `package:checks`.
 
@@ -503,7 +503,7 @@ still rejected, for four reasons independent of any version:
 - **No audience for the payoff.** Gherkin earns its keep when non-technical stakeholders read and
   write `.feature` files. This package's consumers are Dart developers, and the specification is
   already the published standard plus the dartdoc plus the structural
-  [`conformance_test.dart`](./test/conformance_test.dart).
+  [`conformance_test.dart`](./packages/minted/test/conformance_test.dart).
 - **Ceremony over pure functions.** A value type is a single-call, stateless parse. `World` context
   and multistep flows mean inventing a stateful world to carry one input across three steps.
 - **It degrades `dart test`.** A whole feature reports as one opaque test, so scenario counting,
@@ -554,8 +554,11 @@ the decision turns on *what a dependency is for*, not merely whether there is on
   `fromJson` is just `parse`, needs no extra dependency, so it can live in core as
   `package:minted/json.dart` without forcing anything on anyone.
 
-Companions are built when actually needed, as their own repositories, matching the maintainer's
-other packages. A monorepo / pub workspace is a later option if the companion count grows enough.
+Companions are built when actually needed. **They live in this repo, which became a pub workspace
+in the run-up to v3**: one resolution and one root lockfile, with each published package a directory
+under `packages/`. The earlier plan put them in separate repositories; a workspace won because the
+v3 split turns the domain sectors themselves into packages, and keeping a sector's types, tests and
+changelog in one tree beats coordinating a release across eight repos.
 
 ---
 
@@ -574,7 +577,7 @@ nothing on this package's surface, because the value-type API (`parse`, `tryPars
 <a id="sdk-floor"></a>
 ## SDK floor
 
-The floor lives in [`pubspec.yaml`](../pubspec.yaml)'s `sdk:` constraint and tracks what the package
+The floor lives in [`pubspec.yaml`](./packages/minted/pubspec.yaml)'s `sdk:` constraint and tracks what the package
 actually consumes: extension types need ≥ 3.3, static dot shorthands ≥ 3.10, the `new` constructor
 shorthand ≥ 3.13. The cost is reach, since a project on an older SDK can't depend on `minted`.
 Acceptable for a fresh package, and because a floor can only be raised without a breaking change,

@@ -42,6 +42,9 @@ versions stay reserved for 7 days).
 
 ## Scope awareness
 
+Paths below are relative to a package under `packages/` (today only `packages/minted/`); the repo
+root is the workspace, which holds tooling and docs but no Dart code.
+
 - **Public-API edits** (anything in `lib/minted.dart` or re-exported from it) are pub.dev-visible.
   Flag whether the change is patch / minor / major under semver before it lands. Adding a public
   constructor to a value type is not just semver-significant, it breaks the package's core
@@ -102,9 +105,11 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 
 ## Definition of done
 
-- `dart --no-version-check analyze .` clean (pedantic mode).
+- `dart --no-version-check analyze .` clean (pedantic mode). Run from the workspace root: it covers
+  every member in one pass, as does `dart format`.
 - `dart format --output=none --set-exit-if-changed .` clean.
-- `dart test` green, including the official standard test vectors for any standardised type.
+- `dart test` green, including the official standard test vectors for any standardised type. Run it
+  inside the package (`cd packages/minted`); the workspace root holds no `test/`.
 - New / changed types honour the [value-type contract](CODESTYLE.md#value-type-contract):
   private constructor, `tryParse` + `parse`, `MintedFormatException`, value equality, canonical
   string form, documented normalisation.

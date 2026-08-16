@@ -11,10 +11,14 @@
 Audience: maintainers and contributors who want to understand or invoke the release
 flow. End users of the package don't need anything in this directory.
 
-Cuts a versioned release of `minted`. Bumps the `version:` field in `pubspec.yaml`
-via `cider`, finalises the `## Unreleased` block in `CHANGELOG.md` into a dated
-section, commits both files, creates a SemVer tag, and pushes commit + tag
-atomically. The tag push triggers
+Cuts a versioned release of one workspace member. The member is `PACKAGE_DIR` at the
+top of the script, currently hard-coded to `packages/minted` because it is the only
+publishable package; that variable is the seam a "pick the package whose CHANGELOG has
+a populated `## Unreleased`" prompt replaces once there are siblings.
+
+Bumps the `version:` field in the member's `pubspec.yaml` via `cider`, finalises the
+`## Unreleased` block in its `CHANGELOG.md` into a dated section, commits both files,
+creates a SemVer tag, and pushes commit + tag atomically. The tag push triggers
 [`../.github/workflows/publish.yml`](../.github/workflows/publish.yml), which then
 publishes to pub.dev via OIDC.
 
@@ -47,9 +51,10 @@ mechanically necessary, not a stylistic choice.
 
 ## What's pipeline-owned vs. hand-editable
 
-`CHANGELOG.md` and the `version:` field in `pubspec.yaml` are **pipeline-owned**: the
-script reorders or overwrites manual edits to them. Hand-edits will not survive the
-next release.
+The member's `CHANGELOG.md` and the `version:` field in its `pubspec.yaml` are
+**pipeline-owned**: the script reorders or overwrites manual edits to them. Hand-edits
+will not survive the next release. The workspace-root `pubspec.yaml` carries no
+`version:` at all, so it is outside this entirely.
 
 The `## Unreleased` block in `CHANGELOG.md` is the script's **input** — curated by
 hand between releases. The script bails if it's empty.
@@ -78,8 +83,10 @@ The script refuses to proceed unless every check passes:
 - `docker` on PATH, daemon running (runs the checks from `.github/lint-checks.json`
   via the linterpol image: `shellcheck`, `actionlint`, `rumdl`, `ryl`, no local installs).
 - Working tree clean, on `main`, in sync with `origin/main` (fetches first).
-- `CHANGELOG.md` has a non-empty `## Unreleased` (or `## [Unreleased]`) section.
-- `dart format`, `dart analyze`, and `dart test` all clean.
+- The member's `CHANGELOG.md` has a non-empty `## Unreleased` (or `## [Unreleased]`) section.
+- `dart format` and `dart analyze` clean, both run repo-wide from the root so they cover
+  every member in one pass; `dart test` green, run inside the member because the
+  workspace root holds no `test/`.
 - The target tag does not already exist locally or on the remote.
 
 `dart pub publish --dry-run` is *not* in preflight. It cross-checks three things
