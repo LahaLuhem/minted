@@ -8,6 +8,13 @@ environment:
 
 workspace:
   - packages/minted
+  - packages/minted_chronology
+  - packages/minted_conformance
+  - packages/minted_contact
+  - packages/minted_finance
+  - packages/minted_geography
+  - packages/minted_identifiers
+  - packages/minted_network
 
 dev_dependencies:
   melos: ^8.3.0

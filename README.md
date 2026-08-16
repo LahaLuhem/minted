@@ -13,7 +13,17 @@ that came through it is well-formed by construction.
 
 | Package | What it holds | pub.dev |
 |---|---|---|
-| [`minted`](./packages/minted) | Every value type, and the `ParseOutcome` vocabulary they share | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted) |
+| [`minted`](./packages/minted) | Core: outcomes, `Digit`/`Digits`, the `Uint` family, `Percentage`, `Probability` | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted) |
+| [`minted_chronology`](./packages/minted_chronology) | `Date`, `Month`, `Weekday`, `Iso8601Duration` | not yet published |
+| [`minted_contact`](./packages/minted_contact) | `Email`, `PhoneNumber` | not yet published |
+| [`minted_finance`](./packages/minted_finance) | `Iban`, `Bic`, `Isin`, `PaymentCardNumber` | not yet published |
+| [`minted_geography`](./packages/minted_geography) | `GeoCoordinate` | not yet published |
+| [`minted_identifiers`](./packages/minted_identifiers) | `Uuid`, `Isbn`, `Issn`, `Isni`, `Imei`, `Gtin` | not yet published |
+| [`minted_network`](./packages/minted_network) | `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port` | not yet published |
+
+> **The siblings are scaffolds.** Every type still ships in `minted` today; the packages exist so
+> the workspace tooling and release pipeline are proven before the types move at 3.0.0. There is
+> also a private `minted_conformance` member holding the cross-package suites, which never ships.
 
 **[`packages/minted/README.md`](./packages/minted/README.md) is the documentation you actually
 want**: the pub.dev landing page, with the type catalogue and usage guide. This file is the map.

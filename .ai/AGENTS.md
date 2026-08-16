@@ -65,8 +65,15 @@ minted/                              Workspace root
 ├── CODESTYLE.md                     Library-package code style
 ├── context7.json                    Doc-indexer config for context7.com
 ├── .ai/                             This file + CLAUDE.md (symlinked to repo root)
-└── packages/                        One directory per published package
-    └── minted/                      The only one today; the v3 siblings join it here
+└── packages/                        One directory per package
+    ├── minted/                      Core, and still every type until the v3 split moves them
+    ├── minted_chronology/           Scaffolded: pubspec + empty library, types arrive at 3.0.0
+    ├── minted_conformance/          Private (publish_to: none); cross-package suites live here
+    ├── minted_contact/              Scaffolded
+    ├── minted_finance/              Scaffolded
+    ├── minted_geography/            Scaffolded
+    ├── minted_identifiers/          Scaffolded
+    └── minted_network/              Scaffolded
 ```
 
 ```text
