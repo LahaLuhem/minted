@@ -3,7 +3,7 @@ Library-package code style. Project facts (goal, stack, repo layout, hard rules)
 
 The lint posture is deliberately strict (see [`analysis_options.yaml`](./analysis_options.yaml)).
 The house style values explicit types, no ambient mutability, small focused types, and a
-single consistent shape across every value type in the package.
+single consistent shape across every value type in every package.
 
 Each heading below carries an explicit `<a id="…">` anchor. Link by anchor, not by heading
 text, so renames don't break callers.
@@ -102,8 +102,8 @@ final cc = s.substring(0, 2);
   descriptive identifier: `Iban` length bounds, the Luhn radix, ISO table sizes, and so on.
 - **Keep a type's own constants on that type.** A check-digit modulus or a fixed field width
   belongs as a `static const` on the type that uses it, close to where it is read. Genuinely
-  cross-sector constants (shared radices, a shared alphabet) go under `lib/src/shared/`; one that
-  only a single sector reads goes in that sector's own helper subfolder instead (AGENTS.md, repo
+  cross-package constants (shared radices, a shared alphabet) go in core's `lib/src/shared/`; one
+  that only a single package reads goes in that package's own helper subfolder (AGENTS.md, repo
   layout). Before introducing a new constant, check whether a shared one already exists.
 
 ---
@@ -191,7 +191,7 @@ Rationale: [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-fro
   }
   ```
 
-  This one ships: [`lib/src/geography/geo_coordinate.dart`](./packages/minted/lib/src/geography/geo_coordinate.dart)
+  This one ships: [`lib/src/geography/geo_coordinate.dart`](./packages/minted_geography/lib/src/geo_coordinate.dart)
   is the sketch filled in, so keep the two in step.
 
 **A second reason to reach for a class, independent of the parts: a delegated `Object` member would

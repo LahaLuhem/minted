@@ -1,11 +1,11 @@
 # AGENTS.md — `minted`
 
 Tool-agnostic brief for any coding agent (Copilot, Cursor, Codex, Claude Code, …) working in
-this package. Claude-Code-specific guidance lives in [CLAUDE.md](./CLAUDE.md).
+this repo. Claude-Code-specific guidance lives in [CLAUDE.md](./CLAUDE.md).
 
 ## Project goal
 
-A library of well-modelled **value types** ("domain primitives") for entities that are routinely
+A family of packages of well-modelled **value types** ("domain primitives") for entities that are routinely
 left as raw `String` / `int` even though they carry real validation or normalisation rules,
 usually from a published standard (ISO / RFC / ITU / GS1): email, IBAN, card numbers, ISBN, and
 so on.
@@ -32,8 +32,9 @@ feature: identical method names and the same failure model across every type.
   [`.github/actions/setup-dart`](../.github/actions/setup-dart/action.yml) on Dart stable, which is
   what downstream Dart-only users have. Route a new job through the composite unless it compares
   formatter output. Why: [`APPENDIX.md#ci-sdk-toolchain`](../APPENDIX.md#ci-sdk-toolchain).
-- **`dependency_validator`** guards the dependency set; `dart_dependency_validator.yaml` scopes it
-  to the published surface and skips the example.
+- **`dependency_validator`** guards each package's dependency set, per package, and is what caught
+  core still declaring engines after their types moved out. `dart_dependency_validator.yaml` scopes
+  it to the published surface and skips the example.
 - **Container-based linters** (`shellcheck` for shell scripts, `actionlint` for workflows, `rumdl`
   for Markdown, `ryl` for YAML) run from the [`linterpol`](https://github.com/LahaLuhem/linterpol)
   Docker image, not local installs, so only Docker (plus `jq`) is needed. The check set and image
@@ -120,24 +121,22 @@ whether it belongs at the root or per-package. They live under the `melos:` key 
 `pubspec.yaml`; `dart run melos run` lists them. Script runner only: versioning and publishing stay
 with cider and `scripts/release.sh`.
 
-Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `network/`, …), with
-numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
-sector earns its own folder once it has a couple of members; the public API stays flat regardless,
-because `minted.dart` re-exports every type. `test/` mirrors this layout.
+**A domain is a package.** Its types sit flat in that package's `lib/src/`, its failures in
+`failures/`, its helpers in job-named subfolders. Core is the exception: it also carries `numerics/`
+and `quantities/` for the primitives every domain builds on, and `shared/` for what they all speak.
+`test/` mirrors `lib/src/` in each package.
 
-**Every top-level dir under `lib/src/` is a domain sector, except `shared/`.** That is the whole
-rule, so a second non-domain dir does not get added at that level: a sibling `contract/` would read
-as a sector (and sit one letter from `contact/`). Internals go in a *subfolder* named for the job:
-`outcomes/` (the only public part, what a parse hands back), `encoding/` (characters to numbers,
-bytes, bits), `normalisation/`, `standards/` (fixed data a standard defines), `check_digits/` (one
-file per algorithm).
+Internals go in a *subfolder* named for the job: `outcomes/` (the only public part of `shared/`,
+what a parse hands back), `encoding/` (characters to numbers, bytes, bits), `normalisation/`,
+`standards/` (fixed data a standard defines), `check_digits/` (one file per algorithm).
 
-**Which root that subfolder hangs off depends on how many sectors use it.** Two or more, `shared/`;
-exactly one, inside that sector under the same job name. `luhn_check_digit.dart` is
-`shared/check_digits/` (finance and identifiers both run it); `iban_check_digits.dart` is
-`finance/check_digits/` (only `Iban` does). That keeps `shared/` to what is genuinely cross-sector,
-which is what the v3 split leaves behind as core. `conformance_test.dart` excludes `shared/` and
-`failures/` by path segment; helper subfolders are walked but declare no types, so nothing changes.
+**Which package a helper lives in depends on how many use it.** Two or more, core's `shared/`,
+reached through `package:minted/internal.dart`; exactly one, inside that package under the same job
+name. `luhn_check_digit.dart` is core's (finance and identifiers both run it);
+`iban_check_digits.dart` is `minted_finance`'s (only `Iban` does). That keeps core to what is
+genuinely cross-package, and keeps `internal.dart` small, since everything in it is frozen for a
+major. `conformance_test.dart` sweeps every package and excludes `failures/`, `shared/` and the
+helper subfolders by path segment.
 
 **A *constraint type* is a constrained number with no standard text form**, so it declares `tryFrom`
 and neither parse door. Usually a range; `Percentage` constrains the *unit* instead and bounds
@@ -147,16 +146,16 @@ nothing but finiteness. `quantities/` holds most of them, but the category is no
 omitting a name makes the test demand parse doors rather than quietly relax. Rationale:
 [`APPENDIX.md#constraint-types`](../APPENDIX.md#constraint-types).
 
-**A type's failure vocabulary goes in its sector's `failures/`, never in the value-type file**, one
+**A type's failure vocabulary goes in its package's `failures/`, never in the value-type file**, one
 file per type (`finance/failures/iban_failure.dart` holds `IbanFailure` and its variants). The
 vocabularies grow to rival the types themselves, and the split on disk is what lets
 `conformance_test.dart` tell a value type from a failure by path rather than by inferring it from
 the AST. No `part` / `part of`: sealed variants only have to share a *file*, so a plain import
 suffices, and anything a failure needs from its value type belongs in a helper subfolder instead
 (which is why
-[`iso_date_format.dart`](../packages/minted/lib/src/chronology/normalisation/iso_date_format.dart)
+[`iso_date_format.dart`](../packages/minted_chronology/lib/src/normalisation/iso_date_format.dart)
 exists, in
-`chronology/` because only that sector uses it).
+`minted_chronology` because only it uses it).
 
 **Check-digit algorithms get one file per *algorithm***, in the `check_digits/` of whichever root
 the rule above picks, and reach what they share (`shared/encoding/digit_values.dart`, ASCII decimal
@@ -174,7 +173,7 @@ Each file keeps its own constants and its own character map private to itself.
 **A constant that two files both need goes in a helper subfolder, but only when it is the same
 *concept*.** `cosmeticSeparators` was five identical copies of one normalisation rule, and
 `ismnRange` was duplicated between `Isbn` and its own failure (a failure may not import its value
-type, so a subfolder is the only place it can live: `identifiers/standards/`, since no other sector
+type, so a subfolder is the only place it can live: `minted_identifiers`, since no other package
 reads it). Coincidental equality is not duplication and must stay put: `Iban`
 and `Issn` both have a `_groupSize` of 4, but IBAN groups repeatedly every four where ISSN splits
 once after four, and two of the check-digit moduli are both 10 for unrelated standards. Hoisting
@@ -200,7 +199,7 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    constructor ever; `static ParseOutcome<F, T> parse(String)` carrying the type's own failure;
    `static T? tryParse(String)` derived from it; assembly factories (`fromComponents`, `from`, …)
    that return that same outcome; value equality; a canonical string form; a failure vocabulary in
-   the sector's `failures/`; per-type render helpers. **No door throws.** A door that can fail says
+   the package's `failures/`; per-type render helpers. **No door throws.** A door that can fail says
    so in its return type, and `ParseOutcome.getOrThrow` is the one place a caller opts into a throw,
    raising `MintedFormatError`. This is the package's identity, not a preference.
    Full spec: [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract); rationale in

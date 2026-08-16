@@ -1,4 +1,50 @@
-# Migrating to minted 2.0.0
+# Migrating minted
+
+Newest first. [3.0.0](#migrating-to-minted-300) splits the package up;
+[2.0.0](#migrating-to-minted-200) removed every implicit throw.
+
+## Migrating to minted 3.0.0
+
+The domain types moved into packages of their own, so you pay only for the domains you use. **No
+type, method or behaviour changed**: this is a dependency and import edit, and the compiler finds
+every site.
+
+`minted` keeps the shared vocabulary: `ParseOutcome`, `MintedFailure`, `MintedFormatError`,
+`Digit`, `Digits`, the `Uint` tower, `NaturalNumber`, `Percentage`, `Probability`.
+
+| Add this package | For |
+|---|---|
+| `minted_chronology` | `Date`, `Month`, `Weekday`, `Iso8601Duration` |
+| `minted_contact` | `Email`, `PhoneNumber`, `PhoneNumberType` |
+| `minted_finance` | `Iban`, `Bic`, `Isin`, `PaymentCardNumber` |
+| `minted_geography` | `GeoCoordinate` |
+| `minted_identifiers` | `Uuid`, `Isbn`, `Issn`, `Isni`, `Imei`, `Gtin` |
+| `minted_network` | `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port` |
+
+Each failure vocabulary travels with its type: `IbanFailure` is in `minted_finance`, `DateFailure`
+in `minted_chronology`, and so on.
+
+```yaml
+dependencies:
+  minted: ^3.0.0          # only if you use the shared vocabulary directly
+  minted_finance: ^1.0.0  # for Iban and friends
+```
+
+```dart
+import 'package:minted_finance/minted_finance.dart';  // was package:minted/minted.dart
+```
+
+Each domain package depends on `minted`, so you can drop the direct `minted` line unless you name
+its types yourself. Nothing else changes: `Iban.parse` still returns
+`ParseOutcome<IbanFailure, Iban>`.
+
+**Why.** Depending on `minted` used to mean resolving every engine behind every type: a project
+using only `Date` still pulled the phone-number metadata, the IBAN registry and the rest. Splitting
+by domain makes the dependency match the use. `Gtin` also moved from commerce to
+`minted_identifiers`, where it sits beside `Isbn`, since an ISBN-13 *is* a GTIN-13 and the two share
+a check digit.
+
+## Migrating to minted 2.0.0
 
 2.0.0 removes every implicit throw. A door that can fail says so in its return type, so the compiler
 points at each place that needs a decision instead of leaving it to a stack trace at runtime.
@@ -10,7 +56,7 @@ that part is [step 2](#step-2-once-on-200).
 Rationale, and the alternatives that were weighed and dropped, live in
 [issue #44](https://github.com/LahaLuhem/minted/issues/44).
 
-## The short version
+### The short version
 
 Every door that used to throw behaves exactly as before if you append `.getOrThrow()`:
 
@@ -22,7 +68,7 @@ Isbn.fromComponents(prefix: prefix, body: body).getOrThrow();  // 2.0.0, same th
 Do that at every call site and 2.0.0 runs like 1.x, with the throw now visible in your own source.
 Then revisit the ones where branching beats throwing, which is the point of the change.
 
-## Step 1, on 1.1.0
+### Step 1, on 1.1.0
 
 Everything here is deprecated, so the analyzer lists each call site for you.
 
@@ -48,9 +94,9 @@ written, not a published format for "a digit sequence", so parsing one from text
 job: `int.parse` first, then `tryFrom`. Their failure vocabularies go with the doors, which is why
 the last row above has no replacement.
 
-## Step 2, once on 2.0.0
+### Step 2, once on 2.0.0
 
-### Doors return an outcome
+#### Doors return an outcome
 
 Twenty doors keep their names and change their return type from `T` to `ParseOutcome<XFailure, T>`.
 There is no deprecation for this, since the replacement has the same name as the thing it replaces.
@@ -77,7 +123,7 @@ outcome.getOrNull();                        // null on failure
 outcome.fold((reason) => log(reason.message), (iban) => send(iban));   // handle both
 ```
 
-### `MintedFormatException` becomes `MintedFormatError`
+#### `MintedFormatException` becomes `MintedFormatError`
 
 Same rendered message, same typed `failure`, but on the `Error` lineage rather than `Exception`,
 because a failure from `getOrThrow` is a bug in the calling source rather than bad input to handle.
@@ -87,7 +133,7 @@ It drops `source` and `offset`, which were always null through this path.
 input any more, so there is nothing left for a `catch` to do that the return type does not already
 force. Rewrite those blocks to fold the outcome instead.
 
-### Five getters hand back `Digits`
+#### Five getters hand back `Digits`
 
 `Isbn.prefix`, `Isbn.body`, `Imei.tac`, `Imei.reportingBodyIdentifier` and `Imei.serialNumber`
 return `Digits` rather than `String`. Add `.asString` for the old value, and **watch for
