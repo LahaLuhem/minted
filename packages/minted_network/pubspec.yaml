@@ -26,7 +26,7 @@ dependencies:
   collection: ^1.19.1
   ipaddr: ^2.1.1
   meta: ^1.19.0
-  minted: '>=2.0.0 <4.0.0'
+  minted: ^3.0.0
 
 dev_dependencies:
   checks: ^0.3.1

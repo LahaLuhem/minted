@@ -13,7 +13,7 @@ resolution: workspace
 
 # Depends on every published member, because the suites here sweep across all of them.
 dependencies:
-  minted: '>=2.0.0 <4.0.0'
+  minted: ^3.0.0
   minted_chronology: ^1.0.0
   minted_contact: ^1.0.0
   minted_finance: ^1.0.0

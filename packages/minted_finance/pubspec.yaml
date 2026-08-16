@@ -27,7 +27,7 @@ dependencies:
   country_code: ^1.1.0
   iban_validator: ^1.0.2
   meta: ^1.19.0
-  minted: '>=2.0.0 <4.0.0'
+  minted: ^3.0.0
 
 dev_dependencies:
   checks: ^0.3.1
