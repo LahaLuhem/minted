@@ -2,9 +2,9 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digits.dart';
-import '../shared/check_digits/doubling_mod11_check_character.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
+import 'check_digits/doubling_mod11_check_character.dart';
 import 'failures/isni_failure.dart';
 
 /// An ISNI (International Standard Name Identifier): validated for the sixteen-character length,

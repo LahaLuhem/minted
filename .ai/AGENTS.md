@@ -58,36 +58,32 @@ minted/
 │       │   └── failures/            GtinFailure and its variants
 │       ├── contact/                 Email, PhoneNumber
 │       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
-│       ├── finance/                 Iban, Bic (+ CreditCardNumber, … as they land)
-│       │   └── failures/            IbanFailure, BicFailure and their variants
+│       ├── finance/                 Iban, Bic, Isin, PaymentCardNumber
+│       │   ├── failures/            IbanFailure, BicFailure and their variants
+│       │   ├── check_digits/        iban_check_digits.dart — ISO 13616 mod-97-10
+│       │   ├── encoding/            alphanumeric_values.dart — ASCII '0'-'Z' ↔ 0-35
+│       │   └── standards/           iso_country_code.dart — ISO 3166-1, borrowed from country_code
+│       │                            (a sector's own helpers sit beside its types, in the same
+│       │                            job-named subfolders shared/ uses; chronology/, identifiers/
+│       │                            and network/ carry theirs the same way)
 │       ├── geography/               GeoCoordinate
 │       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
 │       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (pure ranges)
 │       ├── …                        New type → its domain-sector dir; one file per type
-│       └── shared/                    The one non-domain dir; everything else above is a sector
+│       └── shared/                    Cross-sector only; everything else above is a sector
 │           ├── outcomes/             What a parse hands back, and the only public part of shared/
 │           │   ├── parse_outcome.dart          ParseOutcome + ParseSuccess / ParseFailure
 │           │   ├── minted_failure.dart         The MintedFailure supertype
-│           │   └── minted_format_exception.dart   Typed FormatException (see APPENDIX)
+│           │   └── minted_format_error.dart    Typed Error, raised only by getOrThrow (see APPENDIX)
 │           ├── encoding/             Characters ↔ numbers, bytes, bits
 │           │   ├── digit_values.dart           ASCII '0'-'9' ↔ 0-9, both directions
-│           │   ├── alphanumeric_values.dart    ASCII '0'-'Z' ↔ 0-35, for mod-97 and ISIN's Luhn
-│           │   ├── hex_bytes.dart              Hex text ↔ bytes, both directions
-│           │   └── octet_bits.dart             The 8 that IpAddress and Cidr both count in
+│           │   └── hex_bytes.dart              Hex text ↔ bytes, both directions
 │           ├── normalisation/        Canonical form in, canonical form out
-│           │   ├── normalisation.dart          Separator patterns, compaction, the pad characters
-│           │   └── iso_date_format.dart        YYYY-MM-DD rendering, shared with DateFailure
-│           ├── standards/            Fixed data a standard defines, not a registry
-│           │   ├── isbn_prefixes.dart          Bookland 978/979 + the carved-out ISMN range
-│           │   └── iso_country_code.dart       ISO 3166-1 alpha-2 lookup, borrowed from the
-│           │                                   phone engine so no country table is carried
+│           │   └── normalisation.dart          Separator patterns, compaction, the pad characters
 │           └── check_digits/         One file per algorithm, all private
-│               ├── doubling_mod11_check_character.dart  ISO 7064 MOD 11-2: ISNI
 │               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
-│               ├── iban_check_digits.dart     ISO 13616 mod-97-10
-│               ├── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
-│               └── mod11_check_character.dart Weighted mod-11: ISBN-10 and ISSN
+│               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
@@ -110,11 +106,19 @@ because `minted.dart` re-exports every type. `test/` mirrors this layout.
 
 **Every top-level dir under `lib/src/` is a domain sector, except `shared/`.** That is the whole
 rule, so a second non-domain dir does not get added at that level: a sibling `contract/` would read
-as a sector (and sit one letter from `contact/`). Anything cross-cutting goes in a *subfolder* of
-`shared/` instead, grouped by job: `outcomes/` (the only public part, what a parse hands back),
-`encoding/` (characters to numbers, bytes, bits), `normalisation/`, `standards/` (fixed data a
-standard defines), `check_digits/` (one file per algorithm). Keeping them under one root is also
-what lets `conformance_test.dart` keep excluding them by the `shared` path segment alone.
+as a sector (and sit one letter from `contact/`). Internals go in a *subfolder* named for the job:
+`outcomes/` (the only public part, what a parse hands back), `encoding/` (characters to numbers,
+bytes, bits), `normalisation/`, `standards/` (fixed data a standard defines), `check_digits/` (one
+file per algorithm).
+
+**Which root that subfolder hangs off is decided by how many sectors use it.** Two or more, it goes
+under `shared/`; exactly one, it sits inside that sector under the same job name.
+`luhn_check_digit.dart` is `shared/check_digits/` because finance and identifiers both run it;
+`iban_check_digits.dart` is `finance/check_digits/` because only `Iban` does. That keeps `shared/`
+to what is genuinely cross-sector, which is what the v3 package split leaves behind as core while
+each sector's own helpers travel into its package. `conformance_test.dart` still excludes `shared/`
+and `failures/` by path segment; a sector's helper subfolders are walked but declare no types, so
+nothing in them is checked either way.
 
 **A *constraint type* is a constrained number with no standard text form**, so it declares `tryFrom`
 and neither parse door. Usually a range; `Percentage` constrains the *unit* instead and bounds
@@ -129,11 +133,14 @@ file per type (`finance/failures/iban_failure.dart` holds `IbanFailure` and its 
 vocabularies grow to rival the types themselves, and the split on disk is what lets
 `conformance_test.dart` tell a value type from a failure by path rather than by inferring it from
 the AST. No `part` / `part of`: sealed variants only have to share a *file*, so a plain import
-suffices, and anything a failure needs from its value type belongs in `shared/` instead (which is
-why [`iso_date_format.dart`](../lib/src/shared/normalisation/iso_date_format.dart) exists).
+suffices, and anything a failure needs from its value type belongs in a helper subfolder instead
+(which is why
+[`iso_date_format.dart`](../lib/src/chronology/normalisation/iso_date_format.dart) exists, in
+`chronology/` because only that sector uses it).
 
-**Check-digit algorithms get one file per *algorithm*** under `shared/check_digits/`, and reach what
-they share (`../encoding/digit_values.dart`, ASCII decimal decoding) by plain import, never `part`.
+**Check-digit algorithms get one file per *algorithm***, in the `check_digits/` of whichever root
+the rule above picks, and reach what they share (`shared/encoding/digit_values.dart`, ASCII decimal
+decoding) by plain import, never `part`.
 That file sits in `shared/encoding/` rather than inside `check_digits/` because it was never
 check-digit-specific:
 `Digits` decodes with it too, and once a second caller appeared from outside the directory, keeping
@@ -144,10 +151,11 @@ libraries is the whole point: Dart privacy is library-scoped, so parts would lea
 across every algorithm, and mod-97's modulus of 97 has no business being visible to the next one.
 Each file keeps its own constants and its own character map private to itself.
 
-**A constant that two files both need goes in `shared/`, but only when it is the same *concept*.**
-`cosmeticSeparators` was five identical copies of one normalisation rule, and `ismnRange` was
-duplicated between `Isbn` and its own failure (a failure may not import its value type, so `shared/`
-is the only place it can live). Coincidental equality is not duplication and must stay put: `Iban`
+**A constant that two files both need goes in a helper subfolder, but only when it is the same
+*concept*.** `cosmeticSeparators` was five identical copies of one normalisation rule, and
+`ismnRange` was duplicated between `Isbn` and its own failure (a failure may not import its value
+type, so a subfolder is the only place it can live: `identifiers/standards/`, since no other sector
+reads it). Coincidental equality is not duplication and must stay put: `Iban`
 and `Issn` both have a `_groupSize` of 4, but IBAN groups repeatedly every four where ISSN splits
 once after four, and two of the check-digit moduli are both 10 for unrelated standards. Hoisting
 those would couple facts that are free to move independently. Sharing a top-level constant also

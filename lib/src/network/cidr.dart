@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
-import '../shared/encoding/octet_bits.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
+import 'encoding/octet_bits.dart';
 import 'failures/cidr_failure.dart';
 import 'ip_address.dart';
 

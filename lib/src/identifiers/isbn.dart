@@ -4,12 +4,12 @@
 import '../numerics/digit.dart';
 import '../numerics/digits.dart';
 import '../shared/check_digits/gs1_check_digit.dart';
-import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
-import '../shared/standards/isbn_prefixes.dart';
+import 'check_digits/mod11_check_character.dart';
 import 'failures/isbn_failure.dart';
+import 'standards/isbn_prefixes.dart';
 
 /// An ISBN (International Standard Book Number): validated for length, prefix, and the ISO 2108
 /// check digit, mod-11 over the ten-digit form and GS1 mod-10 over the thirteen-digit one.

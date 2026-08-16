@@ -1,9 +1,9 @@
 import 'package:meta/meta.dart';
 
-import '../shared/normalisation/iso_date_format.dart';
 import '../shared/outcomes/parse_outcome.dart';
 import 'failures/date_failure.dart';
 import 'month.dart';
+import 'normalisation/iso_date_format.dart';
 import 'weekday.dart';
 
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.

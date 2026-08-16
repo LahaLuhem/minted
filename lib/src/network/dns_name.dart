@@ -1,9 +1,9 @@
 import 'package:collection/collection.dart';
 
 import '../shared/outcomes/parse_outcome.dart';
-import '../shared/standards/dns_names.dart';
 import 'failures/dns_name_failure.dart';
 import 'hostname.dart';
+import 'standards/dns_names.dart';
 
 /// A DNS name: the permissive counterpart to [Hostname], e.g. `_dmarc.example.com`.
 /// Standards: [RFC 2181 §11](https://www.rfc-editor.org/rfc/rfc2181#section-11) for the syntax,

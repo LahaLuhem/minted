@@ -102,8 +102,9 @@ final cc = s.substring(0, 2);
   descriptive identifier: `Iban` length bounds, the Luhn radix, ISO table sizes, and so on.
 - **Keep a type's own constants on that type.** A check-digit modulus or a fixed field width
   belongs as a `static const` on the type that uses it, close to where it is read. Genuinely
-  cross-cutting constants (shared radices, a shared alphabet) go under `lib/src/shared/`. Before
-  introducing a new constant, check whether a shared one already exists.
+  cross-sector constants (shared radices, a shared alphabet) go under `lib/src/shared/`; one that
+  only a single sector reads goes in that sector's own helper subfolder instead (AGENTS.md, repo
+  layout). Before introducing a new constant, check whether a shared one already exists.
 
 ---
 

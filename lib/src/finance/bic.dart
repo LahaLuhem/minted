@@ -3,8 +3,8 @@
 
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
-import '../shared/standards/iso_country_code.dart';
 import 'failures/bic_failure.dart';
+import 'standards/iso_country_code.dart';
 
 /// A BIC, better known as a SWIFT code: validated for structure and for a real ISO 3166-1 country.
 /// Standard: [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362).
