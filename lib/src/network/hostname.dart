@@ -5,8 +5,8 @@ import 'package:collection/collection.dart';
 
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
-import '../shared/standards/dns_names.dart';
 import 'failures/hostname_failure.dart';
+import 'standards/dns_names.dart';
 
 /// A hostname: the dot-separated name of a host on a network, e.g. `www.example.com`.
 /// Standards: [RFC 1123 §2.1](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) for the grammar,

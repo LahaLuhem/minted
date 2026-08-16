@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 
-import '../encoding/digit_values.dart';
+import '../../shared/encoding/digit_values.dart';
 
 const _modulus = 11;
 const _weightAboveLength = 1; // the leading digit counts for one more than the body is long

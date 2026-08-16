@@ -2,9 +2,9 @@
 // ignore_for_file: avoid-substring
 
 import '../numerics/digits.dart';
-import '../shared/check_digits/mod11_check_character.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
+import 'check_digits/mod11_check_character.dart';
 import 'failures/issn_failure.dart';
 
 /// An ISSN (International Standard Serial Number): validated for characters, the eight-character

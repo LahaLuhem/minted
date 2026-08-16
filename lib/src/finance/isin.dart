@@ -3,12 +3,12 @@
 
 import '../numerics/digit.dart';
 import '../shared/check_digits/luhn_check_digit.dart';
-import '../shared/encoding/alphanumeric_values.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
-import '../shared/standards/iso_country_code.dart';
+import 'encoding/alphanumeric_values.dart';
 import 'failures/isin_failure.dart';
+import 'standards/iso_country_code.dart';
 
 /// An ISIN (International Securities Identification Number): validated for the twelve-character
 /// length, the `A-Z0-9` charset, a two-letter prefix, and the ISO 6166 check digit.

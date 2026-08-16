@@ -1,4 +1,4 @@
-import 'normalisation.dart';
+import '../../shared/normalisation/normalisation.dart';
 
 const _yearWidth = 4;
 const _fieldWidth = 2;

@@ -1225,7 +1225,7 @@ constructs directly, its input being already normalised and strictly inside thes
 `tryToHostname` is a parse. Both sit on `DnsName` because `Hostname` shipped first and stays unaware
 of it, the same call [`Probability`](#probability-constraint-type) made about `Percentage`.
 
-**The shared DNS rules moved to `shared/standards/dns_names.dart`** when this type landed. The
+**The shared DNS rules moved to `network/standards/dns_names.dart`** when this type landed. The
 63/253 limits, the root-dot fold and the ASCII gate were about to exist twice, and the strict and
 permissive types drifting on a limit is the failure that file guards against.
 
