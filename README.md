@@ -21,9 +21,14 @@ that came through it is well-formed by construction.
 | [`minted_identifiers`](./packages/minted_identifiers) | `Uuid`, `Isbn`, `Issn`, `Isni`, `Imei`, `Gtin` | not yet published |
 | [`minted_network`](./packages/minted_network) | `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port` | not yet published |
 
-> **The siblings are scaffolds.** Every type still ships in `minted` today; the packages exist so
-> the workspace tooling and release pipeline are proven before the types move at 3.0.0. There is
-> also a private `minted_conformance` member holding the cross-package suites, which never ships.
+Take only the domains you use: nothing drags in another domain's engine. A `minted_chronology`
+consumer resolves `collection` and `meta`; the phone engine arrives only if you ask for
+`minted_contact`. There is also a private `minted_conformance` member holding the suites that sweep
+across packages, which never ships.
+
+> **The siblings are not on pub.dev yet.** They publish alongside `minted` 3.0.0, which is the
+> release that removes these types from `minted` itself. Until then, `minted` 2.x still carries
+> everything.
 
 **[`packages/minted/README.md`](./packages/minted/README.md) is the documentation you actually
 want**: the pub.dev landing page, with the type catalogue and usage guide. This file is the map.

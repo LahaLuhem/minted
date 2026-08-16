@@ -66,36 +66,25 @@ minted/                              Workspace root
 ├── context7.json                    Doc-indexer config for context7.com
 ├── .ai/                             This file + CLAUDE.md (symlinked to repo root)
 └── packages/                        One directory per package
-    ├── minted/                      Core, and still every type until the v3 split moves them
-    ├── minted_chronology/           Scaffolded: pubspec + empty library, types arrive at 3.0.0
-    ├── minted_conformance/          Private (publish_to: none); cross-package suites live here
-    ├── minted_contact/              Scaffolded
-    ├── minted_finance/              Scaffolded
-    ├── minted_geography/            Scaffolded
-    ├── minted_identifiers/          Scaffolded
-    └── minted_network/              Scaffolded
+    ├── minted/                      Core: outcomes, numerics, quantities. Deps: collection, meta
+    ├── minted_chronology/           Date, Month, Weekday, Iso8601Duration
+    ├── minted_conformance/          Private (publish_to: none); the cross-package suites
+    ├── minted_contact/              Email, PhoneNumber (+ email_validator, phone_numbers_parser)
+    ├── minted_finance/              Iban, Bic, Isin, PaymentCardNumber (+ iban_validator, country_code)
+    ├── minted_geography/            GeoCoordinate
+    ├── minted_identifiers/          Uuid, Isbn, Issn, Isni, Imei, Gtin
+    └── minted_network/              IpAddress, Cidr, Hostname, DnsName, MacAddress, Port (+ ipaddr)
 ```
 
 ```text
-packages/minted/                     The published package
+packages/minted/                     Core. A sibling has the same shape, minus shared/
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
+│   ├── internal.dart                Cross-package plumbing for the siblings. NOT public API
 │   └── src/
-│       ├── contact/                 Email, PhoneNumber
-│       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
-│       ├── finance/                 Iban, Bic, Isin, PaymentCardNumber
-│       │   ├── failures/            IbanFailure, BicFailure and their variants
-│       │   ├── check_digits/        iban_check_digits.dart — ISO 13616 mod-97-10
-│       │   ├── encoding/            alphanumeric_values.dart — ASCII '0'-'Z' ↔ 0-35
-│       │   └── standards/           iso_country_code.dart — ISO 3166-1, borrowed from country_code
-│       │                            (helpers sit beside their types under the same job names
-│       │                            shared/ uses; chronology/, identifiers/, network/ likewise)
-│       ├── geography/               GeoCoordinate
-│       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
 │       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (pure ranges)
-│       ├── …                        New type → its domain-sector dir; one file per type
-│       └── shared/                    Cross-sector only; everything else above is a sector
+│       └── shared/                    Cross-package only; a sibling's own helpers travel with it
 │           ├── outcomes/             What a parse hands back, and the only public part of shared/
 │           │   ├── parse_outcome.dart          ParseOutcome + ParseSuccess / ParseFailure
 │           │   ├── minted_failure.dart         The MintedFailure supertype
@@ -108,6 +97,7 @@ packages/minted/                     The published package
 │           └── check_digits/         One file per algorithm, all private
 │               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10: finance + identifiers
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
+│   └── support/                     bdd.dart et al; each package carries its own copy
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
 ├── pubspec.yaml                     Deps + cider config + topics + `resolution: workspace`

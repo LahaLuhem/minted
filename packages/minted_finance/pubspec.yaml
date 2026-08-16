@@ -19,7 +19,19 @@ environment:
 # Resolved as part of the workspace rooted two levels up.
 resolution: workspace
 
-# Dependencies arrive with the types, so the package never declares one it does not use.
+# `minted` spans two majors on purpose: core is still 2.0.0 in the tree and only
+# becomes 3.0.0 when `scripts/release.sh major` runs, since cider bumps from the
+# declared version. TIGHTEN TO ^3.0.0 BEFORE PUBLISHING THIS PACKAGE.
+dependencies:
+  collection: ^1.19.1
+  country_code: ^1.1.0
+  iban_validator: ^1.0.2
+  meta: ^1.19.0
+  minted: '>=2.0.0 <4.0.0'
+
+dev_dependencies:
+  checks: ^0.3.1
+  test: ^1.31.2
 
 # Tags carry the package prefix, so the emitted CHANGELOG links do too.
 cider:
