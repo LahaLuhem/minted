@@ -1,11 +1,18 @@
-import 'package:collection/collection.dart';
-import 'package:phone_numbers_parser/phone_numbers_parser.dart';
+import 'package:country_code/country_code.dart';
 
-/// The ISO 3166-1 alpha-2 country [alpha2Code] names, case-insensitively, or `null` for none.
+/// Whether [alpha2Code] names a country, case-insensitively.
 ///
-/// Borrowed from `phone_numbers_parser` rather than carrying a table: 245 codes, `XK` included.
-IsoCode? isoCountryCodeFor(String alpha2Code) {
+/// Borrowed from `country_code` rather than carrying a table: a list owned here would ship a clock
+/// (`APPENDIX.md#registry-data-ships-a-clock`). Matched on alpha-2 alone, so a three-letter code is
+/// not a country here even though `country_code` resolves one.
+///
+/// [_kosovo] is the single addition, and the reason this is not a bare delegation.
+bool isIsoCountryCode(String alpha2Code) {
   final upperCode = alpha2Code.toUpperCase();
 
-  return IsoCode.values.firstWhereOrNull((code) => code.name == upperCode);
+  return upperCode == _kosovo || CountryCode.values.any((code) => code.alpha2 == upperCode);
 }
+
+/// ISO 3166 assigns Kosovo no code, but SWIFT's BIC and IBAN registries both use `XK`, so the
+/// registry this validates against says yes where ISO says nothing.
+const _kosovo = 'XK';

@@ -56,7 +56,7 @@ extension type const Isin._(String value) {
 
   /// Whether [prefix] names a real ISO 3166-1 country. `false` for `XS` and `EU`, which are valid
   /// ISINs all the same.
-  bool get hasCountryPrefix => isoCountryCodeFor(prefix) != null;
+  bool get hasCountryPrefix => isIsoCountryCode(prefix);
 
   /// The nine-character National Securities Identifying Number, which for a US or Canadian security
   /// is its CUSIP.
