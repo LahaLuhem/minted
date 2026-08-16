@@ -46,7 +46,6 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
 - [What's in the box](#whats-in-the-box)
     * [Contact](#contact)
     * [Finance](#finance)
-    * [Commerce](#commerce)
     * [Chronology](#chronology)
     * [Identifiers](#identifiers)
     * [Geography](#geography)
@@ -101,12 +100,6 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed                       | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
 | `Isin`              | a securities ID: charset, two-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html)                          |
 
-### Commerce
-
-| Type   | What it guarantees                                                                 | Standard                                               |
-|--------|------------------------------------------------------------------------------------|--------------------------------------------------------|
-| `Gtin` | digits, one of the four GS1 lengths, and the mod-10 check digit; folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin) |
-
 ### Chronology
 
 | Type              | What it guarantees                                                       | Standard                                           |
@@ -125,6 +118,7 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Imei` | fifteen digits and the Luhn check; TAC and serial read back                        | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
 | `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form            | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
 | `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/)                                       |
+| `Gtin` | digits, one of the four GS1 lengths, and the mod-10 check digit; folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin)                   |
 
 ### Geography
 

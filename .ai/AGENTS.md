@@ -74,8 +74,6 @@ packages/minted/                     The published package
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   └── src/
-│       ├── commerce/                Gtin
-│       │   └── failures/            GtinFailure and its variants
 │       ├── contact/                 Email, PhoneNumber
 │       │   └── failures/            EmailFailure, PhoneNumberFailure; one file per type
 │       ├── finance/                 Iban, Bic, Isin, PaymentCardNumber
@@ -101,8 +99,7 @@ packages/minted/                     The published package
 │           ├── normalisation/        Canonical form in, canonical form out
 │           │   └── normalisation.dart          Separator patterns, compaction, the pad characters
 │           └── check_digits/         One file per algorithm, all private
-│               ├── gs1_check_digit.dart       GS1 mod-10, any length: GTIN and ISBN-13
-│               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10
+│               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10: finance + identifiers
 ├── test/                            `dart test` units; mirrors lib/src/, uses official vectors
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
@@ -126,7 +123,7 @@ whether it belongs at the root or per-package. They live under the `melos:` key 
 `pubspec.yaml`; `dart run melos run` lists them. Script runner only: versioning and publishing stay
 with cider and `scripts/release.sh`.
 
-Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `commerce/`, …), with
+Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `network/`, …), with
 numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
 sector earns its own folder once it has a couple of members; the public API stays flat regardless,
 because `minted.dart` re-exports every type. `test/` mirrors this layout.

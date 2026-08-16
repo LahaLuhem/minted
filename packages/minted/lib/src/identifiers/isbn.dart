@@ -3,10 +3,10 @@
 
 import '../numerics/digit.dart';
 import '../numerics/digits.dart';
-import '../shared/check_digits/gs1_check_digit.dart';
 import '../shared/encoding/digit_values.dart';
 import '../shared/normalisation/normalisation.dart';
 import '../shared/outcomes/parse_outcome.dart';
+import 'check_digits/gs1_check_digit.dart';
 import 'check_digits/mod11_check_character.dart';
 import 'failures/isbn_failure.dart';
 import 'standards/isbn_prefixes.dart';
