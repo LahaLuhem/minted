@@ -17,33 +17,64 @@ permissions:
   contents: read
 
 jobs:
+  # The per-package jobs fan out over this, so adding a package needs no edit here. Private
+  # members are excluded by the same `publish_to: none` test release.sh uses: they have no
+  # pub.dev surface to check.
+  members:
+    name: List workspace members
+    runs-on: ubuntu-latest
+    outputs:
+      publishable: ${{ steps.list.outputs.publishable }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: list
+        run: |
+          publishable="$(for dir in packages/*/; do
+            grep -qE '^publish_to: *none' "${dir}pubspec.yaml" && continue
+            printf '%s\n' "${dir%/}"
+          done | jq -Rsc 'split("\n") | map(select(length > 0))')"
+          if [ "$publishable" = '[]' ]; then
+            echo '::error::No publishable package found under packages/.'
+            exit 1
+          fi
+          echo "publishable=$publishable" >> "$GITHUB_OUTPUT"
+
   analyze:
     name: Dart analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-dart
-      # `.` covers lib, test, and the single-file example — all pure Dart, all
-      # resolvable from the root package, so no `--no-example` scoping needed.
+      # Not per-package: one root pass covers every member's lib, test and example.
       - run: dart --no-version-check analyze .
 
   dartdoc:
-    name: Dartdoc
+    name: Dartdoc (${{ matrix.package }})
+    needs: members
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.members.outputs.publishable) }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-dart
       # `dart doc` exits 0 even when it warns, so the summary line is the gate.
       - name: Generate docs, failing on any warning
-        working-directory: packages/minted
+        working-directory: ${{ matrix.package }}
         run: |
           set -o pipefail
           dart doc --dry-run 2>&1 | tee dartdoc.log
           grep -qE 'Found 0 warnings and 0 errors' dartdoc.log
 
   deps:
-    name: Dependency validator
+    name: Dependency validator (${{ matrix.package }})
+    needs: members
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.members.outputs.publishable) }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-dart
@@ -54,7 +85,7 @@ jobs:
             https://github.com/Workiva/dependency_validator \
             --git-ref dependabot/pub/major-0f75c2771b
       # Per-package: it reads one pubspec and the imports resolved against it.
-      - working-directory: packages/minted
+      - working-directory: ${{ matrix.package }}
         run: dart pub global run dependency_validator
 
   test:
@@ -64,27 +95,25 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-dart
       - run: dart pub global activate coverage
-      - working-directory: packages/minted
-        run: dart test --coverage=coverage
-      - name: Format coverage as lcov
-        # `--check-ignore` makes `format_coverage` honour the
-        # `// coverage:ignore-line`, `ignore-start`/`ignore-end`, and
-        # `ignore-file` pragmas in source files. Without it, the directives
-        # are silently inert.
-        #
-        # `ignore-line` applies to the line the comment sits ON, so it only
-        # works as a trailing comment. To exempt a line too long to carry one,
-        # wrap it in `ignore-start`/`ignore-end` — a preceding `ignore-line`
-        # looks right and does nothing.
-        working-directory: packages/minted
+      # One job, not a matrix: the gate below wants a single figure across the workspace, and
+      # melos already fans out. lcov records concatenate, so the merge is a `cat`.
+      #
+      # `--check-ignore` (inside the melos script) makes `format_coverage` honour the
+      # `// coverage:ignore-line`, `ignore-start`/`ignore-end`, and `ignore-file` pragmas in
+      # source files. Without it, the directives are silently inert.
+      #
+      # `ignore-line` applies to the line the comment sits ON, so it only works as a trailing
+      # comment. To exempt a line too long to carry one, wrap it in `ignore-start`/`ignore-end`;
+      # a preceding `ignore-line` looks right and does nothing.
+      - name: Test every member with coverage
+        run: dart run melos run coverage
+      # Output name differs from the inputs on purpose: `> lcov.info` would truncate a file the
+      # same pipeline is searching for.
+      - name: Merge each member's lcov
         run: |
-          dart pub global run coverage:format_coverage \
-            --lcov \
-            --check-ignore \
-            --in=coverage \
-            --report-on=lib \
-            --packages=../../.dart_tool/package_config.json \
-            -o coverage/lcov.info
+          find packages -name lcov.info -path '*/coverage/*' -print0 |
+            sort -z | xargs -0 cat > merged-lcov.info
+          test -s merged-lcov.info
       # Upload BEFORE the gate so the coverage badge updates and PR comments
       # land even when the gate would fail. Coveralls auto-routes based on
       # event context (PR vs. push to main).
@@ -98,10 +127,10 @@ jobs:
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: packages/minted/coverage/lcov.info
+          file: merged-lcov.info
           format: lcov
       - name: Enforce min coverage (95%)
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
-          path: packages/minted/coverage/lcov.info
+          path: merged-lcov.info
           min_coverage: 95

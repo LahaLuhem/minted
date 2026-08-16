@@ -3,12 +3,13 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+' # tag-pattern on pub.dev: '{{version}}'
+      # `<package>-<version>`, from scripts/release.sh. Each package sets the matching
+      # `<package>-{{version}}` pattern on its pub.dev admin page.
+      - '*-[0-9]+.[0-9]+.[0-9]+'
+      - '*-[0-9]+.[0-9]+.[0-9]+-*' # pre-releases
 
-# Inlined rather than reusing dart-lang/setup-dart/.github/workflows/publish.yml@v1
-# so the publish steps stay visible and easy to tweak. The example is a single
-# .dart file with no pubspec of its own, so a plain `dart pub get` at the root
-# resolves everything and leaves no example lockfile for the dry-run to trip on.
+# Inlined rather than reusing dart-lang/setup-dart's publish.yml: the routing and guards below
+# don't fit its inputs.
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -16,12 +17,62 @@ jobs:
       id-token: write # OIDC auth to pub.dev (handled by dart-lang/setup-dart).
     steps:
       - uses: actions/checkout@v7
+
+      # Pub names cannot contain a hyphen, so the first one always separates package from version,
+      # `minted-3.0.0-beta.1` included.
+      - name: Resolve package and version from the tag
+        id: tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          pkg="${TAG%%-*}"
+          version="${TAG#*-}"
+          dir="packages/${pkg}"
+          if [ ! -f "${dir}/pubspec.yaml" ]; then
+            echo "::error::Tag '$TAG' names package '$pkg', but $dir/pubspec.yaml does not exist."
+            exit 1
+          fi
+          # The tag triggers, the pubspec decides: a mismatch would ship the declared version
+          # under the wrong tag.
+          declared="$(awk '$1 == "version:" { print $2; exit }' "${dir}/pubspec.yaml")"
+          if [ "$declared" != "$version" ]; then
+            echo "::error::Tag '$TAG' wants $version but ${dir}/pubspec.yaml declares $declared."
+            exit 1
+          fi
+          {
+            echo "pkg=$pkg"
+            echo "version=$version"
+            echo "dir=$dir"
+          } >> "$GITHUB_OUTPUT"
+
+      # Makes re-runs and manual first publishes safe. pub.dev cannot configure automated
+      # publishing for a package that does not exist yet, so the first upload is done by hand.
+      - name: Skip if this version is already on pub.dev
+        id: published
+        env:
+          PKG: ${{ steps.tag.outputs.pkg }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          if curl -sSfL "https://pub.dev/api/packages/${PKG}" 2>/dev/null |
+              jq -e --arg v "$VERSION" '.versions[]? | select(.version == $v)' > /dev/null; then
+            echo "::notice::${PKG} ${VERSION} is already published; nothing to do."
+            echo 'skip=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'skip=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: dart-lang/setup-dart@v1
-      # One root resolution covers every member.
+        if: steps.published.outputs.skip == 'false'
+
+      # One resolution at the workspace root covers every member.
       - name: Install dependencies
+        if: steps.published.outputs.skip == 'false'
         run: dart pub get
-      # `-C` picks the member. Hard-coded until tag-driven routing arrives with the split.
+
       - name: Publish dry-run
-        run: dart pub -C packages/minted publish --dry-run
+        if: steps.published.outputs.skip == 'false'
+        run: dart pub -C "${{ steps.tag.outputs.dir }}" publish --dry-run
+
       - name: Publish to pub.dev
-        run: dart pub -C packages/minted publish --force
+        if: steps.published.outputs.skip == 'false'
+        run: dart pub -C "${{ steps.tag.outputs.dir }}" publish --force

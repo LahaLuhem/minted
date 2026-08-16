@@ -17,6 +17,7 @@ concurrency:
 # so the write token is not exposed to PR-controlled scripts.
 permissions:
   contents: write
+  pull-requests: read # Lists the merged PR's files, to route entries to the packages it touched.
 
 jobs:
   log:
@@ -56,7 +57,29 @@ jobs:
 
       - name: Skip (sem-skip)
         if: steps.sem.outputs.type == 'skip'
-        run: echo 'sem-skip applied — no changelog entry.'
+        run: echo 'sem-skip applied, no changelog entry.'
+
+      # A PR spanning two packages gets its title logged under each, so titles need to read
+      # sensibly in all of them. A root-only PR touches none and logs nothing.
+      - name: Resolve touched packages
+        id: touched
+        if: steps.sem.outputs.type != 'skip'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          dirs="$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate --jq '.[].filename' |
+            awk -F/ '$1 == "packages" && NF > 2 { print $1 "/" $2 }' | sort -u)"
+          if [ -z "$dirs" ]; then
+            echo "::notice::PR touched no package under packages/; no changelog entry."
+          fi
+          # Newline-delimited, so the append step can loop it.
+          {
+            echo 'dirs<<EOF'
+            echo "$dirs"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       # Mint a short-lived (~1 h) installation token for the GitHub App
       # configured to bypass main's ruleset. We can't use the default
@@ -67,13 +90,13 @@ jobs:
       # as the App.
       - uses: actions/create-github-app-token@v3
         id: app-token
-        if: steps.sem.outputs.type != 'skip'
+        if: steps.sem.outputs.type != 'skip' && steps.touched.outputs.dirs != ''
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v7
-        if: steps.sem.outputs.type != 'skip'
+        if: steps.sem.outputs.type != 'skip' && steps.touched.outputs.dirs != ''
         with:
           ref: main
           token: ${{ steps.app-token.outputs.token }}
@@ -82,22 +105,22 @@ jobs:
       # Skip the setup-dart composite (which runs `dart pub get`) for the
       # same reason repo.yml's format job does: ~10-30s faster per run.
       - uses: dart-lang/setup-dart@v1
-        if: steps.sem.outputs.type != 'skip'
+        if: steps.sem.outputs.type != 'skip' && steps.touched.outputs.dirs != ''
         with:
           sdk: stable
 
       - name: Activate cider
-        if: steps.sem.outputs.type != 'skip'
+        if: steps.sem.outputs.type != 'skip' && steps.touched.outputs.dirs != ''
         run: dart pub global activate cider
 
-      # cider reads the pubspec and CHANGELOG it stands in, so run inside the member; git still
-      # resolves the repo from here. Routing by the PR's touched paths comes with the split.
-      - name: Append entry and push
-        if: steps.sem.outputs.type != 'skip'
-        working-directory: packages/minted
+      # cider reads the CHANGELOG it stands in, so it runs once per touched package; one commit
+      # covers them all.
+      - name: Append entries and push
+        if: steps.sem.outputs.type != 'skip' && steps.touched.outputs.dirs != ''
         env:
           TYPE: ${{ steps.sem.outputs.type }}
           TITLE: ${{ github.event.pull_request.title }}
+          DIRS: ${{ steps.touched.outputs.dirs }}
         run: |
           # The numeric prefix on the email is the bot's GitHub user ID
           # (stable across repos for the same App) — it's what links commits
@@ -106,8 +129,12 @@ jobs:
           git config user.name  '${{ steps.app-token.outputs.app-slug }}[bot]'
           email='287673903+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
           git config user.email "$email"
-          dart pub global run cider log "$TYPE" "$TITLE"
-          git add CHANGELOG.md
+          while IFS= read -r dir; do
+            [ -n "$dir" ] || continue
+            echo "Logging '$TITLE' to ${dir}/CHANGELOG.md"
+            (cd "$dir" && dart pub global run cider log "$TYPE" "$TITLE")
+            git add "${dir}/CHANGELOG.md"
+          done <<< "$DIRS"
           # [skip ci] now matters: App-token pushes DO trigger workflows
           # (unlike GITHUB_TOKEN pushes, which don't). The marker prevents
           # this commit from re-triggering the package CI on main.
