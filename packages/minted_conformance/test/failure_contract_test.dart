@@ -2,6 +2,8 @@
 // the twin identical to the original, so `==` would ride on identity instead of doing any work.
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:io';
+
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 import 'package:minted_chronology/minted_chronology.dart';
@@ -328,6 +330,31 @@ void main() {
         typeName: 'Hostname',
         message: 'ends in an all-numeric label, so this is an address, not a hostname',
       ),
+      'DnsName: non-ASCII names the remedy rather than the rule': (
+        failure: DnsNameNotAscii(),
+        typeName: 'DnsName',
+        message: 'contains non-ASCII, so punycode it to an A-label first',
+      ),
+      'DnsName: a bad character echoes itself, underscore allowed unlike Hostname': (
+        failure: DnsNameInvalidCharacters('%'),
+        typeName: 'DnsName',
+        message: '"%" is not a letter, digit, hyphen or underscore',
+      ),
+      'DnsName: an empty label says which way it happened': (
+        failure: DnsNameLabelEmpty(),
+        typeName: 'DnsName',
+        message: 'has an empty label, so two dots met or one sits at an edge',
+      ),
+      'DnsName: a label past its own limit': (
+        failure: DnsNameLabelTooLong(64),
+        typeName: 'DnsName',
+        message: 'expected at most 63 characters per label, got 64',
+      ),
+      'DnsName: the whole name past its limit': (
+        failure: DnsNameTooLong(255),
+        typeName: 'DnsName',
+        message: 'expected at most 253 characters, got 255',
+      ),
       'IpAddress: unrecognisable text': (
         failure: IpAddressMalformed(),
         typeName: 'IpAddress',
@@ -548,6 +575,17 @@ void main() {
           failure: HostnameNumericTld(),
           rendered: 'HostnameNumericTld()',
         ),
+        'a non-ASCII DNS name': (failure: DnsNameNotAscii(), rendered: 'DnsNameNotAscii()'),
+        'a DNS name echoing a character': (
+          failure: DnsNameInvalidCharacters('%'),
+          rendered: 'DnsNameInvalidCharacters(%)',
+        ),
+        'an empty DNS label': (failure: DnsNameLabelEmpty(), rendered: 'DnsNameLabelEmpty()'),
+        'an overlong DNS label': (
+          failure: DnsNameLabelTooLong(64),
+          rendered: 'DnsNameLabelTooLong(64)',
+        ),
+        'an overlong DNS name': (failure: DnsNameTooLong(255), rendered: 'DnsNameTooLong(255)'),
         'a malformed address': (failure: IpAddressMalformed(), rendered: 'IpAddressMalformed()'),
         'a leading zero echoes the part': (
           failure: IpAddressLeadingZero('010'),
@@ -905,6 +943,33 @@ void main() {
           twin: CidrHostBitsSet('192.168.1.0/24'),
           other: CidrHostBitsSet('192.168.1.0/25'),
         ),
+        // One row per DnsName variant: `hashCode` is only exercised on the left of these pairs.
+        'a non-ASCII DNS name': (
+          failure: DnsNameNotAscii(),
+          twin: DnsNameNotAscii(),
+          other: DnsNameLabelEmpty(),
+        ),
+        'a DNS character differs by the character': (
+          failure: DnsNameInvalidCharacters('%'),
+          twin: DnsNameInvalidCharacters('%'),
+          other: DnsNameInvalidCharacters('&'),
+        ),
+        'an empty DNS label': (
+          failure: DnsNameLabelEmpty(),
+          twin: DnsNameLabelEmpty(),
+          other: DnsNameNotAscii(),
+        ),
+        'DNS label length differs by the length': (
+          failure: DnsNameLabelTooLong(64),
+          twin: DnsNameLabelTooLong(64),
+          other: DnsNameLabelTooLong(65),
+        ),
+        // Same number, different variant: the type has to be part of the comparison.
+        'DNS name length is not label length': (
+          failure: DnsNameTooLong(255),
+          twin: DnsNameTooLong(255),
+          other: DnsNameLabelTooLong(255),
+        ),
       },
       outline: (example) {
         check(example.failure).equals(example.twin);
@@ -912,5 +977,33 @@ void main() {
         check(example.failure == example.other).isFalse();
       },
     );
+
+    // The tables above are hand-written, so a new vocabulary is only covered if someone remembers
+    // to add it. DnsName's five variants went uncovered from 1.1.0 until this check existed.
+    scenario('every failure variant declared in the family appears above', () {
+      final suite = File('test/failure_contract_test.dart').readAsStringSync();
+      final unnamed = _declaredVariants().where((variant) => !suite.contains(variant));
+
+      check(
+        unnamed,
+        because: 'each needs rows in the tables above, one per variant it declares',
+      ).isEmpty();
+    });
   });
 }
+
+/// Concrete failure variants across every package: the `final class` arms of a sealed vocabulary,
+/// and whole `enum` vocabularies. The sealed base itself is not a variant.
+Set<String> _declaredVariants() =>
+    Directory('..')
+        .listSync()
+        .whereType<Directory>()
+        .map((package) => Directory('${package.path}/lib/src/failures'))
+        .where((failures) => failures.existsSync())
+        .expand((failures) => failures.listSync())
+        .whereType<File>()
+        .expand((file) => _variant.allMatches(file.readAsStringSync()))
+        .map((match) => match.group(1)!)
+        .toSet();
+
+final _variant = RegExp(r'^(?:final class|enum) (\w+)', multiLine: true);
