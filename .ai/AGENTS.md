@@ -49,9 +49,8 @@ feature: identical method names and the same failure model across every type.
 
 ## Repo layout
 
-The repo is a [pub workspace](https://dart.dev/tools/pub/workspaces): one resolution, one root
-`pubspec.lock`, shared by every member. The root holds tooling, docs and CI and no Dart code of its
-own; each published package is a directory under `packages/`.
+A [pub workspace](https://dart.dev/tools/pub/workspaces): one resolution, one root `pubspec.lock`.
+The root holds tooling, docs and CI but no Dart code; each package is a directory under `packages/`.
 
 ```text
 minted/                              Workspace root
@@ -84,9 +83,8 @@ packages/minted/                     The published package
 │       │   ├── check_digits/        iban_check_digits.dart — ISO 13616 mod-97-10
 │       │   ├── encoding/            alphanumeric_values.dart — ASCII '0'-'Z' ↔ 0-35
 │       │   └── standards/           iso_country_code.dart — ISO 3166-1, borrowed from country_code
-│       │                            (a sector's own helpers sit beside its types, in the same
-│       │                            job-named subfolders shared/ uses; chronology/, identifiers/
-│       │                            and network/ carry theirs the same way)
+│       │                            (helpers sit beside their types under the same job names
+│       │                            shared/ uses; chronology/, identifiers/, network/ likewise)
 │       ├── geography/               GeoCoordinate
 │       │   └── failures/            GeoCoordinateFailure and its variants
 │       ├── numerics/                Digit, Digits (numeric building blocks)
@@ -123,13 +121,10 @@ test` does not: the root holds no `test/`, so run it in the package (`cd package
 that reads a single pubspec — `cider`, `dart pub publish`, `dependency_validator` — needs the member
 directory too, via `cd` or `dart pub -C packages/minted`.
 
-**Melos wraps that split, so prefer `dart run melos run <script>`** (`analyze`, `format`, `test`,
-`coverage`; `dart run melos run` on its own lists them). The scripts live under the `melos:` key of
-the root `pubspec.yaml` and each one already knows whether it belongs at the root or per-package.
-Melos is a script runner here and nothing else: `melos version` and `melos publish` are deliberately
-unused, because versioning and publishing belong to cider, `scripts/release.sh` and the OIDC tag
-workflow. `melos bootstrap` is not needed either, since pub workspaces do the package linking it
-used to.
+**Melos wraps that split, so prefer `dart run melos run <script>`** — each script already knows
+whether it belongs at the root or per-package. They live under the `melos:` key of the root
+`pubspec.yaml`; `dart run melos run` lists them. Script runner only: versioning and publishing stay
+with cider and `scripts/release.sh`.
 
 Types live under `lib/src/` grouped by domain sector (`finance/`, `contact/`, `commerce/`, …), with
 numeric building-block primitives under `numerics/` and cross-cutting internals under `shared/`. A
@@ -143,14 +138,12 @@ as a sector (and sit one letter from `contact/`). Internals go in a *subfolder* 
 bytes, bits), `normalisation/`, `standards/` (fixed data a standard defines), `check_digits/` (one
 file per algorithm).
 
-**Which root that subfolder hangs off is decided by how many sectors use it.** Two or more, it goes
-under `shared/`; exactly one, it sits inside that sector under the same job name.
-`luhn_check_digit.dart` is `shared/check_digits/` because finance and identifiers both run it;
-`iban_check_digits.dart` is `finance/check_digits/` because only `Iban` does. That keeps `shared/`
-to what is genuinely cross-sector, which is what the v3 package split leaves behind as core while
-each sector's own helpers travel into its package. `conformance_test.dart` still excludes `shared/`
-and `failures/` by path segment; a sector's helper subfolders are walked but declare no types, so
-nothing in them is checked either way.
+**Which root that subfolder hangs off depends on how many sectors use it.** Two or more, `shared/`;
+exactly one, inside that sector under the same job name. `luhn_check_digit.dart` is
+`shared/check_digits/` (finance and identifiers both run it); `iban_check_digits.dart` is
+`finance/check_digits/` (only `Iban` does). That keeps `shared/` to what is genuinely cross-sector,
+which is what the v3 split leaves behind as core. `conformance_test.dart` excludes `shared/` and
+`failures/` by path segment; helper subfolders are walked but declare no types, so nothing changes.
 
 **A *constraint type* is a constrained number with no standard text form**, so it declares `tryFrom`
 and neither parse door. Usually a range; `Percentage` constrains the *unit* instead and bounds

@@ -16,8 +16,7 @@ that came through it is well-formed by construction.
 | [`minted`](./packages/minted) | Every value type, and the `ParseOutcome` vocabulary they share | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted) |
 
 **[`packages/minted/README.md`](./packages/minted/README.md) is the documentation you actually
-want** — it is the pub.dev landing page, with the type catalogue and the usage guide. This file is
-just the map.
+want**: the pub.dev landing page, with the type catalogue and usage guide. This file is the map.
 
 ## Working in this repo
 
@@ -30,14 +29,12 @@ dart run melos run       # lists what you can run
 dart run melos run test  # every member's suite, fanned out
 ```
 
-[Melos](https://melos.invertase.dev) is the entrypoint so you don't have to remember which commands
-are workspace-wide and which are per-package: `analyze` and `format` run once from the root, `test`
-and `coverage` fan out over the members. It is a script runner here and nothing more, since releases
-go through `cider` and [`scripts/release.sh`](./scripts/README.md).
+[Melos](https://melos.invertase.dev) saves you remembering which commands are workspace-wide and
+which are per-package: `analyze` and `format` run once at the root, `test` and `coverage` fan out.
+Releases stay with [`scripts/release.sh`](./scripts/README.md).
 
-The plain commands still work if you prefer them. Just note that `analyze` and `format` want the
-root, while anything reading a single pubspec (`dart test`, `cider`, `dart pub publish`,
-`dependency_validator`) wants the member, via `cd packages/minted` or `dart pub -C packages/minted`.
+Plain commands work too, but mind the split: `analyze` and `format` want the root, while anything
+reading one pubspec (`dart test`, `cider`, `dart pub publish`) wants `packages/minted`.
 
 Contributor docs live at the root because they cover every package: [AGENTS.md](./AGENTS.md) for
 hard rules and repo layout, [CODESTYLE.md](./CODESTYLE.md) for style, and

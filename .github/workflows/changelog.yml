@@ -90,9 +90,8 @@ jobs:
         if: steps.sem.outputs.type != 'skip'
         run: dart pub global activate cider
 
-      # cider reads the pubspec and CHANGELOG of whatever directory it stands in, so this runs
-      # inside the member. `git` still resolves the repo from here. Hard-coded while `minted` is
-      # the only package; routing by the PR's touched paths arrives with the multi-package pipeline.
+      # cider reads the pubspec and CHANGELOG it stands in, so run inside the member; git still
+      # resolves the repo from here. Routing by the PR's touched paths comes with the split.
       - name: Append entry and push
         if: steps.sem.outputs.type != 'skip'
         working-directory: packages/minted

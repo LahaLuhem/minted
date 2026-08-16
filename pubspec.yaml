@@ -1,8 +1,5 @@
-# Workspace root, not a package anyone consumes. It exists so one `dart pub get` resolves every
-# member against a single root lockfile, and so tooling has one entry point.
-#
-# Members are listed rather than globbed (`packages/*` would work on SDK 3.11+): adding a package
-# should be a visible line in a diff, not an invisible consequence of creating a directory.
+# Workspace root: one `dart pub get` resolves every member against one lockfile. Never published.
+# Members are listed rather than globbed, so adding a package shows up in a diff.
 name: minted_workspace
 publish_to: none
 
@@ -15,32 +12,26 @@ workspace:
 dev_dependencies:
   melos: ^8.3.0
 
-# Melos is the script runner here, and only that. Versioning, changelogs, tags and publishing stay
-# with cider + scripts/release.sh + the OIDC tag workflow: `melos version` derives changelogs from
-# conventional commits and would overwrite the curated `## Unreleased` blocks, and `melos publish`
-# uses laptop credentials where the tag pipeline uses OIDC. Pub workspaces already do the package
-# linking `melos bootstrap` used to, so a plain `dart pub get` is still the setup step.
+# Script runner only. cider and scripts/release.sh own versioning and publishing, so `melos version`
+# and `melos publish` stay unused; workspaces do the linking, so `melos bootstrap` does too.
 melos:
   scripts:
     analyze:
-      description: Analyze every member in one pass, from the workspace root.
+      description: Every member in one pass, from the root.
       run: dart --no-version-check analyze .
 
     format:
-      description: Check formatting repo-wide, the same gate CI and release.sh apply.
+      description: Repo-wide format check, the gate CI applies.
       run: dart format --output=none --set-exit-if-changed .
 
     test:
-      description: Run each member's suite. The workspace root holds no test/ of its own.
+      description: Each member's suite; the root has none of its own.
       exec: dart test
       packageFilters:
         dirExists: test
 
     coverage:
-      description: >-
-        Tests plus an lcov per member, for checking the 95% gate before pushing. Needs
-        `dart pub global activate coverage` once, same as CI. CI additionally re-anchors the
-        SF: paths so Coveralls can resolve them, which is pointless locally.
+      description: Tests + an lcov per member. Needs `dart pub global activate coverage` once.
       exec:
         command: >-
           dart test --coverage=coverage &&

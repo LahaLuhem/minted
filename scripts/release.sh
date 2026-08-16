@@ -59,9 +59,8 @@ fi
 
 MAIN_BRANCH="main"
 
-# The workspace member being released. Hard-coded while `minted` is the only publishable package;
-# this is the seam the "pick a package with a populated ## Unreleased" prompt replaces, so
-# everything below reads paths through it rather than assuming the repo root.
+# The member being released. Hard-coded while `minted` is the only publishable package; this is the
+# seam the "pick a package with a populated ## Unreleased" prompt replaces.
 PACKAGE_DIR="packages/minted"
 
 # What a version must look like, for the pubspec read and for the cider guard.
@@ -183,9 +182,8 @@ if ! command -v cider >/dev/null 2>&1; then
     exit 1
 fi
 # Run it, not just resolve it: a stale snapshot makes `pub global run` rebuild and print resolution
-# chatter, so probing here fails fast and leaves the snapshot warm for the bump. Run from the
-# member: `cider version` reads the pubspec it stands in, and the workspace root carries no
-# `version:` field, so probing at the root fails on a null check rather than a missing cider.
+# chatter, so probing here fails fast and leaves the snapshot warm for the bump. From the member:
+# `cider version` reads the pubspec it stands in, and the root carries no `version:`.
 if ! cider_probe="$(cd "$PACKAGE_DIR" && cider version 2>&1)"; then
     err 'cider is installed but failed to run. Re-activate: dart pub global activate cider'
     exit 1
@@ -352,8 +350,7 @@ if ! dart --no-version-check analyze .; then
 fi
 
 step 'Preflight: dart test'
-# Format and analyze above run repo-wide from the root, which covers every member in one pass;
-# tests are per-package, since the workspace root holds no test/ of its own.
+# Per-package, unlike the repo-wide format and analyze above: the root holds no test/.
 if ! (cd "$PACKAGE_DIR" && dart test); then
     err 'Test suite failed.'
     exit 1
