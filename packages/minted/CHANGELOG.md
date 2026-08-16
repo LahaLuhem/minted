@@ -1,4 +1,4 @@
-## [Unreleased]
+## [3.0.0] - 2026-08-16
 ### Removed
 - \[#60\] Split minted into a pub workspace of domain packages
 
@@ -61,7 +61,7 @@
 - Digit
 - Digits
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted-2.0.0...minted-HEAD
+[3.0.0]: https://github.com/LahaLuhem/minted/compare/minted-2.0.0...minted-3.0.0
 [2.0.0]: https://github.com/LahaLuhem/minted/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/LahaLuhem/minted/compare/0.0.2...1.0.0
