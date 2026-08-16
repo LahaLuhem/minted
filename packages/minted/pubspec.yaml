@@ -49,7 +49,10 @@ dev_dependencies:
 
 
 
+# Tags carry the package prefix since the workspace split, so the emitted CHANGELOG links do too.
+# The first prefixed release has a dangling `from`: 2.0.0 and earlier were tagged bare, and those
+# historical tags are not renamed.
 cider:
   link_template:
-    tag: https://github.com/LahaLuhem/minted/releases/tag/%tag%
-    diff: https://github.com/LahaLuhem/minted/compare/%from%...%to%
+    tag: https://github.com/LahaLuhem/minted/releases/tag/minted-%tag%
+    diff: https://github.com/LahaLuhem/minted/compare/minted-%from%...minted-%to%

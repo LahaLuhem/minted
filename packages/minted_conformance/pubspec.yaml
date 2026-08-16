@@ -1,0 +1,12 @@
+# Never published: it holds the suites that sweep across packages, which belong to no single one.
+# `publish_to: none` is also what keeps it out of the dartdoc, deps and publish jobs.
+name: minted_conformance
+description: >-
+  Cross-package conformance and failure-contract suites for the minted family. Private to the
+  workspace; nothing here ships.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace

@@ -1,0 +1,29 @@
+name: minted_identifiers
+description: >-
+  Well-modelled Dart value types for standard identifiers: UUID, ISBN, ISSN, ISNI, IMEI and GTIN,
+  check digits included. Part of the minted family.
+version: 1.0.0
+homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
+repository: https://github.com/LahaLuhem/minted
+
+topics:
+  - validation
+  - type-safety
+  - identifiers
+  - domain-driven-design
+  - standards
+
+environment:
+  sdk: ^3.13.0
+
+# Resolved as part of the workspace rooted two levels up.
+resolution: workspace
+
+# Dependencies arrive with the types, so the package never declares one it does not use.
+
+# Tags carry the package prefix, so the emitted CHANGELOG links do too.
+cider:
+  link_template:
+    tag: https://github.com/LahaLuhem/minted/releases/tag/minted_identifiers-%tag%
+    diff: "https://github.com/LahaLuhem/minted/compare/\
+      minted_identifiers-%from%...minted_identifiers-%to%"
