@@ -35,6 +35,7 @@ jobs:
       - uses: ./.github/actions/setup-dart
       # `dart doc` exits 0 even when it warns, so the summary line is the gate.
       - name: Generate docs, failing on any warning
+        working-directory: packages/minted
         run: |
           set -o pipefail
           dart doc --dry-run 2>&1 | tee dartdoc.log
@@ -52,7 +53,9 @@ jobs:
           dart pub global activate --source git \
             https://github.com/Workiva/dependency_validator \
             --git-ref dependabot/pub/major-0f75c2771b
-      - run: dart pub global run dependency_validator
+      # Per-package: it reads one pubspec and the imports resolved against it.
+      - working-directory: packages/minted
+        run: dart pub global run dependency_validator
 
   test:
     name: Unit tests + coverage
@@ -61,7 +64,8 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-dart
       - run: dart pub global activate coverage
-      - run: dart test --coverage=coverage
+      - working-directory: packages/minted
+        run: dart test --coverage=coverage
       - name: Format coverage as lcov
         # `--check-ignore` makes `format_coverage` honour the
         # `// coverage:ignore-line`, `ignore-start`/`ignore-end`, and
@@ -72,14 +76,18 @@ jobs:
         # works as a trailing comment. To exempt a line too long to carry one,
         # wrap it in `ignore-start`/`ignore-end` — a preceding `ignore-line`
         # looks right and does nothing.
+        working-directory: packages/minted
         run: |
           dart pub global run coverage:format_coverage \
             --lcov \
             --check-ignore \
             --in=coverage \
             --report-on=lib \
-            --packages=.dart_tool/package_config.json \
+            --packages=../../.dart_tool/package_config.json \
             -o coverage/lcov.info
+          # `--report-on=lib` writes `SF:lib/…`, relative to this package. Coveralls resolves
+          # those against the repo root, so re-anchor them or every file link 404s.
+          sed -i 's|^SF:|SF:packages/minted/|' coverage/lcov.info
       # Upload BEFORE the gate so the coverage badge updates and PR comments
       # land even when the gate would fail. Coveralls auto-routes based on
       # event context (PR vs. push to main).
@@ -93,10 +101,10 @@ jobs:
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: coverage/lcov.info
+          file: packages/minted/coverage/lcov.info
           format: lcov
       - name: Enforce min coverage (95%)
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
-          path: coverage/lcov.info
+          path: packages/minted/coverage/lcov.info
           min_coverage: 95
