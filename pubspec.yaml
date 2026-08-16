@@ -38,14 +38,18 @@ melos:
         dirExists: test
 
     coverage:
-      description: Tests + an lcov per member. Needs `dart pub global activate coverage` once.
-      exec:
-        command: >-
-          dart test --coverage=coverage &&
-          dart pub global run coverage:format_coverage --lcov --check-ignore
-          --in=coverage --report-on=lib
-          --packages="$MELOS_ROOT_PATH/.dart_tool/package_config.json"
+      description: >-
+        Tests every member, then one workspace-wide lcov. Needs `dart pub global activate
+        coverage` once.
+      # Collected per package but formatted once, across every package's lib. Formatting per
+      # package instead would report each one only on its own lib and discard the rest, which
+      # silently drops what a test covers in another package: the failure-contract suite lives in
+      # minted_conformance and exercises every sibling's failures/, and minted_conformance has no
+      # lib at all. That scoping cost 18 points of coverage when the split landed.
+      run: |
+        dart run melos exec --fail-fast --dir-exists=test -- dart test --coverage=coverage
+        mkdir -p coverage
+        dart pub global run coverage:format_coverage --lcov --check-ignore \
+          --in=packages --report-on="$(ls -d packages/*/lib | paste -sd, -)" \
+          --packages=.dart_tool/package_config.json \
           -o coverage/lcov.info
-        concurrency: 1
-      packageFilters:
-        dirExists: test
