@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 
-import '../encoding/digit_values.dart';
+import '../../shared/encoding/digit_values.dart';
 
 const _modulus = 10;
 const _plainWeight = 1;
