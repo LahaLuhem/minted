@@ -85,9 +85,6 @@ jobs:
             --report-on=lib \
             --packages=../../.dart_tool/package_config.json \
             -o coverage/lcov.info
-          # `--report-on=lib` writes `SF:lib/…`, relative to this package. Coveralls resolves
-          # those against the repo root, so re-anchor them or every file link 404s.
-          sed -i 's|^SF:|SF:packages/minted/|' coverage/lcov.info
       # Upload BEFORE the gate so the coverage badge updates and PR comments
       # land even when the gate would fail. Coveralls auto-routes based on
       # event context (PR vs. push to main).
