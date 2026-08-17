@@ -203,7 +203,9 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    constructor ever; `static ParseOutcome<F, T> parse(String)` carrying the type's own failure;
    `static T? tryParse(String)` derived from it; assembly factories (`fromComponents`, `from`, …)
    that return that same outcome; value equality; a canonical string form; a failure vocabulary in
-   the package's `failures/`; per-type render helpers. **No door throws.** A door that can fail says
+   the package's `failures/`; per-type render helpers. One carve-out: an assembly door whose every
+   parameter already carries its own invariants cannot fail, so it returns the value directly and may
+   be a named factory (`Geohash.from`). **No door throws.** A door that can fail says
    so in its return type, and `ParseOutcome.getOrThrow` is the one place a caller opts into a throw,
    raising `MintedFormatError`. This is the package's identity, not a preference.
    Full spec: [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract); rationale in

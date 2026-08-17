@@ -78,7 +78,7 @@ dart pub add minted_contact      # Email, PhoneNumber
 dart pub add minted_finance      # Iban, Bic, Isin, PaymentCardNumber
 dart pub add minted_chronology   # Date, Month, Weekday, Iso8601Duration
 dart pub add minted_identifiers  # Uuid, Isbn, Issn, Isni, Imei, Gtin
-dart pub add minted_geography    # GeoCoordinate
+dart pub add minted_geography    # GeoCoordinate, Geohash
 dart pub add minted_network      # IpAddress, Cidr, Hostname, DnsName, MacAddress, Port
 ```
 
@@ -153,9 +153,10 @@ From [`minted_identifiers`](https://pub.dev/packages/minted_identifiers):
 
 From [`minted_geography`](https://pub.dev/packages/minted_geography):
 
-| Type            | What it guarantees                                                          | Standard                                             |
-|-----------------|-----------------------------------------------------------------------------|------------------------------------------------------|
-| `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)   |
+| Type            | What it guarantees                                                          | Standard                                                 |
+|-----------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
+| `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)       |
+| `Geohash`       | a base32 cell, not a point; the four letters base32 drops are refused       | [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/) |
 
 ### Network
 
@@ -409,6 +410,12 @@ GeoCoordinate.tryParse('+485127.72+0021742/') == eiffel;   // true
 GeoCoordinate.tryParse('+46+2/');   // null: an unpadded longitude is a different location
 GeoCoordinate.from(latitude: 48.8577, longitude: 2.295);   // named, so it can't be written swapped
 
+// Geohash: a cell, not a point, so the centre names itself rather than posing as the input:
+final cell = Geohash.from(coordinate: eiffel, precision: NaturalNumber.tryFrom(5)!);
+cell.value;            // 'u09tu'
+cell.centre.iso6709;   // '+48.84521484375+002.30712890625/'   inside the cell, not the tower
+Geohash.tryParse('ezsa2');   // null: 'a' is not in the geohash alphabet
+
 // build from parts, getting the same outcome parse gives you.
 // a part that is only ever digits takes `Digits`, so junk can't reach the factory at all:
 final prefix = Digits.tryFrom([9, 7, 8])!;   // digits are ints; the ! is you asserting they fit
@@ -543,6 +550,10 @@ dropped. Their sign, units and datum are all defined by the CRS, so an `altitude
 the type couldn't promise anything about, and validating a CRS needs a registry minted doesn't carry.
 Parsing is strict about the fixed widths, because in ISO 6709 an unpadded longitude isn't a typo, it's
 a different place. The human-readable `48°51′27.72″N` form is output-only for now, via `sexagesimal`.
+
+`Geohash` exists for the *cell*: a `String` cannot say whether you hold a rectangle or a point, so the
+round trip through one lat/lon quietly moves the location, and `centre` is named for what it is. No
+length is capped, nothing in the standard fixing one, and string order is already geohash order.
 
 `Iso8601Duration` holds components rather than one number, and does not extend `Duration`. A
 subclass would have to hand `super` a microsecond count, and `P1M` has none, so every inherited
