@@ -2,7 +2,7 @@ name: minted_chronology
 description: >-
   Well-modelled Dart value types for calendar dates and durations: Date, Month, Weekday and
   Iso8601Duration. Parse, don't validate. Part of the minted family.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
 repository: https://github.com/LahaLuhem/minted
 
