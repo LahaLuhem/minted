@@ -8,6 +8,7 @@ import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
 
 import 'failures/geo_coordinate_failure.dart';
+import 'standards/coordinate_bounds.dart';
 
 /// A point on the Earth's surface: a latitude and a longitude, in decimal degrees.
 ///
@@ -42,7 +43,7 @@ final class GeoCoordinate {
   // to -0.0.
   factory _canonical(double latitude, double longitude) => GeoCoordinate._(
     positiveZeroed(_renderable(latitude)),
-    positiveZeroed(_renderable(longitude == -_maxLongitude ? _maxLongitude : longitude)),
+    positiveZeroed(_renderable(longitude == -maxLongitude ? maxLongitude : longitude)),
   );
 
   /// The coordinate at [latitude] and [longitude] decimal degrees, reporting the
@@ -108,11 +109,9 @@ final class GeoCoordinate {
   // Why these degrees are out of range, or null when they are not. The one gate from, tryFrom, and
   // parse funnel through, so a diagnosis and an acceptance cannot disagree.
   static GeoCoordinateFailure? _rangeFailure(double latitude, double longitude) {
-    if (!_isWithin(latitude, _maxLatitude)) return GeoCoordinateLatitudeOutOfRange(latitude);
+    if (!_isWithin(latitude, maxLatitude)) return GeoCoordinateLatitudeOutOfRange(latitude);
 
-    return !_isWithin(longitude, _maxLongitude)
-        ? GeoCoordinateLongitudeOutOfRange(longitude)
-        : null;
+    return _isWithin(longitude, maxLongitude) ? null : GeoCoordinateLongitudeOutOfRange(longitude);
   }
 
   // A positive test rather than `< -bound || > bound`, so a NaN falls out as out of range.
@@ -209,9 +208,6 @@ final class GeoCoordinate {
 
   static const _signGroup = 1;
   static const _groupsPerField = 3;
-
-  static const double _maxLatitude = 90;
-  static const double _maxLongitude = 180;
 
   static const _latitudeDegreeWidth = 2;
   static const _longitudeDegreeWidth = 3;
