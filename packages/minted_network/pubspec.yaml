@@ -2,7 +2,7 @@ name: minted_network
 description: >-
   Well-modelled Dart value types for networking: IP addresses, CIDR blocks, hostnames, DNS names,
   MAC addresses and ports. Part of the minted family.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
 repository: https://github.com/LahaLuhem/minted
 
