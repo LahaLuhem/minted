@@ -81,6 +81,18 @@ void main() {
       check(_abortFrom(['-p', '']).code).equals(2);
     });
 
+    test('reads an explicit repo root', () {
+      check(ReleaseOptions.parse(['--repo-root', '/tmp/scratch']).repoRoot).equals('/tmp/scratch');
+    });
+
+    test('defaults the repo root to null, meaning this script own repo', () {
+      check(ReleaseOptions.parse([]).repoRoot).isNull();
+    });
+
+    test('rejects an empty repo root', () {
+      check(_abortFrom(['--repo-root', '']).code).equals(2);
+    });
+
     test('rejects an empty tag message', () {
       check(_abortFrom(['-m', '']).code).equals(2);
     });

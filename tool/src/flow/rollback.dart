@@ -6,12 +6,16 @@ import '../io/release_ui.dart';
 /// Once only because [RollbackPhase.commitLanded] drops a commit, and both the interrupt handler
 /// and the enclosing `finally` call [run].
 class Rollback {
-  new({required this._runner, required this._ui, required this.packageDir});
+  new({required this._runner, required this._ui, required this.repoRoot, required this.packageDir});
 
   final ProcessRunner _runner;
   final ReleaseUi _ui;
 
-  /// Directory of the member being released, relative to the repo root.
+  /// Absolute path to the checkout being released. git has to run here, not wherever the process
+  /// happened to start, or the undo lands in the wrong repo.
+  final String repoRoot;
+
+  /// Directory of the member being released, relative to [repoRoot].
   final String packageDir;
 
   /// Updated as the release advances, and read only when something goes wrong.
@@ -39,11 +43,11 @@ class Rollback {
           '--',
           '$packageDir/pubspec.yaml',
           '$packageDir/CHANGELOG.md',
-        ]);
+        ], workingDirectory: repoRoot);
 
       case .commitLanded:
         _ui.error('Failure post-commit, git reset --hard HEAD~1 to drop the prep commit.');
-        _runner.capture('git', ['reset', '--hard', 'HEAD~1']);
+        _runner.capture('git', ['reset', '--hard', 'HEAD~1'], workingDirectory: repoRoot);
     }
   }
 }

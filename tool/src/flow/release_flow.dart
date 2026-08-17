@@ -355,7 +355,12 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
     required String next,
     required String tag,
   }) async {
-    final rollback = Rollback(runner: runner, ui: ui, packageDir: selected.dir);
+    final rollback = Rollback(
+      runner: runner,
+      ui: ui,
+      repoRoot: repo.root,
+      packageDir: selected.dir,
+    );
 
     // Dart neither unwinds reliably on Ctrl-C nor reports 130. Rolling back before the `exit` is
     // what makes it safe, since `exit` skips the `finally` below.

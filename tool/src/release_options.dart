@@ -9,6 +9,7 @@ class ReleaseOptions {
     this.bump,
     this.package,
     this.tagMessage,
+    this.repoRoot,
     this.skipConfirmation = false,
     this.dryRun = false,
     this.helpRequested = false,
@@ -22,6 +23,9 @@ class ReleaseOptions {
 
   /// Message for an annotated tag. Without one the tag is lightweight.
   final String? tagMessage;
+
+  /// Checkout to release from. Null means this script's own repo.
+  final String? repoRoot;
 
   final bool skipConfirmation;
   final bool dryRun;
@@ -44,6 +48,7 @@ class ReleaseOptions {
       bump: _bumpFrom(parsed.rest),
       package: _nonEmpty(parsed, 'package'),
       tagMessage: _nonEmpty(parsed, 'tag-message'),
+      repoRoot: _nonEmpty(parsed, 'repo-root'),
       skipConfirmation: parsed.flag('yes'),
       dryRun: parsed.flag('dry-run'),
     );
@@ -82,6 +87,13 @@ Non-interactive example:
       help:
           'Attach MSG as the tag message, creating an annotated, signed-if-configured tag. '
           'Without this flag the tag is lightweight.',
+    )
+    ..addOption(
+      'repo-root',
+      valueHelp: 'DIR',
+      help:
+          'Checkout to release from. Defaults to the repo this script lives in; a throwaway '
+          'clone is how the execute phase gets exercised without touching pub.dev.',
     )
     ..addFlag(
       'yes',

@@ -7,6 +7,10 @@ class FakeProcessRunner implements ProcessRunner {
   /// Every command run, in order.
   final List<String> calls = [];
 
+  /// The same commands with the directory each ran in. Recorded because a command aimed at the
+  /// wrong checkout looks identical in [calls].
+  final List<({String command, String? workingDirectory})> invocations = [];
+
   final CommandResult Function(String command)? _onCapture;
   final int Function(String command)? _onStream;
 
@@ -16,19 +20,31 @@ class FakeProcessRunner implements ProcessRunner {
   /// How many recorded commands start with [prefix].
   int timesRan(String prefix) => calls.where((call) => call.startsWith(prefix)).length;
 
+  /// Where the first command starting with [prefix] ran, or null if it ran nowhere in particular.
+  String? dirOf(String prefix) => invocations
+      .where((invocation) => invocation.command.startsWith(prefix))
+      .map((invocation) => invocation.workingDirectory)
+      .firstOrNull;
+
   @override
   CommandResult capture(String executable, List<String> arguments, {String? workingDirectory}) {
-    final command = [executable, ...arguments].join(' ');
-    calls.add(command);
+    final command = _record(executable, arguments, workingDirectory);
 
     return _onCapture?.call(command) ?? const CommandResult(exitCode: 0, stdout: '', stderr: '');
   }
 
   @override
   Future<int> stream(String executable, List<String> arguments, {String? workingDirectory}) async {
-    final command = [executable, ...arguments].join(' ');
-    calls.add(command);
+    final command = _record(executable, arguments, workingDirectory);
 
     return _onStream?.call(command) ?? 0;
+  }
+
+  String _record(String executable, List<String> arguments, String? workingDirectory) {
+    final command = [executable, ...arguments].join(' ');
+    calls.add(command);
+    invocations.add((command: command, workingDirectory: workingDirectory));
+
+    return command;
   }
 }

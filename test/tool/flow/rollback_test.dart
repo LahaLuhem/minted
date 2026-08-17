@@ -13,7 +13,12 @@ void main() {
   setUp(() {
     runner = FakeProcessRunner();
     ui = FakeReleaseUi();
-    rollback = Rollback(runner: runner, ui: ui, packageDir: 'packages/minted');
+    rollback = Rollback(
+      runner: runner,
+      ui: ui,
+      repoRoot: '/scratch/checkout',
+      packageDir: 'packages/minted',
+    );
   });
 
   test('undoes nothing before the bump', () {
@@ -60,6 +65,24 @@ void main() {
       ..run();
 
     check(runner.calls).isEmpty();
+  });
+
+  // Caught by the throwaway-remote harness, not by this file: both calls used to omit
+  // `workingDirectory`, so the undo ran in whatever repo the process started in.
+  test('runs git in the checkout being released, not the process cwd', () {
+    rollback
+      ..phase = .filesTouched
+      ..run();
+
+    check(runner.dirOf('git checkout')).equals('/scratch/checkout');
+  });
+
+  test('runs the reset in the checkout being released too', () {
+    rollback
+      ..phase = .commitLanded
+      ..run();
+
+    check(runner.dirOf('git reset')).equals('/scratch/checkout');
   });
 
   test('says what it is undoing, so the tree state is never a surprise', () {

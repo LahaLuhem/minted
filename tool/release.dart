@@ -25,7 +25,7 @@ Future<void> main(List<String> arguments) async {
     if (options.helpRequested) return ui.block(ReleaseOptions.usage);
 
     await ReleaseFlow(
-      repo: Repo(_repoRoot()),
+      repo: Repo(options.repoRoot ?? _repoRoot()),
       runner: const RealProcessRunner(),
       ui: ui,
       options: options,
