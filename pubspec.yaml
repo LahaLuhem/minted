@@ -17,7 +17,11 @@ workspace:
   - packages/minted_network
 
 dev_dependencies:
+  args: ^2.7.0
+  checks: ^0.3.1
+  collection: ^1.19.1
   melos: ^8.3.0
+  test: ^1.31.2
 
 # Script runner only. cider and scripts/release.sh own versioning and publishing, so `melos version`
 # and `melos publish` stay unused; workspaces do the linking, so `melos bootstrap` does too.
@@ -32,10 +36,12 @@ melos:
       run: dart format --output=none --set-exit-if-changed .
 
     test:
-      description: Each member's suite; the root has none of its own.
-      exec: dart test
-      packageFilters:
-        dirExists: test
+      description: Each member's suite, plus the root's own tooling suite.
+      # `exec` visits members only, and the root is not one of them, so the root's tests need the
+      # second line. Same shape as `coverage` below.
+      run: |
+        dart run melos exec --fail-fast --dir-exists=test -- dart test
+        dart test
 
     coverage:
       description: >-
