@@ -562,6 +562,23 @@ The cost is real and was accepted: seven publish surfaces, and helpers used by m
 package become `package:minted/internal.dart`, which carries no semver promise but cannot break
 within a major.
 
+**The cross-package suites need a host that is never published.**
+[`failure_contract_test.dart`](./packages/minted_conformance/test/failure_contract_test.dart) imports
+all seven siblings, and every sibling already depends on core, so hosting it in `minted` would point
+a dev-dependency arrow back from core to its own dependents. Locally that resolves by path and looks
+fine; on pub.dev it deadlocks the first publish of either side, because core cannot go up until
+`minted_chronology` is up and `minted_chronology` cannot go up until core is. `publish_to: none`
+breaks the cycle, since a package that never reaches pub.dev may depend on anything. The
+[cutover order](./scripts/README.md) is the softer version of the same constraint, and the
+sibling-constraint preflight exists because that one already bit.
+
+**Keeping it a workspace member, rather than moving the suites to the workspace root, is a separate
+decision that coverage settles.** `melos exec` visits members only, and `format_coverage
+--in=packages` reads only what lands under `packages/`, so a suite at the root would be collected by
+neither. These suites cover seven other packages' `lib/` while `minted_conformance` owns no `lib` of
+its own, which makes that scoping the whole of their coverage contribution. The inverse follows too:
+a suite whose coverage nobody attributes has no reason to be a member.
+
 ---
 
 <a id="spelling"></a>

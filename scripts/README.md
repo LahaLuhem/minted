@@ -103,8 +103,7 @@ fails loudly instead of shipping a wrong constraint that pub.dev can never take 
 1. **Release core.** `scripts/release.sh major --package minted` takes 2.0.0 to 3.0.0 and publishes
    through the tag pipeline as usual. Its own pub.dev tag pattern must already be `minted-{{version}}`
    (see [Tag format](#tag-format)).
-2. **Tighten every sibling** from `minted: '>=2.0.0 <4.0.0'` to `minted: ^3.0.0`, one commit. Each
-   pubspec carries a comment saying so.
+2. **Tighten every sibling** from `minted: '>=2.0.0 <4.0.0'` to `minted: ^3.0.0`, one commit.
 3. **Publish each sibling** by hand, per *First publish* above, then configure its tag pattern.
    `minted_contact` depends on `minted_network`, so publish network first; the rest are independent.
 

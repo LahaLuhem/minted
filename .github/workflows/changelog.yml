@@ -131,10 +131,22 @@ jobs:
           git config user.email "$email"
           while IFS= read -r dir; do
             [ -n "$dir" ] || continue
+            # A private member never releases, and `cider log` would silently create the
+            # CHANGELOG it cannot find. Same test as release.sh's pending_packages.
+            if grep -qE '^publish_to: *none' "${dir}/pubspec.yaml"; then
+              echo "::notice::${dir} is publish_to: none, so no changelog entry."
+              continue
+            fi
             echo "Logging '$TITLE' to ${dir}/CHANGELOG.md"
             (cd "$dir" && dart pub global run cider log "$TYPE" "$TITLE")
             git add "${dir}/CHANGELOG.md"
           done <<< "$DIRS"
+          # Every touched package can turn out private, which stages nothing and would
+          # fail the commit below.
+          if git diff --cached --quiet; then
+            echo "::notice::No publishable package touched, so nothing to commit."
+            exit 0
+          fi
           # [skip ci] now matters: App-token pushes DO trigger workflows
           # (unlike GITHUB_TOKEN pushes, which don't). The marker prevents
           # this commit from re-triggering the package CI on main.

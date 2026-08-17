@@ -19,9 +19,6 @@ environment:
 # Resolved as part of the workspace rooted two levels up.
 resolution: workspace
 
-# `minted` spans two majors on purpose: core is still 2.0.0 in the tree and only
-# becomes 3.0.0 when `scripts/release.sh major` runs, since cider bumps from the
-# declared version. TIGHTEN TO ^3.0.0 BEFORE PUBLISHING THIS PACKAGE.
 dependencies:
   meta: ^1.19.0
   minted: ^3.0.0

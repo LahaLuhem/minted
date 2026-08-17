@@ -18,8 +18,16 @@ functions deep. (One asterisk on that, see [Caveats](#caveats).)
 It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
 type wears the same small API, so learning one teaches you the rest.
 
-> Coming from 1.x? [MIGRATION.md](./MIGRATION.md) is the path: no door throws any more, so the
-> compiler points at each place that needs a decision.
+**minted** is a family. This package holds the vocabulary every type speaks (`ParseOutcome`,
+`MintedFailure`) plus the numeric types they build on; the domain types live in six sibling packages
+you add per domain, so a project that wants `Date` doesn't resolve the phone-number metadata. This
+page is the catalogue for all of them, and [Install](#install) says which package holds what.
+
+> Coming from 2.x, where one package held everything?
+> [MIGRATION.md](./MIGRATION.md#migrating-to-minted-300) is the path: no type or behaviour changed,
+> so it's a dependency and import edit the compiler walks you through. From 1.x, start
+> [one section down](./MIGRATION.md#migrating-to-minted-200): that's the release where no door
+> throws any more.
 
 <details>
 <summary><b>Why "parse, don't validate"?</b></summary>
@@ -63,13 +71,25 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
 
 ## Install
 
+Add the domains you want. Each one brings `minted` with it, so there's nothing else to wire up.
+
 ```sh
-dart pub add minted
+dart pub add minted_contact      # Email, PhoneNumber
+dart pub add minted_finance      # Iban, Bic, Isin, PaymentCardNumber
+dart pub add minted_chronology   # Date, Month, Weekday, Iso8601Duration
+dart pub add minted_identifiers  # Uuid, Isbn, Issn, Isni, Imei, Gtin
+dart pub add minted_geography    # GeoCoordinate
+dart pub add minted_network      # IpAddress, Cidr, Hostname, DnsName, MacAddress, Port
 ```
+
+`dart pub add minted` on its own gets you the shared outcome types and the numerics (`Digit`,
+`Digits`, the `Uint` tower, `Percentage`, `Probability`), and nothing else: no domain engine is
+behind it. Add it directly only if you name those types yourself.
 
 ## A quick taste
 
 ```dart
+// Email comes from minted_contact; every domain type is imported from its own package.
 final email = Email.tryParse('Jane.Doe@Example.COM')!;
 email.value;   // 'Jane.Doe@example.com'   (domain lower-cased for you)
 email.domain;  // 'example.com'
@@ -82,9 +102,12 @@ Email.tryParse('not-an-email');   // null, nothing thrown
 
 ## What's in the box
 
-Grouped by domain sector, the same way the source is laid out under `lib/src/`.
+One sector per package, so the heading tells you what to add. Numerics and Quantities are in
+`minted` itself.
 
 ### Contact
+
+From [`minted_contact`](https://pub.dev/packages/minted_contact):
 
 | Type          | What it guarantees                        | Standard                                           |
 |---------------|-------------------------------------------|----------------------------------------------------|
@@ -92,6 +115,8 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `PhoneNumber` | a valid number, stored in E.164           | [ITU-T E.164](https://en.wikipedia.org/wiki/E.164) |
 
 ### Finance
+
+From [`minted_finance`](https://pub.dev/packages/minted_finance):
 
 | Type                | What it guarantees                                                              | Standard                                                                     |
 |---------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------|
@@ -102,6 +127,8 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Chronology
 
+From [`minted_chronology`](https://pub.dev/packages/minted_chronology):
+
 | Type              | What it guarantees                                                       | Standard                                           |
 |-------------------|--------------------------------------------------------------------------|----------------------------------------------------|
 | `Date`            | a real calendar date: no time, no zone; impossible dates rejected        | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
@@ -110,6 +137,8 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 | `Iso8601Duration` | a duration with months and years, which `dart:core` Duration cannot hold | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 
 ### Identifiers
+
+From [`minted_identifiers`](https://pub.dev/packages/minted_identifiers):
 
 | Type   | What it guarantees                                                                 | Standard                                                                 |
 |--------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -122,11 +151,15 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Geography
 
+From [`minted_geography`](https://pub.dev/packages/minted_geography):
+
 | Type            | What it guarantees                                                          | Standard                                             |
 |-----------------|-----------------------------------------------------------------------------|------------------------------------------------------|
 | `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)   |
 
 ### Network
+
+From [`minted_network`](https://pub.dev/packages/minted_network):
 
 | Type         | What it guarantees                                                                       | Standard                                                       |
 |--------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------|
@@ -139,11 +172,15 @@ Grouped by domain sector, the same way the source is laid out under `lib/src/`.
 
 ### Numerics
 
+In `minted`:
+
 | Type               | What it guarantees                                      | Standard       |
 |--------------------|---------------------------------------------------------|----------------|
 | `Digit` / `Digits` | a single digit `0`-`9`, or an iterable sequence of them | building block |
 
 ### Quantities
+
+In `minted`:
 
 | Type               | What it guarantees                                                                           | Standard         |
 |--------------------|----------------------------------------------------------------------------------------------|------------------|
@@ -162,8 +199,9 @@ Learn one type and you've learned them all. Each one gives you:
 
 - `Type.tryParse(input)` returns the value, or `null` when the input isn't valid
 - `Type.parse(input)` returns a `ParseOutcome`: either the value, or a typed `failure` from that
-  type's own vocabulary (`IbanFailure`, `DateFailure`, …). Nothing is thrown, so you can `switch`
-  on the cause, or read `.reasonOrNull` for a form-field message
+  type's own vocabulary (`IbanFailure`, `DateFailure`, …), which ships in the same package as the
+  type. Nothing is thrown, so you can `switch` on the cause, or read `.reasonOrNull` for a
+  form-field message
 - **value equality**: `a == b` compares content, not identity
 - a **canonical form** to read back (`.value` on most types, `.asString` on `Digits`), normalised on
   parse so equal values really are equal
@@ -189,6 +227,9 @@ convention that `Percentage` has to name.
 <details>
 <summary><b>More examples</b></summary>
 
+Types from across the family, so a snippet wants whichever package
+[holds its type](#whats-in-the-box).
+
 ```dart
 final iban = Iban.tryParse('gb29 nwbk 6016 1331 9268 19')!;
 iban.value;       // 'GB29NWBK60161331926819'   (compact)
@@ -212,8 +253,8 @@ date.weekday;      // Weekday.tuesday   (.value is 2, matching DateTime.weekday)
 date.month;        // Month.july   (a Month; date.month.daysIn(2026) is 31)
 date.tryAddDays(30);      // Date(2026-08-06)
 date.tryAddDays(3000000); // null   (the walk left the 0000-9999 bound)
-date < Date.of(2027); // true   (Date.of(2027) is 2027-01-01)
-Date.of(2026, 7, 7);  // the same day from its parts
+date < Date.of(2027).getOrThrow(); // true   (Date.of(2027) is 2027-01-01)
+Date.of(2026, 7, 7);               // the same day from its parts, as an outcome
 Date.now();        // today in the local zone, the date-only DateTime.now()
 
 // Weekday: seven named days, so a switch over one needs no default arm:
@@ -228,7 +269,7 @@ Date.tryParse('2026-13-01');   // null (no 13th month; DateTime would give 2027-
 // length until anchored, so toDuration asks for the date:
 final span = Iso8601Duration.tryParse('P1Y2M3DT4H')!;
 span.months;                                       // 2
-span.toDuration(from: Date.of(2026, 1, 31));       // 427 days and 4 hours
+span.toDuration(from: Date.of(2026, 1, 31).getOrThrow());   // 427 days and 4 hours
 Iso8601Duration.tryParse('PT1M')!.iso8601;         // 'PT1M'   (a minute; P1M is a month)
 Iso8601Duration.tryParse('P1Y2W');                 // null: the week form never mixes
 

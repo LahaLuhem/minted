@@ -11,24 +11,24 @@ that came through it is well-formed by construction.
 
 ## Packages
 
-| Package | What it holds | pub.dev |
-|---|---|---|
-| [`minted`](./packages/minted) | Core: outcomes, `Digit`/`Digits`, the `Uint` family, `Percentage`, `Probability` | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted) |
-| [`minted_chronology`](./packages/minted_chronology) | `Date`, `Month`, `Weekday`, `Iso8601Duration` | not yet published |
-| [`minted_contact`](./packages/minted_contact) | `Email`, `PhoneNumber` | not yet published |
-| [`minted_finance`](./packages/minted_finance) | `Iban`, `Bic`, `Isin`, `PaymentCardNumber` | not yet published |
-| [`minted_geography`](./packages/minted_geography) | `GeoCoordinate` | not yet published |
-| [`minted_identifiers`](./packages/minted_identifiers) | `Uuid`, `Isbn`, `Issn`, `Isni`, `Imei`, `Gtin` | not yet published |
-| [`minted_network`](./packages/minted_network) | `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port` | not yet published |
+| Package                                               | What it holds                                                                    | pub.dev                                                                                                            |
+|-------------------------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| [`minted`](./packages/minted)                         | Core: outcomes, `Digit`/`Digits`, the `Uint` family, `Percentage`, `Probability` | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted)                         |
+| [`minted_chronology`](./packages/minted_chronology)   | `Date`, `Month`, `Weekday`, `Iso8601Duration`                                    | [![Pub Version](https://img.shields.io/pub/v/minted_chronology.svg)](https://pub.dev/packages/minted_chronology)   |
+| [`minted_contact`](./packages/minted_contact)         | `Email`, `PhoneNumber`                                                           | [![Pub Version](https://img.shields.io/pub/v/minted_contact.svg)](https://pub.dev/packages/minted_contact)         |
+| [`minted_finance`](./packages/minted_finance)         | `Iban`, `Bic`, `Isin`, `PaymentCardNumber`                                       | [![Pub Version](https://img.shields.io/pub/v/minted_finance.svg)](https://pub.dev/packages/minted_finance)         |
+| [`minted_geography`](./packages/minted_geography)     | `GeoCoordinate`                                                                  | [![Pub Version](https://img.shields.io/pub/v/minted_geography.svg)](https://pub.dev/packages/minted_geography)     |
+| [`minted_identifiers`](./packages/minted_identifiers) | `Uuid`, `Isbn`, `Issn`, `Isni`, `Imei`, `Gtin`                                   | [![Pub Version](https://img.shields.io/pub/v/minted_identifiers.svg)](https://pub.dev/packages/minted_identifiers) |
+| [`minted_network`](./packages/minted_network)         | `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port`                 | [![Pub Version](https://img.shields.io/pub/v/minted_network.svg)](https://pub.dev/packages/minted_network)         |
 
 Take only the domains you use: nothing drags in another domain's engine. A `minted_chronology`
 consumer resolves `collection` and `meta`; the phone engine arrives only if you ask for
 `minted_contact`. There is also a private `minted_conformance` member holding the suites that sweep
 across packages, which never ships.
 
-> **The siblings are not on pub.dev yet.** They publish alongside `minted` 3.0.0, which is the
-> release that removes these types from `minted` itself. Until then, `minted` 2.x still carries
-> everything.
+The siblings landed with `minted` 3.0.0, the release that moved these types out of `minted` itself.
+On 2.x, `minted` still carries everything; [MIGRATION.md](./packages/minted/MIGRATION.md) walks the
+cutover.
 
 **[`packages/minted/README.md`](./packages/minted/README.md) is the documentation you actually
 want**: the pub.dev landing page, with the type catalogue and usage guide. This file is the map.
