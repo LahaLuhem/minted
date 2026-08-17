@@ -1,4 +1,4 @@
-## Unreleased
+## [3.0.1] - 2026-08-17
 ### Changed
 - README is the family landing page now: install per domain package, and the catalogue says which package holds each type
 
@@ -68,6 +68,7 @@
 - Digit
 - Digits
 
+[3.0.1]: https://github.com/LahaLuhem/minted/compare/minted-3.0.0...minted-3.0.1
 [3.0.0]: https://github.com/LahaLuhem/minted/compare/minted-2.0.0...minted-3.0.0
 [2.0.0]: https://github.com/LahaLuhem/minted/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/1.0.0...1.1.0
