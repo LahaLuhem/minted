@@ -39,6 +39,7 @@ anchor, and keep anchors stable across renames.
 - [Gtin: four lengths, one number, padded to fourteen](#gtin-value-type)
 - [Imei: printed in full, unlike a card number](#imei-value-type)
 - [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
+- [Geohash: a cell, not a point](#geohash-value-type)
 - [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
 - [DnsName: permissive, but not infinitely so](#dns-name-value-type)
@@ -1087,6 +1088,46 @@ a lenient parser hands back a plausible wrong answer instead of an error.
 **A sole member still earns `lib/src/geography/`.** No existing sector fits a coordinate, and the
 public API is flat regardless because `minted.dart` re-exports everything, so the folder costs
 nothing and is where the next spatial type (Plus Code, MGRS) lands.
+
+---
+
+<a id="geohash-value-type"></a>
+## Geohash: a cell, not a point
+
+**The bug is the round trip.** A geohash names a rectangle, and a `String` cannot say whether you
+hold the rectangle or a point in it, so code decodes one to a single lat/lng, treats that as *the*
+location, and the position moves by up to a cell's width. Naming the accessor `centre` is the fix.
+Secondary and more common: `toLowerCase()` is not validation, the alphabet having dropped `a`, `i`,
+`l` and `o`.
+
+**No length cap, which is [`Bic`](#bic-value-type)'s rule reaching the opposite answer.** Both
+*validate what the standard fixes*: ISO 9362 fixes eight or eleven characters, and nothing readable
+in CTA-5009-A fixes a ceiling. Twelve is where implementations stop, not where the standard does, so
+refusing thirteen would refuse a cell this type represents exactly. `centre` documents where honesty
+ends instead: beyond about 23 characters a `double` runs out of mantissa and it stops moving,
+measured rather than derived.
+
+**`from` returns its value, not a `ParseOutcome`, the family's first door to do so.** Typing
+`precision` as [`NaturalNumber`](#constraint-types) makes a bad one unrepresentable rather than
+reportable, and with a `GeoCoordinate` opposite it nothing is left to refuse, so an outcome would be
+[wrapping a total function](#parse-outcome). That also makes it the first assembly door that can be a
+*constructor*, which `prefer_constructors_over_static_methods` demands once the outcome goes. The
+cost is real: constraint types expose only `tryFrom`, so call sites read `NaturalNumber.tryFrom(5)!`
+and pull in `package:minted`.
+
+**Lossy on purpose, unlike the two rules that forbid loss.**
+[`GeoCoordinate`](#geo-coordinate-value-type) refuses altitude and [`Cidr`](#cidr-value-type) refuses
+host bits, both on "a parse that silently loses input is not a parse". Here `precision` sizes the
+loss and `centre` reads it back, so nothing is silent.
+
+**No `compareTo`.** The alphabet is ASCII-ascending on purpose, so plain string order already is
+geohash order, which is what makes a prefix range query work. Neighbour and parent traversal are
+simply not built yet; the seam problem they solve is real.
+
+**The south-west corner is unreachable through `from`.** `GeoCoordinate` folds `-180` onto `+180`, so
+`(-90, -180)` encodes to `pbpbpb`; the all-zero cell parses fine, its centre just inside it. Pinned
+by a test, because the fold is right for a coordinate and only surprising if you expected the grid to
+have a reachable corner.
 
 ---
 
