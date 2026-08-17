@@ -290,6 +290,16 @@ void main() {
         typeName: 'GeoCoordinate',
         message: 'longitude 181.0 is outside -180 to 180',
       ),
+      'Geohash: nothing to parse': (
+        failure: GeohashEmpty(),
+        typeName: 'Geohash',
+        message: 'an empty string is not a geohash',
+      ),
+      'Geohash: a character outside the alphabet echoes itself': (
+        failure: GeohashInvalidCharacter('a'),
+        typeName: 'Geohash',
+        message: "'a' is not a geohash character",
+      ),
       'Hostname: non-ASCII names the remedy rather than the rule': (
         failure: HostnameNotAscii(),
         typeName: 'Hostname',
@@ -556,6 +566,11 @@ void main() {
         'an out-of-range longitude': (
           failure: GeoCoordinateLongitudeOutOfRange(181),
           rendered: 'GeoCoordinateLongitudeOutOfRange(181.0)',
+        ),
+        'an empty geohash': (failure: GeohashEmpty(), rendered: 'GeohashEmpty()'),
+        'a stray geohash character': (
+          failure: GeohashInvalidCharacter('a'),
+          rendered: 'GeohashInvalidCharacter(a)',
         ),
         'a non-ASCII hostname': (failure: HostnameNotAscii(), rendered: 'HostnameNotAscii()'),
         'a stray hostname character': (
@@ -861,6 +876,16 @@ void main() {
           failure: GeoCoordinateLongitudeOutOfRange(181),
           twin: GeoCoordinateLongitudeOutOfRange(181),
           other: GeoCoordinateLongitudeOutOfRange(-181),
+        ),
+        'the empty-geohash variant': (
+          failure: GeohashEmpty(),
+          twin: GeohashEmpty(),
+          other: GeohashInvalidCharacter('a'),
+        ),
+        'a geohash character differs by the character': (
+          failure: GeohashInvalidCharacter('a'),
+          twin: GeohashInvalidCharacter('a'),
+          other: GeohashInvalidCharacter('i'),
         ),
         'the non-ASCII variant': (
           failure: HostnameNotAscii(),

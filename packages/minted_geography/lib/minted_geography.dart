@@ -6,4 +6,6 @@
 library;
 
 export 'src/failures/geo_coordinate_failure.dart';
+export 'src/failures/geohash_failure.dart';
 export 'src/geo_coordinate.dart';
+export 'src/geohash.dart';
