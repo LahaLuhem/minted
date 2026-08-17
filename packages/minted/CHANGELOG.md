@@ -1,3 +1,10 @@
+## Unreleased
+### Changed
+- README is the family landing page now: install per domain package, and the catalogue says which package holds each type
+
+### Fixed
+- the README's `Date.of` snippets unwrap the outcome they return, so they compile as written
+
 ## [3.0.0] - 2026-08-16
 ### Removed
 - \[#60\] Split minted into a pub workspace of domain packages
