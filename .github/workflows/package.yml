@@ -106,6 +106,11 @@ jobs:
       # `ignore-line` applies to the line the comment sits ON, so it only works as a trailing
       # comment. To exempt a line too long to carry one, wrap it in `ignore-start`/`ignore-end`;
       # a preceding `ignore-line` looks right and does nothing.
+
+      # The root's own suite, which the coverage script cannot reach: `melos exec` visits
+      # members and the root is not one. No coverage flag, so the gate stays library-only.
+      - name: Test the release tooling
+        run: dart test
       - name: Test every member with coverage
         run: dart run melos run coverage
       # Upload BEFORE the gate so the coverage badge updates and PR comments

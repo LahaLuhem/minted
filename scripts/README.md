@@ -24,6 +24,11 @@ publishes to pub.dev via OIDC.
 
 Laptop-only — does not run inside CI.
 
+> **Being ported.** [`tool/release.dart`](../tool/release.dart) is a Dart rewrite of this script,
+> with unit tests under [`test/tool/`](../test/tool). It is not the live route: `release.sh` stays
+> until the port has cut a real release. See
+> [#62](https://github.com/LahaLuhem/minted/issues/62).
+
 ## Usage
 
 ```bash
