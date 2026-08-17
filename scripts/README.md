@@ -62,7 +62,25 @@ mechanically necessary, not a stylistic choice.
 ## First publish of a package
 
 pub.dev can only configure automated publishing for a package that already exists, so a package's
-**first** version goes up by hand and every later one goes through the tag pipeline:
+**first** version goes up by hand and every later one goes through the tag pipeline.
+
+**Finalise the CHANGELOG first.** pub refuses to publish quietly if the CHANGELOG does not mention
+the version going up, and it is `release.sh` that normally dates the `## Unreleased` heading. A hand
+publish skips that, so do it yourself, then commit:
+
+```bash
+cd packages/<name> && cider release   # ## Unreleased -> ## [1.0.0] - today
+```
+
+No bump: a first release publishes the version already in the pubspec, which is why `release.sh`
+is the wrong tool here. It always bumps, so it would turn 1.0.0 into 1.0.1.
+
+While you are in there, **check the notes read correctly for a first release.** A cross-package PR
+carries one `sem-*` label, and `changelog.yml` applies it to every package the PR touched, so a
+package can inherit a section that only made sense for another one. The v3 split wrote
+`### Removed` into all six new packages, where the honest heading was `### Added`.
+
+Then publish:
 
 ```bash
 dart pub -C packages/<name> publish
