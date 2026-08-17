@@ -61,6 +61,9 @@ minted/                              Workspace root
 ├── .rumdl.toml / .yamllint.yaml     Markdown + YAML lint config
 ├── .github/                         Workflows + lint-checks.json, the shared lint manifest
 ├── scripts/                         release.sh + its README
+├── tool/                            release.dart (Dart port of release.sh) + job-named src/
+│   └── src/                         parsing/ versioning/ io/ flow/, plus options + abort
+├── test/tool/                       The tooling's suite, mirroring src/; the root's only Dart tests
 ├── README.md                        Family index; the GitHub landing page
 ├── APPENDIX.md                      Design rationale (anchor-keyed)
 ├── CODESTYLE.md                     Library-package code style
@@ -110,11 +113,12 @@ packages/minted/                     Core. A sibling has the same shape, minus s
 └── LICENSE                          Per-package copy, so pub.dev detects it on this package
 ```
 
-**Commands run from the root; tests run from the member.** One `dart pub get` at the root resolves
-every member, and `dart analyze .` / `dart format .` cover the whole workspace in one pass. `dart
-test` does not: the root holds no `test/`, so run it in the package (`cd packages/minted`). Anything
-that reads a single pubspec — `cider`, `dart pub publish`, `dependency_validator` — needs the member
-directory too, via `cd` or `dart pub -C packages/minted`.
+**Commands run from the root; a member's tests run from the member.** One `dart pub get` at the root
+resolves every member, and `dart analyze .` / `dart format .` cover the whole workspace in one pass.
+`dart test` does not: it tests the package it stands in, so a member's suite needs
+`cd packages/minted`. The root has a suite of its own, covering the release tooling under `tool/`
+only. Anything that reads a single pubspec — `cider`, `dart pub publish`, `dependency_validator` —
+needs the member directory too, via `cd` or `dart pub -C packages/minted`.
 
 **Melos wraps that split, so prefer `dart run melos run <script>`** — each script already knows
 whether it belongs at the root or per-package. They live under the `melos:` key of the root
