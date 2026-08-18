@@ -8,7 +8,7 @@ extension type const AsciiLetters._(String value) {
   static AsciiLetters? tryFrom(String value) => !_letters.hasMatch(value) ? null : ._(value);
 
   /// The letters, one per code unit.
-  // Every code unit passed tryFrom's gate, so none can be refused here.
+  // tryFrom's gate already passed every code unit.
   Iterable<AsciiLetter> get letters =>
       Iterable.generate(value.length, (index) => AsciiLetter.tryFrom(value[index])!);
 

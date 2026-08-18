@@ -1,7 +1,6 @@
 import 'ascii_alphanumeric.dart';
 
-/// One or more [AsciiAlphanumeric]s: what `Bic`'s codes, an IBAN's BBAN and an ISIN's NSIN are made
-/// of.
+/// One or more [AsciiAlphanumeric]s: a `Bic` code, an IBAN's BBAN, an ISIN's NSIN.
 ///
 /// {@example /example/minted_constraints_example.dart#plurals}
 extension type const AsciiAlphanumerics._(String value) {
@@ -10,7 +9,7 @@ extension type const AsciiAlphanumerics._(String value) {
       !_alphanumerics.hasMatch(value) ? null : ._(value);
 
   /// The characters, one per code unit.
-  // Every code unit passed tryFrom's gate, so none can be refused here.
+  // tryFrom's gate already passed every code unit.
   Iterable<AsciiAlphanumeric> get alphanumerics =>
       Iterable.generate(value.length, (index) => AsciiAlphanumeric.tryFrom(value[index])!);
 
