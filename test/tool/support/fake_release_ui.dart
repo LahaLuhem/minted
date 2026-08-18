@@ -36,6 +36,13 @@ class FakeReleaseUi implements ReleaseUi {
   void block(String text) => printed.add(text);
 
   @override
+  Future<T> task<T>(String label, Future<T> Function() work) {
+    printed.add(label);
+
+    return work();
+  }
+
+  @override
   String? choosePackage(List<String> names) => packageChoice;
 
   @override

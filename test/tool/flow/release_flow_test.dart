@@ -304,7 +304,9 @@ void main() {
       fixture.addMember(name: 'core', version: '3.0.0');
       final runner = FakeProcessRunner(
         onCapture: _healthy(),
-        onStream: (command) => command.contains('publish --dry-run') ? 1 : 0,
+        onRun: (command) => command.contains('publish --dry-run')
+            ? const CommandResult(exitCode: 1, stdout: '', stderr: 'boom')
+            : _ok(),
       );
 
       final abort = await runFlow(runner: runner, ui: FakeReleaseUi());
@@ -321,7 +323,9 @@ void main() {
       fixture.addMember(name: 'core', version: '3.0.0');
       final runner = FakeProcessRunner(
         onCapture: _healthy(),
-        onStream: (command) => command.startsWith('git push') ? 1 : 0,
+        onRun: (command) => command.startsWith('git push')
+            ? const CommandResult(exitCode: 1, stdout: '', stderr: 'boom')
+            : _ok(),
       );
 
       final abort = await runFlow(runner: runner, ui: FakeReleaseUi());
@@ -335,11 +339,47 @@ void main() {
       check(text).contains('git reset --hard HEAD~1');
     });
 
+    // Captured gates print nothing themselves, so the output has to survive into the abort.
+    test('a failed gate carries what the command printed', () async {
+      fixture.addMember(name: 'core', version: '3.0.0');
+      final runner = FakeProcessRunner(
+        onCapture: _healthy(),
+        onRun: (command) => command.contains('analyze')
+            ? const CommandResult(
+                exitCode: 1,
+                stdout: 'lib/thing.dart:3:1 - undefined_method',
+                stderr: '',
+              )
+            : _ok(),
+      );
+
+      final abort = await runFlow(runner: runner, ui: FakeReleaseUi());
+
+      final text = abort?.toString() ?? '';
+      check(text).contains('Static analysis failed.');
+      check(text).contains('undefined_method');
+    });
+
+    test('a task label is announced before the work runs', () async {
+      fixture.addMember(name: 'core', version: '3.0.0');
+      final ui = FakeReleaseUi();
+
+      await runFlow(
+        runner: FakeProcessRunner(onCapture: _healthy()),
+        ui: ui,
+      );
+
+      check(ui.said('dart test')).isTrue();
+      check(ui.said('lint: actionlint')).isTrue();
+    });
+
     test('a failing lint gate never reaches the bump', () async {
       fixture.addMember(name: 'core', version: '3.0.0');
       final runner = FakeProcessRunner(
         onCapture: _healthy(),
-        onStream: (command) => command.startsWith('docker run') ? 1 : 0,
+        onRun: (command) => command.startsWith('docker run')
+            ? const CommandResult(exitCode: 1, stdout: '', stderr: 'boom')
+            : _ok(),
       );
 
       final abort = await runFlow(runner: runner, ui: FakeReleaseUi());
