@@ -23,11 +23,12 @@ extension type const Iban._(String value) {
   /// Builds an [Iban] from its [countryCode] (ISO 3166-1 alpha-2) and [bban], computing the mod-97
   /// check digits, reporting the [IbanFailure] when the parts don't form a valid IBAN.
   static ParseOutcome<IbanFailure, Iban> fromComponents({
-    required String countryCode,
-    required String bban,
+    required AsciiLetters countryCode,
+    required AsciiAlphanumerics bban,
   }) {
-    final upperCountry = countryCode.toUpperCase();
-    final compactBban = unspacedUpperCase(bban);
+    // The parts cannot carry whitespace, so only case folds here.
+    final upperCountry = countryCode.value.toUpperCase();
+    final compactBban = bban.value.toUpperCase();
     final assembledIban = '$upperCountry${ibanCheckDigits(upperCountry, compactBban)}$compactBban';
     final failure = _failureFor(assembledIban);
 
@@ -47,7 +48,8 @@ extension type const Iban._(String value) {
   }
 
   /// The ISO 3166-1 alpha-2 country code (the first two characters).
-  String get countryCode => value.substring(0, _checkDigitsStart);
+  // Alpha-2 codes are letters, and parse refuses an unknown country.
+  AsciiLetters get countryCode => .tryFrom(value.substring(0, _checkDigitsStart))!;
 
   /// The two check digits (positions 3 and 4) as a `(first, second)` record of
   /// [Digit]s; read `.first.value` / `.second.value` for their numeric values.
@@ -59,7 +61,8 @@ extension type const Iban._(String value) {
 
   /// The Basic Bank Account Number: everything after the check digits (the bank-specific part,
   /// e.g. an account number plus a bank or branch code).
-  String get bban => value.substring(_bbanStart);
+  // A validated IBAN is `[A-Z0-9]` throughout, so no slice can be refused.
+  AsciiAlphanumerics get bban => .tryFrom(value.substring(_bbanStart))!;
 
   /// The IBAN in grouped "paper" form: space-separated blocks of four, for display.
   /// The stored [value] stays compact.

@@ -5,6 +5,11 @@ import 'package:minted_finance/minted_finance.dart';
 
 import 'support/bdd.dart';
 
+/// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
+AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
+
+AsciiAlphanumerics _alphanumerics(String value) => AsciiAlphanumerics.tryFrom(value)!;
+
 void main() {
   feature('Iban', () {
     // Acceptance and normalisation in one table: the canonical (compact,
@@ -51,9 +56,9 @@ void main() {
     scenario('an IBAN exposes its country code, check digits, and BBAN', () {
       final parsedIban = Iban.tryParse('GB29NWBK60161331926819')!;
 
-      check(parsedIban.countryCode).equals('GB');
+      check(parsedIban.countryCode.value).equals('GB');
       check(parsedIban.checkDigits).equals((first: Digit.tryFrom(2)!, second: Digit.tryFrom(9)!));
-      check(parsedIban.bban).equals('NWBK60161331926819');
+      check(parsedIban.bban.value).equals('NWBK60161331926819');
     });
 
     scenario('an IBAN rebuilds the grouped paper form', () {
@@ -86,16 +91,20 @@ void main() {
       outline: (example) => check(Iban.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
-    scenario('the check-digit generator refuses a BBAN with characters outside A-Z and 0-9', () {
-      // Our own mod-97-10 generator maps an unknown character to -1 rather than guessing, so the
-      // assembled IBAN fails validation instead of getting plausible-looking check digits.
-      check(Iban.fromComponents(countryCode: 'GB', bban: 'NWBK-6016133192681').reasonOrNull)
-          .equals(const IbanInvalidCharacters());
+    // A BBAN outside `[A-Z0-9]` cannot be built, so the check-digit generator never sees one: its
+    // charset guard is an assert now, not a runtime branch.
+    scenario('a BBAN outside A-Z and 0-9 cannot be built at all', () {
+      check(AsciiAlphanumerics.tryFrom('NWBK-6016133192681')).isNull();
+      check(Iban.parse('GB29NWBK-016133192681').reasonOrNull).equals(const IbanInvalidCharacters());
     });
 
     scenario('fromComponents reports the same vocabulary as parse', () {
-      check(Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').reasonOrNull)
-          .equals(const IbanInvalidLength(expected: 22, actual: 12));
+      check(
+        Iban.fromComponents(
+          countryCode: _letters('GB'),
+          bban: _alphanumerics('TOOSHORT'),
+        ).reasonOrNull,
+      ).equals(const IbanInvalidLength(expected: 22, actual: 12));
     });
 
     scenario('the length failure names the length the country requires', () {
@@ -114,34 +123,43 @@ void main() {
     });
 
     scenario('fromComponents computes the check digits and assembles a valid IBAN', () {
-      check(Iban.fromComponents(countryCode: 'GB', bban: 'NWBK60161331926819').getOrThrow().value)
-          .equals('GB29NWBK60161331926819');
+      check(
+        Iban.fromComponents(
+          countryCode: _letters('GB'),
+          bban: _alphanumerics('NWBK60161331926819'),
+        ).getOrThrow().value,
+      ).equals('GB29NWBK60161331926819');
     });
 
     scenario('fromComponents reports a failure on a wrong-length BBAN, and never throws', () {
-      check(Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').isFailure).isTrue();
+      check(
+        Iban.fromComponents(
+          countryCode: _letters('GB'),
+          bban: _alphanumerics('TOOSHORT'),
+        ).isFailure,
+      ).isTrue();
     });
 
     // fromComponents runs our own mod-97-10 generator (check_digits.dart); check
     // it reproduces the registry check digits across countries, letters and
     // digits-only BBANs and different lengths. That is our code, not the
     // validator's.
-    scenarioOutline<({String countryCode, String bban, String iban})>(
+    scenarioOutline<({AsciiLetters countryCode, AsciiAlphanumerics bban, String iban})>(
       'fromComponents computes the check digits to match the registry IBAN',
       examples: {
         'UK, letters in the BBAN': (
-          countryCode: 'GB',
-          bban: 'NWBK60161331926819',
+          countryCode: _letters('GB'),
+          bban: _alphanumerics('NWBK60161331926819'),
           iban: 'GB29NWBK60161331926819',
         ),
         'Germany, digits only': (
-          countryCode: 'DE',
-          bban: '512108001245126199',
+          countryCode: _letters('DE'),
+          bban: _alphanumerics('512108001245126199'),
           iban: 'DE75512108001245126199',
         ),
         'Oman, 23 characters': (
-          countryCode: 'OM',
-          bban: '0280000012345678901',
+          countryCode: _letters('OM'),
+          bban: _alphanumerics('0280000012345678901'),
           iban: 'OM040280000012345678901',
         ),
       },
@@ -155,14 +173,23 @@ void main() {
       },
     );
 
-    scenario('fromComponents normalises a lower-case, spaced input', () {
+    scenario('fromComponents folds case, the types having already refused the spacing', () {
       check(
-        Iban.fromComponents(countryCode: 'gb', bban: 'nwbk 6016 1331 9268 19').getOrThrow().value,
+        Iban.fromComponents(
+          countryCode: _letters('gb'),
+          bban: _alphanumerics('nwbk60161331926819'),
+        ).getOrThrow().value,
       ).equals('GB29NWBK60161331926819');
+      check(AsciiAlphanumerics.tryFrom('nwbk 6016 1331 9268 19')).isNull();
     });
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
-      check(() => Iban.fromComponents(countryCode: 'GB', bban: 'TOOSHORT').getOrThrow())
+      check(
+            () => Iban.fromComponents(
+              countryCode: _letters('GB'),
+              bban: _alphanumerics('TOOSHORT'),
+            ).getOrThrow(),
+          )
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IbanInvalidLength(expected: 22, actual: 12));

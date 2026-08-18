@@ -3,24 +3,11 @@
 
 import 'package:minted/minted.dart';
 
-/// A failure vocabulary, standing in for the one a real value type carries in its own package.
-enum EvenLengthFailure implements MintedFailure {
-  /// The input cannot be halved, so there is nothing to hand back.
-  odd('the character count is odd');
-
-  new(this.message);
-
-  @override
-  final String message;
-
-  @override
-  String get typeName => 'EvenLength';
-}
+import 'data/enums/even_length_failure.dart';
 
 /// Stands in for a value type's `parse`: every fallible door in the family returns one of these.
-ParseOutcome<EvenLengthFailure, int> halfLengthOf(String input) => input.length.isEven
-    ? ParseSuccess(input.length ~/ 2)
-    : const ParseFailure(EvenLengthFailure.odd);
+ParseOutcome<EvenLengthFailure, int> halfLengthOf(String input) =>
+    input.length.isOdd ? const ParseFailure(.odd) : ParseSuccess(input.length ~/ 2);
 
 void main() {
   // Core holds the vocabulary a parse hands back, not the value types: those live in the siblings.

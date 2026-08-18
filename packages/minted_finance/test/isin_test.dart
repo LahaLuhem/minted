@@ -5,6 +5,11 @@ import 'package:minted_finance/minted_finance.dart';
 
 import 'support/bdd.dart';
 
+/// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
+AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
+
+AsciiAlphanumerics _alphanumerics(String value) => AsciiAlphanumerics.tryFrom(value)!;
+
 void main() {
   feature('Isin', () {
     // The compact twelve-character form doubles as the expected outcome: a String means "accepted
@@ -66,8 +71,8 @@ void main() {
       outline: (example) {
         final parsedIsin = Isin.tryParse(example.input)!;
 
-        check(parsedIsin.prefix).equals(example.prefix);
-        check(parsedIsin.nsin).equals(example.nsin);
+        check(parsedIsin.prefix.value).equals(example.prefix);
+        check(parsedIsin.nsin.value).equals(example.nsin);
         check(parsedIsin.checkDigit).equals(Digit.tryFrom(example.checkDigit)!);
       },
     );
@@ -141,16 +146,24 @@ void main() {
     // fromComponents runs our expand-then-Luhn generator; check it reproduces the published check
     // digit rather than round-tripping our own output. Letter-carrying NSINs are the interesting
     // rows, because those are the ones whose expansion changes the weighting.
-    scenarioOutline<({String prefix, String nsin, String isin})>(
+    scenarioOutline<({AsciiLetters prefix, AsciiAlphanumerics nsin, String isin})>(
       'fromComponents computes the check digit to match the published ISIN',
       examples: {
-        'Apple': (prefix: 'US', nsin: '037833100', isin: 'US0378331005'),
-        'Deutsche Telekom': (prefix: 'DE', nsin: '000555750', isin: 'DE0005557508'),
-        'Nestle': (prefix: 'CH', nsin: '001203204', isin: 'CH0012032048'),
-        'Tesla, one letter in the NSIN': (prefix: 'US', nsin: '88160R101', isin: 'US88160R1014'),
+        'Apple': (prefix: _letters('US'), nsin: _alphanumerics('037833100'), isin: 'US0378331005'),
+        'Deutsche Telekom': (
+          prefix: _letters('DE'),
+          nsin: _alphanumerics('000555750'),
+          isin: 'DE0005557508',
+        ),
+        'Nestle': (prefix: _letters('CH'), nsin: _alphanumerics('001203204'), isin: 'CH0012032048'),
+        'Tesla, one letter in the NSIN': (
+          prefix: _letters('US'),
+          nsin: _alphanumerics('88160R101'),
+          isin: 'US88160R1014',
+        ),
         'the AU example, five letters in the NSIN': (
-          prefix: 'AU',
-          nsin: '0000XVGZA',
+          prefix: _letters('AU'),
+          nsin: _alphanumerics('0000XVGZA'),
           isin: 'AU0000XVGZA3',
         ),
       },
@@ -160,28 +173,23 @@ void main() {
       },
     );
 
-    scenario('fromComponents normalises a spaced, lower-case input', () {
-      check(Isin.fromComponents(prefix: 'au', nsin: '0000 XVGZA').getOrThrow().value)
-          .equals('AU0000XVGZA3');
+    scenario('fromComponents folds case, the types having already refused the spacing', () {
+      check(
+        Isin.fromComponents(
+          prefix: _letters('au'),
+          nsin: _alphanumerics('0000xvgza'),
+        ).getOrThrow().value,
+      ).equals('AU0000XVGZA3');
+      check(AsciiAlphanumerics.tryFrom('0000 XVGZA')).isNull();
     });
 
-    scenarioOutline<({String prefix, String nsin, IsinFailure failure})>(
+    scenarioOutline<({AsciiLetters prefix, AsciiAlphanumerics nsin, IsinFailure failure})>(
       'fromComponents reports the same vocabulary as parse',
       examples: {
         'a short NSIN cannot reach twelve characters': (
-          prefix: 'US',
-          nsin: '03783310',
+          prefix: _letters('US'),
+          nsin: _alphanumerics('03783310'),
           failure: const IsinWrongLength(11),
-        ),
-        'the generator refuses a part outside the charset': (
-          prefix: 'US',
-          nsin: '0378331@0',
-          failure: const IsinInvalidCharacters(),
-        ),
-        'a prefix that is not two letters': (
-          prefix: '1S',
-          nsin: '037833100',
-          failure: const IsinInvalidPrefix('1S'),
         ),
       },
       outline: (example) {
@@ -190,8 +198,22 @@ void main() {
       },
     );
 
+    // Typing the parts moved two checks off the door and onto the boundary: an out-of-charset NSIN
+    // and a prefix carrying a digit cannot be built at all. `parse` still reports both.
+    scenario('the parts refuse what fromComponents used to report', () {
+      check(AsciiAlphanumerics.tryFrom('0378331@0')).isNull();
+      check(AsciiLetters.tryFrom('1S')).isNull();
+      check(Isin.parse('US0378331@05').reasonOrNull).equals(const IsinInvalidCharacters());
+      check(Isin.parse('1S0378331005').reasonOrNull).equals(const IsinInvalidPrefix('1S'));
+    });
+
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
-      check(() => Isin.fromComponents(prefix: 'US', nsin: '03783310').getOrThrow())
+      check(
+            () => Isin.fromComponents(
+              prefix: _letters('US'),
+              nsin: _alphanumerics('03783310'),
+            ).getOrThrow(),
+          )
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsinWrongLength(11));

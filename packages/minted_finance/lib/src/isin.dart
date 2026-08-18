@@ -27,12 +27,12 @@ import 'standards/iso_country_code.dart';
 extension type const Isin._(String value) {
   /// Builds an [Isin] from its two-letter [prefix] and nine-character [nsin], computing the check
   /// digit, reporting the [IsinFailure] when the parts don't form a valid ISIN.
-  // Both parts are alphanumeric, so they stay `String` where a digits-only part would be `Digits`.
   static ParseOutcome<IsinFailure, Isin> fromComponents({
-    required String prefix,
-    required String nsin,
+    required AsciiLetters prefix,
+    required AsciiAlphanumerics nsin,
   }) {
-    final assembledIsin = _withCheckDigit(unspacedUpperCase('$prefix$nsin'));
+    // The parts cannot carry whitespace, so only case folds here.
+    final assembledIsin = _withCheckDigit('${prefix.value}${nsin.value}'.toUpperCase());
     final failure = _failureFor(assembledIsin);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledIsin));
@@ -51,15 +51,17 @@ extension type const Isin._(String value) {
   }
 
   /// The two leading letters: the numbering agency's country, or `XS` / `EU` where none applies.
-  String get prefix => value.substring(0, _prefixLength);
+  // parse refuses anything but two letters here.
+  AsciiLetters get prefix => .tryFrom(value.substring(0, _prefixLength))!;
 
   /// Whether [prefix] names a real ISO 3166-1 country. `false` for `XS` and `EU`, which are valid
   /// ISINs all the same.
-  bool get hasCountryPrefix => isIsoCountryCode(prefix);
+  bool get hasCountryPrefix => isIsoCountryCode(prefix.value);
 
   /// The nine-character National Securities Identifying Number, which for a US or Canadian security
   /// is its CUSIP.
-  String get nsin => value.substring(_prefixLength, _checkDigitIndex);
+  // A validated ISIN is `[A-Z0-9]` throughout, so no slice can be refused.
+  AsciiAlphanumerics get nsin => .tryFrom(value.substring(_prefixLength, _checkDigitIndex))!;
 
   /// The final digit, the Luhn check over the expanded number.
   // The last character of a validated ISIN is always a digit, so tryParse cannot return null.

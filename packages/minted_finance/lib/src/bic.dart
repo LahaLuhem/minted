@@ -3,6 +3,7 @@
 
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/bic_failure.dart';
 import 'standards/iso_country_code.dart';
@@ -20,15 +21,20 @@ import 'standards/iso_country_code.dart';
 ///
 /// {@example /example/minted_finance_example.dart#bic}
 extension type const Bic._(String value) {
-  /// Builds a [Bic] from its parts, [branchCode] defaulting to the `XXX` primary office, reporting
+  /// Builds a [Bic] from its parts, a null [branchCode] meaning the `XXX` primary office, reporting
   /// the [BicFailure] when they don't form a valid BIC.
+  // Nullable rather than defaulted: a default must be const, and a constraint type has tryFrom.
   static ParseOutcome<BicFailure, Bic> fromComponents({
-    required String institutionCode,
-    required String countryCode,
-    required String locationCode,
-    String branchCode = _primaryOfficeBranch,
+    required AsciiAlphanumerics institutionCode,
+    required AsciiLetters countryCode,
+    required AsciiAlphanumerics locationCode,
+    AsciiAlphanumerics? branchCode,
   }) {
-    final assembledBic = unspacedUpperCase('$institutionCode$countryCode$locationCode$branchCode');
+    // The parts cannot carry whitespace, so only case folds here.
+    final assembledBic =
+        '${institutionCode.value}${countryCode.value}${locationCode.value}'
+                '${branchCode?.value ?? _primaryOfficeBranch}'
+            .toUpperCase();
     final failure = _failureFor(assembledBic);
 
     return failure != null
@@ -50,24 +56,27 @@ extension type const Bic._(String value) {
   }
 
   /// The business party prefix (the first four characters): for a bank, its institution code.
-  String get institutionCode => value.substring(0, _countryCodeStart);
+  // A validated BIC is `[A-Z0-9]` throughout, so no slice can be refused.
+  AsciiAlphanumerics get institutionCode => .tryFrom(value.substring(0, _countryCodeStart))!;
 
   /// The ISO 3166-1 alpha-2 country code (the fifth and sixth characters).
-  String get countryCode => value.substring(_countryCodeStart, _locationCodeStart);
+  // Alpha-2 codes are letters, and parse refuses an unknown country.
+  AsciiLetters get countryCode => .tryFrom(value.substring(_countryCodeStart, _locationCodeStart))!;
 
   /// The business party suffix (the seventh and eighth): the city or entity within the country.
   /// By SWIFT convention its second character reads `0` for a test code, `1` for a passive
   /// participant and `2` for reverse billing, meanings ISO 9362 itself does not assign.
-  String get locationCode => value.substring(_locationCodeStart, _branchCodeStart);
+  AsciiAlphanumerics get locationCode =>
+      .tryFrom(value.substring(_locationCodeStart, _branchCodeStart))!;
 
   /// The branch code (the last three characters), `XXX` for the primary office.
-  String get branchCode => value.substring(_branchCodeStart);
+  AsciiAlphanumerics get branchCode => .tryFrom(value.substring(_branchCodeStart))!;
 
   /// Whether this addresses the primary office rather than one of its branches.
-  bool get isPrimaryOffice => branchCode == _primaryOfficeBranch;
+  bool get isPrimaryOffice => branchCode.value == _primaryOfficeBranch;
 
   /// The eight-character short form, for the systems that write a BIC without its branch code.
-  String get bic8 => value.substring(0, _branchCodeStart);
+  AsciiAlphanumerics get bic8 => .tryFrom(value.substring(0, _branchCodeStart))!;
 
   /// Whether SWIFT could have issued this one. ISO 9362 allows digits in [institutionCode] and
   /// puts no restriction on [locationCode]; the registration authority still uses neither freedom.
@@ -75,7 +84,7 @@ extension type const Bic._(String value) {
 
   // The eight-character form addresses the primary office, which is what XXX spells at eleven.
   static String _withPrimaryOffice(String compactInput) =>
-      compactInput.length == _bic8Length ? '$compactInput$_primaryOfficeBranch' : compactInput;
+      compactInput.length != _bic8Length ? compactInput : '$compactInput$_primaryOfficeBranch';
 
   // Why already-compacted input is not a BIC, or null when it is one. The single gate parse and
   // fromComponents funnel through; widest check first, so the earliest wrong thing is named.

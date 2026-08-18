@@ -1,8 +1,14 @@
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_finance/minted_finance.dart';
 
 import 'support/bdd.dart';
+
+/// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
+AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
+
+AsciiAlphanumerics _alphanumerics(String value) => AsciiAlphanumerics.tryFrom(value)!;
 
 void main() {
   feature('Bic', () {
@@ -64,16 +70,16 @@ void main() {
     scenario('a branch BIC exposes each of its four parts', () {
       final parsedBic = Bic.tryParse('DEUTDEFF500')!;
 
-      check(parsedBic.institutionCode).equals('DEUT');
-      check(parsedBic.countryCode).equals('DE');
-      check(parsedBic.locationCode).equals('FF');
-      check(parsedBic.branchCode).equals('500');
-      check(parsedBic.bic8).equals('DEUTDEFF');
+      check(parsedBic.institutionCode.value).equals('DEUT');
+      check(parsedBic.countryCode.value).equals('DE');
+      check(parsedBic.locationCode.value).equals('FF');
+      check(parsedBic.branchCode.value).equals('500');
+      check(parsedBic.bic8.value).equals('DEUTDEFF');
       check(parsedBic.isPrimaryOffice).isFalse();
     });
 
     scenario('a folded BIC reports the branch it was given', () {
-      check(Bic.tryParse('DEUTDEFF')!.branchCode).equals('XXX');
+      check(Bic.tryParse('DEUTDEFF')!.branchCode.value).equals('XXX');
       check(Bic.tryParse('DEUTDEFF')!.isPrimaryOffice).isTrue();
     });
 
@@ -142,46 +148,52 @@ void main() {
       check(Bic.tryParse('DEUTACFF')).isNull();
     });
 
-    scenarioOutline<({String locationCode, String? branchCode, String bic})>(
+    scenarioOutline<
+      ({AsciiAlphanumerics locationCode, AsciiAlphanumerics? branchCode, String bic})
+    >(
       'fromComponents assembles the parts, defaulting to the primary office',
       examples: {
-        'no branch code folds to XXX': (locationCode: 'FF', branchCode: null, bic: 'DEUTDEFFXXX'),
-        'a branch code is kept': (locationCode: 'FF', branchCode: '500', bic: 'DEUTDEFF500'),
+        'no branch code folds to XXX': (
+          locationCode: _alphanumerics('FF'),
+          branchCode: null,
+          bic: 'DEUTDEFFXXX',
+        ),
+        'a branch code is kept': (
+          locationCode: _alphanumerics('FF'),
+          branchCode: _alphanumerics('500'),
+          bic: 'DEUTDEFF500',
+        ),
         'a lower-case part is folded up': (
-          locationCode: 'ff',
-          branchCode: '500',
+          locationCode: _alphanumerics('ff'),
+          branchCode: _alphanumerics('500'),
           bic: 'DEUTDEFF500',
         ),
       },
       outline: (example) {
-        final assembledBic = example.branchCode == null
-            ? Bic.fromComponents(
-                institutionCode: 'DEUT',
-                countryCode: 'DE',
-                locationCode: example.locationCode,
-              )
-            : Bic.fromComponents(
-                institutionCode: 'DEUT',
-                countryCode: 'DE',
-                locationCode: example.locationCode,
-                branchCode: example.branchCode!,
-              );
+        final assembledBic = Bic.fromComponents(
+          institutionCode: _alphanumerics('DEUT'),
+          countryCode: _letters('DE'),
+          locationCode: example.locationCode,
+          branchCode: example.branchCode,
+        );
 
         check(assembledBic.getOrThrow().value).equals(example.bic);
       },
     );
 
-    scenarioOutline<({String institutionCode, String countryCode, BicFailure failure})>(
+    scenarioOutline<
+      ({AsciiAlphanumerics institutionCode, AsciiLetters countryCode, BicFailure failure})
+    >(
       'fromComponents reports the same vocabulary as parse',
       examples: {
         'a short institution code cannot reach eight characters': (
-          institutionCode: 'DEU',
-          countryCode: 'DE',
+          institutionCode: _alphanumerics('DEU'),
+          countryCode: _letters('DE'),
           failure: const BicWrongLength(10),
         ),
         'an unregistered country is refused on assembly too': (
-          institutionCode: 'DEUT',
-          countryCode: 'ZZ',
+          institutionCode: _alphanumerics('DEUT'),
+          countryCode: _letters('ZZ'),
           failure: const BicUnknownCountry('ZZ'),
         ),
       },
@@ -190,7 +202,7 @@ void main() {
           Bic.fromComponents(
             institutionCode: example.institutionCode,
             countryCode: example.countryCode,
-            locationCode: 'FF',
+            locationCode: _alphanumerics('FF'),
           ).reasonOrNull,
         ).equals(example.failure);
       },
@@ -199,9 +211,9 @@ void main() {
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(
             () => Bic.fromComponents(
-              institutionCode: 'DEUT',
-              countryCode: 'ZZ',
-              locationCode: 'FF',
+              institutionCode: _alphanumerics('DEUT'),
+              countryCode: _letters('ZZ'),
+              locationCode: _alphanumerics('FF'),
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
