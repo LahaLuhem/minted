@@ -6,14 +6,12 @@ import 'dart:io';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
-/// Drives the real `tool/release.dart` against a throwaway bare remote.
+/// Drives the real `tool/release.dart` against a throwaway bare remote, which no `publish.yml`
+/// watches, so nothing here can reach pub.dev.
 ///
-/// The unit suites fake the process runner, so nothing there proves that the real `cider bump`,
-/// `git commit`, `git tag` and `git push --atomic` behave as the flow assumes. This does, and it
-/// cannot reach pub.dev: the remote is a local bare repo, so no publish.yml exists to trigger.
-///
-/// It caught the rollback running git in whatever directory the process started in, which every
-/// unit test passed straight over.
+/// The unit suites fake the process runner, so only this proves the real `cider bump`, commit, tag
+/// and atomic push behave as the flow assumes. It caught the rollback running git in whatever
+/// directory the process started in, which every unit test passed over.
 void main() {
   final dart = Platform.resolvedExecutable;
   final repoRoot = Directory.current.path;
@@ -64,9 +62,10 @@ void main() {
 
     void write(String path, String contents) => File('$clone/$path').writeAsStringSync(contents);
 
-    // One instant check: the preflight aborts on a manifest it cannot parse or that has none.
+    // A manifest must parse and be non-empty or the preflight aborts. Alpine, not linterpol: this
+    // proves the flow's `docker run` works, not that a linter does, and it is far smaller to pull.
     write('.github/lint-checks.json', '''
-{ "image": "ghcr.io/lahaluhem/linterpol:latest", "checks": [{ "name": "true", "cmd": "true" }] }
+{ "image": "alpine:3", "checks": [{ "name": "shell", "cmd": "true" }] }
 ''');
     write('pubspec.yaml', '''
 name: scratch_workspace

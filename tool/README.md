@@ -39,16 +39,16 @@ dart run tool/release.dart minor -m "Big new feature"   # annotated tag with thi
 
 `--repo-root DIR` releases from a different checkout instead of the one this tool lives in. It
 exists for the integration test, which cuts a real release against a throwaway clone with a local
-bare remote: no `publish.yml` lives there, so nothing can reach pub.dev. That is how `cider bump`,
-the commit, the tag and the atomic push get verified, since the unit tests fake the process runner.
+bare remote, so nothing can reach pub.dev. That is what verifies `cider bump`, the commit, the tag
+and the atomic push, which the unit tests only fake.
 
 ```bash
 dart run melos run test-release-flow    # needs git, cider and a running Docker daemon
 ```
 
-It is `integration`-tagged and so left out of the default `dart test`, which is why the plain run
-stays fast and needs no tooling. It earned its place: it caught the rollback running git in whatever
-directory the process started in, which every unit test passed straight over.
+`integration`-tagged, so the default `dart test` skips it and CI runs it in its own step. Worth the
+setup: it caught the rollback running git in whatever directory the process started in, which every
+unit test passed over.
 
 ### Which package
 
