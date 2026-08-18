@@ -5,7 +5,7 @@
 
 # minted_geography
 
-Coordinates and geohashes as well-modelled value types.
+Coordinates, geohashes and bounding boxes as well-modelled value types.
 
 Part of the [minted](https://github.com/LahaLuhem/minted) family: pure-Dart value types built on
 *parse, don't validate*, so the parser is the only door in and anything that came through it is
@@ -30,6 +30,7 @@ another domain's engine.
 |-----------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
 | `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)       |
 | `Geohash`       | a base32 cell, not a point; the four letters base32 drops are refused       | [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/) |
+| `GeoBounds`     | a box that may cross the antimeridian, which `west <= east` would refuse    | [RFC 7946 §5](https://www.rfc-editor.org/rfc/rfc7946#section-5) |
 
 A swapped latitude and longitude is a type bug no range check catches, so the pair is named at the
 boundary. It's a surface coordinate: altitude and a CRS identifier are refused rather than silently
@@ -37,6 +38,14 @@ dropped, since their sign, units and datum are all defined by the CRS.
 
 A geohash is a *cell*, not a point, which a `String` cannot say: `centre` is one point inside it and
 says so. `toLowerCase()` isn't validation either, the alphabet having dropped `a`, `i`, `l` and `o`.
+
+`west > east` is not a transposition, it is how RFC 7946 §5.2 writes a box across the antimeridian,
+so `GeoBounds` reports the crossing and `contains` honours it rather than every caller re-deriving
+the case that goes wrong near ±180.
+
+`Latitude` and `Longitude` carry the ranges, so the assembly doors prevent an impossible degree
+instead of reporting one: `GeoCoordinate.from` takes them and cannot fail, `tryFrom` takes raw
+numbers.
 
 ## A quick taste
 
@@ -53,8 +62,9 @@ GeoCoordinate.tryParse('+5012-00010/')!.latitude;          // 50.2   (degrees an
 
 GeoCoordinate.tryParse('+46+2/');   // null: an unpadded longitude is a different location
 
-// named, so it can't be written swapped:
-GeoCoordinate.from(latitude: 48.8577, longitude: 2.295);
+// named and typed, so it can't be written swapped. from cannot fail, tryFrom takes raw numbers:
+GeoCoordinate.from(latitude: Latitude.tryFrom(48.8577)!, longitude: Longitude.tryFrom(2.295)!);
+GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295);
 
 // Geohash: from takes a coordinate and cannot fail, so it hands back the value, not an outcome.
 final cell = Geohash.from(coordinate: eiffel, precision: NaturalNumber.tryFrom(5)!);
@@ -64,6 +74,13 @@ cell.centre.iso6709;   // '+48.84521484375+002.30712890625/'   inside the cell, 
 Geohash.tryParse('EZS42 ') == Geohash.tryParse('ezs42');   // true: case and padding fold away
 Geohash.tryParse('ezsa2');   // null: 'a' is not in the geohash alphabet
 ['ezs42', 'ezs41', 'u4pruy']..sort();   // spatial order free: the alphabet is ASCII-ascending
+
+// GeoBounds: west past east is a crossing, not a transposition.
+final fiji = GeoBounds.tryParse('170,-45,-170,-35')!;
+fiji.crossesAntimeridian;                                              // true
+fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 179)!);  // true
+fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 0)!);    // false, the long way round
+GeoBounds.tryParse('[-180, -90, 180, 90]')?.bbox;   // '-180.0,-90.0,180.0,90.0'   the whole world
 ```
 
 The runnable version is the

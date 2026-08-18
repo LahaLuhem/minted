@@ -111,32 +111,40 @@ void main() {
       check(GeoCoordinate.parse('+91+000/'))
           .equals(const ParseFailure(GeoCoordinateLatitudeOutOfRange(91)));
       check(GeoCoordinate.parse('+00+000/'))
-          .equals(ParseSuccess(GeoCoordinate.from(latitude: 0, longitude: 0).getOrThrow()));
+          .equals(ParseSuccess(GeoCoordinate.tryFrom(latitude: 0, longitude: 0)!));
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
       check(GeoCoordinate.tryParse('+91+000/')).isNull();
       check(GeoCoordinate.tryParse('+48.8577+002.295/'))
-          .equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow());
+          .equals(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295));
     });
 
-    scenario('from builds from decimal degrees and tryFrom returns null out of range', () {
-      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow().iso6709)
-          .equals('+48.8577+002.295/');
+    scenario('from takes constrained degrees and cannot fail, tryFrom takes raw ones', () {
+      check(
+        GeoCoordinate.from(
+          latitude: Latitude.tryFrom(48.8577)!,
+          longitude: Longitude.tryFrom(2.295)!,
+        ).iso6709,
+      ).equals('+48.8577+002.295/');
       check(GeoCoordinate.tryFrom(latitude: 90, longitude: -180)).isNotNull();
       check(GeoCoordinate.tryFrom(latitude: 90.1, longitude: 0)).isNull();
       check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180.1)).isNull();
     });
 
-    scenario('from reports which part is out of range', () {
-      check(GeoCoordinate.from(latitude: 91, longitude: 0).reasonOrNull)
+    // The range moved into the degree types, so the assembly doors prevent it rather than report
+    // it. The diagnosis survives on parse, the one door that meets text nobody has checked.
+    scenario('the degree types refuse what is out of range, and parse is what names it', () {
+      check(Latitude.tryFrom(91)).isNull();
+      check(Longitude.tryFrom(181)).isNull();
+      check(GeoCoordinate.parse('+91+000/').reasonOrNull)
           .equals(const GeoCoordinateLatitudeOutOfRange(91));
-      check(GeoCoordinate.from(latitude: 0, longitude: 181).reasonOrNull?.message)
+      check(GeoCoordinate.parse('+00+181/').reasonOrNull?.message)
           .equals('longitude 181.0 is outside -180 to 180');
     });
 
-    scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
-      check(() => GeoCoordinate.from(latitude: 91, longitude: 0).getOrThrow())
+    scenario('a caller who asserts the text gets the throw back through getOrThrow', () {
+      check(() => GeoCoordinate.parse('+91+000/').getOrThrow())
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const GeoCoordinateLatitudeOutOfRange(91));
@@ -156,32 +164,31 @@ void main() {
     });
 
     scenario('the antimeridian is one value with two spellings', () {
-      check(GeoCoordinate.from(latitude: 0, longitude: -180).getOrThrow())
-          .equals(GeoCoordinate.from(latitude: 0, longitude: 180).getOrThrow());
-      check(GeoCoordinate.from(latitude: 0, longitude: -180).getOrThrow().longitude).equals(180);
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)!)
+          .equals(GeoCoordinate.tryFrom(latitude: 0, longitude: 180)!);
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)!.longitude).equals(180);
     });
 
     // -0.0 == 0.0 while the two need not hash alike, so storing one would break Set and Map keys.
     scenario('a negative zero is normalised away', () {
       // -0 in a double context is IEEE negative zero, not integer zero.
-      final origin = GeoCoordinate.from(latitude: -0, longitude: -0).getOrThrow();
+      final origin = GeoCoordinate.tryFrom(latitude: -0, longitude: -0)!;
 
       check(origin.iso6709).equals('+00+000/');
-      check(origin.hashCode)
-          .equals(GeoCoordinate.from(latitude: 0, longitude: 0).getOrThrow().hashCode);
+      check(origin.hashCode).equals(GeoCoordinate.tryFrom(latitude: 0, longitude: 0)!.hashCode);
     });
 
     scenario('equal coordinates are equal by value and hash', () {
-      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow())
-          .equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow());
-      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow().hashCode)
-          .equals(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow().hashCode);
+      check(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!)
+          .equals(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!);
+      check(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!.hashCode)
+          .equals(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!.hashCode);
     });
 
     scenario('a transposed pair is not the same coordinate', () {
       check(
-        GeoCoordinate.from(latitude: 40, longitude: 2).getOrThrow() ==
-            GeoCoordinate.from(latitude: 2, longitude: 40).getOrThrow(),
+        GeoCoordinate.tryFrom(latitude: 40, longitude: 2)! ==
+            GeoCoordinate.tryFrom(latitude: 2, longitude: 40)!,
       ).isFalse();
     });
 
@@ -205,10 +212,7 @@ void main() {
     // The canonical form spells at most 20 fraction digits, so a finer degree is snapped to one it
     // can. Without that, distinct coordinates render alike and the rendering reads back as neither.
     scenario('a degree finer than the canonical form can spell is snapped to one it can', () {
-      final subAtomic = GeoCoordinate.from(
-        latitude: 3.7182818284590454e-13,
-        longitude: 0,
-      ).getOrThrow();
+      final subAtomic = GeoCoordinate.tryFrom(latitude: 3.7182818284590454e-13, longitude: 0)!;
 
       check(GeoCoordinate.tryParse(subAtomic.iso6709)!).equals(subAtomic);
       check(GeoCoordinate.tryParse('+00.00000000000000000001+000.0000/')!.latitude).equals(1e-20);
@@ -216,29 +220,29 @@ void main() {
     });
 
     scenario('a degree that snaps to zero from below is still a positive zero', () {
-      final southOfNothing = GeoCoordinate.from(latitude: -1e-30, longitude: -1e-30).getOrThrow();
+      final southOfNothing = GeoCoordinate.tryFrom(latitude: -1e-30, longitude: -1e-30)!;
 
       check(southOfNothing.iso6709).equals('+00+000/');
       check(southOfNothing.hashCode)
-          .equals(GeoCoordinate.from(latitude: 0, longitude: 0).getOrThrow().hashCode);
+          .equals(GeoCoordinate.tryFrom(latitude: 0, longitude: 0)!.hashCode);
     });
 
     scenario('sexagesimal rebuilds the display form', () {
       check(GeoCoordinate.tryParse('+48.8577+002.295/')!.sexagesimal)
           .equals('48°51′27.72″N 2°17′42″E');
       check(GeoCoordinate.tryParse('+00-025/')!.sexagesimal).equals('0°00′00″N 25°00′00″W');
-      check(GeoCoordinate.from(latitude: 5.5 / 3600, longitude: 0).getOrThrow().sexagesimal)
+      check(GeoCoordinate.tryFrom(latitude: 5.5 / 3600, longitude: 0)!.sexagesimal)
           .equals('0°00′05.5″N 0°00′00″E');
     });
 
     // Rounding the seconds field instead would print 0°59′60″N.
     scenario('a rounded second carries into the minute and the degree', () {
-      check(GeoCoordinate.from(latitude: 0.99999999, longitude: 0).getOrThrow().sexagesimal)
+      check(GeoCoordinate.tryFrom(latitude: 0.99999999, longitude: 0)!.sexagesimal)
           .equals('1°00′00″N 0°00′00″E');
     });
 
     scenario('toString names both parts, so a transposition is visible', () {
-      check(GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow().toString())
+      check(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!.toString())
           .equals('GeoCoordinate(latitude: 48.8577, longitude: 2.295)');
     });
   });

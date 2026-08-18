@@ -10,7 +10,7 @@ Geohash _geohash({required GeoCoordinate coordinate, required int precision}) =>
     Geohash.from(coordinate: coordinate, precision: NaturalNumber.tryFrom(precision)!);
 
 void main() {
-  final eiffelTower = GeoCoordinate.from(latitude: 48.8577, longitude: 2.295).getOrThrow();
+  final eiffelTower = GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!;
 
   feature('Geohash', () {
     // Acceptance and normalisation in one table: the canonical form doubles as the expected outcome.
@@ -63,13 +63,13 @@ void main() {
     scenario('from encodes the published vectors', () {
       check(
         _geohash(
-          coordinate: GeoCoordinate.from(latitude: 42.6, longitude: -5.6).getOrThrow(),
+          coordinate: GeoCoordinate.tryFrom(latitude: 42.6, longitude: -5.6)!,
           precision: 5,
         ).value,
       ).equals('ezs42');
       check(
         _geohash(
-          coordinate: GeoCoordinate.from(latitude: 57.64911, longitude: 10.40744).getOrThrow(),
+          coordinate: GeoCoordinate.tryFrom(latitude: 57.64911, longitude: 10.40744)!,
           precision: 11,
         ).value,
       ).equals('u4pruydqqvj');
@@ -102,7 +102,7 @@ void main() {
     scenario('the north-east corner of the grid is all z', () {
       check(
         _geohash(
-          coordinate: GeoCoordinate.from(latitude: 90, longitude: 180).getOrThrow(),
+          coordinate: GeoCoordinate.tryFrom(latitude: 90, longitude: 180)!,
           precision: 6,
         ).value,
       ).equals('zzzzzz');
@@ -113,7 +113,7 @@ void main() {
     scenario('the west spelling of the antimeridian arrives already folded', () {
       check(
         _geohash(
-          coordinate: GeoCoordinate.from(latitude: -90, longitude: -180).getOrThrow(),
+          coordinate: GeoCoordinate.tryFrom(latitude: -90, longitude: -180)!,
           precision: 6,
         ).value,
       ).equals('pbpbpb');

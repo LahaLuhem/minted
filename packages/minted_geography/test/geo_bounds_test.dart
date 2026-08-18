@@ -189,8 +189,28 @@ void main() {
           .equals(ParseSuccess(GeoBounds.tryFrom(west: -10, south: -45, east: 10, north: -35)!));
     });
 
-    scenario('from builds from four numbers and tryFrom returns null when they are not a box', () {
-      check(GeoBounds.from(west: -10, south: -45, east: 10, north: -35).getOrThrow().bbox)
+    // Constrained edges leave one way to fail, so from still answers an outcome where
+    // GeoCoordinate.from became total.
+    scenario('from takes constrained degrees and only the latitude order can still fail', () {
+      final ordered = GeoBounds.from(
+        west: Longitude.tryFrom(-10)!,
+        south: Latitude.tryFrom(-45)!,
+        east: Longitude.tryFrom(10)!,
+        north: Latitude.tryFrom(-35)!,
+      );
+      final inverted = GeoBounds.from(
+        west: Longitude.tryFrom(-10)!,
+        south: Latitude.tryFrom(50)!,
+        east: Longitude.tryFrom(10)!,
+        north: Latitude.tryFrom(10)!,
+      );
+
+      check(ordered.getOrThrow().bbox).equals('-10.0,-45.0,10.0,-35.0');
+      check(inverted.reasonOrNull).equals(const GeoBoundsSouthAboveNorth(south: 50, north: 10));
+    });
+
+    scenario('tryFrom takes raw numbers and returns null when they are not a box', () {
+      check(GeoBounds.tryFrom(west: -10, south: -45, east: 10, north: -35)!.bbox)
           .equals('-10.0,-45.0,10.0,-35.0');
       check(GeoBounds.tryFrom(west: 170, south: -45, east: -170, north: -35)).isNotNull();
       check(GeoBounds.tryFrom(west: 0, south: 50, east: 10, north: 10)).isNull();
@@ -198,7 +218,7 @@ void main() {
     });
 
     scenario('a caller who asserts the edges gets the throw back through getOrThrow', () {
-      check(() => GeoBounds.from(west: 0, south: 50, east: 10, north: 10).getOrThrow())
+      check(() => GeoBounds.parse('0,50,10,10').getOrThrow())
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const GeoBoundsSouthAboveNorth(south: 50, north: 10));

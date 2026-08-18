@@ -11,3 +11,5 @@ export 'src/failures/geohash_failure.dart';
 export 'src/geo_bounds.dart';
 export 'src/geo_coordinate.dart';
 export 'src/geohash.dart';
+export 'src/latitude.dart';
+export 'src/longitude.dart';

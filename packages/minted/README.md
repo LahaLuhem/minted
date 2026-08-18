@@ -324,7 +324,14 @@ eiffel.sexagesimal; // '48°51′27.72″N 2°17′42″E'   (display form)
 GeoCoordinate.tryParse('+485127.72+0021742/') == eiffel;   // true
 
 GeoCoordinate.tryParse('+46+2/');   // null: an unpadded longitude is a different location
-GeoCoordinate.from(latitude: 48.8577, longitude: 2.295);   // named, so it can't be written swapped
+GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295);   // raw numbers, null out of range
+
+// A bounding box keeps the antimeridian crossing a fact: west past east is how RFC 7946 spells it,
+// and a `west <= east` check would refuse Fiji outright.
+final fiji = GeoBounds.tryParse('170,-45,-170,-35')!;
+fiji.crossesAntimeridian;                                     // true
+fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 179)!);   // true
+fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 0)!);     // false, the long way round
 
 // Geohash: a cell, not a point, so the centre names itself rather than posing as the input:
 final cell = Geohash.from(coordinate: eiffel, precision: NaturalNumber.tryFrom(5)!);

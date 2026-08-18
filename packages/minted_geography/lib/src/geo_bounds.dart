@@ -1,9 +1,10 @@
 import 'package:meta/meta.dart';
-import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
 
 import 'failures/geo_bounds_failure.dart';
 import 'geo_coordinate.dart';
+import 'latitude.dart';
+import 'longitude.dart';
 import 'standards/coordinate_bounds.dart';
 
 /// A bounding box: the rectangle between a west, south, east and north edge, which may cross the
@@ -14,15 +15,15 @@ import 'standards/coordinate_bounds.dart';
 /// the antimeridian, so `170,-45,-170,-35` is Fiji rather than most of the planet.
 /// [crossesAntimeridian] reports it and [contains] honours it, which is the bug this type deletes.
 ///
-/// The edges are numbers, not two [GeoCoordinate] corners: a coordinate folds `-180` onto `+180`,
-/// which is one point with two spellings but two distinct edges, and the whole-world box is written
-/// `-180,-90,180,90`. Corners are still range-checked through [GeoCoordinate].
+/// The edges are a [Longitude] and a [Latitude] pair, not two [GeoCoordinate] corners: a coordinate
+/// folds `-180` onto `+180`, one point with two spellings but two distinct edges, and the
+/// whole-world box is written `-180,-90,180,90`. So [from] takes constrained degrees and leaves
+/// only the latitude order to fail, while [tryFrom] takes raw numbers.
 ///
-/// A zero-width (`west == east`) or zero-height (`south == north`) box is legal and degenerate: it
-/// holds its own edge, not the planet.
+/// A zero-width (`west == east`) or zero-height box is legal and degenerate: it holds its own edge,
+/// not the planet.
 ///
-/// Normalisation on parse: input is trimmed, one surrounding pair of brackets is dropped, and a
-/// negative zero becomes positive.
+/// Normalisation on parse: input is trimmed and one surrounding pair of brackets is dropped.
 ///
 /// Equality is by value over the four edges.
 ///
@@ -44,38 +45,46 @@ final class GeoBounds {
 
   const new _({required this.west, required this.south, required this.east, required this.north});
 
-  /// The box with these four edges, reporting the [GeoBoundsFailure] when a corner is out of range
-  /// or the latitudes are the wrong way round. Named parameters, so the four numbers cannot be
-  /// written in the wrong order.
+  /// The box with these four edges, reporting [GeoBoundsSouthAboveNorth] when the latitudes are the
+  /// wrong way round. The only failure left: the edges carry their own ranges, and west past east
+  /// is the crossing rather than a mistake.
   static ParseOutcome<GeoBoundsFailure, GeoBounds> from({
-    required double west,
-    required double south,
-    required double east,
-    required double north,
-  }) {
-    final failure = _edgeFailure(west: west, south: south, east: east, north: north);
+    required Longitude west,
+    required Latitude south,
+    required Longitude east,
+    required Latitude north,
+  }) => south.value > north.value
+      ? ParseFailure(GeoBoundsSouthAboveNorth(south: south.value, north: north.value))
+      : ParseSuccess(
+          GeoBounds._(west: west.value, south: south.value, east: east.value, north: north.value),
+        );
 
-    // A negative zero equals a positive one while hashing differently, so it cannot be stored.
-    return failure != null
-        ? ParseFailure(failure)
-        : ParseSuccess(
-            GeoBounds._(
-              west: positiveZeroed(west),
-              south: positiveZeroed(south),
-              east: positiveZeroed(east),
-              north: positiveZeroed(north),
-            ),
-          );
-  }
-
-  /// The box with these four edges, or `null` when one is out of range or the latitudes are the
-  /// wrong way round. Derived from [from], so the two cannot diverge.
+  /// The box with these four edges in decimal degrees, or `null` when one is out of range or the
+  /// latitudes are the wrong way round. The raw-number door, where [from] takes degrees already
+  /// constrained.
   static GeoBounds? tryFrom({
-    required double west,
-    required double south,
-    required double east,
-    required double north,
-  }) => from(west: west, south: south, east: east, north: north).getOrNull();
+    required num west,
+    required num south,
+    required num east,
+    required num north,
+  }) {
+    final boundedWest = Longitude.tryFrom(west);
+    final boundedSouth = Latitude.tryFrom(south);
+    final boundedEast = Longitude.tryFrom(east);
+    final boundedNorth = Latitude.tryFrom(north);
+
+    return boundedWest == null ||
+            boundedSouth == null ||
+            boundedEast == null ||
+            boundedNorth == null
+        ? null
+        : from(
+            west: boundedWest,
+            south: boundedSouth,
+            east: boundedEast,
+            north: boundedNorth,
+          ).getOrNull();
+  }
 
   /// Parses [input] as a GeoJSON `bbox`, or returns `null` unless it is four numbers naming a box.
   static GeoBounds? tryParse(String input) => parse(input).getOrNull();
@@ -83,10 +92,22 @@ final class GeoBounds {
   /// Parses [input] as a GeoJSON `bbox`, reporting the [GeoBoundsFailure] that names what broke.
   static ParseOutcome<GeoBoundsFailure, GeoBounds> parse(String input) {
     final numbers = _numbersOf(input);
+    if (numbers == null) return const ParseFailure(GeoBoundsNotFourNumbers());
 
-    return numbers == null
-        ? const ParseFailure(GeoBoundsNotFourNumbers())
-        : from(west: numbers.west, south: numbers.south, east: numbers.east, north: numbers.north);
+    final (:west, :south, :east, :north) = numbers;
+    final cornerFailure =
+        degreesFailure(latitude: south, longitude: west) ??
+        degreesFailure(latitude: north, longitude: east);
+
+    // Past the diagnosis every edge is in range, so the constrained doors cannot answer null.
+    return cornerFailure != null
+        ? ParseFailure(GeoBoundsInvalidCorner(cornerFailure))
+        : from(
+            west: Longitude.tryFrom(west)!,
+            south: Latitude.tryFrom(south)!,
+            east: Longitude.tryFrom(east)!,
+            north: Latitude.tryFrom(north)!,
+          );
   }
 
   /// The canonical GeoJSON `bbox` text, `west,south,east,north` (e.g.
@@ -126,22 +147,6 @@ final class GeoBounds {
   bool _spansLongitude(double longitude) => crossesAntimeridian
       ? longitude >= west || longitude <= east
       : longitude >= west && longitude <= east;
-
-  // Why these edges are not a box, or null when they are. The corners go through GeoCoordinate, so
-  // the range diagnosis has one producer rather than four variants re-declared here.
-  static GeoBoundsFailure? _edgeFailure({
-    required double west,
-    required double south,
-    required double east,
-    required double north,
-  }) {
-    final cornerFailure =
-        GeoCoordinate.from(latitude: south, longitude: west).reasonOrNull ??
-        GeoCoordinate.from(latitude: north, longitude: east).reasonOrNull;
-    if (cornerFailure != null) return GeoBoundsInvalidCorner(cornerFailure);
-
-    return south > north ? GeoBoundsSouthAboveNorth(south: south, north: north) : null;
-  }
 
   // The four numbers in [input], or null when it holds anything else.
   static ({double west, double south, double east, double north})? _numbersOf(String input) {

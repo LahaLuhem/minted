@@ -8,6 +8,8 @@ import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
 
 import 'failures/geo_coordinate_failure.dart';
+import 'latitude.dart';
+import 'longitude.dart';
 import 'standards/coordinate_bounds.dart';
 
 /// A point on the Earth's surface: a latitude and a longitude, in decimal degrees.
@@ -19,6 +21,10 @@ import 'standards/coordinate_bounds.dart';
 /// [longitude] within `-180` to `180`. [parse] reads all three ISO 6709 widths, where the number of
 /// degree digits selects the unit: degrees, degrees-minutes, or degrees-minutes-seconds.
 /// Standard: [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709).
+///
+/// Two assembly doors, so the range is prevented rather than reported where it can be:
+/// [GeoCoordinate.from] takes a [Latitude] and a [Longitude] and cannot fail, [tryFrom] takes raw
+/// numbers.
 ///
 /// Normalisation on parse: input is trimmed, sexagesimal becomes decimal degrees ([iso6709]),
 /// `-180` becomes `+180` (one meridian, two spellings), a negative zero becomes positive, the sign
@@ -46,22 +52,25 @@ final class GeoCoordinate {
     positiveZeroed(_renderable(longitude == -maxLongitude ? maxLongitude : longitude)),
   );
 
-  /// The coordinate at [latitude] and [longitude] decimal degrees, reporting the
-  /// [GeoCoordinateFailure] when either leaves its range. Named parameters, so a transposed pair
-  /// cannot be written by accident.
-  static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> from({
-    required double latitude,
-    required double longitude,
-  }) {
-    final failure = _rangeFailure(latitude, longitude);
-
-    return failure != null ? ParseFailure(failure) : ParseSuccess(._canonical(latitude, longitude));
-  }
+  /// The coordinate at [latitude] and [longitude]. Cannot fail: each parameter carries its own
+  /// range, and neither can be written where the other belongs.
+  //
+  // A constructor rather than the family's usual static door, because it is total: a ParseOutcome
+  // return is what stops the others being constructors.
+  factory from({required Latitude latitude, required Longitude longitude}) =>
+      GeoCoordinate._canonical(latitude.value, longitude.value);
 
   /// The coordinate at [latitude] and [longitude] decimal degrees, or `null` when either leaves its
-  /// range. A `NaN` is out of range on both. Derived from [from], so the two cannot diverge.
-  static GeoCoordinate? tryFrom({required double latitude, required double longitude}) =>
-      from(latitude: latitude, longitude: longitude).getOrNull();
+  /// range. A `NaN` is out of range on both. The raw-number door, where [GeoCoordinate.from] takes
+  /// degrees already constrained.
+  static GeoCoordinate? tryFrom({required num latitude, required num longitude}) {
+    final boundedLatitude = Latitude.tryFrom(latitude);
+    final boundedLongitude = Longitude.tryFrom(longitude);
+
+    return boundedLatitude == null || boundedLongitude == null
+        ? null
+        : GeoCoordinate.from(latitude: boundedLatitude, longitude: boundedLongitude);
+  }
 
   /// Parses [input] as an ISO 6709 latitude and longitude, or returns `null` unless it is exactly
   /// that shape (signed, fixed-width, closed by `/`, no altitude) and both parts are in range.
@@ -74,7 +83,7 @@ final class GeoCoordinate {
     if (degrees == null) return const ParseFailure(GeoCoordinateNotIso6709());
 
     final (:latitude, :longitude) = degrees;
-    final failure = _rangeFailure(latitude, longitude);
+    final failure = degreesFailure(latitude: latitude, longitude: longitude);
 
     return failure != null ? ParseFailure(failure) : ParseSuccess(._canonical(latitude, longitude));
   }
@@ -105,17 +114,6 @@ final class GeoCoordinate {
   // itself. Identity above 1e-20 degrees. Why: `APPENDIX.md#geo-coordinate-value-type`.
   static double _renderable(double degrees) =>
       double.parse(degrees.toStringAsFixed(_maxFractionDigits));
-
-  // Why these degrees are out of range, or null when they are not. The one gate from, tryFrom, and
-  // parse funnel through, so a diagnosis and an acceptance cannot disagree.
-  static GeoCoordinateFailure? _rangeFailure(double latitude, double longitude) {
-    if (!_isWithin(latitude, maxLatitude)) return GeoCoordinateLatitudeOutOfRange(latitude);
-
-    return _isWithin(longitude, maxLongitude) ? null : GeoCoordinateLongitudeOutOfRange(longitude);
-  }
-
-  // A positive test rather than `< -bound || > bound`, so a NaN falls out as out of range.
-  static bool _isWithin(double degrees, double bound) => degrees >= -bound && degrees <= bound;
 
   // Both parts of an ISO 6709 string in decimal degrees, or null when the input isn't that shape.
   static ({double latitude, double longitude})? _degreesOf(String input) {

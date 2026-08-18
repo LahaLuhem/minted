@@ -81,10 +81,10 @@ extension type const Geohash._(String value) {
     final intervals = _cellOf(value);
 
     // Midpoints of the halved full ranges, so neither part can leave its own.
-    return GeoCoordinate.from(
+    return GeoCoordinate.tryFrom(
       latitude: _middleOf(intervals[_latitudeAxis]),
       longitude: _middleOf(intervals[_longitudeAxis]),
-    ).getOrThrow();
+    )!;
   }
 
   // Why normalised input is not a geohash, or null when it is one. The one gate parse funnels
