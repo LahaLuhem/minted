@@ -1,7 +1,37 @@
 # Migrating minted
 
-Newest first. [3.0.0](#migrating-to-minted-300) splits the package up;
+Newest first. [4.0.0](#migrating-to-minted-400) moves the primitives out;
+[3.0.0](#migrating-to-minted-300) splits the package up;
 [2.0.0](#migrating-to-minted-200) removed every implicit throw.
+
+## Migrating to minted 4.0.0
+
+The primitives left core for `minted_constraints`, so `minted` now holds the outcome vocabulary
+alone. **No type, method or behaviour changed**: add one dependency and let the compiler find the
+imports.
+
+```sh
+dart pub add minted_constraints
+```
+
+| Moved to `minted_constraints` | Still in `minted` |
+|---|---|
+| `Digit`, `Digits` | `ParseOutcome`, `ParseSuccess`, `ParseFailure` |
+| `Uint`, `Uint2` … `Uint32`, `NaturalNumber` | `MintedFailure` |
+| `Percentage`, `Probability` | `MintedFormatError` |
+
+Core cannot re-export them, because `minted_constraints` depends on `minted` and the reverse edge
+would be a cycle. That is why this is a major rather than a silent move.
+
+Every sibling took a major in the same release for the same reason: name a primitive one of their
+getters returns (`Isbn.prefix`, `Iban.bban`, `Geohash.from`'s precision) and you need the new
+dependency too.
+
+**One behavioural change rides along**, in `minted_finance`: `Bic`, `Iban` and `Isin` now take and
+return `AsciiLetters` / `AsciiAlphanumerics` where they took `String`. `Bic.fromComponents`'s
+`branchCode` became nullable, since a typed default cannot be `const`; pass `null` for the `XXX`
+primary office. Reach for `.value` where you want the text back, and note the parts no longer accept
+whitespace, which `fromComponents` used to strip.
 
 ## Migrating to minted 3.0.0
 

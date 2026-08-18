@@ -18,8 +18,10 @@ canonical spelling.
 dart pub add minted_network
 ```
 
-[`minted`](https://pub.dev/packages/minted) comes with it, holding the shared vocabulary
-(`ParseOutcome`, `MintedFailure`, `Digit`, `Digits`, the `Uint` tower). Nothing here drags in
+[`minted`](https://pub.dev/packages/minted) comes with it, holding the vocabulary a parse hands back
+(`ParseOutcome`, `MintedFailure`), and so does
+[`minted_constraints`](https://pub.dev/packages/minted_constraints) for the primitives this package's
+getters return. Nothing here drags in
 another domain's engine, and it's pure Dart, so unlike `InternetAddress` it works on the web too.
 
 ## What's in the box
@@ -100,5 +102,5 @@ The runnable version is the
 - `Port` is a constraint on a number rather than a parsed text form, so it takes `tryFrom(int)` and
   carries no failure vocabulary: with one invariant, `null` says everything a failure could
 
-The [`minted` README](https://pub.dev/packages/minted) is the family guide: the whole catalogue,
+The [`minted` README](https://pub.dev/packages/minted) is the family guide: the package index,
 handling failures, and the one caveat (never cast into a minted type).
