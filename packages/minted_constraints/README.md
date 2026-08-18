@@ -19,16 +19,25 @@ dart pub add minted_constraints
 
 ## What's in the box
 
-| Type          | What it guarantees                                              |
-|---------------|-----------------------------------------------------------------|
-| `Char`        | exactly one character a reader sees: one grapheme cluster       |
-| `Letter`      | one `Char` whose base is a Unicode letter, in any script        |
-| `AsciiChar`   | exactly one ASCII character                                     |
-| `AsciiLetter` | exactly one ASCII letter, `A`-`Z`, `a`-`z`                      |
+| Type                 | What it guarantees                                         |
+|----------------------|------------------------------------------------------------|
+| `Char`               | exactly one character a reader sees: one grapheme cluster  |
+| `Letter`             | one `Char` whose base rune is a Unicode letter, any script |
+| `Letters`            | one or more `Letter`s                                      |
+| `AsciiChar`          | exactly one ASCII character                                |
+| `AsciiAlphanumeric`  | one ASCII letter or digit                                  |
+| `AsciiAlphanumerics` | one or more of those: a BIC code, a BBAN, an NSIN          |
+| `AsciiLetter`        | exactly one ASCII letter, `A`-`Z`, `a`-`z`                 |
+| `AsciiLetters`       | one or more of those                                       |
 
 A "single character" field is a `String` in almost every codebase, which means it accepts none and
-accepts twenty. Every narrowing is declared, so `AsciiLetter` is an `AsciiChar`, a `Letter` and a
-`Char`, and passes wherever any of them is wanted.
+accepts twenty. Every narrowing on the singulars is declared, so an `AsciiLetter` is an
+`AsciiAlphanumeric`, an `AsciiChar`, a `Letter` and a `Char`, and passes wherever any of them is
+wanted.
+
+The plurals are extension types over `String` too, not `Iterable`s, because text is what they are:
+string equality and printing are the behaviour you want. The elements are a getter away
+(`letters`, `alphanumerics`).
 
 Control characters are admitted rather than refused: a delimiter or a padding character is often one,
 and a tab is a character by any reading. `AsciiChar.isControl` reports the narrower shape instead.

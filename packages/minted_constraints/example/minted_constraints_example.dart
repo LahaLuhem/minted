@@ -27,4 +27,14 @@ void main() {
   print(Letter.tryFrom('e\u{0301}')?.value); // a decomposed accent is one letter
   print(Letter.tryFrom('\u{1F44D}')); // null (one character, but no letter)
   // #endregion
+
+  // The plurals hold text, so they are extension types over String, with the elements on a getter.
+  // #region plurals
+  final initials = Letters.tryFrom('J\u{00D8}')!;
+  print(initials.value); // JO with stroke
+  print(initials.letters.map((letter) => letter.value).toList()); // [J, O with stroke]
+  print(AsciiAlphanumerics.tryFrom('NWBK60161331926819')?.value); // a BBAN
+  print(AsciiAlphanumerics.tryFrom('NWBK 6016')); // null (a grouped BBAN is not the charset)
+  print(AsciiLetters.tryFrom('GB')?.value); // GB
+  // #endregion
 }
