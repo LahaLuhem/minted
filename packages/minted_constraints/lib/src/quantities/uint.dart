@@ -12,7 +12,7 @@ library;
 /// [value] is the numeric value; the string form is `value.toString()`.
 ///
 /// {@example /example/minted_constraints_example.dart#quantities}
-extension type const Uint._(int value) {
+extension type const Uint._(int value) implements int {
   /// The [Uint] with numeric [value], or `null` when it is negative.
   static Uint? tryFrom(int value) => value < 0 ? null : ._(value);
 }

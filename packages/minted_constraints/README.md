@@ -82,5 +82,7 @@ The runnable version is the
 - no `parse` door, because no standard defines the text form of "one character"
 - no failure vocabulary: one invariant leaves nothing a failure could say that `null` does not
 - value equality and the printed form come from the representation, since each is an extension type
+- most implement that representation, so a `Digit` is an `int` and an `AsciiLetter` a `String` for
+  reading, while neither can be written from one. Four opt out, and say why in their own docs
 
 The [`minted` README](https://pub.dev/packages/minted) is the family guide.

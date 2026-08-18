@@ -15,7 +15,7 @@ import 'percentage.dart';
 /// [value] is the numeric value; the string form is `value.toString()`.
 ///
 /// {@example /example/minted_constraints_example.dart#probability}
-extension type const Probability._(double value) {
+extension type const Probability._(double value) implements double {
   /// The [Probability] with numeric [value], or `null` unless it is `0` to `1`. A `NaN` is out of
   /// range, since the bound is written as a positive test.
   static Probability? tryFrom(num value) =>

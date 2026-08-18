@@ -10,6 +10,9 @@ import 'package:minted/internal.dart';
 /// > **Deliberately unbounded.** 250% growth and -12% churn are real values, so the only invariant
 /// > is finiteness. Why: `APPENDIX.md#percentage-constraint-type`.
 ///
+/// Does not implement `double`, unlike its neighbours: [value] is the percent, so
+/// `percentage * 200` would read as fifteen percent of 200 and compute 3000. [of] means it.
+///
 /// [value] is the percent; the string form is `value.toString()`.
 ///
 /// {@example /example/minted_constraints_example.dart#percentage}

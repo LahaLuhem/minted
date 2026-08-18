@@ -3,7 +3,7 @@ import 'ascii_letter.dart';
 /// One or more [AsciiLetter]s.
 ///
 /// {@example /example/minted_constraints_example.dart#plurals}
-extension type const AsciiLetters._(String value) {
+extension type const AsciiLetters._(String value) implements String {
   /// The [AsciiLetters] spelled by [value], or `null` unless it is all ASCII letters.
   static AsciiLetters? tryFrom(String value) => !_letters.hasMatch(value) ? null : ._(value);
 

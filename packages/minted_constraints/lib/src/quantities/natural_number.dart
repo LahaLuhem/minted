@@ -13,7 +13,7 @@ library;
 /// [value] is the numeric value; the string form is `value.toString()`.
 ///
 /// {@example /example/minted_constraints_example.dart#quantities}
-extension type const NaturalNumber._(int value) {
+extension type const NaturalNumber._(int value) implements int {
   /// The [NaturalNumber] with numeric [value], or `null` unless it is `1` or more.
   static NaturalNumber? tryFrom(int value) => value <= 0 ? null : ._(value);
 }

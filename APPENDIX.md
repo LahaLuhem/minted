@@ -1165,9 +1165,8 @@ taxes every read: `coordinate.latitude * 2` becomes `.value * 2`, and a box buil
 coordinate's parts re-proves degrees that were already proven. Implementing the representation
 removes that and keeps every guarantee, checked rather than assumed: a raw `double`, a `Longitude`
 and a `List<double>` are each still refused where a `Latitude` is wanted, and `lat * 2` stays a
-`double`, so arithmetic cannot re-enter the type. Not a family-wide posture, though. `Percentage`
-holds `15` for fifteen percent, so `implements double` would let `percentage * 200` compile as
-exactly the bug that type exists to prevent. Scope recorded on issue #70.
+`double`, so arithmetic cannot re-enter the type. The family's posture, and the two types left
+opaque, are in [constraint types](#constraint-types).
 
 **`parse` still diagnoses, text being where unchecked input arrives.** A constraint type answers
 `null` and names nothing, right for a caller who picked that door and wrong for a form field
@@ -1559,6 +1558,22 @@ enum would carry a single variant meaning "out of range", which is what `null` a
 same reasoning caught up with `Digit`, `Digits` and `Weekday` in v2: once their throwing doors went,
 their vocabularies had no producer and went too.
 
+**Most implement their representation, which is the read side of the same bargain.** An opaque
+constraint type taxes every read: `digit.value + 1`, and a re-check whenever a constrained value
+meets a door wanting the primitive. `implements int` removes that and keeps every guarantee,
+checked rather than assumed: a raw `int`, a sibling constraint type and a `List<int>` are each
+still refused where the constrained type is wanted, and `digit + 1` yields a plain `int`, so
+arithmetic cannot re-enter the type. Additive rather than breaking, the workspace having compiled
+unchanged when it landed; the one edge is inference, `[digit, 7]` moving from `List<Object>` to
+`List<int>`.
+
+**Two exceptions, both where an inherited member would read as a lie.** `Percentage` holds `15`
+for fifteen percent, so `percentage * 200` would compute `3000` while reading as fifteen percent
+of 200. `Char`, `Letter` and `Letters` guarantee characters where `length` counts code units,
+which for one emoji is `2`. The five `Ascii*` types escape it, code units and characters
+coinciding there, and only `AsciiChar`, `AsciiLetters` and `AsciiAlphanumerics` declare it, the
+other two inheriting through the narrowing lattice.
+
 **Two types, not one.** `Uint` (`>= 0`) and `NaturalNumber` (`> 0`) differ by a single value, and
 that value is the point: an empty cart is a real count, a page size of zero is not. One type would
 push the zero check back to every call site, which is the hand-checking this package deletes.
@@ -1574,7 +1589,7 @@ it does range-check correctly, but every result is still a `Uint`, so nothing st
 a nibble slot; the analyzer stays silent. As separate types it rejects that, which is the point.
 (`Uint.4(…)` is not spellable at all: a Dart member name cannot start with a digit.)
 
-**Widening is deferred, not impossible.** A `Uint4` currently needs `Uint8.tryFrom(nibble.value)` to
+**Widening is deferred, not impossible.** A `Uint4` currently needs `Uint8.tryFrom(nibble)` to
 become a byte, which is friction in the one direction that cannot fail. One `implements` clause per
 type removes it: `Uint2 implements Uint4` up through `Uint32 implements Uint`, with
 `NaturalNumber implements Uint` alongside. Verified to give free widening while still rejecting every

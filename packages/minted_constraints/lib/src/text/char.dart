@@ -13,6 +13,8 @@ import 'package:characters/characters.dart';
 /// Control characters are admitted, as on [AsciiChar]. Where only a letter belongs, use [Letter].
 ///
 /// {@example /example/minted_constraints_example.dart#char}
+// Does not implement String, unlike the Ascii types: a grapheme can span two code units, so
+// `length` would answer 2. Letter and Letters are opaque for the same reason.
 extension type const Char._(String value) {
   /// The [Char] spelled by [value], or `null` unless it is exactly one character.
   static Char? tryFrom(String value) =>
