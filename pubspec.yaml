@@ -10,6 +10,7 @@ workspace:
   - packages/minted
   - packages/minted_chronology
   - packages/minted_conformance
+  - packages/minted_constraints
   - packages/minted_contact
   - packages/minted_finance
   - packages/minted_geography
