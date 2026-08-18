@@ -17,8 +17,8 @@ well-formed by construction. Once you hold a `Date`, it *is* a real calendar dat
 dart pub add minted_chronology
 ```
 
-[`minted`](https://pub.dev/packages/minted) comes with it, holding the shared vocabulary
-(`ParseOutcome`, `MintedFailure`, `Digit`, `Digits`, the `Uint` tower). Nothing here drags in
+[`minted`](https://pub.dev/packages/minted) comes with it, holding the vocabulary a parse hands back
+(`ParseOutcome`, `MintedFailure`). Nothing here drags in
 another domain's engine.
 
 ## What's in the box
@@ -75,5 +75,5 @@ The runnable version is the
 - `Weekday` is a classification rather than a parsed value, so it takes `tryFrom(isoDayNumber)`
   instead of a parse door
 
-The [`minted` README](https://pub.dev/packages/minted) is the family guide: the whole catalogue,
+The [`minted` README](https://pub.dev/packages/minted) is the family guide: the package index,
 handling failures, and the one caveat (never cast into a minted type).

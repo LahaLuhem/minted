@@ -7,9 +7,9 @@
 
 Constraint types: primitives carrying a constraint, with no standard defining their text form.
 
-Part of the [minted](https://github.com/LahaLuhem/minted) family. These are the building blocks the
-domain types are cut from, so **nothing here depends on `package:minted`**: take it alone and you
-never meet the outcome machinery.
+Part of the [minted](https://github.com/LahaLuhem/minted) family: the building blocks the domain
+types are cut from. Two groups, one idea — the character types a consumer reaches for directly, and
+the numeric primitives every sibling shares.
 
 ## Install
 
@@ -29,6 +29,12 @@ dart pub add minted_constraints
 | `AsciiAlphanumerics` | one or more of those: a BIC code, a BBAN, an NSIN          |
 | `AsciiLetter`        | exactly one ASCII letter, `A`-`Z`, `a`-`z`                 |
 | `AsciiLetters`       | one or more of those                                       |
+| `Digit` / `Digits`   | one decimal digit, or a sequence keeping its leading zeros |
+| `Uint`               | never negative; a sign, not a width, so nothing wraps       |
+| `NaturalNumber`      | `1` or more, where `Uint` allows zero                       |
+| `Uint2` … `Uint32`   | one fixed machine width each, and the widths do not mix     |
+| `Percentage`         | which unit you meant, so `15` and `0.15` cannot be swapped  |
+| `Probability`        | `0` to `1` inclusive, both ends reported, not refused       |
 
 A "single character" field is a `String` in almost every codebase, which means it accepts none and
 accepts twenty. Every narrowing on the singulars is declared, so an `AsciiLetter` is an

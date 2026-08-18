@@ -13,8 +13,9 @@ that came through it is well-formed by construction.
 
 | Package                                               | What it holds                                                                    | pub.dev                                                                                                            |
 |-------------------------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
-| [`minted`](./packages/minted)                         | Core: outcomes, `Digit`/`Digits`, the `Uint` family, `Percentage`, `Probability` | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted)                         |
+| [`minted`](./packages/minted)                         | Core: `ParseOutcome`, `MintedFailure`, `MintedFormatError`                       | [![Pub Version](https://img.shields.io/pub/v/minted.svg)](https://pub.dev/packages/minted)                         |
 | [`minted_chronology`](./packages/minted_chronology)   | `Date`, `Month`, `Weekday`, `Iso8601Duration`                                    | [![Pub Version](https://img.shields.io/pub/v/minted_chronology.svg)](https://pub.dev/packages/minted_chronology)   |
+| [`minted_constraints`](./packages/minted_constraints) | `Digit`, `Digits`, the `Uint` family, `Char`, `Letter`, `Ascii*`                 | [![Pub Version](https://img.shields.io/pub/v/minted_constraints.svg)](https://pub.dev/packages/minted_constraints) |
 | [`minted_contact`](./packages/minted_contact)         | `Email`, `PhoneNumber`                                                           | [![Pub Version](https://img.shields.io/pub/v/minted_contact.svg)](https://pub.dev/packages/minted_contact)         |
 | [`minted_finance`](./packages/minted_finance)         | `Iban`, `Bic`, `Isin`, `PaymentCardNumber`                                       | [![Pub Version](https://img.shields.io/pub/v/minted_finance.svg)](https://pub.dev/packages/minted_finance)         |
 | [`minted_geography`](./packages/minted_geography)     | `GeoCoordinate`, `Geohash`                                                       | [![Pub Version](https://img.shields.io/pub/v/minted_geography.svg)](https://pub.dev/packages/minted_geography)     |
@@ -26,9 +27,9 @@ consumer resolves `collection` and `meta`; the phone engine arrives only if you 
 `minted_contact`. There is also a private `minted_conformance` member holding the suites that sweep
 across packages, which never ships.
 
-The siblings landed with `minted` 3.0.0, the release that moved these types out of `minted` itself.
-On 2.x, `minted` still carries everything; [MIGRATION.md](./packages/minted/MIGRATION.md) walks the
-cutover.
+The siblings landed with `minted` 3.0.0 and the primitives followed in 4.0.0, leaving `minted` the
+outcome vocabulary alone. [MIGRATION.md](./packages/minted/MIGRATION.md) walks every cutover, newest
+first.
 
 **[`packages/minted/README.md`](./packages/minted/README.md) is the documentation you actually
 want**: the pub.dev landing page, with the type catalogue and usage guide. This file is the map.

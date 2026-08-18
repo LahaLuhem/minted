@@ -19,9 +19,9 @@ It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, an
 type wears the same small API, so learning one teaches you the rest.
 
 **minted** is a family. This package holds the vocabulary every type speaks (`ParseOutcome`,
-`MintedFailure`) plus the numeric types they build on; the domain types live in six sibling packages
-you add per domain, so a project that wants `Date` doesn't resolve the phone-number metadata. This
-page is the catalogue for all of them, and [Install](#install) says which package holds what.
+`MintedFailure`); the types themselves live in sibling packages you add one at a time, so a project
+that wants `Date` doesn't resolve the phone-number metadata. [Install](#install) says which package
+holds what, and each sibling documents its own types.
 
 > Coming from 2.x, where one package held everything?
 > [MIGRATION.md](./MIGRATION.md#migrating-to-minted-300) is the path: no type or behaviour changed,
@@ -52,14 +52,6 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
 - [Install](#install)
 - [A quick taste](#a-quick-taste)
 - [What's in the box](#whats-in-the-box)
-    * [Contact](#contact)
-    * [Finance](#finance)
-    * [Chronology](#chronology)
-    * [Identifiers](#identifiers)
-    * [Geography](#geography)
-    * [Network](#network)
-    * [Numerics](#numerics)
-    * [Quantities](#quantities)
 - [One shape, every type](#one-shape-every-type)
 - [Handling failures](#handling-failures)
 - [Caveats](#caveats)
@@ -71,9 +63,10 @@ written in Haskell, but nothing in the argument depends on that; it reads fine f
 
 ## Install
 
-Add the domains you want. Each one brings `minted` with it, so there's nothing else to wire up.
+Add the packages you want. Each brings `minted` with it, so there's nothing else to wire up.
 
 ```sh
+dart pub add minted_constraints  # Digit, Digits, Uint tower, Char, Letter, Ascii*
 dart pub add minted_contact      # Email, PhoneNumber
 dart pub add minted_finance      # Iban, Bic, Isin, PaymentCardNumber
 dart pub add minted_chronology   # Date, Month, Weekday, Iso8601Duration
@@ -82,9 +75,8 @@ dart pub add minted_geography    # GeoCoordinate, Geohash
 dart pub add minted_network      # IpAddress, Cidr, Hostname, DnsName, MacAddress, Port
 ```
 
-`dart pub add minted` on its own gets you the shared outcome types and the numerics (`Digit`,
-`Digits`, the `Uint` tower, `Percentage`, `Probability`), and nothing else: no domain engine is
-behind it. Add it directly only if you name those types yourself.
+`dart pub add minted` on its own gets you the outcome types and nothing else: no domain engine is
+behind it. Add it directly only if you name `ParseOutcome` or a failure yourself.
 
 ## A quick taste
 
@@ -102,94 +94,18 @@ Email.tryParse('not-an-email');   // null, nothing thrown
 
 ## What's in the box
 
-One sector per package, so the heading tells you what to add. Numerics and Quantities are in
-`minted` itself.
+`minted` itself holds the vocabulary a parse hands back: `ParseOutcome`, `MintedFailure` and
+`MintedFormatError`. Every type lives in a sibling, each documenting its own in one place rather
+than a second copy here:
 
-### Contact
-
-From [`minted_contact`](https://pub.dev/packages/minted_contact):
-
-| Type          | What it guarantees                        | Standard                                           |
-|---------------|-------------------------------------------|----------------------------------------------------|
-| `Email`       | a well-formed address, domain lower-cased | [RFC 5322](https://www.rfc-editor.org/rfc/rfc5322) |
-| `PhoneNumber` | a valid number, stored in E.164           | [ITU-T E.164](https://en.wikipedia.org/wiki/E.164) |
-
-### Finance
-
-From [`minted_finance`](https://pub.dev/packages/minted_finance):
-
-| Type                | What it guarantees                                                              | Standard                                                                     |
-|---------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| `Iban`              | structure, country length, and the mod-97 checksum                              | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
-| `Bic`               | a SWIFT code: structure and a real country, folded to 11                        | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
-| `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed                       | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
-| `Isin`              | a securities ID: charset, two-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html)                          |
-
-### Chronology
-
-From [`minted_chronology`](https://pub.dev/packages/minted_chronology):
-
-| Type              | What it guarantees                                                       | Standard                                           |
-|-------------------|--------------------------------------------------------------------------|----------------------------------------------------|
-| `Date`            | a real calendar date: no time, no zone; impossible dates rejected        | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-| `Month`           | a real month `1`-`12` that knows its own length (leap-aware)             | building block                                     |
-| `Weekday`         | one of seven named days, ISO-numbered `1` (Monday) to `7` (Sunday)       | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-| `Iso8601Duration` | a duration with months and years, which `dart:core` Duration cannot hold | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
-
-### Identifiers
-
-From [`minted_identifiers`](https://pub.dev/packages/minted_identifiers):
-
-| Type   | What it guarantees                                                                 | Standard                                                                 |
-|--------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised              | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)                       |
-| `Isbn` | prefix and check digit; both generations folded to ISBN-13                         | [ISO 2108](https://www.isbn-international.org/content/what-isbn)         |
-| `Imei` | fifteen digits and the Luhn check; TAC and serial read back                        | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
-| `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form            | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
-| `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/)                                       |
-| `Gtin` | digits, one of the four GS1 lengths, and the mod-10 check digit; folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin)                   |
-
-### Geography
-
-From [`minted_geography`](https://pub.dev/packages/minted_geography):
-
-| Type            | What it guarantees                                                          | Standard                                                 |
-|-----------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
-| `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)       |
-| `Geohash`       | a base32 cell, not a point; the four letters base32 drops are refused       | [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/) |
-
-### Network
-
-From [`minted_network`](https://pub.dev/packages/minted_network):
-
-| Type         | What it guarantees                                                                       | Standard                                                       |
-|--------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------|
-| `Hostname`   | the RFC 1123 grammar and both length limits; ASCII only, never an address                | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
-| `DnsName`    | the permissive counterpart: underscores and the rest of RFC 2181, so DKIM and SRV fit    | [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11)  |
-| `IpAddress`  | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal          | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)             |
-| `Cidr`       | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632)             |
-| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back              | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address)      |
-| `Port`       | the 0-65535 bound; the RFC 6335 band read back rather than gated on                      | [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335)             |
-
-### Numerics
-
-In `minted`:
-
-| Type               | What it guarantees                                      | Standard       |
-|--------------------|---------------------------------------------------------|----------------|
-| `Digit` / `Digits` | a single digit `0`-`9`, or an iterable sequence of them | building block |
-
-### Quantities
-
-In `minted`:
-
-| Type               | What it guarantees                                                                           | Standard         |
-|--------------------|----------------------------------------------------------------------------------------------|------------------|
-| `Uint`             | never negative (`0` or more); a sign, not a width, so nothing wraps                          | range constraint |
-| `NaturalNumber`    | strictly above zero (`1` or more)                                                            | range constraint |
-| `Uint2` … `Uint32` | one fixed machine width each (`0`-`3` up to `0`-`4294967295`), and the widths don't mix      | range constraint |
-| `Percentage`       | which unit you meant, so `15` and `0.15` can't be swapped; finite, and unbounded either side | unit constraint  |
-| `Probability`      | `0` to `1` inclusive, both ends reported rather than refused                                 | range constraint |
+- [`minted_constraints`](https://pub.dev/packages/minted_constraints) — the primitives the rest are
+  cut from: digits, bounded numbers, single characters, and letters
+- [`minted_chronology`](https://pub.dev/packages/minted_chronology) — calendar dates and durations
+- [`minted_contact`](https://pub.dev/packages/minted_contact) — email addresses and phone numbers
+- [`minted_finance`](https://pub.dev/packages/minted_finance) — IBANs, BICs, ISINs, card numbers
+- [`minted_geography`](https://pub.dev/packages/minted_geography) — coordinates and geohashes
+- [`minted_identifiers`](https://pub.dev/packages/minted_identifiers) — UUIDs, ISBNs, IMEIs, and kin
+- [`minted_network`](https://pub.dev/packages/minted_network) — addresses, blocks, host names, ports
 
 Everything checks the *real* standard, not just the shape: `Iban` actually runs the mod-97 checksum
 and `Email` the full RFC 5322 grammar. A regex that only looks right isn't enough.
@@ -530,8 +446,8 @@ and the RFC 5952 compression, but owns the grammar itself: that engine's part ch
 which quietly accepts `192.168.+1.1` and `192.168. 1.1`.
 
 `DnsName` is the permissive counterpart, not a relaxed `Hostname`. RFC 2181 §11 lets a label hold any
-octet and leaves further limits to the application, so this one keeps ASCII letters, digits, hyphen
-and underscore: enough for every DKIM, DMARC, ACME and SRV name, and narrow enough that lower-casing
+octet and leaves further limits to the application, so this one keeps ASCII letters, digits, hyphen,
+and underscore: enough for every DKIM, DMARC, ACME, and SRV name, and narrow enough that lower-casing
 stays safe. It also drops RFC 1123's hyphen-edge and all-numeric-label rules, which are host rules
 rather than DNS ones. Merging the two would delete the strict promise most callers want, so widening
 (`fromHostname`) is total and narrowing (`tryToHostname`) is a parse.
@@ -546,7 +462,7 @@ Public Suffix List changes weekly, and [`public_suffix`](https://pub.dev/package
 already covers it.
 
 `GeoCoordinate` is a surface coordinate: altitude and a CRS identifier are *refused*, not silently
-dropped. Their sign, units and datum are all defined by the CRS, so an `altitude` field would be one
+dropped. Their sign, units, and datum are all defined by the CRS, so an `altitude` field would be one
 the type couldn't promise anything about, and validating a CRS needs a registry minted doesn't carry.
 Parsing is strict about the fixed widths, because in ISO 6709 an unpadded longitude isn't a typo, it's
 a different place. The human-readable `48°51′27.72″N` form is output-only for now, via `sexagesimal`.

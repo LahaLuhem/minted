@@ -17,8 +17,10 @@ well-formed by construction. Once you hold an `Isbn`, its check digit already pa
 dart pub add minted_identifiers
 ```
 
-[`minted`](https://pub.dev/packages/minted) comes with it, holding the shared vocabulary
-(`ParseOutcome`, `MintedFailure`, `Digit`, `Digits`, the `Uint` tower). Nothing here drags in
+[`minted`](https://pub.dev/packages/minted) comes with it, holding the vocabulary a parse hands back
+(`ParseOutcome`, `MintedFailure`), and so does
+[`minted_constraints`](https://pub.dev/packages/minted_constraints) for the primitives this package's
+getters return. Nothing here drags in
 another domain's engine.
 
 ## What's in the box
@@ -82,5 +84,5 @@ The runnable version is the
   (`fromComponents`, `fromBody`, `fromBytes`) for parts you already hold. A part that is only ever
   digits takes a `Digits`, so junk can't reach the factory at all
 
-The [`minted` README](https://pub.dev/packages/minted) is the family guide: the whole catalogue,
+The [`minted` README](https://pub.dev/packages/minted) is the family guide: the package index,
 handling failures, and the one caveat (never cast into a minted type).
