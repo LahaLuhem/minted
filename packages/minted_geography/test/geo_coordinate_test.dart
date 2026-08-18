@@ -51,6 +51,11 @@ void main() {
           input: '+00.0000001+000/',
           canonical: '+00.0000001+000/',
         ),
+        'surrounding whitespace is not part of the value': (
+          input: '  +48.8577+002.295/\n',
+          canonical: '+48.8577+002.295/',
+        ),
+        'a space between the fields is': (input: '+48.8577 +002.295/', canonical: null),
         'an unsigned latitude': (input: '50.12-000.10/', canonical: null),
         'no closing solidus': (input: '+50.12-000.10', canonical: null),
         // Fixed widths are the whole reason this must fail: a loose parser reads it as a plausible

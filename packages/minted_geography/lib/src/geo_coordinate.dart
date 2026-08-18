@@ -20,10 +20,10 @@ import 'standards/coordinate_bounds.dart';
 /// degree digits selects the unit: degrees, degrees-minutes, or degrees-minutes-seconds.
 /// Standard: [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709).
 ///
-/// Normalisation on parse: sexagesimal input becomes decimal degrees ([iso6709]), `-180` becomes
-/// `+180` (one meridian, two spellings), a negative zero becomes positive, the sign the standard
-/// gives the equator and the prime meridian, and a degree finer than [iso6709] can spell is snapped
-/// to one it can. Altitude and a CRS are refused, not dropped.
+/// Normalisation on parse: input is trimmed, sexagesimal becomes decimal degrees ([iso6709]),
+/// `-180` becomes `+180` (one meridian, two spellings), a negative zero becomes positive, the sign
+/// the standard gives the equator and the prime meridian, and a degree finer than [iso6709] can
+/// spell is snapped to one it can. Altitude and a CRS are refused, not dropped.
 ///
 /// Equality is by value over [latitude] and [longitude].
 ///
@@ -70,7 +70,7 @@ final class GeoCoordinate {
   /// Parses [input] as an ISO 6709 latitude and longitude, reporting the [GeoCoordinateFailure]
   /// that says whether the shape or one of the parts is wrong.
   static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> parse(String input) {
-    final degrees = _degreesOf(input);
+    final degrees = _degreesOf(input.trim());
     if (degrees == null) return const ParseFailure(GeoCoordinateNotIso6709());
 
     final (:latitude, :longitude) = degrees;
