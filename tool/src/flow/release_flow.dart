@@ -13,6 +13,14 @@ import '../versioning/bump_type.dart';
 import '../versioning/release_tag.dart';
 import 'rollback.dart';
 
+/// One package's release, once the cheap gates have settled what it will become.
+typedef ReleasePlan = ({
+  PendingPackage selected,
+  BumpType bump,
+  ({String current, String next}) version,
+  String tag,
+});
+
 /// Cuts a versioned release of one workspace member.
 ///
 /// Order is the contract: gates run cheapest-first, and the execute phase advances one [Rollback]
@@ -36,18 +44,13 @@ class ReleaseFlow {
     _preflightTooling(selected);
     _preflightGitState();
 
-    final pubspec = repo.readFile('${selected.dir}/pubspec.yaml');
-    final version = _computeVersion(selected, pubspec, bump);
-    final tag = releaseTag(package: selected.name, version: version.next);
+    final plan = _planFor(selected, bump);
 
-    ui.log('Tag:             $tag');
-
-    _preflightSiblingConstraints(selected, pubspec);
-    _preflightTagCollision(tag);
     await _preflightLint();
-    await _preflightDart(selected);
+    await _preflightRepoDart();
+    await _preflightTests(selected);
 
-    _printPlan(selected: selected, bump: bump, version: version, tag: tag);
+    _printPlan(selected: plan.selected, bump: plan.bump, version: plan.version, tag: plan.tag);
 
     if (options.dryRun) {
       ui.log('Dry-run mode, preflight passed; nothing executed.');
@@ -61,7 +64,27 @@ class ReleaseFlow {
       return;
     }
 
-    await _execute(selected: selected, bump: bump, next: version.next, tag: tag);
+    await _execute(
+      selected: plan.selected,
+      bump: plan.bump,
+      next: plan.version.next,
+      tag: plan.tag,
+    );
+  }
+
+  /// The cheap per-package gates, and what they settle. Ahead of the slow repo-wide ones on purpose:
+  /// a stale constraint or a taken tag should fail in a second, not after the lint image has run.
+  ReleasePlan _planFor(PendingPackage selected, BumpType bump) {
+    final pubspec = repo.readFile('${selected.dir}/pubspec.yaml');
+    final version = _computeVersion(selected, pubspec, bump);
+    final tag = releaseTag(package: selected.name, version: version.next);
+
+    ui.log('Tag:             $tag');
+
+    _preflightSiblingConstraints(selected, pubspec);
+    _preflightTagCollision(tag);
+
+    return (selected: selected, bump: bump, version: version, tag: tag);
   }
 
   // ── Resolution ────────────────────────────────────────────────────────────
@@ -283,11 +306,11 @@ class ReleaseFlow {
     }
   }
 
-  /// The repo-wide format and analyze gates, then the selected member's suite.
+  /// The repo-wide format and analyze gates, which hold for every member at once.
   ///
   /// `pub publish --dry-run` is absent on purpose: it only means anything post-bump, so it runs in
   /// [_execute] where the rollback covers it.
-  Future<void> _preflightDart(PendingPackage selected) async {
+  Future<void> _preflightRepoDart() async {
     _abortOnFailure(
       await ui.task(
         'dart format',
@@ -300,8 +323,10 @@ class ReleaseFlow {
       await ui.task('dart analyze', () => _dartRun(['--no-version-check', 'analyze', '.'])),
       'Static analysis failed.',
     );
+  }
 
-    // Per-package, unlike the repo-wide gates above: the root holds no member suite.
+  /// One member's suite. Separate from the repo-wide gates: the root holds no member suite.
+  Future<void> _preflightTests(PendingPackage selected) async {
     _abortOnFailure(
       await ui.task('dart test', () => _dartRun(['test'], workingDirectory: _dirOf(selected))),
       'Test suite failed.',
