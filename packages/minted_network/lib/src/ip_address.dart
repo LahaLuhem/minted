@@ -7,6 +7,7 @@ import 'package:collection/collection.dart';
 import 'package:ipaddr/ipaddr.dart';
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'encoding/octet_bits.dart';
 import 'failures/ip_address_failure.dart';

@@ -4,7 +4,7 @@
 import 'dart:math';
 
 import 'package:checks/checks.dart';
-import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import '../support/bdd.dart';
 

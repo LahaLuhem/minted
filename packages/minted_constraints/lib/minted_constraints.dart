@@ -10,6 +10,15 @@ library;
 
 export 'src/numerics/digit.dart';
 export 'src/numerics/digits.dart';
+export 'src/quantities/natural_number.dart';
+export 'src/quantities/percentage.dart';
+export 'src/quantities/probability.dart';
+export 'src/quantities/uint.dart';
+export 'src/quantities/uint16.dart';
+export 'src/quantities/uint2.dart';
+export 'src/quantities/uint32.dart';
+export 'src/quantities/uint4.dart';
+export 'src/quantities/uint8.dart';
 export 'src/text/ascii_alphanumeric.dart';
 export 'src/text/ascii_alphanumerics.dart';
 export 'src/text/ascii_char.dart';

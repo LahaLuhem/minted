@@ -1,4 +1,4 @@
-import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 /// A transport-layer port number, `0` to `65535`.
 /// Standard: [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335).

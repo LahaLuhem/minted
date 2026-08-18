@@ -1,4 +1,5 @@
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/geohash_failure.dart';
 import 'geo_coordinate.dart';
