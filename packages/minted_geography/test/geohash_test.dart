@@ -99,6 +99,33 @@ void main() {
       check(_geohash(coordinate: cell.centre, precision: 5)).equals(cell);
     });
 
+    // What a geohash names is the box, so the point it was built from has to sit inside it while
+    // the centre generally is not that point.
+    scenario('bounds holds both the encoded point and the centre', () {
+      final cell = _geohash(coordinate: eiffelTower, precision: 5);
+
+      check(cell.bounds.contains(eiffelTower)).isTrue();
+      check(cell.bounds.contains(cell.centre)).isTrue();
+      check(cell.bounds.crossesAntimeridian).isFalse();
+    });
+
+    // The property every prefix query rests on: a shorter geohash encloses a longer one.
+    scenario('a prefix cell encloses the cells it is a prefix of', () {
+      final coarse = _geohash(coordinate: eiffelTower, precision: 3).bounds;
+      final fine = _geohash(coordinate: eiffelTower, precision: 7).bounds;
+
+      check(coarse.contains(eiffelTower)).isTrue();
+      check(coarse.north >= fine.north && coarse.south <= fine.south).isTrue();
+      check(coarse.east >= fine.east && coarse.west <= fine.west).isTrue();
+    });
+
+    scenario('one character names a thirty-second of the planet, and it still parses back', () {
+      final cell = _geohash(coordinate: eiffelTower, precision: 1);
+
+      check(cell.bounds.contains(eiffelTower)).isTrue();
+      check(GeoBounds.tryParse(cell.bounds.bbox)).equals(cell.bounds);
+    });
+
     scenario('the north-east corner of the grid is all z', () {
       check(
         _geohash(

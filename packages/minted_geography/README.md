@@ -36,8 +36,9 @@ A swapped latitude and longitude is a type bug no range check catches, so the pa
 boundary. It's a surface coordinate: altitude and a CRS identifier are refused rather than silently
 dropped, since their sign, units and datum are all defined by the CRS.
 
-A geohash is a *cell*, not a point, which a `String` cannot say: `centre` is one point inside it and
-says so. `toLowerCase()` isn't validation either, the alphabet having dropped `a`, `i`, `l` and `o`.
+A geohash is a *cell*, not a point, which a `String` cannot say: `bounds` is that cell and `centre`
+one point in it. `toLowerCase()` isn't validation either, the alphabet having dropped `a`, `i`, `l`
+and `o`.
 
 `west > east` is not a transposition, it is how RFC 7946 §5.2 writes a box across the antimeridian,
 so `GeoBounds` reports the crossing and `contains` honours it rather than every caller re-deriving
@@ -70,6 +71,7 @@ GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295);
 final cell = Geohash.from(coordinate: eiffel, precision: NaturalNumber.tryFrom(5)!);
 cell.value;            // 'u09tu'   (canonical form: trimmed, lower-cased)
 cell.centre.iso6709;   // '+48.84521484375+002.30712890625/'   inside the cell, not the tower
+cell.bounds.bbox;      // '2.28515625,48.8232421875,2.3291015625,48.8671875'   the cell itself
 
 Geohash.tryParse('EZS42 ') == Geohash.tryParse('ezs42');   // true: case and padding fold away
 Geohash.tryParse('ezsa2');   // null: 'a' is not in the geohash alphabet

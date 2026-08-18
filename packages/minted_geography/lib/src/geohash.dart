@@ -2,6 +2,7 @@ import 'package:minted/minted.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/geohash_failure.dart';
+import 'geo_bounds.dart';
 import 'geo_coordinate.dart';
 import 'standards/coordinate_bounds.dart';
 
@@ -73,17 +74,29 @@ extension type const Geohash._(String value) {
   /// How many characters, so how fine the cell. No upper bound: nothing in the standard fixes one.
   int get precision => value.length;
 
+  /// The cell itself, as a box. What a geohash actually names, where [centre] is one point in it.
+  ///
+  /// Never crosses the antimeridian: halving `-180` to `180` cannot put a western edge east of an
+  /// eastern one, which is also why the box cannot fail to build.
+  GeoBounds get bounds {
+    final intervals = _cellOf(value);
+    final (low: south, high: north) = intervals[_latitudeAxis];
+    final (low: west, high: east) = intervals[_longitudeAxis];
+
+    return GeoBounds.tryFrom(west: west, south: south, east: east, north: north)!;
+  }
+
   /// The centre of the cell, which is not the coordinate the geohash was built from: a coarse cell
   /// is wide. Re-encoding this at [precision] does return this geohash.
   ///
   /// Beyond about 23 characters a `double` runs out of mantissa, so the centre stops moving.
   GeoCoordinate get centre {
-    final intervals = _cellOf(value);
+    final cell = bounds;
 
-    // Midpoints of the halved full ranges, so neither part can leave its own.
+    // Midpoints of a cell inside both full ranges, so neither part can leave its own.
     return GeoCoordinate.tryFrom(
-      latitude: _middleOf(intervals[_latitudeAxis]),
-      longitude: _middleOf(intervals[_longitudeAxis]),
+      latitude: (cell.south + cell.north) / 2,
+      longitude: (cell.west + cell.east) / 2,
     )!;
   }
 

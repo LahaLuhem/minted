@@ -22,6 +22,7 @@ void main() {
   print(cell.value); // u09tu  (canonical form: trimmed, lower-cased)
   print(cell.centre.iso6709); // +48.84521484375+002.30712890625/  (the cell centre, not the tower)
   print(Geohash.from(coordinate: cell.centre, precision: NaturalNumber.tryFrom(5)!)); // u09tu
+  print(cell.bounds.bbox); // 2.28515625,48.8232421875,2.3291015625,48.8671875 (the cell as a box)
   print(Geohash.tryParse('ezsa2')); // null ('a' is not in the geohash alphabet)
   // #endregion
 
