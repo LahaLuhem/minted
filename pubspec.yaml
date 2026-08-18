@@ -23,7 +23,7 @@ dev_dependencies:
   melos: ^8.3.0
   test: ^1.31.2
 
-# Script runner only. cider and scripts/release.sh own versioning and publishing, so `melos version`
+# Script runner only. cider and tool/release.dart own versioning and publishing, so `melos version`
 # and `melos publish` stay unused; workspaces do the linking, so `melos bootstrap` does too.
 melos:
   scripts:

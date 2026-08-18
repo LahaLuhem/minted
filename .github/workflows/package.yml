@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   # The per-package jobs fan out over this, so adding a package needs no edit here. Private
-  # members are excluded by the same `publish_to: none` test release.sh uses: they have no
+  # members are excluded by the same `publish_to: none` test the release tool uses: they have no
   # pub.dev surface to check.
   members:
     name: List workspace members

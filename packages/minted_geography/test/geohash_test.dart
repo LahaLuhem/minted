@@ -107,8 +107,8 @@ void main() {
       ).equals('zzzzzz');
     });
 
-    // GeoCoordinate folds -180 onto +180, so the south-west corner cannot be handed to from at all;
-    // the all-zero cell is reachable only by parsing, and its centre sits just inside it.
+    // GeoCoordinate folds -180 onto +180, so the south-west corner cannot be handed to from at all.
+    // The all-zero cell is reachable only by parsing, and its centre sits just inside it.
     scenario('the west spelling of the antimeridian arrives already folded', () {
       check(
         _geohash(

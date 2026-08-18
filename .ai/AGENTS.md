@@ -35,14 +35,14 @@ feature: identical method names and the same failure model across every type.
 - **`dependency_validator`** guards each package's dependency set, per package, and is what caught
   core still declaring engines after their types moved out. `dart_dependency_validator.yaml` scopes
   it to the published surface and skips the example.
-- **Container-based linters** (`shellcheck` for shell scripts, `actionlint` for workflows, `rumdl`
-  for Markdown, `ryl` for YAML) run from the [`linterpol`](https://github.com/LahaLuhem/linterpol)
-  Docker image, not local installs, so only Docker (plus `jq`) is needed. The check set and image
+- **Container-based linters** (`actionlint` for workflows, `rumdl` for Markdown, `ryl` for YAML)
+  run from the [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, not local
+  installs, so Docker is the only requirement. The check set and image
   tag live in one manifest, [`.github/lint-checks.json`](../.github/lint-checks.json); `repo.yml`
-  fans a CI matrix out over it and `scripts/release.sh`'s preflight loops the same file, so the two
+  fans a CI matrix out over it and `tool/release.dart`'s preflight loops the same file, so the two
   can't drift. **Adding a linter is one entry in that manifest**, no workflow or script edit.
   Per-tool config tuned to the repo lives in `.rumdl.toml` and `.yamllint.yaml`.
-- **CHANGELOG and the `version:` field are owned by [`scripts/release.sh`](../scripts/release.sh)**
+- **CHANGELOG and the `version:` field are owned by [`tool/release.dart`](../tool/release.dart)**
   (via `cider`). Do not run `cider` by hand and do not edit `CHANGELOG.md` or `version:` directly.
   The `cider:` block in `pubspec.yaml` is static config (URLs, link templates) and is hand-editable.
 - **Published to pub.dev.** `.pubignore` controls the tarball; `.editorconfig` is the source of
@@ -60,8 +60,7 @@ minted/                              Workspace root
 ├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
 ├── .rumdl.toml / .yamllint.yaml     Markdown + YAML lint config
 ├── .github/                         Workflows + lint-checks.json, the shared lint manifest
-├── scripts/                         release.sh + its README
-├── tool/                            release.dart (Dart port of release.sh) + job-named src/
+├── tool/                            release.dart, the release flow, + its README
 │   └── src/                         parsing/ versioning/ io/ flow/, plus options + abort
 ├── test/tool/                       The tooling's suite, mirroring src/; the root's only Dart tests
 ├── README.md                        Family index; the GitHub landing page
@@ -123,7 +122,7 @@ needs the member directory too, via `cd` or `dart pub -C packages/minted`.
 **Melos wraps that split, so prefer `dart run melos run <script>`** — each script already knows
 whether it belongs at the root or per-package. They live under the `melos:` key of the root
 `pubspec.yaml`; `dart run melos run` lists them. Script runner only: versioning and publishing stay
-with cider and `scripts/release.sh`.
+with cider and `tool/release.dart`.
 
 **A domain is a package.** Its types sit flat in that package's `lib/src/`, its failures in
 `failures/`, its helpers in job-named subfolders. Core is the exception: it also carries `numerics/`
@@ -230,7 +229,7 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    a documented contract (including a normalisation change) is breaking. `cider` enforces the
    version-bump discipline.
 9. **`CHANGELOG.md` is bot-owned. Do not edit any section, including `## Unreleased`.** Release
-   headers are written by [`scripts/release.sh`](../scripts/release.sh); the `## Unreleased` buffer
+   headers are written by [`tool/release.dart`](../tool/release.dart); the `## Unreleased` buffer
    is appended to by [`.github/workflows/changelog.yml`](../.github/workflows/changelog.yml) from
    the merged PR title (governed by its `sem-*` label). Same prohibition on the `version:` field.
 

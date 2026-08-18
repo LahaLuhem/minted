@@ -132,7 +132,7 @@ jobs:
           while IFS= read -r dir; do
             [ -n "$dir" ] || continue
             # A private member never releases, and `cider log` would silently create the
-            # CHANGELOG it cannot find. Same test as release.sh's pending_packages.
+            # CHANGELOG it cannot find. Same test as the release tool's discovery.
             if grep -qE '^publish_to: *none' "${dir}/pubspec.yaml"; then
               echo "::notice::${dir} is publish_to: none, so no changelog entry."
               continue

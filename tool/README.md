@@ -24,22 +24,23 @@ publishes to pub.dev via OIDC.
 
 Laptop-only — does not run inside CI.
 
-> **Being ported.** [`tool/release.dart`](../tool/release.dart) is a Dart rewrite of this script,
-> with unit tests under [`test/tool/`](../test/tool). It is not the live route: `release.sh` stays
-> until the port has cut a real release. See
-> [#62](https://github.com/LahaLuhem/minted/issues/62).
-
 ## Usage
 
 ```bash
-scripts/release.sh                                # fully interactive
-scripts/release.sh patch                          # bump type set, package + confirm on TTY
-scripts/release.sh patch -p minted --yes          # non-interactive (CI-style)
-scripts/release.sh --dry-run                      # full preflight + plan, no side effects
-scripts/release.sh minor -m "Big new feature"     # annotated tag with this message
+dart run tool/release.dart                              # fully interactive
+dart run tool/release.dart patch                        # bump set, package + confirm on TTY
+dart run tool/release.dart patch -p minted --yes        # non-interactive
+dart run tool/release.dart --dry-run                    # full preflight + plan, no side effects
+dart run tool/release.dart minor -m "Big new feature"   # annotated tag with this message
 ```
 
-`BUMP` is one of `major`, `minor`, `patch`. The script prompts on a TTY if omitted.
+`BUMP` is one of `major`, `minor`, `patch`. The tool prompts on a TTY if omitted.
+`--help` lists every option.
+
+`--repo-root DIR` releases from a different checkout instead of the one this tool lives in. It
+exists so the execute phase can be exercised against a throwaway clone with a local bare remote:
+no `publish.yml` lives there, so nothing can reach pub.dev. That is how `cider bump`, the commit,
+the tag and the atomic push get verified for real, since the unit tests fake the process runner.
 
 ### Which package
 
@@ -59,8 +60,8 @@ body, message, or signature. Pass `-m "MSG"` / `--tag-message "MSG"` to produce 
 annotated tag is also signed.
 
 The lightweight default is independent of your `tag.gpgSign` setting — for the
-no-`-m` path the script runs `git tag` with `-c tag.gpgSign=false` applied to that one
-invocation, so plain `release.sh minor` never opens an editor or demands a message.
+no-`-m` path the tool runs `git tag` with `-c tag.gpgSign=false` applied to that one
+invocation, so a plain `minor` run never opens an editor or demands a message.
 Lightweight tags can't be signed (there's no body to sign), so the bypass is
 mechanically necessary, not a stylistic choice.
 
@@ -70,15 +71,15 @@ pub.dev can only configure automated publishing for a package that already exist
 **first** version goes up by hand and every later one goes through the tag pipeline.
 
 **Finalise the CHANGELOG first.** pub refuses to publish quietly if the CHANGELOG does not mention
-the version going up, and it is `release.sh` that normally dates the `## Unreleased` heading. A hand
+the version going up, and it is the release tool that normally dates that heading. A hand
 publish skips that, so do it yourself, then commit:
 
 ```bash
 cd packages/<name> && cider release   # ## Unreleased -> ## [1.0.0] - today
 ```
 
-No bump: a first release publishes the version already in the pubspec, which is why `release.sh`
-is the wrong tool here. It always bumps, so it would turn 1.0.0 into 1.0.1.
+No bump: a first release publishes the version already in the pubspec, which is why the release
+tool is the wrong one here. It always bumps, so it would turn 1.0.0 into 1.0.1.
 
 While you are in there, **check the notes read correctly for a first release.** A cross-package PR
 carries one `sem-*` label, and `changelog.yml` applies it to every package the PR touched, so a
@@ -93,7 +94,7 @@ dart pub -C packages/<name> publish
 
 Then set that package's tag pattern to `<name>-{{version}}` under
 `pub.dev/packages/<name>/admin`, same publisher as the rest. From its second release on,
-`scripts/release.sh` is the only route.
+`tool/release.dart` is the only route.
 
 Tag the version you just published anyway, so the history is uniform. `publish.yml` checks pub.dev
 first and exits green when the version is already up, so the tag costs nothing.
@@ -105,7 +106,7 @@ workspace refuses to resolve a constraint no member satisfies. The preflight ref
 package whose sibling constraint is older than what the tree builds against, so a forgotten step 2
 fails loudly instead of shipping a wrong constraint that pub.dev can never take back.
 
-1. **Release core.** `scripts/release.sh major --package minted` takes 2.0.0 to 3.0.0 and publishes
+1. **Release core.** `dart run tool/release.dart major --package minted` takes 2.0.0 to 3.0.0 and publishes
    through the tag pipeline as usual. Its own pub.dev tag pattern must already be `minted-{{version}}`
    (see [Tag format](#tag-format)).
 2. **Tighten every sibling** from `minted: '>=2.0.0 <4.0.0'` to `minted: ^3.0.0`, one commit.
@@ -115,12 +116,12 @@ fails loudly instead of shipping a wrong constraint that pub.dev can never take 
 ## What's pipeline-owned vs. hand-editable
 
 The member's `CHANGELOG.md` and the `version:` field in its `pubspec.yaml` are
-**pipeline-owned**: the script reorders or overwrites manual edits to them. Hand-edits
+**pipeline-owned**: the tool reorders or overwrites manual edits to them. Hand-edits
 will not survive the next release. The workspace-root `pubspec.yaml` carries no
 `version:` at all, so it is outside this entirely.
 
-The `## Unreleased` block in `CHANGELOG.md` is the script's **input** — curated by
-hand between releases. The script bails if no package has one.
+The `## Unreleased` block in `CHANGELOG.md` is the tool's **input** — curated by
+hand between releases. The tool bails if no package has one.
 
 Entries land there automatically: on merge,
 [`changelog.yml`](../.github/workflows/changelog.yml) runs `cider log` in each package the PR
@@ -151,13 +152,12 @@ version already on pub.dev is skipped rather than re-published.
 
 ## Preflight
 
-The script refuses to proceed unless every check passes:
+The tool refuses to proceed unless every check passes:
 
 - `dart` resolvable (prefers `.fvm/flutter_sdk/bin/dart` if present, else PATH).
-- `cider` on PATH.
-- `jq` on PATH (reads the lint manifest, `.github/lint-checks.json`).
+- `cider` on PATH, and able to report a version.
 - `docker` on PATH, daemon running (runs the checks from `.github/lint-checks.json`
-  via the linterpol image: `shellcheck`, `actionlint`, `rumdl`, `ryl`, no local installs).
+  via the linterpol image: `actionlint`, `rumdl`, `ryl`, no local installs).
 - Working tree clean, on `main`, in sync with `origin/main` (fetches first).
 - The member's `CHANGELOG.md` has a non-empty `## Unreleased` (or `## [Unreleased]`) section.
 - `dart format` and `dart analyze` clean, run repo-wide from the root; `dart test` green,
@@ -174,23 +174,28 @@ that must be satisfied simultaneously:
 (1) only holds *after* `cider bump` + `cider release`. (2) only holds *after*
 `git commit` — running the dry-run against the working tree mid-execute would
 trip on the bump/release modifications. So the dry-run runs as step 5, after
-the prep commit lands. The `ERR` trap handles failure in two phases:
+the prep commit lands. Failure before that point is undone automatically, by a phase the execute
+step advances as it goes:
 
-- **Pre-commit failure** (bump or release errored, no commit yet):
+- **Pre-commit failure** (bump or release errored, or a hook rejected the commit):
   restore `pubspec.yaml` + `CHANGELOG.md` from `HEAD`.
 - **Post-commit, pre-tag failure** (dry-run rejected the prep commit):
-  `git reset --hard HEAD~1` to drop the prep commit, leaving the working
-  tree exactly as it was before `release.sh` started. No remote tag is ever
-  created in this case — the validation gate sits between commit and tag, so
-  there's nothing to clean up on `origin`.
+  `git reset --hard HEAD~1` to drop it, leaving the tree exactly as it was
+  before the run started. No remote tag is ever created in this case — the
+  validation gate sits between commit and tag, so there's nothing to clean
+  up on `origin`.
 
-After the dry-run passes, the trap clears — `git tag` / `git push` failures
-require manual recovery (the script prints the recipe).
+The undo runs at most once, since the second phase drops a commit and doing that twice would
+drop an innocent one. `Ctrl-C` routes through the same undo and exits 130, which Dart does not
+do by itself.
+
+After the dry-run passes, nothing is undone automatically: the tag and push window is yours, and
+cleaning up there could discard real work if the push were the failing step. The tool prints the
+recovery recipe instead.
 
 ## FVM note
 
-If `.fvm/flutter_sdk/bin/dart` exists, the script prepends it to `PATH` so plain
-`dart` resolves to the `.fvmrc`-pinned SDK. Otherwise, it falls back to whatever
-`dart` is on `PATH` — a non-FVM contributor can run the script unchanged.
-SDK-version compatibility is enforced indirectly via `pub publish --dry-run` in
-preflight.
+If `.fvm/flutter_sdk/bin/dart` exists, the tool shells out to that binary directly, so every
+`dart` subprocess gets the `.fvmrc`-pinned SDK even when a host `dart` started the run.
+Otherwise it falls back to whatever `dart` is on `PATH` — a non-FVM contributor can run it
+unchanged. SDK-version compatibility is enforced indirectly via `pub publish --dry-run`.

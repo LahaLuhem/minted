@@ -27,7 +27,7 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed .
 
   # Container-based lint checks (tool + args) and the linterpol image tag live in
-  # one manifest, .github/lint-checks.json, shared with scripts/release.sh's
+  # one manifest, .github/lint-checks.json, shared with tool/release.dart's
   # preflight so CI and the release gate can't drift. This job reads the manifest
   # so the `lint` matrix below can fan out over it; adding a linter is a one-line
   # manifest edit, no new job here. https://github.com/LahaLuhem/linterpol
@@ -65,8 +65,8 @@ jobs:
       - uses: actions/checkout@v7
       # The checkout mounts read-only at the image's /work workdir. $LINT_CMD is
       # intentionally unquoted so the runner shell word-splits it into the tool +
-      # args and glob-expands (e.g. scripts/*.sh) against the checkout before the
-      # container runs. Same contract as the release.sh preflight.
+      # args and glob-expands against the checkout before the container runs.
+      # Same contract as the tool/release.dart preflight.
       - run: |
           # shellcheck disable=SC2086
           docker run --rm -v "$PWD:/work:ro" "$LINTERPOL_IMAGE" $LINT_CMD

@@ -34,9 +34,7 @@ class FixtureRepo {
   }
 
   /// Writes the lint manifest the preflight reads.
-  void addLintManifest({
-    String checks = '{ "name": "ShellCheck", "cmd": "shellcheck scripts/*.sh" }',
-  }) {
+  void addLintManifest({String checks = '{ "name": "actionlint", "cmd": "actionlint" }'}) {
     Directory('${_root.path}/.github').createSync(recursive: true);
     File('${_root.path}/.github/${Repo.lintManifestPath.split('/').last}')
         .writeAsStringSync('{ "image": "ghcr.io/example/linterpol:latest", "checks": [$checks] }');

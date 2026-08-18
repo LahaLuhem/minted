@@ -93,12 +93,12 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 ## Forbidden / confirm-first actions
 
 - **Never** `dart pub publish`. Publishing is effectively one-way (pub.dev reserves the version for
-  7 days after retraction). Releases go through `scripts/release.sh`, which the user runs manually.
+  7 days after retraction). Releases go through `tool/release.dart`, which the user runs manually.
 - **Never** run `cider` commands or manually edit `CHANGELOG.md` (including `## Unreleased`) or the
-  `version:` field. Those are owned by `scripts/release.sh` and the changelog automation; manual
+  `version:` field. Those are owned by `tool/release.dart` and the changelog automation; manual
   edits get reordered or overwritten. If the user wants a release, suggest
-  `scripts/release.sh <bump>`; don't run it (it pushes to `origin/main` and triggers publish). The
-  `cider:` block in `pubspec.yaml` is static config, hand-editable.
+  `dart run tool/release.dart <bump>`; don't run it (it pushes to `origin/main` and triggers
+  publish). The `cider:` block in `pubspec.yaml` is static config, hand-editable.
 - **Never** edit `pubspec.lock` directly (it's `dart pub get`'s output).
 - **Never** delete files under `.fvm/`, `.dart_tool/`, or `pubspec.lock` without approval.
 - **Destructive git** (`reset --hard`, `push --force`, `branch -D`, `clean -fd`) → ask first.
@@ -115,10 +115,10 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 - DCM rules applied by hand (`dart analyze` doesn't run them): `no-empty-block`,
   `newline-before-return`, `prefer-commenting-analyzer-ignores`, plus blank lines segmenting
   logical chunks in methods.
-- Lint clean via the linterpol image for whatever changed: `shellcheck` (shell), `actionlint`
-  (workflows), `rumdl` (Markdown), `ryl` (YAML). The check set + per-tool config live in
+- Lint clean via the linterpol image for whatever changed: `actionlint` (workflows), `rumdl`
+  (Markdown), `ryl` (YAML). The check set + per-tool config live in
   `.github/lint-checks.json`, `.rumdl.toml`, and `.yamllint.yaml`.
 - `dart pub publish --dry-run` clean if the change is publish-relevant. Do not bump the version or
-  edit the CHANGELOG to make it pass; `scripts/release.sh` owns those.
+  edit the CHANGELOG to make it pass; `tool/release.dart` owns those.
 - Public API additions carry `///` dartdoc and are reflected in the README.
 - Explicitly call out what you did NOT verify.

@@ -344,7 +344,7 @@ void main() {
 
       final abort = await runFlow(runner: runner, ui: FakeReleaseUi());
 
-      check(abort).isNotNull().has((abort) => abort.toString(), 'text').contains('ShellCheck');
+      check(abort).isNotNull().has((abort) => abort.toString(), 'text').contains('actionlint');
       check(runner.ran('cider bump')).isFalse();
       check(runner.ran('git checkout HEAD --')).isFalse();
     });

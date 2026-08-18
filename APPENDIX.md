@@ -570,7 +570,7 @@ a dev-dependency arrow back from core to its own dependents. Locally that resolv
 fine; on pub.dev it deadlocks the first publish of either side, because core cannot go up until
 `minted_chronology` is up and `minted_chronology` cannot go up until core is. `publish_to: none`
 breaks the cycle, since a package that never reaches pub.dev may depend on anything. The
-[cutover order](./scripts/README.md) is the softer version of the same constraint, and the
+[cutover order](./tool/README.md) is the softer version of the same constraint, and the
 sibling-constraint preflight exists because that one already bit.
 
 **Keeping it a workspace member, rather than moving the suites to the workspace root, is a separate

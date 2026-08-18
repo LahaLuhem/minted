@@ -21,7 +21,7 @@ text, so renames don't break callers.
 - [DCM rules (applied by hand)](#dcm-rules)
 - [Test style](#test-style)
 - [Documentation conventions (Markdown)](#documentation-conventions)
-- [Shell scripts](#shell-scripts)
+- [Shell in workflows](#shell-scripts)
 
 <!-- TOC end -->
 
@@ -610,7 +610,7 @@ library;
   the existing anchor, or `rg` the repo and update every caller in the same change.
 - **Bare `dart` in command examples, never `fvm dart`.** FVM is a local implementation detail
   (`.fvmrc` pins the SDK). Docs stay tool-agnostic so external contributors aren't forced into
-  FVM; scripts under `scripts/` handle the FVM-vs-PATH resolution themselves.
+  FVM; the release tool resolves FVM-vs-PATH itself.
 - **Trim prose to the load-bearing sentence.** The code-comment bar applies to README, APPENDIX and
   this file too: say the thing, then stop. No restating a point in three phrasings, no caveats
   nobody asked for. An APPENDIX entry earns more room than a comment, not a licence to ramble.
@@ -627,14 +627,16 @@ library;
 ---
 
 <a id="shell-scripts"></a>
-## Shell scripts
+## Shell in workflows
 
-- **`shellcheck` is the lint contract** for `scripts/*.sh`, mirroring `dart analyze` for Dart. It
-  runs from the [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image
-  (`docker run --rm -v "$PWD:/work:ro" ghcr.io/lahaluhem/linterpol:latest shellcheck scripts/*.sh`),
-  so the only local requirement is Docker, plus `jq` for the `scripts/release.sh` preflight, which
-  reads the manifest with it. That preflight and `.github/workflows/repo.yml` both enforce it; they
-  read the check set (shellcheck, actionlint, rumdl, ryl) and the image tag from one manifest,
+The repo holds no `.sh` files; the release flow is [`tool/release.dart`](./tool/README.md). The
+only shell left is `run:` blocks under `.github/workflows/`.
+
+- **`actionlint` is the lint contract** for those blocks, and it shellchecks each one, which is why
+  the manifest carries no standalone `shellcheck` entry. It runs from the
+  [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, so Docker is the only local
+  requirement. `.github/workflows/repo.yml` and the `tool/release.dart` preflight read the check
+  set (actionlint, rumdl, ryl) and the image tag from one manifest,
   [`.github/lint-checks.json`](.github/lint-checks.json), so neither can drift from the other.
 - **Prefer `# shellcheck disable=SC<code>` + a one-line "why" over refactoring for simple cases.**
   Refactor when the warning points at a real bug; reach for the directive when the code is correct
