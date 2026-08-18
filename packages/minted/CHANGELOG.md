@@ -1,4 +1,4 @@
-## [Unreleased]
+## [3.1.0] - 2026-08-18
 ### Changed
 - minted\_constraints: the primitives move out of core, plus Char / Letter / Alphanumeric
 
@@ -72,7 +72,7 @@
 - Digit
 - Digits
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted-3.0.1...minted-HEAD
+[3.1.0]: https://github.com/LahaLuhem/minted/compare/minted-3.0.1...minted-3.1.0
 [3.0.1]: https://github.com/LahaLuhem/minted/compare/minted-3.0.0...minted-3.0.1
 [3.0.0]: https://github.com/LahaLuhem/minted/compare/minted-2.0.0...minted-3.0.0
 [2.0.0]: https://github.com/LahaLuhem/minted/compare/1.1.0...2.0.0
