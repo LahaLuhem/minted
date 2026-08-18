@@ -46,6 +46,7 @@ anchor, and keep anchors stable across renames.
 - [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
 - [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
 - [Port: a domain that borrows a width](#port-value-type)
+- [minted_constraints: a package for the primitives](#constraints-package)
 - [Constraint types: a range, not a standard](#constraint-types)
 - [Percentage: the unit is the whole point](#percentage-constraint-type)
 - [Probability: bounded, and both ends belong](#probability-constraint-type)
@@ -204,8 +205,10 @@ benefit (the round trip type-checks) without the two costs of holding one: hand-
 and `print` rendering `Digits(978…)` instead of the identifier. The rest are correctly extension
 types over text, each for its own reason:
 
-- `Iban`'s `bban`, `Isin`'s `nsin` and `Bic`'s codes are alphanumeric, and there is no alphanumeric
-  type to hold. Minting one was declined: see [the door table](#parse-outcome).
+- `Iban`'s `bban`, `Isin`'s `nsin` and `Bic`'s codes are alphanumeric, and now hold
+  [`AsciiAlphanumerics`](#constraints-package). Minting that type was declined once, on a call-site
+  count over `lib/` that read zero; the count was the wrong test for a type whose job is the public
+  surface.
 - `Hostname` and `DnsName` labels have no type either, because a label's validity is **positional**.
   `Hostname` refuses an all-numeric *last* label, so a valid label at one index is invalid at
   another, and no per-label type can express that.
@@ -232,9 +235,9 @@ the building blocks the standard types are cut from.
 `Imei.tac` hand back a `Digits`, and `Isbn.fromComponents` and `Imei.fromComponents` take one, so
 `Imei.fromComponents(tac: imei.tac, serialNumber: imei.serialNumber)` type-checks. It did not, while
 the getters returned `String` and the parameters took `Digits`: the two halves of one type disagreed
-about what its parts were. Parts that are genuinely alphanumeric keep `String`, because `Digits`
-there would be a narrower type rather than a stronger one, and no alphanumeric type exists to hold
-them.
+about what its parts were. Parts that are genuinely alphanumeric take
+[`AsciiAlphanumerics`](#constraints-package) rather than `Digits`, which there would be a narrower
+type rather than a stronger one.
 
 **A `Digits` is not text, and interpolating one says so.** It hand-writes `toString`, so `'$prefix'`
 renders `Digits(978)`. Nothing diagnoses that (interpolation takes any `Object`), so rendered output
@@ -1434,14 +1437,57 @@ category became a documented convention. A type's home follows the domain, not t
 
 ---
 
+<a id="constraints-package"></a>
+## minted_constraints: a package for the primitives
+
+**Why a package and not more of core.** `Char` and `Letter` are grapheme-based and need
+[`package:characters`](https://pub.dev/packages/characters). Core keeps its `collection` + `meta`
+diet, and a consumer wanting typed primitives takes one package without ever meeting `ParseOutcome`:
+measured, nothing in `numerics/` or `quantities/` imported the outcome machinery. The cost is a
+major, since core cannot re-export a sibling (that edge is a cycle pub refuses), so the moved types
+left `package:minted/minted.dart`. Breakage is a fact to state, not an argument to decide with.
+
+**`Char` is one grapheme cluster, not one code unit or code point.** A skin-toned thumbs-up is two
+code points, a flag two, a joined family five, and each fills one slot, so `length == 1` refuses all
+three. It also *admits* half a surrogate pair, which is why `Char` carries an explicit
+unpaired-surrogate guard: `characters` counts a lone surrogate as one grapheme too. Control
+characters and CRLF are single graphemes and stay admitted, since excluding them would invent a rule
+the concept lacks.
+
+**Two letter families, because one type cannot do both jobs.** A Danish initial is `Ø` and a Polish
+one `Ł`, so `AsciiLetter` cannot serve human text; `[A-Za-z]` is exactly what ISO 9362 and the IBAN
+registry fix, so `Letter` cannot serve the codes. Unprefixed means Unicode throughout.
+
+**The plurals are extension types over `String`, where [`Digits`](#typed-digit-subparts) is an
+`Iterable`.** An `int` cannot hold `007`, and `Isbn.tryParse('0306406152')` is a real ISBN whose body
+starts with a zero, so digits need a sequence, and a `Uint8List` gives reference equality. A `String`
+has neither problem, and each element is one grapheme or one code unit, so concatenation is
+reversible: measured, `'a' + ZWJ + 'b'` stays two graphemes, UAX #29 joining across ZWJ only for
+emoji. Text should print and compare as text; `Digits` should not.
+
+**The singular narrowings are declared, the plural ones are not.** `AsciiLetter implements
+AsciiAlphanumeric, Letter` and up the chain, so a letter passes wherever a character is wanted.
+`AsciiLetters` is equally a `Letters`, but nothing wants BIC-code letters where initials are
+expected, and declaring it would force a covariant redeclare of the element getter. Adding a
+supertype later is not breaking. Note the analyser cannot check any of this: matching representations
+make **any** `implements` structurally legal, so `Letters implements Letter` compiled fine and was a
+lie caught by a test.
+
+**Typing the finance parts closed a path rather than adding a check.** `Iban.fromComponents` used to
+take a `String` BBAN, so junk reached `alphanumericValue` and its `-1` fallback. With
+`AsciiAlphanumerics` on the door that input is unrepresentable, and `Isin`'s checksum already ran
+after its charset gate, so the fallback became an `assert`.
+
+---
+
 <a id="constraint-types"></a>
 ## Constraint types: a range, not a standard
 
 **A second category, not value types with a relaxed contract.** A constraint type is a primitive with
 a constraint on it and no standard defining its text form: no checksum, no notation. Usually a range;
 [`Percentage`](#percentage-constraint-type) constrains the unit instead. *Primitive*, not *number*:
-the constraint need not be arithmetic, and one restricting a `String` to a single character sits here
-on the same terms.
+the constraint need not be arithmetic, and [`Char`](#constraints-package) restricts a `String` to one
+character on the same terms.
 
 **The category is prose, not a structural check.** Nothing enforces it: `conformance_test.dart`
 deliberately requires no door to *exist*, only that nothing lies about what it can do. Detecting the

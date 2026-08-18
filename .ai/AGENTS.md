@@ -70,9 +70,10 @@ minted/                              Workspace root
 ├── context7.json                    Doc-indexer config for context7.com
 ├── .ai/                             This file + CLAUDE.md (symlinked to repo root)
 └── packages/                        One directory per package
-    ├── minted/                      Core: outcomes, numerics, quantities. Deps: collection, meta
+    ├── minted/                      Core: outcomes only. Deps: collection, meta
     ├── minted_chronology/           Date, Month, Weekday, Iso8601Duration
     ├── minted_conformance/          Private (publish_to: none); the cross-package suites
+    ├── minted_constraints/          Digit(s), the Uint tower, Char, Letter(s), Ascii* (+ characters)
     ├── minted_contact/              Email, PhoneNumber (+ email_validator, phone_numbers_parser)
     ├── minted_finance/              Iban, Bic, Isin, PaymentCardNumber (+ iban_validator, country_code)
     ├── minted_geography/            GeoCoordinate
@@ -86,8 +87,6 @@ packages/minted/                     Core. A sibling has the same shape, minus s
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   ├── internal.dart                Cross-package plumbing for the siblings. NOT public API
 │   └── src/
-│       ├── numerics/                Digit, Digits (numeric building blocks)
-│       ├── quantities/              Uint, NaturalNumber, Uint2-Uint32 (pure ranges)
 │       └── shared/                    Cross-package only; a sibling's own helpers travel with it
 │           ├── outcomes/             What a parse hands back, and the only public part of shared/
 │           │   ├── parse_outcome.dart          ParseOutcome + ParseSuccess / ParseFailure
@@ -126,8 +125,9 @@ whether it belongs at the root or per-package. They live under the `melos:` key 
 with cider and `tool/release.dart`.
 
 **A domain is a package.** Its types sit flat in that package's `lib/src/`, its failures in
-`failures/`, its helpers in job-named subfolders. Core is the exception: it also carries `numerics/`
-and `quantities/` for the primitives every domain builds on, and `shared/` for what they all speak.
+`failures/`, its helpers in job-named subfolders. Two exceptions: core carries `shared/` for what
+every sibling speaks, and `minted_constraints` sorts its primitives into `numerics/`, `quantities/`
+and `text/`, being a category rather than a domain.
 `test/` mirrors `lib/src/` in each package.
 
 Internals go in a *subfolder* named for the job: `outcomes/` (the only public part of `shared/`,
@@ -167,12 +167,13 @@ the rule above picks, and reach what they share (`shared/encoding/digit_values.d
 decoding) by plain import, never `part`.
 That file sits in `shared/encoding/` rather than inside `check_digits/` because it was never
 check-digit-specific:
-`Digits` decodes with it too, and once a second caller appeared from outside the directory, keeping
-it in there would have meant `numerics/` importing `check_digits/` for something that is not a check
-digit. It carries both directions (`decimalValue`, `decimalCodeUnit`) even though no algorithm needs
-the encoder, because rendering does. Separate
-libraries is the whole point: Dart privacy is library-scoped, so parts would leak every `_` constant
-across every algorithm, and mod-97's modulus of 97 has no business being visible to the next one.
+`Digits` decodes with it too (from `minted_constraints`, through `internal.dart`), and once a second
+caller appeared from outside the directory, keeping it in there would have meant a primitive
+importing `check_digits/` for something that is not a check digit. It carries both directions
+(`decimalValue`, `decimalCodeUnit`) even though no algorithm needs the encoder, because rendering
+does. Separate libraries is the whole point: Dart privacy is library-scoped, so parts would leak
+every `_` constant across every algorithm, and mod-97's modulus of 97 has no business being visible
+to the next one.
 Each file keeps its own constants and its own character map private to itself.
 
 **A constant that two files both need goes in a helper subfolder, but only when it is the same
@@ -212,25 +213,31 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    Full spec: [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract); rationale in
    [`APPENDIX.md#per-type-failures`](../APPENDIX.md#per-type-failures) and
    [`APPENDIX.md#claim-in-source`](../APPENDIX.md#claim-in-source).
-2. **The public API lives only in `lib/minted.dart`**, which re-exports from `lib/src/`. Don't make
+2. **`minted` is the core and the lowest package; every other package is a sibling that depends on
+   it.** A consumer takes `minted` plus one or more siblings. What gets extracted *into* core is
+   shareable **plumbing** (`decimalValue`), not whole public features (`NaturalNumber`); where only
+   part of a file is shared, split the file and move only that part. A sibling depending on another
+   sibling is a last resort. Rationale:
+   [`APPENDIX.md#constraints-package`](../APPENDIX.md#constraints-package).
+3. **The public API lives only in `lib/minted.dart`**, which re-exports from `lib/src/`. Don't make
    users import `package:minted/src/…`. Shared internals go in `lib/src/shared/`.
-3. **Validate the real standard, including check digits** (IBAN mod-97, Luhn, ISBN/EAN/ISSN). A
+4. **Validate the real standard, including check digits** (IBAN mod-97, Luhn, ISBN/EAN/ISSN). A
    regex that only checks the shape is a bug. See
    [`APPENDIX.md#check-digits-not-regex`](APPENDIX.md#check-digits-not-regex).
-4. **No `print()` in library code.** `avoid_print` is a warning in `analysis_options.yaml`.
-5. **No `dynamic` escape hatches.** `strict-casts`, `strict-inference`, `strict-raw-types` are all
+5. **No `print()` in library code.** `avoid_print` is a warning in `analysis_options.yaml`.
+6. **No `dynamic` escape hatches.** `strict-casts`, `strict-inference`, `strict-raw-types` are all
    on. In particular, never `as T` a `tryParse` result to launder nullability.
-6. **Public symbols carry `///` dartdoc** explaining the guarantee and the normalisation, not the
+7. **Public symbols carry `///` dartdoc** explaining the guarantee and the normalisation, not the
    mechanical *what*. `public_member_api_docs` is on.
-7. **Pure Dart, no Flutter dep, dependency-light core.** Every dependency is a promise to all
+8. **Pure Dart, no Flutter dep, dependency-light core.** Every dependency is a promise to all
    downstream users. A core value type may carry the pure-Dart, web-safe *engine* it is built on
    (`email_validator`, `iban_validator`, `phone_numbers_parser`); *adapter* integrations to other
    ecosystems (`fpdart`, Hive, Flutter form validators) go in companion packages, never in core.
    See [`APPENDIX.md#packaging-core-and-companions`](../APPENDIX.md#packaging-core-and-companions).
-8. **Semver, strictly.** Any change to a public signature, a deletion, or a behavioural change of
+9. **Semver, strictly.** Any change to a public signature, a deletion, or a behavioural change of
    a documented contract (including a normalisation change) is breaking. `cider` enforces the
    version-bump discipline.
-9. **`CHANGELOG.md` is bot-owned. Do not edit any section, including `## Unreleased`.** Release
+10. **`CHANGELOG.md` is bot-owned. Do not edit any section, including `## Unreleased`.** Release
    headers are written by [`tool/release.dart`](../tool/release.dart); the `## Unreleased` buffer
    is appended to by [`.github/workflows/changelog.yml`](../.github/workflows/changelog.yml) from
    the merged PR title (governed by its `sem-*` label). Same prohibition on the `version:` field.
