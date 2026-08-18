@@ -2,7 +2,7 @@ name: minted_geography
 description: >-
   Well-modelled Dart value types for geography: GeoCoordinate (ISO 6709 in all three field widths)
   and Geohash (base32 cells that decode). Part of the minted family.
-version: 1.0.1
+version: 1.1.0
 homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
 repository: https://github.com/LahaLuhem/minted
 
