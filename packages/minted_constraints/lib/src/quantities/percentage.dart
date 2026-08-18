@@ -1,4 +1,4 @@
-import '../shared/normalisation/normalisation.dart';
+import 'package:minted/internal.dart';
 
 /// A proportion in hundredths, where `15` is fifteen percent.
 ///
@@ -12,7 +12,7 @@ import '../shared/normalisation/normalisation.dart';
 ///
 /// [value] is the percent; the string form is `value.toString()`.
 ///
-/// {@example /example/minted_example.dart#percentage}
+/// {@example /example/minted_constraints_example.dart#percentage}
 extension type const Percentage._(double value) {
   /// The [Percentage] of [percent] hundredths (`15` is fifteen percent), or `null` unless finite.
   static Percentage? tryFrom(num percent) =>

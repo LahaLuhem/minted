@@ -1,4 +1,5 @@
-import '../shared/normalisation/normalisation.dart';
+import 'package:minted/internal.dart';
+
 import 'percentage.dart';
 
 /// A probability: `0` to `1` inclusive, where `0.15` is a fifteen percent chance.
@@ -13,7 +14,7 @@ import 'percentage.dart';
 ///
 /// [value] is the numeric value; the string form is `value.toString()`.
 ///
-/// {@example /example/minted_example.dart#probability}
+/// {@example /example/minted_constraints_example.dart#probability}
 extension type const Probability._(double value) {
   /// The [Probability] with numeric [value], or `null` unless it is `0` to `1`. A `NaN` is out of
   /// range, since the bound is written as a positive test.

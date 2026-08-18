@@ -1,7 +1,7 @@
 // This example prints to stdout so it runs standalone via `dart run`.
 // ignore_for_file: avoid_print
 
-import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_geography/minted_geography.dart';
 
 void main() {

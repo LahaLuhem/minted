@@ -15,15 +15,6 @@
 /// ones you use; this package comes with each of them.
 library;
 
-export 'src/quantities/natural_number.dart';
-export 'src/quantities/percentage.dart';
-export 'src/quantities/probability.dart';
-export 'src/quantities/uint.dart';
-export 'src/quantities/uint16.dart';
-export 'src/quantities/uint2.dart';
-export 'src/quantities/uint32.dart';
-export 'src/quantities/uint4.dart';
-export 'src/quantities/uint8.dart';
 export 'src/shared/outcomes/minted_failure.dart';
 export 'src/shared/outcomes/minted_format_error.dart';
 export 'src/shared/outcomes/parse_outcome.dart';
