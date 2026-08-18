@@ -1,0 +1,4 @@
+tags:
+  # Needs git, cider and a running Docker daemon, and cuts a release against a throwaway
+  # remote. Excluded from the default run with `-x integration`; see the melos scripts.
+  integration:

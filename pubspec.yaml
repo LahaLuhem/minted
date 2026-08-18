@@ -39,10 +39,17 @@ melos:
     test:
       description: Each member's suite, plus the root's own tooling suite.
       # `exec` visits members only, and the root is not one of them, so the root's tests need the
-      # second line. Same shape as `coverage` below.
+      # second line. Same shape as `coverage` below. `-x integration` keeps the release-flow test
+      # out: it wants git, cider and Docker. Run it with `melos run test-release-flow`.
       run: |
         dart run melos exec --fail-fast --dir-exists=test -- dart test
-        dart test
+        dart test -x integration
+
+    test-release-flow:
+      description: >-
+        Cuts a release against a throwaway bare remote, to check the real cider and git calls.
+        Needs git, cider and a running Docker daemon. Never touches pub.dev.
+      run: dart test -t integration
 
     coverage:
       description: >-
