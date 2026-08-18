@@ -209,6 +209,24 @@ void main() {
       check(inverted.reasonOrNull).equals(const GeoBoundsSouthAboveNorth(south: 50, north: 10));
     });
 
+    // The point of the typed getters: a box builds straight out of two coordinates, with no range
+    // re-check and no bang. A west edge *on* the antimeridian still has to be spelled -180 by hand,
+    // a coordinate having folded it to +180 already.
+    scenario('a box composes from coordinates without re-proving their degrees', () {
+      final southWest = GeoCoordinate.tryFrom(latitude: -45, longitude: -10)!;
+      final northEast = GeoCoordinate.tryFrom(latitude: -35, longitude: 10)!;
+
+      final box = GeoBounds.from(
+        west: southWest.longitude,
+        south: southWest.latitude,
+        east: northEast.longitude,
+        north: northEast.latitude,
+      ).getOrThrow();
+
+      check(box.bbox).equals('-10.0,-45.0,10.0,-35.0');
+      check(box.contains(southWest)).isTrue();
+    });
+
     scenario('tryFrom takes raw numbers and returns null when they are not a box', () {
       check(GeoBounds.tryFrom(west: -10, south: -45, east: 10, north: -35)!.bbox)
           .equals('-10.0,-45.0,10.0,-35.0');

@@ -1160,6 +1160,15 @@ normalisation that stays with `GeoCoordinate`, which is what lets one number typ
 edges then carry their own ranges, leaving `south <= north` as all `from` can refuse and making
 `GeoCoordinate.from` the family's second total door.
 
+**Both implement `double`, which is what makes the getters affordable.** An opaque constraint type
+taxes every read: `coordinate.latitude * 2` becomes `.value * 2`, and a box built from a
+coordinate's parts re-proves degrees that were already proven. Implementing the representation
+removes that and keeps every guarantee, checked rather than assumed: a raw `double`, a `Longitude`
+and a `List<double>` are each still refused where a `Latitude` is wanted, and `lat * 2` stays a
+`double`, so arithmetic cannot re-enter the type. Not a family-wide posture, though. `Percentage`
+holds `15` for fifteen percent, so `implements double` would let `percentage * 200` compile as
+exactly the bug that type exists to prevent. Scope recorded on issue #70.
+
 **`parse` still diagnoses, text being where unchecked input arrives.** A constraint type answers
 `null` and names nothing, right for a caller who picked that door and wrong for a form field
 holding a string. `GeoBoundsInvalidCorner` therefore nests a `GeoCoordinateFailure` just as

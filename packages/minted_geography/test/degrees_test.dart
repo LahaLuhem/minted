@@ -40,7 +40,18 @@ void main() {
     // the number keeps what it was given and the fold stays with the coordinate.
     scenario('Longitude keeps -180 as written, unlike the coordinate built from it', () {
       check(Longitude.tryFrom(-180)?.value).equals(-180);
-      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)?.longitude).equals(180);
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)?.longitude.value).equals(180);
+    });
+
+    // Both implement double, so a degree reads as one everywhere it is read and nowhere it is
+    // written: no `.value` for arithmetic or formatting, and still no way in without tryFrom.
+    scenario('a degree reads as a double without unwrapping', () {
+      final latitude = Latitude.tryFrom(45)!;
+
+      check(latitude + 1).equals(46);
+      check(latitude.toStringAsFixed(2)).equals('45.00');
+      check(<double>[latitude].first).equals(45);
+      check(latitude < 50).isTrue();
     });
 
     scenario('a negative zero takes the sign the standard gives the origin', () {

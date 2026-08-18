@@ -46,7 +46,8 @@ the case that goes wrong near ±180.
 
 `Latitude` and `Longitude` carry the ranges, so the assembly doors prevent an impossible degree
 instead of reporting one: `GeoCoordinate.from` takes them and cannot fail, `tryFrom` takes raw
-numbers.
+numbers. Both implement `double`, so reading a degree needs no unwrapping and a box composes
+straight out of a coordinate's parts.
 
 ## A quick taste
 

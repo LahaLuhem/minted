@@ -36,21 +36,26 @@ import 'standards/coordinate_bounds.dart';
 /// {@example /example/minted_geography_example.dart#geo}
 @immutable
 final class GeoCoordinate {
-  /// The latitude in decimal degrees, `-90` to `90`. Negative is south of the equator.
-  final double latitude;
+  /// The latitude in decimal degrees. Negative is south of the equator. A `double`, so arithmetic
+  /// and formatting need no unwrapping.
+  final Latitude latitude;
 
-  /// The longitude in decimal degrees, `-180` to `180`. Negative is west of the prime meridian.
-  final double longitude;
+  /// The longitude in decimal degrees. Negative is west of the prime meridian.
+  final Longitude longitude;
 
   const new _(this.latitude, this.longitude);
 
   // The only door that constructs, so every instance normalises alike. A negative zero prints as
   // "-0.0000" here, and the snap runs inside the clearing, because a tiny negative degree rounds
-  // to -0.0.
-  factory _canonical(double latitude, double longitude) => GeoCoordinate._(
-    positiveZeroed(_renderable(latitude)),
-    positiveZeroed(_renderable(longitude == -maxLongitude ? maxLongitude : longitude)),
-  );
+  // to -0.0. Neither step can push a bounded degree past its bound, hence the asserted rewrap.
+  factory _canonical(double latitude, double longitude) {
+    final folded = longitude == -maxLongitude ? maxLongitude : longitude;
+
+    return GeoCoordinate._(
+      Latitude.tryFrom(positiveZeroed(_renderable(latitude)))!,
+      Longitude.tryFrom(positiveZeroed(_renderable(folded)))!,
+    );
+  }
 
   /// The coordinate at [latitude] and [longitude]. Cannot fail: each parameter carries its own
   /// range, and neither can be written where the other belongs.
@@ -58,7 +63,7 @@ final class GeoCoordinate {
   // A constructor rather than the family's usual static door, because it is total: a ParseOutcome
   // return is what stops the others being constructors.
   factory from({required Latitude latitude, required Longitude longitude}) =>
-      GeoCoordinate._canonical(latitude.value, longitude.value);
+      GeoCoordinate._canonical(latitude, longitude);
 
   /// The coordinate at [latitude] and [longitude] decimal degrees, or `null` when either leaves its
   /// range. A `NaN` is out of range on both. The raw-number door, where [GeoCoordinate.from] takes

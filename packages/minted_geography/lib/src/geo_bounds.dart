@@ -30,18 +30,18 @@ import 'standards/coordinate_bounds.dart';
 /// {@example /example/minted_geography_example.dart#bounds}
 @immutable
 final class GeoBounds {
-  /// The western edge in decimal degrees, `-180` to `180`. Above [east] exactly when the box
-  /// crosses the antimeridian.
-  final double west;
+  /// The western edge. Above [east] exactly when the box crosses the antimeridian. A `double`, so
+  /// arithmetic and formatting need no unwrapping.
+  final Longitude west;
 
-  /// The southern edge in decimal degrees, `-90` to `90`. Never above [north].
-  final double south;
+  /// The southern edge. Never above [north].
+  final Latitude south;
 
-  /// The eastern edge in decimal degrees, `-180` to `180`.
-  final double east;
+  /// The eastern edge.
+  final Longitude east;
 
-  /// The northern edge in decimal degrees, `-90` to `90`.
-  final double north;
+  /// The northern edge.
+  final Latitude north;
 
   const new _({required this.west, required this.south, required this.east, required this.north});
 
@@ -53,11 +53,9 @@ final class GeoBounds {
     required Latitude south,
     required Longitude east,
     required Latitude north,
-  }) => south.value > north.value
-      ? ParseFailure(GeoBoundsSouthAboveNorth(south: south.value, north: north.value))
-      : ParseSuccess(
-          GeoBounds._(west: west.value, south: south.value, east: east.value, north: north.value),
-        );
+  }) => south > north
+      ? ParseFailure(GeoBoundsSouthAboveNorth(south: south, north: north))
+      : ParseSuccess(GeoBounds._(west: west, south: south, east: east, north: north));
 
   /// The box with these four edges in decimal degrees, or `null` when one is out of range or the
   /// latitudes are the wrong way round. The raw-number door, where [from] takes degrees already

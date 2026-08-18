@@ -166,7 +166,7 @@ void main() {
     scenario('the antimeridian is one value with two spellings', () {
       check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)!)
           .equals(GeoCoordinate.tryFrom(latitude: 0, longitude: 180)!);
-      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)!.longitude).equals(180);
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)!.longitude.value).equals(180);
     });
 
     // -0.0 == 0.0 while the two need not hash alike, so storing one would break Set and Map keys.
@@ -205,8 +205,8 @@ void main() {
     scenario('a full-precision decimal field parses to the exact double', () {
       final coordinate = GeoCoordinate.tryParse('+06.523984073660007-006.45826944430357/')!;
 
-      check(coordinate.latitude).equals(6.523984073660007);
-      check(coordinate.longitude).equals(-6.45826944430357);
+      check(coordinate.latitude.value).equals(6.523984073660007);
+      check(coordinate.longitude.value).equals(-6.45826944430357);
     });
 
     // The canonical form spells at most 20 fraction digits, so a finer degree is snapped to one it
@@ -215,8 +215,10 @@ void main() {
       final subAtomic = GeoCoordinate.tryFrom(latitude: 3.7182818284590454e-13, longitude: 0)!;
 
       check(GeoCoordinate.tryParse(subAtomic.iso6709)!).equals(subAtomic);
-      check(GeoCoordinate.tryParse('+00.00000000000000000001+000.0000/')!.latitude).equals(1e-20);
-      check(GeoCoordinate.tryParse('+00.000000000000000000001+000.0000/')!.latitude).equals(0);
+      check(GeoCoordinate.tryParse('+00.00000000000000000001+000.0000/')!.latitude.value)
+          .equals(1e-20);
+      check(GeoCoordinate.tryParse('+00.000000000000000000001+000.0000/')!.latitude.value)
+          .equals(0);
     });
 
     scenario('a degree that snaps to zero from below is still a positive zero', () {

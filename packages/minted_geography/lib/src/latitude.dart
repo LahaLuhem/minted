@@ -12,7 +12,7 @@ import 'standards/coordinate_bounds.dart';
 /// no range check catches, and this is where it stops compiling. A negative zero is cleared.
 ///
 /// [value] is the degrees; the string form is `value.toString()`.
-extension type const Latitude._(double value) {
+extension type const Latitude._(double value) implements double {
   /// The [Latitude] of [degrees], or `null` outside `-90` to `90`. A `NaN` is outside, the bound
   /// being written as a positive test.
   static Latitude? tryFrom(num degrees) =>
