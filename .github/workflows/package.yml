@@ -109,8 +109,9 @@ jobs:
 
       # The root's own suite, which the coverage script cannot reach: `melos exec` visits
       # members and the root is not one. No coverage flag, so the gate stays library-only.
+      # `-x integration` skips the release-flow test, which wants cider and a Docker image pull.
       - name: Test the release tooling
-        run: dart test
+        run: dart test -x integration
       - name: Test every member with coverage
         run: dart run melos run coverage
       # Upload BEFORE the gate so the coverage badge updates and PR comments

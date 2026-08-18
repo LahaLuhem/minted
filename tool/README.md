@@ -38,9 +38,17 @@ dart run tool/release.dart minor -m "Big new feature"   # annotated tag with thi
 `--help` lists every option.
 
 `--repo-root DIR` releases from a different checkout instead of the one this tool lives in. It
-exists so the execute phase can be exercised against a throwaway clone with a local bare remote:
-no `publish.yml` lives there, so nothing can reach pub.dev. That is how `cider bump`, the commit,
-the tag and the atomic push get verified for real, since the unit tests fake the process runner.
+exists for the integration test, which cuts a real release against a throwaway clone with a local
+bare remote: no `publish.yml` lives there, so nothing can reach pub.dev. That is how `cider bump`,
+the commit, the tag and the atomic push get verified, since the unit tests fake the process runner.
+
+```bash
+dart run melos run test-release-flow    # needs git, cider and a running Docker daemon
+```
+
+It is `integration`-tagged and so left out of the default `dart test`, which is why the plain run
+stays fast and needs no tooling. It earned its place: it caught the rollback running git in whatever
+directory the process started in, which every unit test passed straight over.
 
 ### Which package
 
