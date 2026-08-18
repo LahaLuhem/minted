@@ -268,6 +268,8 @@ class ReleaseFlow {
         () => runner.run('docker', [
           'run',
           '--rm',
+          // Docker's default, pinned so a later edit cannot make it `always` and refetch the image.
+          '--pull=missing',
           '-v',
           '${repo.root}:/work:ro',
           manifest.image,
