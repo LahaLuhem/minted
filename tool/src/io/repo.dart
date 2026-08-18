@@ -30,6 +30,9 @@ class Repo {
 
   String readFile(String relative) => File(absolute(relative)).readAsStringSync();
 
+  void writeFile(String relative, String contents) =>
+      File(absolute(relative)).writeAsStringSync(contents);
+
   bool fileExists(String relative) => File(absolute(relative)).existsSync();
 
   /// Every member directory under `packages/`, sorted because the picker numbers what it lists.
@@ -50,15 +53,22 @@ class Repo {
 
   /// Each member's declared name mapped to its pubspec text, private members included: they declare
   /// no version, so the constraint guard drops them anyway.
-  Map<String, String> memberPubspecs() => Map.fromEntries(
-    memberDirs().map((dir) => readFile('$dir/pubspec.yaml')).map(_namedEntry).nonNulls,
+  Map<String, String> memberPubspecs() =>
+      memberSources().map((name, source) => MapEntry(name, source.pubspec));
+
+  /// Each member's directory and pubspec text, keyed by the name it declares. One reader, so the
+  /// constraint gates and the repair cannot disagree about what is on disk.
+  Map<String, MemberSource> memberSources() => Map.fromEntries(
+    memberDirs()
+        .map((dir) => (dir: dir, pubspec: readFile('$dir/pubspec.yaml')))
+        .map(_sourceEntry)
+        .nonNulls,
   );
 
-  /// [pubspec] keyed by the name it declares, or null when it declares none.
-  static MapEntry<String, String>? _namedEntry(String pubspec) {
-    final name = pubspecName(pubspec);
+  MapEntry<String, MemberSource>? _sourceEntry(MemberSource source) {
+    final name = pubspecName(source.pubspec);
 
-    return name == null ? null : MapEntry(name, pubspec);
+    return name == null ? null : MapEntry(name, source);
   }
 
   /// Publishable members with notes waiting. cider dates the heading on release, so a package drops

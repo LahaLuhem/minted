@@ -19,7 +19,8 @@ CommandResult _ok([String stdout = '']) => CommandResult(exitCode: 0, stdout: st
 CommandResult Function(String) _healthy({String bumpedTo = '3.0.1'}) =>
     (command) => switch (command) {
       'cider version' => _ok('3.0.0'),
-      'cider bump patch' => _ok(bumpedTo),
+      // Any bump, not just patch: the cross-check only cares what cider reported.
+      _ when command.startsWith('cider bump ') => _ok(bumpedTo),
       'docker info' => _ok('Server Version: 27.0.0'),
       'dart --version' => _ok('Dart SDK version: 3.13.0'),
       'git status --porcelain' => _ok(),
@@ -190,8 +191,44 @@ void main() {
     });
   });
 
+  group('dependent-constraint repair', () {
+    // Without this the major lands, every dependent's caret excludes it, and pub get stops
+    // resolving the workspace for every later release in the train.
+    test('a major bump repairs a dependent that would exclude it, in the same commit', () async {
+      fixture
+        ..addMember(name: 'core', version: '1.5.0')
+        ..addMember(name: 'companion', version: '1.0.0', dependencies: {'core': '^1.0.0'});
+      final runner = FakeProcessRunner(onCapture: _healthy(bumpedTo: '2.0.0'));
+
+      final abort = await runFlow(
+        runner: runner,
+        ui: FakeReleaseUi(),
+        options: const ReleaseOptions(bump: .major, package: 'core', skipConfirmation: true),
+      );
+
+      check(abort).isNull();
+      check(fixture.repo.readFile('packages/companion/pubspec.yaml')).contains('core: ^2.0.0');
+      check(runner.ran('git add packages/core/pubspec.yaml')).isTrue();
+    });
+
+    test('a minor bump repairs nothing, the caret already admitting it', () async {
+      fixture
+        ..addMember(name: 'core', version: '1.5.0')
+        ..addMember(name: 'companion', version: '1.0.0', dependencies: {'core': '^1.0.0'});
+
+      final abort = await runFlow(
+        runner: FakeProcessRunner(onCapture: _healthy(bumpedTo: '1.6.0')),
+        ui: FakeReleaseUi(),
+        options: const ReleaseOptions(bump: .minor, package: 'core', skipConfirmation: true),
+      );
+
+      check(abort).isNull();
+      check(fixture.repo.readFile('packages/companion/pubspec.yaml')).contains('core: ^1.0.0');
+    });
+  });
+
   group('happy path', () {
-    test('runs the seven steps in order and tags without signing', () async {
+    test('runs the eight steps in order and tags without signing', () async {
       fixture.addMember(name: 'core', version: '3.0.0');
       final runner = FakeProcessRunner(onCapture: _healthy());
 

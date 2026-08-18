@@ -1,5 +1,6 @@
-// Cut a versioned release of one workspace member: bump with cider, date the CHANGELOG, commit, tag
-// `<package>-<version>`, push both atomically. The tag push triggers publish.yml.
+// Cut a versioned release of one workspace member: bump with cider, date the CHANGELOG, repair any
+// dependent constraint the new version would fall outside, commit, tag `<package>-<version>`, push
+// both atomically. The tag push triggers publish.yml.
 //
 // Laptop-only. Every gate runs before the first side effect, and a failure after that auto-reverts.
 // See src/flow/rollback.dart. Sequence and gates: src/flow/release_flow.dart.

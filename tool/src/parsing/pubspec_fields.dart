@@ -33,7 +33,10 @@ String? pubspecName(String pubspec) => _firstFieldValue(pubspec, 'name');
 String? pubspecVersion(String pubspec) => _firstFieldValue(pubspec, 'version');
 
 /// The major of the `version:` [pubspec] declares, or null when it declares none.
-int? pubspecMajor(String pubspec) => _firstInteger(pubspecVersion(pubspec) ?? '');
+int? pubspecMajor(String pubspec) => versionMajor(pubspecVersion(pubspec) ?? '');
+
+/// The major of a bare [version] string, or null when it holds no integer.
+int? versionMajor(String version) => _firstInteger(version);
 
 bool publishesToNone(String pubspec) => _publishToNone.hasMatch(pubspec);
 
@@ -52,6 +55,54 @@ String constraintOf(String dependencyLine) {
   // Offset from indexOf on an ASCII separator, so never inside a surrogate pair.
   // ignore: avoid-substring
   return separator < 0 ? dependencyLine : dependencyLine.substring(separator + 2);
+}
+
+/// A member whose constraint on the package being released cannot accept its next version, and the
+/// line that repairs it.
+typedef BlockingConstraint = ({String member, String dir, String declared, String repaired});
+
+/// One member's directory and pubspec text.
+typedef MemberSource = ({String dir, String pubspec});
+
+/// Members whose declared constraint on [releasedName] names an older major than [nextMajor].
+///
+/// The mirror of [staleConstraints]: that guards what the released package declares on its siblings,
+/// this guards what they declare on it. Without it a major lands, every dependent's caret excludes
+/// it, and `dart pub get` stops resolving the workspace.
+///
+/// Majors only, a caret already admitting any higher minor inside its own. A hand-written range
+/// that blocks one is left to `pub publish --dry-run`, as before.
+Set<BlockingConstraint> blockingConstraints({
+  required String releasedName,
+  required int nextMajor,
+  required Map<String, MemberSource> members,
+}) => Set.unmodifiable(
+  members.entries
+      .where((member) => member.key != releasedName)
+      .map((member) => _blockingConstraintOn(releasedName, nextMajor, member.key, member.value))
+      .nonNulls,
+);
+
+/// What [source] declares on [releasedName], when that cannot accept [nextMajor].
+BlockingConstraint? _blockingConstraintOn(
+  String releasedName,
+  int nextMajor,
+  String member,
+  MemberSource source,
+) {
+  final declared = dependencyLine(source.pubspec, releasedName);
+  if (declared == null) return null;
+
+  final constraint = constraintOf(declared);
+  final declaredMajor = _firstInteger(constraint);
+  if (declaredMajor == null || declaredMajor >= nextMajor) return null;
+
+  return (
+    member: member,
+    dir: source.dir,
+    declared: declared,
+    repaired: declared.replaceFirst(constraint, '^$nextMajor.0.0'),
+  );
 }
 
 /// A sibling constraint whose lower bound is older than the major this tree builds against.

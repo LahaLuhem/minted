@@ -6,7 +6,13 @@ import '../io/release_ui.dart';
 /// Once only because [RollbackPhase.commitLanded] drops a commit, and both the interrupt handler
 /// and the enclosing `finally` call [run].
 class Rollback {
-  new({required this._runner, required this._ui, required this.repoRoot, required this.packageDir});
+  new({
+    required this._runner,
+    required this._ui,
+    required this.repoRoot,
+    required this.packageDir,
+    this.repairedPubspecs = const [],
+  });
 
   final ProcessRunner _runner;
   final ReleaseUi _ui;
@@ -17,6 +23,10 @@ class Rollback {
 
   /// Directory of the member being released, relative to [repoRoot].
   final String packageDir;
+
+  /// Other members' pubspecs the release rewrote, relative to [repoRoot]. Restored alongside the
+  /// released member's own files: a half-repaired tree does not resolve.
+  final List<String> repairedPubspecs;
 
   /// Updated as the release advances, and read only when something goes wrong.
   RollbackPhase phase = .none;
@@ -43,6 +53,7 @@ class Rollback {
           '--',
           '$packageDir/pubspec.yaml',
           '$packageDir/CHANGELOG.md',
+          ...repairedPubspecs,
         ], workingDirectory: repoRoot);
 
       case .commitLanded:

@@ -171,6 +171,9 @@ The tool refuses to proceed unless every check passes:
 - `dart format` and `dart analyze` clean, run repo-wide from the root; `dart test` green,
   run inside the member.
 - The target tag does not already exist locally or on the remote.
+- No other member declares a constraint the release's new version would fall outside. A major
+  otherwise leaves every dependent's caret excluding it, which stops `dart pub get` resolving the
+  workspace. Those lines are rewritten in the same commit, and the plan names each one first.
 
 `dart pub publish --dry-run` is *not* in preflight. It cross-checks three things
 that must be satisfied simultaneously:
@@ -181,12 +184,13 @@ that must be satisfied simultaneously:
 
 (1) only holds *after* `cider bump` + `cider release`. (2) only holds *after*
 `git commit` — running the dry-run against the working tree mid-execute would
-trip on the bump/release modifications. So the dry-run runs as step 5, after
+trip on the bump/release modifications. So the dry-run runs as step 6, after
 the prep commit lands. Failure before that point is undone automatically, by a phase the execute
 step advances as it goes:
 
 - **Pre-commit failure** (bump or release errored, or a hook rejected the commit):
-  restore `pubspec.yaml` + `CHANGELOG.md` from `HEAD`.
+  restore `pubspec.yaml` + `CHANGELOG.md` from `HEAD`, along with any dependent pubspec the
+  constraint repair rewrote. A half-repaired tree does not resolve, so they go back together.
 - **Post-commit, pre-tag failure** (dry-run rejected the prep commit):
   `git reset --hard HEAD~1` to drop it, leaving the tree exactly as it was
   before the run started. No remote tag is ever created in this case — the

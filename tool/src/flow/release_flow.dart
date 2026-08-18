@@ -19,6 +19,7 @@ typedef ReleasePlan = ({
   BumpType bump,
   ({String current, String next}) version,
   String tag,
+  List<BlockingConstraint> repairs,
 });
 
 /// Cuts a versioned release of one workspace member.
@@ -50,7 +51,13 @@ class ReleaseFlow {
     await _preflightRepoDart();
     await _preflightTests(selected);
 
-    _printPlan(selected: plan.selected, bump: plan.bump, version: plan.version, tag: plan.tag);
+    _printPlan(
+      selected: plan.selected,
+      bump: plan.bump,
+      version: plan.version,
+      tag: plan.tag,
+      repairs: plan.repairs,
+    );
 
     if (options.dryRun) {
       ui.log('Dry-run mode, preflight passed; nothing executed.');
@@ -69,6 +76,7 @@ class ReleaseFlow {
       bump: plan.bump,
       next: plan.version.next,
       tag: plan.tag,
+      repairs: plan.repairs,
     );
   }
 
@@ -82,9 +90,36 @@ class ReleaseFlow {
     ui.log('Tag:             $tag');
 
     _preflightSiblingConstraints(selected, pubspec);
+    final repairs = _dependentRepairs(selected, version.next);
     _preflightTagCollision(tag);
 
-    return (selected: selected, bump: bump, version: version, tag: tag);
+    return (selected: selected, bump: bump, version: version, tag: tag, repairs: repairs);
+  }
+
+  /// What [blockingConstraints] finds for [next], sorted so the plan reads the same way twice.
+  ///
+  /// Found here and applied in [_execute], so the plan names every file the release touches.
+  List<BlockingConstraint> _dependentRepairs(PendingPackage selected, String next) {
+    ui.step('Preflight: dependent constraints');
+
+    final nextMajor = versionMajor(next);
+    if (nextMajor == null) throw ReleaseAbort("Could not read a major version from '$next'.");
+
+    final blocking = blockingConstraints(
+      releasedName: selected.name,
+      nextMajor: nextMajor,
+      members: repo.memberSources(),
+    ).sortedBy((constraint) => constraint.member);
+
+    if (blocking.isEmpty) ui.log('Nothing declares an older major on ${selected.name}.');
+    for (final constraint in blocking) {
+      ui.log(
+        '${constraint.dir}/pubspec.yaml: '
+        '${constraint.declared.trim()}  ->  ${constraint.repaired.trim()}',
+      );
+    }
+
+    return blocking;
   }
 
   // ── Resolution ────────────────────────────────────────────────────────────
@@ -325,6 +360,27 @@ class ReleaseFlow {
     );
   }
 
+  /// Rewrites each dependent's constraint in place, so the tree still resolves once [next] lands.
+  ///
+  /// A line replacement, not a YAML round trip: these files stay byte-identical but for the one
+  /// constraint.
+  void _applyRepairs(List<BlockingConstraint> repairs, String next) {
+    if (repairs.isEmpty) return;
+
+    ui.step('repair ${repairs.length} dependent constraint(s) for $next');
+
+    for (final repair in repairs) {
+      final path = '${repair.dir}/pubspec.yaml';
+      final pubspec = repo.readFile(path);
+      if (!pubspec.contains(repair.declared)) {
+        throw ReleaseAbort('$path no longer holds "${repair.declared.trim()}"; nothing repaired.');
+      }
+
+      repo.writeFile(path, pubspec.replaceFirst(repair.declared, repair.repaired));
+      ui.log('$path: ${repair.repaired.trim()}');
+    }
+  }
+
   /// One member's suite. Separate from the repo-wide gates: the root holds no member suite.
   Future<void> _preflightTests(PendingPackage selected) async {
     _abortOnFailure(
@@ -340,10 +396,15 @@ class ReleaseFlow {
     required BumpType bump,
     required ({String current, String next}) version,
     required String tag,
+    required List<BlockingConstraint> repairs,
   }) {
     final tagKind = options.tagMessage == null
         ? '(lightweight; pass -m "MSG" to annotate)'
         : '(annotated, message: "${options.tagMessage}")';
+    final repairSummary = repairs.isEmpty
+        ? '(none)'
+        : repairs.map((repair) => '${repair.member} in ${repair.dir}').join(', ');
+    final repairPaths = repairs.map((repair) => ' ${repair.dir}/pubspec.yaml').join();
 
     ui
       ..step('Plan')
@@ -354,11 +415,12 @@ Releasing ${selected.name} from ${selected.dir}
 Will execute, in order:
   1. cider bump ${bump.name}                                (${selected.dir}/pubspec.yaml: ${version.current} to ${version.next})
   2. cider release                                         (${selected.dir}/CHANGELOG.md: ## Unreleased to ## ${version.next} [dated today])
-  3. git add  ${selected.dir}/{pubspec.yaml,CHANGELOG.md}
-  4. git commit -m "Prep for release $tag"
-  5. dart pub -C ${selected.dir} publish --dry-run          (validate clean committed state; reset HEAD~1 on failure)
-  6. git tag $tag                                $tagKind
-  7. git push --atomic origin HEAD:${Repo.mainBranch} $tag   (triggers .github/workflows/publish.yml)
+  3. repair constraints on ${selected.name}                  $repairSummary
+  4. git add  ${selected.dir}/{pubspec.yaml,CHANGELOG.md}$repairPaths
+  5. git commit -m "Prep for release $tag"
+  6. dart pub -C ${selected.dir} publish --dry-run          (validate clean committed state; reset HEAD~1 on failure)
+  7. git tag $tag                                $tagKind
+  8. git push --atomic origin HEAD:${Repo.mainBranch} $tag   (triggers .github/workflows/publish.yml)
 
 publish.yml routes on the '${selected.name}' half of the tag and publishes ${version.next} via OIDC.''',
       );
@@ -384,12 +446,17 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
     required BumpType bump,
     required String next,
     required String tag,
+    required List<BlockingConstraint> repairs,
   }) async {
+    final repairedPubspecs = repairs
+        .map((repair) => '${repair.dir}/pubspec.yaml')
+        .toList(growable: false);
     final rollback = Rollback(
       runner: runner,
       ui: ui,
       repoRoot: repo.root,
       packageDir: selected.dir,
+      repairedPubspecs: repairedPubspecs,
     );
 
     // Dart neither unwinds reliably on Ctrl-C nor reports 130. Rolling back before the `exit` is
@@ -426,11 +493,14 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
         'cider release failed.',
       );
 
+      _applyRepairs(repairs, next);
+
       ui.step('git add ${selected.dir}/{pubspec.yaml,CHANGELOG.md}');
       _git([
         'add',
         '${selected.dir}/pubspec.yaml',
         '${selected.dir}/CHANGELOG.md',
+        ...repairedPubspecs,
       ], failure: 'Could not stage the release files.');
 
       ui.step('git commit -m "Prep for release $tag"');

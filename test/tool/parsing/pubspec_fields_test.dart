@@ -74,6 +74,73 @@ dependencies:
     });
   });
 
+  group('blockingConstraints', () {
+    // The case the guard exists for: a dependent's caret cannot admit the major about to land.
+    test('flags a caret that excludes the next major, and repairs it', () {
+      final blocking = blockingConstraints(
+        releasedName: 'minted_geography',
+        nextMajor: 2,
+        members: {
+          'minted_conformance': (
+            dir: 'packages/minted_conformance',
+            pubspec: 'name: minted_conformance\ndependencies:\n  minted_geography: ^1.1.0\n',
+          ),
+        },
+      );
+
+      check(blocking).length.equals(1);
+      check(blocking.single.member).equals('minted_conformance');
+      check(blocking.single.dir).equals('packages/minted_conformance');
+      check(blocking.single.repaired).equals('  minted_geography: ^2.0.0');
+    });
+
+    // A minor never blocks: a caret already admits every higher minor inside its own major.
+    test('accepts a caret inside the major that is landing', () {
+      final blocking = blockingConstraints(
+        releasedName: 'minted',
+        nextMajor: 3,
+        members: {
+          'minted_constraints': (
+            dir: 'packages/minted_constraints',
+            pubspec: 'name: minted_constraints\ndependencies:\n  minted: ^3.1.0\n',
+          ),
+        },
+      );
+
+      check(blocking).isEmpty();
+    });
+
+    test('ignores a member that does not depend on the one being released', () {
+      final blocking = blockingConstraints(
+        releasedName: 'minted_geography',
+        nextMajor: 2,
+        members: {
+          'minted_finance': (
+            dir: 'packages/minted_finance',
+            pubspec: 'name: minted_finance\ndependencies:\n  minted: ^3.1.0\n',
+          ),
+        },
+      );
+
+      check(blocking).isEmpty();
+    });
+
+    test('never reports the package being released against itself', () {
+      final blocking = blockingConstraints(
+        releasedName: 'minted_geography',
+        nextMajor: 2,
+        members: {
+          'minted_geography': (
+            dir: 'packages/minted_geography',
+            pubspec: 'name: minted_geography\ndependencies:\n  minted_geography: ^1.0.0\n',
+          ),
+        },
+      );
+
+      check(blocking).isEmpty();
+    });
+  });
+
   group('staleConstraints', () {
     // The case the guard exists for: a sibling still claiming the pre-split major.
     test('flags a lower bound older than the major the tree builds', () {
