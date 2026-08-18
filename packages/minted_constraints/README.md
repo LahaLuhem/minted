@@ -19,17 +19,24 @@ dart pub add minted_constraints
 
 ## What's in the box
 
-| Type          | What it guarantees                       |
-|---------------|------------------------------------------|
-| `AsciiChar`   | exactly one ASCII character              |
-| `AsciiLetter` | exactly one ASCII letter, `A`-`Z`, `a`-`z` |
+| Type          | What it guarantees                                              |
+|---------------|-----------------------------------------------------------------|
+| `Char`        | exactly one character a reader sees: one grapheme cluster       |
+| `Letter`      | one `Char` whose base is a Unicode letter, in any script        |
+| `AsciiChar`   | exactly one ASCII character                                     |
+| `AsciiLetter` | exactly one ASCII letter, `A`-`Z`, `a`-`z`                      |
 
 A "single character" field is a `String` in almost every codebase, which means it accepts none and
-accepts twenty. `AsciiLetter` narrows that to what the standards-bound codes admit, and declares the
-narrowing, so a letter passes anywhere a character is wanted.
+accepts twenty. Every narrowing is declared, so `AsciiLetter` is an `AsciiChar`, a `Letter` and a
+`Char`, and passes wherever any of them is wanted.
 
 Control characters are admitted rather than refused: a delimiter or a padding character is often one,
 and a tab is a character by any reading. `AsciiChar.isControl` reports the narrower shape instead.
+
+`Char` is a **grapheme cluster**, not a code unit or code point: a skin-toned thumbs-up is two code
+points, a flag two, a joined family five. `length == 1` refuses all three and admits half a surrogate
+pair. `Letter` narrows `Char` by the base rune, so `Ø` and a decomposed `é` qualify, an emoji does
+not.
 
 ## A quick taste
 
@@ -42,6 +49,13 @@ AsciiLetter.tryFrom('Q')?.value;    // 'Q'
 AsciiLetter.tryFrom('7');           // null: a digit is a character, but not a letter
 
 final AsciiChar character = AsciiLetter.tryFrom('Q')!;   // the narrowing is declared
+
+Char.tryFrom('👍🏽');    // one character: two code points, four code units
+Char.tryFrom('ab');    // null: two characters
+Char.tryFrom('\uD83D'); // null: half a surrogate pair is no character
+
+Letter.tryFrom('Ø');   // a Danish initial, which AsciiLetter refuses
+Letter.tryFrom('👍');   // null: one character, but no letter
 ```
 
 The runnable version is the

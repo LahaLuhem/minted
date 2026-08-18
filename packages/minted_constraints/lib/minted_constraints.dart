@@ -10,3 +10,5 @@ library;
 
 export 'src/text/ascii_char.dart';
 export 'src/text/ascii_letter.dart';
+export 'src/text/char.dart';
+export 'src/text/letter.dart';
