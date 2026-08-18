@@ -258,14 +258,14 @@ either. Rationale: [`APPENDIX.md#weekday-enum`](./APPENDIX.md#weekday-enum).
 **Constraint types are not value types either.** The rule that separates them is about standards,
 not numbers:
 
-> A numeric type gets a `parse(String)` door only where a **standard** defines its text form.
+> A type gets a `parse(String)` door only where a **standard** defines its text form.
 
-`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A constrained number has no such
+`Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A constrained primitive has no such
 standard, so a parse door would invent one, whether the constraint is a range (`Uint`, `Port`) or a
 unit (`Percentage`, which bounds nothing but finiteness). They declare `tryFrom` and neither parse
-door, and `conformance_test.dart` names them in `_constraintTypes`. One invariant each leaves
-nothing a failure could say that `null` doesn't, so they carry none. A type still files by domain:
-`Port` sits in `network/`, not `quantities/`. Rationale:
+door. Nothing enforces that structurally; the category is a convention this file records. One
+invariant each leaves nothing a failure could say that `null` doesn't, so they carry none. A type
+still files by domain: `Port` sits in `network/`, not `quantities/`. Rationale:
 [`APPENDIX.md#constraint-types`](./APPENDIX.md#constraint-types).
 
 **Normalise on parse.** `tryParse` converts input to a single canonical form before constructing
