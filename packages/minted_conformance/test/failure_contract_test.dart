@@ -275,6 +275,21 @@ void main() {
         typeName: 'PaymentCardNumber',
         message: 'failed the Luhn check',
       ),
+      'GeoBounds: wrong shape': (
+        failure: GeoBoundsNotFourNumbers(),
+        typeName: 'GeoBounds',
+        message: 'not four comma-separated numbers: west,south,east,north',
+      ),
+      'GeoBounds: a corner keeps the coordinate diagnosis': (
+        failure: GeoBoundsInvalidCorner(GeoCoordinateLatitudeOutOfRange(91)),
+        typeName: 'GeoBounds',
+        message: 'a corner is not a coordinate: latitude 91.0 is outside -90 to 90',
+      ),
+      'GeoBounds: the latitudes the wrong way round': (
+        failure: GeoBoundsSouthAboveNorth(south: 50, north: 10),
+        typeName: 'GeoBounds',
+        message: 'south 50.0 is above north 10.0',
+      ),
       'GeoCoordinate: wrong shape': (
         failure: GeoCoordinateNotIso6709(),
         typeName: 'GeoCoordinate',
@@ -554,6 +569,18 @@ void main() {
         'the Luhn variant': (
           failure: PaymentCardNumberChecksumFailed(),
           rendered: 'PaymentCardNumberChecksumFailed()',
+        ),
+        'a bounds shape failure': (
+          failure: GeoBoundsNotFourNumbers(),
+          rendered: 'GeoBoundsNotFourNumbers()',
+        ),
+        'a nested corner failure renders the inner one': (
+          failure: GeoBoundsInvalidCorner(GeoCoordinateLatitudeOutOfRange(91)),
+          rendered: 'GeoBoundsInvalidCorner(GeoCoordinateLatitudeOutOfRange(91.0))',
+        ),
+        'the latitudes the wrong way round echo both': (
+          failure: GeoBoundsSouthAboveNorth(south: 50, north: 10),
+          rendered: 'GeoBoundsSouthAboveNorth(south: 50.0, north: 10.0)',
         ),
         'a coordinate shape failure': (
           failure: GeoCoordinateNotIso6709(),
@@ -876,6 +903,21 @@ void main() {
           failure: GeoCoordinateLongitudeOutOfRange(181),
           twin: GeoCoordinateLongitudeOutOfRange(181),
           other: GeoCoordinateLongitudeOutOfRange(-181),
+        ),
+        'the four-numbers variant': (
+          failure: GeoBoundsNotFourNumbers(),
+          twin: GeoBoundsNotFourNumbers(),
+          other: GeoBoundsSouthAboveNorth(south: 50, north: 10),
+        ),
+        'a nested corner differs by the corner failure': (
+          failure: GeoBoundsInvalidCorner(GeoCoordinateLatitudeOutOfRange(91)),
+          twin: GeoBoundsInvalidCorner(GeoCoordinateLatitudeOutOfRange(91)),
+          other: GeoBoundsInvalidCorner(GeoCoordinateLatitudeOutOfRange(-91)),
+        ),
+        'the latitude pair differs by either edge': (
+          failure: GeoBoundsSouthAboveNorth(south: 50, north: 10),
+          twin: GeoBoundsSouthAboveNorth(south: 50, north: 10),
+          other: GeoBoundsSouthAboveNorth(south: 50, north: 20),
         ),
         'the empty-geohash variant': (
           failure: GeohashEmpty(),

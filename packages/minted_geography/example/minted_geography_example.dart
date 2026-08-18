@@ -24,4 +24,14 @@ void main() {
   print(Geohash.from(coordinate: cell.centre, precision: NaturalNumber.tryFrom(5)!)); // u09tu
   print(Geohash.tryParse('ezsa2')); // null ('a' is not in the geohash alphabet)
   // #endregion
+
+  // `GeoBounds` keeps the antimeridian crossing a fact rather than a convention: west past east is
+  // how RFC 7946 §5.2 writes it, and a `west <= east` check would refuse the box outright.
+  // #region bounds
+  final fiji = GeoBounds.tryParse('170,-45,-170,-35')!;
+  print(fiji.crossesAntimeridian); // true
+  print(fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 179)!)); // true
+  print(fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 0)!)); // false (the long way)
+  print(GeoBounds.tryParse('[-180, -90, 180, 90]')?.bbox); // -180.0,-90.0,180.0,90.0 (the world)
+  // #endregion
 }
