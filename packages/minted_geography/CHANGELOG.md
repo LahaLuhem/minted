@@ -4,6 +4,7 @@
 
 ### Changed
 - minted\_constraints: the primitives move out of core, plus Char / Letter / Alphanumeric
+- Add GeoBounds and type the geography doors with Latitude and Longitude
 
 ## [1.1.0] - 2026-08-18
 ### Added
