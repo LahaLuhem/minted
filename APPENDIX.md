@@ -40,6 +40,7 @@ anchor, and keep anchors stable across renames.
 - [Imei: printed in full, unlike a card number](#imei-value-type)
 - [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
 - [Geohash: a cell, not a point](#geohash-value-type)
+- [GeoBounds: a box that may cross the antimeridian](#geo-bounds-value-type)
 - [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
 - [Hostname: strict on purpose, in three directions](#hostname-value-type)
 - [DnsName: permissive, but not infinitely so](#dns-name-value-type)
@@ -1099,9 +1100,9 @@ nothing and is where the next spatial type (Plus Code, MGRS) lands.
 
 **The bug is the round trip.** A geohash names a rectangle, and a `String` cannot say whether you
 hold the rectangle or a point in it, so code decodes one to a single lat/lng, treats that as *the*
-location, and the position moves by up to a cell's width. Naming the accessor `centre` is the fix.
-Secondary and more common: `toLowerCase()` is not validation, the alphabet having dropped `a`, `i`,
-`l` and `o`.
+location, and the position moves by up to a cell's width. `bounds` names the cell and `centre` one
+point in it, which is the fix. Secondary and more common: `toLowerCase()` is not validation, the
+alphabet having dropped `a`, `i`, `l` and `o`.
 
 **No length cap, which is [`Bic`](#bic-value-type)'s rule reaching the opposite answer.** Both
 *validate what the standard fixes*: ISO 9362 fixes eight or eleven characters, and nothing readable
@@ -1131,6 +1132,45 @@ simply not built yet; the seam problem they solve is real.
 `(-90, -180)` encodes to `pbpbpb`; the all-zero cell parses fine, its centre just inside it. Pinned
 by a test, because the fold is right for a coordinate and only surprising if you expected the grid to
 have a reachable corner.
+
+---
+
+<a id="geo-bounds-value-type"></a>
+## GeoBounds: a box that may cross the antimeridian
+
+**The bug is that `west > east` is legal.** RFC 7946 §5.2 spells a box across the antimeridian by
+putting the western edge east of the eastern one, so `170,-45,-170,-35` is Fiji. Range-check it
+and you refuse Fiji; skip the check and those four numbers mean either a sliver by the dateline or
+nearly its complement, depending on the reader. Downstream is split too, Elasticsearch handling
+the crossing where PostGIS does not, so `crossesAntimeridian` is a reported fact and `contains`
+honours it.
+
+**The edges are numbers, not two [`GeoCoordinate`](#geo-coordinate-value-type) corners, which is
+the one place dogfooding had to stop.** A coordinate folds `-180` onto `+180`, right for a point,
+where one meridian has two spellings. An edge is not a point: the whole world is written
+`-180,-90,180,90`, and folded corners collapse both longitudes to `180`, turning the commonest
+bbox there is into a meridian line. Composition still pays on `contains(GeoCoordinate)` and on the
+failure nesting below.
+
+**`Latitude` and `Longitude` are [constraint types](#constraint-types) kept here rather than in
+`minted_constraints`.** A latitude is a geography concept, not a primitive every sector needs, so
+hard rule 2 leaves it with the standard it serves, the same call [`Port`](#port-value-type)
+settled against sorting by directory. `Longitude` does not fold `-180`, the fold being a *point*
+normalisation that stays with `GeoCoordinate`, which is what lets one number type serve both. The
+edges then carry their own ranges, leaving `south <= north` as all `from` can refuse and making
+`GeoCoordinate.from` the family's second total door.
+
+**`parse` still diagnoses, text being where unchecked input arrives.** A constraint type answers
+`null` and names nothing, right for a caller who picked that door and wrong for a form field
+holding a string. `GeoBoundsInvalidCorner` therefore nests a `GeoCoordinateFailure` just as
+[`CidrInvalidAddress`](#cidr-value-type) nests an `IpAddressFailure`, over a range diagnosis
+shared with `GeoCoordinate.parse`.
+
+**`west == east` is zero width, and a polar cap is not refused because it cannot be written.** The
+RFC settles neither. Zero width follows `south == north`, which has to be legal as a horizontal
+line, so splitting the axes would be the surprise; the price is spelling the whole world `-180` to
+`180`, which it is. The poles need no check: `north: 90` is a box whose top edge is the pole, and
+a cap *around* one is not a west/south/east/north rectangle.
 
 ---
 

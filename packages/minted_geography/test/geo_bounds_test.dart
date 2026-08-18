@@ -250,7 +250,7 @@ void main() {
     });
 
     scenario('toString names every edge, so a transposition is visible', () {
-      check(GeoBounds.tryParse('170,-45,-170,-35').toString())
+      check(GeoBounds.tryParse('170,-45,-170,-35')?.toString())
           .equals('GeoBounds(west: 170.0, south: -45.0, east: -170.0, north: -35.0)');
     });
   });
