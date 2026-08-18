@@ -18,6 +18,9 @@ abstract interface class ReleaseUi {
   /// Printed unprefixed: the plan, the usage text.
   void block(String text);
 
+  /// Runs [work] under a progress indication labelled [label], so a slow gate can show one.
+  Future<T> task<T>(String label, Future<T> Function() work);
+
   /// Whether there is someone there to answer a prompt.
   bool get isInteractive;
 
@@ -43,6 +46,13 @@ class StdioReleaseUi implements ReleaseUi {
 
   @override
   void block(String text) => stdout.writeln(text);
+
+  @override
+  Future<T> task<T>(String label, Future<T> Function() work) {
+    step(label);
+
+    return work();
+  }
 
   @override
   bool get isInteractive => stdin.hasTerminal;

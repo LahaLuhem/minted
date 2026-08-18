@@ -2,7 +2,7 @@ import '../../../tool/src/io/process_runner.dart';
 
 /// A [ProcessRunner] that records what it ran, space-joined, and answers from closures.
 class FakeProcessRunner implements ProcessRunner {
-  new({this._onCapture, this._onStream});
+  new({this._onCapture, this._onRun});
 
   /// Every command run, in order.
   final List<String> calls = [];
@@ -12,7 +12,7 @@ class FakeProcessRunner implements ProcessRunner {
   final List<({String command, String? workingDirectory})> invocations = [];
 
   final CommandResult Function(String command)? _onCapture;
-  final int Function(String command)? _onStream;
+  final CommandResult Function(String command)? _onRun;
 
   /// Whether any recorded command starts with [prefix].
   bool ran(String prefix) => calls.any((call) => call.startsWith(prefix));
@@ -34,10 +34,14 @@ class FakeProcessRunner implements ProcessRunner {
   }
 
   @override
-  Future<int> stream(String executable, List<String> arguments, {String? workingDirectory}) async {
+  Future<CommandResult> run(
+    String executable,
+    List<String> arguments, {
+    String? workingDirectory,
+  }) async {
     final command = _record(executable, arguments, workingDirectory);
 
-    return _onStream?.call(command) ?? 0;
+    return _onRun?.call(command) ?? const CommandResult(exitCode: 0, stdout: '', stderr: '');
   }
 
   String _record(String executable, List<String> arguments, String? workingDirectory) {

@@ -258,26 +258,26 @@ class ReleaseFlow {
   }
 
   Future<void> _preflightLint() async {
-    ui.step('Preflight: lint checks (via linterpol)');
-
     final manifest = repo.lintManifest();
-    for (final check in manifest.checks) {
-      ui.log('lint: ${check.name}');
 
+    for (final check in manifest.checks) {
       // Through the image's own shell, so a glob in the manifest expands against the mounted
       // checkout. That is what repo.yml's matrix does, and the manifest is written for it.
-      final code = await runner.stream('docker', [
-        'run',
-        '--rm',
-        '-v',
-        '${repo.root}:/work:ro',
-        manifest.image,
-        'sh',
-        '-c',
-        check.cmd,
-      ]);
+      final result = await ui.task(
+        'lint: ${check.name}',
+        () => runner.run('docker', [
+          'run',
+          '--rm',
+          '-v',
+          '${repo.root}:/work:ro',
+          manifest.image,
+          'sh',
+          '-c',
+          check.cmd,
+        ]),
+      );
 
-      if (code != 0) throw ReleaseAbort('${check.name} failed (via linterpol).');
+      _abortOnFailure(result, '${check.name} failed (via linterpol).');
     }
   }
 
@@ -286,21 +286,24 @@ class ReleaseFlow {
   /// `pub publish --dry-run` is absent on purpose: it only means anything post-bump, so it runs in
   /// [_execute] where the rollback covers it.
   Future<void> _preflightDart(PendingPackage selected) async {
-    ui.step('Preflight: dart format');
-    if (await _dartRun(['format', '--output=none', '--set-exit-if-changed', '.']) != 0) {
-      throw ReleaseAbort("Formatting check failed. Run 'dart format .' and commit.");
-    }
+    _abortOnFailure(
+      await ui.task(
+        'dart format',
+        () => _dartRun(['format', '--output=none', '--set-exit-if-changed', '.']),
+      ),
+      "Formatting check failed. Run 'dart format .' and commit.",
+    );
 
-    ui.step('Preflight: dart --no-version-check analyze');
-    if (await _dartRun(['--no-version-check', 'analyze', '.']) != 0) {
-      throw ReleaseAbort('Static analysis failed.');
-    }
+    _abortOnFailure(
+      await ui.task('dart analyze', () => _dartRun(['--no-version-check', 'analyze', '.'])),
+      'Static analysis failed.',
+    );
 
     // Per-package, unlike the repo-wide gates above: the root holds no member suite.
-    ui.step('Preflight: dart test');
-    if (await _dartRun(['test'], workingDirectory: _dirOf(selected)) != 0) {
-      throw ReleaseAbort('Test suite failed.');
-    }
+    _abortOnFailure(
+      await ui.task('dart test', () => _dartRun(['test'], workingDirectory: _dirOf(selected))),
+      'Test suite failed.',
+    );
   }
 
   // ── Plan and confirmation ─────────────────────────────────────────────────
@@ -388,10 +391,13 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
         ]);
       }
 
-      ui.step('cider release');
-      if (await runner.stream('cider', ['release'], workingDirectory: _dirOf(selected)) != 0) {
-        throw ReleaseAbort('cider release failed.');
-      }
+      _abortOnFailure(
+        await ui.task(
+          'cider release',
+          () => runner.run('cider', ['release'], workingDirectory: _dirOf(selected)),
+        ),
+        'cider release failed.',
+      );
 
       ui.step('git add ${selected.dir}/{pubspec.yaml,CHANGELOG.md}');
       _git([
@@ -411,10 +417,13 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
 
       // Post-commit on purpose. Pub cross-checks the version field against a CHANGELOG header AND
       // that no checked-in file is modified, so both only hold once the prep commit has landed.
-      ui.step('dart pub -C ${selected.dir} publish --dry-run');
-      if (await _dartRun(['pub', '-C', selected.dir, 'publish', '--dry-run']) != 0) {
-        throw ReleaseAbort('Publish dry-run failed.');
-      }
+      _abortOnFailure(
+        await ui.task(
+          'dart pub -C ${selected.dir} publish --dry-run',
+          () => _dartRun(['pub', '-C', selected.dir, 'publish', '--dry-run']),
+        ),
+        'Publish dry-run failed.',
+      );
 
       // Past here the tag and push window is the user's, so nothing is undone automatically.
       rollback.phase = .none;
@@ -443,17 +452,19 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
         _git(['tag', '-m', message, tag], failure: 'Could not create the annotated tag.');
       }
 
-      ui.step('git push --atomic origin HEAD:$mainBranch $tag');
-      if (await runner.stream('git', [
+      _abortOnFailure(
+        await ui.task(
+          'git push --atomic origin HEAD:$mainBranch $tag',
+          () => runner.run('git', [
             'push',
             '--atomic',
             'origin',
             'HEAD:$mainBranch',
             tag,
-          ], workingDirectory: repo.root) !=
-          0) {
-        throw ReleaseAbort('Push failed.');
-      }
+          ], workingDirectory: repo.root),
+        ),
+        'Push failed.',
+      );
     } on ReleaseAbort catch (abort, stackTrace) {
       Error.throwWithStackTrace(
         ReleaseAbort.all([
@@ -481,8 +492,19 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
     return result;
   }
 
-  Future<int> _dartRun(List<String> arguments, {String? workingDirectory}) =>
-      runner.stream(_dart, arguments, workingDirectory: workingDirectory ?? repo.root);
+  Future<CommandResult> _dartRun(List<String> arguments, {String? workingDirectory}) =>
+      runner.run(_dart, arguments, workingDirectory: workingDirectory ?? repo.root);
+
+  /// Aborts with [failure] when [result] failed, carrying what the command printed.
+  ///
+  /// Captured gates print nothing themselves, so this is the only evidence the user gets.
+  void _abortOnFailure(CommandResult result, String failure) {
+    if (result.ok) return;
+
+    final output = [result.stdout, result.stderr].where((part) => part.isNotEmpty);
+
+    throw ReleaseAbort.all([failure, ...output.expand(const LineSplitter().convert)]);
+  }
 
   /// The `dart` to shell out to: the FVM symlink first, then PATH.
   ///

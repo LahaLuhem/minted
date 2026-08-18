@@ -8,9 +8,10 @@ abstract interface class ProcessRunner {
   /// Runs [executable] and captures its output, for commands whose output is parsed.
   CommandResult capture(String executable, List<String> arguments, {String? workingDirectory});
 
-  /// Runs [executable] with the terminal attached: the slow gates print for a minute or more, so
-  /// capturing them would leave the screen blank.
-  Future<int> stream(String executable, List<String> arguments, {String? workingDirectory});
+  /// Runs [executable] asynchronously, capturing its output.
+  ///
+  /// Both, so a spinner can animate over it and keep the terminal to itself.
+  Future<CommandResult> run(String executable, List<String> arguments, {String? workingDirectory});
 }
 
 class CommandResult {
@@ -49,18 +50,21 @@ class RealProcessRunner implements ProcessRunner {
   }
 
   @override
-  Future<int> stream(String executable, List<String> arguments, {String? workingDirectory}) async {
+  Future<CommandResult> run(
+    String executable,
+    List<String> arguments, {
+    String? workingDirectory,
+  }) async {
     try {
-      final process = await Process.start(
-        executable,
-        arguments,
-        workingDirectory: workingDirectory,
-        mode: .inheritStdio,
-      );
+      final result = await Process.run(executable, arguments, workingDirectory: workingDirectory);
 
-      return await process.exitCode;
+      return CommandResult(
+        exitCode: result.exitCode,
+        stdout: (result.stdout as String).trim(),
+        stderr: (result.stderr as String).trim(),
+      );
     } on ProcessException {
-      return -1;
+      return const CommandResult.notFound();
     }
   }
 }
