@@ -63,6 +63,7 @@ minted/                              Workspace root
 ├── tool/                            release.dart, the release flow, + its README
 │   └── src/                         parsing/ versioning/ io/ flow/, plus options + abort
 ├── test/tool/                       The tooling's suite, mirroring src/; the root's only Dart tests
+│   └── integration/                 `integration`-tagged; a real release against a throwaway remote
 ├── README.md                        Family index; the GitHub landing page
 ├── APPENDIX.md                      Design rationale (anchor-keyed)
 ├── CODESTYLE.md                     Library-package code style
@@ -141,12 +142,13 @@ genuinely cross-package, and keeps `internal.dart` small, since everything in it
 major. `conformance_test.dart` sweeps every package and excludes `failures/`, `shared/` and the
 helper subfolders by path segment.
 
-**A *constraint type* is a constrained number with no standard text form**, so it declares `tryFrom`
-and neither parse door. Usually a range; `Percentage` constrains the *unit* instead and bounds
-nothing but finiteness. `quantities/` holds most of them, but the category is not the directory:
-`Port` lives in `network/` because it belongs there by domain.
-`conformance_test.dart` names them in `_constraintTypes`, since the AST cannot reveal the category;
-omitting a name makes the test demand parse doors rather than quietly relax. Rationale:
+**A *constraint type* is a constrained primitive with no standard text form**, so it declares
+`tryFrom` and neither parse door. Usually a range over a number; `Percentage` constrains the *unit*
+instead and bounds nothing but finiteness, and a constraint on a `String` qualifies on the same
+terms. `quantities/` holds most of them, but the category is not the directory: `Port` lives in
+`network/` because it belongs there by domain.
+The category is a convention, not a structural check: `conformance_test.dart` deliberately requires
+no door to *exist*, only that nothing lies about what it can do. Rationale:
 [`APPENDIX.md#constraint-types`](../APPENDIX.md#constraint-types).
 
 **A type's failure vocabulary goes in its package's `failures/`, never in the value-type file**, one
