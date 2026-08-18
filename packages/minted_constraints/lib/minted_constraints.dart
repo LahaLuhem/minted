@@ -4,6 +4,10 @@
 /// how primitives are written rather than published formats a type could enforce. One invariant each
 /// leaves nothing a failure could say that `null` does not, so none carries a failure vocabulary.
 ///
+/// Most implement their representation, so a constrained value reads as the primitive it constrains
+/// while nothing unconstrained can be written into one. Four opt out and say why in their own docs.
+/// Rationale: `APPENDIX.md#constraint-types`.
+///
 /// Nothing here depends on `package:minted`: these are the building blocks, not the vocabulary a
 /// parse hands back.
 library;

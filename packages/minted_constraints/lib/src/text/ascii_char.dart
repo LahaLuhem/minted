@@ -12,7 +12,7 @@ import 'char.dart';
 /// reports the narrower shape.
 ///
 /// {@example /example/minted_constraints_example.dart#ascii}
-extension type const AsciiChar._(String value) implements Char {
+extension type const AsciiChar._(String value) implements Char, String {
   /// The [AsciiChar] spelled by [value], or `null` unless it is exactly one ASCII character.
   // One code unit below 0x80 cannot be half a surrogate pair, so a length of 1 is a whole character.
   static AsciiChar? tryFrom(String value) =>
