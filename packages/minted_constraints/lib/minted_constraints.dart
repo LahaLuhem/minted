@@ -8,6 +8,8 @@
 /// parse hands back.
 library;
 
+export 'src/numerics/digit.dart';
+export 'src/numerics/digits.dart';
 export 'src/text/ascii_alphanumeric.dart';
 export 'src/text/ascii_alphanumerics.dart';
 export 'src/text/ascii_char.dart';

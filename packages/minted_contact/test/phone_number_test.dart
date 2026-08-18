@@ -1,5 +1,6 @@
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_contact/minted_contact.dart';
 
 import 'support/bdd.dart';

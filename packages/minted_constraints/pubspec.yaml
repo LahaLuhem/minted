@@ -20,6 +20,9 @@ resolution: workspace
 
 dependencies:
   characters: ^1.4.1
+  collection: ^1.19.1
+  meta: ^1.19.0
+  minted: ^3.0.0
 
 dev_dependencies:
   checks: ^0.3.1

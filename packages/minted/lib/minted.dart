@@ -15,8 +15,6 @@
 /// ones you use; this package comes with each of them.
 library;
 
-export 'src/numerics/digit.dart';
-export 'src/numerics/digits.dart';
 export 'src/quantities/natural_number.dart';
 export 'src/quantities/percentage.dart';
 export 'src/quantities/probability.dart';

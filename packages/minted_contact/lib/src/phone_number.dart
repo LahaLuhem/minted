@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers;
 
 import 'failures/phone_number_failure.dart';

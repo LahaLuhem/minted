@@ -3,6 +3,7 @@
 
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'check_digits/mod11_check_character.dart';
 import 'failures/issn_failure.dart';
