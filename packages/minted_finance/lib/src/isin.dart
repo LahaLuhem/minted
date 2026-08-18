@@ -3,6 +3,7 @@
 
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'encoding/alphanumeric_values.dart';
 import 'failures/isin_failure.dart';

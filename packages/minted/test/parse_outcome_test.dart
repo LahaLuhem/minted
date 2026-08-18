@@ -1,8 +1,14 @@
+// Test file
+// ignore_for_file: prefer-match-file-name
+
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
 import 'support/bdd.dart';
 import 'support/failures.dart';
+
+/// A local extension type, so core's own suite never reaches into a package that depends on it.
+extension type const Wrapped(int value);
 
 /// Stands in for a real `parse` until the value types return outcomes: even lengths succeed.
 ParseOutcome<TestFailure, int> lengthOf(String input) =>
@@ -109,7 +115,7 @@ void main() {
 
     scenario('an extension type survives as the success value', () {
       // Extension types erase to their representation, so this pins that T works for them too.
-      final outcome = ParseSuccess<TestFailure, Digit>(Digit.tryFrom(7)!);
+      const outcome = ParseSuccess<TestFailure, Wrapped>(Wrapped(7));
 
       check(outcome.getOrNull()?.value).equals(7);
     });

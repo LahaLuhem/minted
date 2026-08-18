@@ -3,6 +3,7 @@
 
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'check_digits/gs1_check_digit.dart';
 import 'failures/gtin_failure.dart';

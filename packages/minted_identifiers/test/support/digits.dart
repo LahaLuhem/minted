@@ -4,7 +4,7 @@
 /// int lists, and does the decode a consumer would do in one place.
 library;
 
-import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 /// The [Digits] of [text], which must be decimal digits only.
 Digits digitsOf(String text) =>

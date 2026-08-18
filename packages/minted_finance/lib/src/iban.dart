@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:iban_validator/iban_validator.dart';
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
+import 'package:minted_constraints/minted_constraints.dart';
 
 import 'check_digits/iban_check_digits.dart';
 import 'failures/iban_failure.dart';

@@ -3,7 +3,8 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
-import '../shared/encoding/digit_values.dart';
+import 'package:minted/internal.dart';
+
 import 'digit.dart';
 
 /// An immutable, iterable sequence of decimal digits, each a [Digit] (`0`-`9`).
