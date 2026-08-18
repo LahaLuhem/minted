@@ -12,13 +12,13 @@ import 'dart:io';
 
 import 'src/flow/release_flow.dart';
 import 'src/io/process_runner.dart';
-import 'src/io/release_ui.dart';
 import 'src/io/repo.dart';
+import 'src/io/terminice_release_ui.dart';
 import 'src/release_abort.dart';
 import 'src/release_options.dart';
 
 Future<void> main(List<String> arguments) async {
-  const ui = StdioReleaseUi();
+  final ui = TerminiceReleaseUi();
 
   try {
     final options = ReleaseOptions.parse(arguments);
