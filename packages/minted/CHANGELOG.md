@@ -1,6 +1,6 @@
 ## [Unreleased]
-### Added
-- Add Geohash: base32 cells that decode, with typed failures
+### Changed
+- minted\_constraints: the primitives move out of core, plus Char / Letter / Alphanumeric
 
 ## [3.0.1] - 2026-08-17
 ### Changed
