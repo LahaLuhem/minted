@@ -18,6 +18,9 @@ environment:
 # Resolved as part of the workspace rooted two levels up.
 resolution: workspace
 
+dependencies:
+  characters: ^1.4.1
+
 dev_dependencies:
   checks: ^0.3.1
   test: ^1.31.2

@@ -22,12 +22,15 @@ void main() {
       },
     );
 
-    // The narrowing is declared, so a letter passes anywhere a character is wanted.
-    scenario('an AsciiLetter is an AsciiChar', () {
-      final AsciiChar letter = AsciiLetter.tryFrom('Q')!;
+    // Every narrowing is declared, so a letter passes wherever any of its supertypes is wanted.
+    scenario('an AsciiLetter is an AsciiChar, a Letter and a Char', () {
+      final AsciiChar asAsciiChar = AsciiLetter.tryFrom('Q')!;
+      final Letter asLetter = AsciiLetter.tryFrom('Q')!;
+      final Char asChar = AsciiLetter.tryFrom('Q')!;
 
-      check(letter.value).equals('Q');
-      check(letter.isControl).isFalse();
+      check(asAsciiChar.isControl).isFalse();
+      check(asLetter.value).equals('Q');
+      check(asChar.value).equals('Q');
     });
 
     scenario('case is kept, not folded, since no standard here says to fold it', () {

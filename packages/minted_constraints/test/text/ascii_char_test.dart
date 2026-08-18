@@ -42,10 +42,17 @@ void main() {
       },
     );
 
+    // Every ASCII code unit is a grapheme cluster on its own, so the narrowing holds.
+    scenario('an AsciiChar is a Char', () {
+      final Char character = AsciiChar.tryFrom('\t')!;
+
+      check(character.value).equals('\t');
+    });
+
     scenario('equality and toString come from the character, being an extension type', () {
       check(AsciiChar.tryFrom('x')).equals(AsciiChar.tryFrom('x'));
       check(AsciiChar.tryFrom('x')!.value).equals('x');
-      check(AsciiChar.tryFrom('x').toString()).equals('x');
+      check(AsciiChar.tryFrom('x')?.toString()).equals('x');
     });
   });
 }
