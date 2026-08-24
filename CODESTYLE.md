@@ -200,14 +200,10 @@ inherited behaviour is the wanted one. `Digits` needs structural `==` that its `
 give, and `PaymentCardNumber` needs a `toString` that does not print the card. Rationale:
 [`APPENDIX.md#payment-card-number-value-type`](./APPENDIX.md#payment-card-number-value-type).
 
-**The rule is about the parts a caller sees, not the representation.** `Isbn` and `Imei` are
+**The rule is about the parts a caller sees, not the representation.** `Isbn` and `Imei` stay
 `String`-backed and hand back `Digits` from their digit-segment getters, which is what makes the
 round trip compose without either type giving up its zero-cost representation or its `print` form.
-Every other shipped type is correctly an extension type over text: `Iban`'s `bban`, `Isin`'s `nsin`
-and `Bic`'s codes are alphanumeric with no type to become; `Hostname` and `DnsName` labels have none
-either, since a label's validity depends on its position; `Email.domain` is not always a hostname
-(an address literal and an IDN are both valid); and `IpAddress.octets` is a `Uint8List`, which
-already enforces `0`-`255`. Rationale for each:
+Where a part has no type to become, it stays text. Which shipped type sits where, and why each one:
 [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-from-modelled-parts).
 
 **Non-negotiable across both shapes:**
@@ -613,6 +609,16 @@ library;
 - **APPENDIX.md is the source of truth for rationale.** Hard rules, pitfalls, and workflow stay
   in `.ai/AGENTS.md` and `.ai/CLAUDE.md`; the "why we do it this way" essays live in
   [`APPENDIX.md`](./APPENDIX.md).
+- **One layer states the rule, the other argues it, and never both.** AGENTS and this file say what
+  to do in the imperative and link out; APPENDIX carries the argument, the rejected alternatives and
+  the measured costs. A paragraph that makes a case *and then* links to the section making the same
+  case is the smell. **Why:** the copy that isn't the source of truth is the one that goes stale,
+  which is how AGENTS came to call primary constructors an experiment a whole floor bump after they
+  went stable.
+- **A type is documented in its own package's README, not in core's.** `minted`'s README covers the
+  family: install, the shared shape, the failure model, the caveats. Examples and per-type caveats
+  belong to the sibling that ships the type, in one place, so the core page can't drift from seven
+  others at once.
 - **Explicit `<a id="…">` anchors** sit above every APPENDIX and CODESTYLE heading. Link via the
   anchor, not the heading text. Anchor stability is load-bearing: when renaming a heading, keep
   the existing anchor, or `rg` the repo and update every caller in the same change.

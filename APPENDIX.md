@@ -14,8 +14,8 @@ anchor, and keep anchors stable across renames.
 - [Extension type vs immutable class](#extension-type-representation)
 - [Compose from modelled parts, don't re-derive them](#compose-from-modelled-parts)
 - [Typed digits: `Digit` and `Digits`](#typed-digit-subparts)
-- [Why a typed `FormatException`](#why-typed-format-exception)
-- [A throw is for a claim you made in source](#claim-in-source)
+- [Why the thrown type is an `Error`](#why-typed-format-exception)
+- [A throw is for a claim you made in source, and you have to type it](#claim-in-source)
 - [Why a bespoke `ParseOutcome`, not `Either`](#parse-outcome)
 - [Failures are per type, because standards are](#per-type-failures)
 - [Normalise on parse](#normalise-on-parse)
@@ -23,7 +23,7 @@ anchor, and keep anchors stable across renames.
 - [Registry data ships a clock](#registry-data-ships-a-clock)
 - [Behavioural tests: a helper, not a framework](#behavioural-tests-helper)
 - [Public API funnelled through `lib/minted.dart`](#public-api-via-single-export-file)
-- [Packaging: engine dependencies in core, adapters in companions](#packaging-core-and-companions)
+- [Packaging: one package per domain, engines beside the types that wrap them](#packaging-core-and-companions)
 - [British spelling in the public API](#spelling)
 - [SDK floor](#sdk-floor)
 - [Date: a calendar date, not an instant](#date-value-type)
@@ -124,7 +124,7 @@ would be worse than the channel, since local would still float.
 <a id="parse-dont-validate"></a>
 ## Parse, don't validate
 
-The organizing principle, after Alexis King's essay of the same name. A function that *validates*
+The organising principle, after Alexis King's essay of the same name. A function that *validates*
 takes a `String`, checks it, and hands the same `String` back; every later consumer has to trust
 that the check happened and re-check if unsure. A function that *parses* takes a `String` and
 returns a **different type** that can only exist if the input was well-formed. The validity
@@ -424,7 +424,7 @@ one door from the other costs nothing.
 ---
 
 <a id="normalise-on-parse"></a>
-## Normalize on parse
+## Normalise on parse
 
 `tryParse` reduces input to one canonical form before it constructs the instance: trim
 whitespace, strip the separators the standard treats as cosmetic (spaces in an IBAN, dashes in a
@@ -432,10 +432,10 @@ card number), and case-fold the parts the standard says are case-insensitive (an
 upper-case; an email's domain is lower-case, its local-part left as-is).
 
 This is not cosmetic. Extension-type equality is representation equality, so the stored canonical
-form *is* the equality key. Normalizing on the way in is what makes
+form *is* the equality key. Normalising on the way in is what makes
 `Iban.parse('gb82 west 1234') == Iban.parse('GB82WEST1234')` hold, and what makes these types
-safe to use in a `Set` or as a `Map` key. Each type documents its exact normalization in dartdoc
-so the canonicalization is never a surprise. Render helpers (`Iban.formatted`, the grouped paper
+safe to use in a `Set` or as a `Map` key. Each type documents its exact normalisation in dartdoc
+so the canonicalisation is never a surprise. Render helpers (`Iban.formatted`, the grouped paper
 form) reconstruct a display form from the canonical one on demand; they do not change what is
 stored.
 
@@ -518,9 +518,9 @@ still rejected, for four reasons independent of any version:
 
 The helper keeps the readability and drops all four costs, since every example row stays a genuine
 `dart test` case. The examples’ table is the point: each row groups its inputs with the expected
-outcome under a descriptive name. Where a type normalizes on parse, the canonical form doubles as
-that outcome (a string means "accepted and normalized to this", `null` means "rejected"), folding
-acceptance, rejection, and normalization into one table. How-to in
+outcome under a descriptive name. Where a type normalises on parse, the canonical form doubles as
+that outcome (a string means "accepted and normalised to this", `null` means "rejected"), folding
+acceptance, rejection, and normalisation into one table. How-to in
 [CODESTYLE test style](./CODESTYLE.md#test-style).
 
 ---
@@ -1160,13 +1160,10 @@ normalisation that stays with `GeoCoordinate`, which is what lets one number typ
 edges then carry their own ranges, leaving `south <= north` as all `from` can refuse and making
 `GeoCoordinate.from` the family's second total door.
 
-**Both implement `double`, which is what makes the getters affordable.** An opaque constraint type
-taxes every read: `coordinate.latitude * 2` becomes `.value * 2`, and a box built from a
-coordinate's parts re-proves degrees that were already proven. Implementing the representation
-removes that and keeps every guarantee, checked rather than assumed: a raw `double`, a `Longitude`
-and a `List<double>` are each still refused where a `Latitude` is wanted, and `lat * 2` stays a
-`double`, so arithmetic cannot re-enter the type. The family's posture, and the two types left
-opaque, are in [constraint types](#constraint-types).
+**Both implement `double`, which is what makes the getters affordable.** Left opaque,
+`coordinate.latitude * 2` becomes `.value * 2`, and a box built from a coordinate's parts re-proves
+degrees that were already proven. What that buys and costs across the family, and the two types
+left opaque anyway, are in [constraint types](#constraint-types).
 
 **`parse` still diagnoses, text being where unchecked input arrives.** A constraint type answers
 `null` and names nothing, right for a caller who picked that door and wrong for a form field
@@ -1415,13 +1412,11 @@ meaning something nobody reviewed. The failure carries the block they most likel
 remedy is in the error rather than left as an exercise. The address-with-prefix concept is a
 genuinely different type, which Python calls `ip_interface`, and can follow if anyone wants it.
 
-**It holds an [`IpAddress`](#ip-address-value-type), and that is the whole point.** The earlier
-shape rule would have made this an extension type over `10.0.0.0/8`, slicing an address back out of
-its own text on every call. Holding the parsed address means the network address cannot be
-malformed, `contains` cannot be handed something that merely looks like one, and the mask is already
-applied: because parsing guarantees the host bits are clear, `network.octets` *is* the masked
-network part, so containment is one comparison rather than two maskings. See [compose from modelled
-parts](#compose-from-modelled-parts) for the general rule this was the first type to follow.
+**It holds an [`IpAddress`](#ip-address-value-type), and that is the whole point.** This was the
+first type to follow [compose from modelled parts](#compose-from-modelled-parts), which uses it as
+its worked example. What the composition buys here specifically: the mask is already applied, since
+parsing guarantees the host bits are clear, so `network.octets` *is* the masked network part and
+containment is one comparison rather than two maskings.
 
 **The engine does nothing here, and that is worth recording.** `ipaddr` earns its place inside
 [`IpAddress`](#ip-address-value-type), where it expands `::` and renders RFC 5952. Its network types
