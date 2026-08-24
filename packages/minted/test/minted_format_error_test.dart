@@ -8,7 +8,7 @@ void main() {
   feature('MintedFormatError', () {
     // A failing outcome built by hand: core declares ParseOutcome but owns no fallible door, so
     // there is no `X.parse` here to produce one. The domain packages cover the real doors.
-    const ParseOutcome<TestFailure, int> failed = ParseFailure(TestFailure.malformed);
+    const failed = ParseFailure<TestFailure, int>(.malformed);
 
     scenario('from renders the failure type name and message', () {
       check(MintedFormatError.from(TestFailure.malformed).message)
@@ -31,11 +31,13 @@ void main() {
     scenario('it is an Error, so on FormatException no longer catches it', () {
       check(failed.getOrThrow).throws<Error>();
       check(MintedFormatError.from(TestFailure.malformed)).isA<Error>();
+      // For failing loudly when `on FormatException` catches this again.
+      // ignore: avoid-unrelated-type-assertions
       check(MintedFormatError.from(TestFailure.malformed) is Exception).isFalse();
     });
 
     scenario('getOrThrow is the only door that raises it', () {
-      // Every fallible door reports instead; this is the caller opting in.
+      // Every fallible door reports instead. This is the caller opting in.
       check(failed.isFailure).isTrue();
       check(failed.getOrThrow).throws<MintedFormatError>();
     });
