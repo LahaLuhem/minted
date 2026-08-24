@@ -1,3 +1,7 @@
+## [Unreleased]
+### Changed
+- Rename the network invalid-character failures
+
 ## [3.1.0] - 2026-08-18
 ### Changed
 - minted\_constraints: the primitives move out of core, plus Char / Letter / Alphanumeric
