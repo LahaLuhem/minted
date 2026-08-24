@@ -20,11 +20,10 @@ feature: identical method names and the same failure model across every type.
 
 ## Stack
 
-- **Dart ≥ 3.12** (constraint in `pubspec.yaml`, toolchain channel named in `.fvmrc`). 3.12 gets
-  extension types (≥ 3.3) and static dot shorthands (≥ 3.10) as stable features. Primary (declaring)
-  constructors are *not* used: they are still an experiment in 3.12, and a published package can't
-  rely on an experiment flag. See [`APPENDIX.md#sdk-floor`](../APPENDIX.md#sdk-floor). Bump the
-  floor only when a new stable language feature is actually consumed, and record why in APPENDIX.
+- **Dart**, at the `sdk:` constraint every `pubspec.yaml` carries, on the channel `.fvmrc` names.
+  Raise the floor only when a new stable language feature is actually consumed. What the floor buys,
+  and why primary (declaring) constructors stay unused despite being stable:
+  [`APPENDIX.md#sdk-floor`](../APPENDIX.md#sdk-floor), which is also where a bump gets recorded.
 - **`dart test`** for tests; **`dart --no-version-check analyze .`** for pedantic static analysis
   (pedantic mode is intentional). No Flutter dependency, no platform channels.
 - **CI runs two SDKs on purpose.** The `dart format` gate in `repo.yml` takes its Dart from Flutter
