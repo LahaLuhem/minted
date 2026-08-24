@@ -247,6 +247,14 @@ output.
 7. **A failure vocabulary**, in the sector's `failures/` directory: one type per value type,
    implementing `MintedFailure`, sized to what its standard can actually distinguish.
 
+**Quote interpolated strings in failure messages, leave numbers bare.** A string echoed back from
+the input is wrapped in double quotes so its bounds are visible: `'"$character" is not a letter,
+digit or hyphen'`, `'"$label" opens or closes with a hyphen'`. A count needs no wrapper:
+`'expected at most 253 characters, got $actualLength'`. Uniform across every failure type. **Why:**
+undelimited, a stray space or an empty string disappears into the sentence, which is exactly the
+input these messages exist to describe. Double quotes also keep the Dart literal single-quoted, so
+`prefer_single_quotes` stays happy.
+
 **Classifications are not value types.** A closed set a value type *hands back* (`Weekday`,
 `UuidVariant`, `PhoneNumberType`) is a plain `enum`, not a contract-bearing type: it is derived from
 something that already parsed rather than parsed from text, so it gets named cases and an exhaustive

@@ -77,11 +77,11 @@ void main() {
         ),
         'an underscore echoes the character': (
           input: '_sip.example.com',
-          failure: const HostnameInvalidCharacters('_'),
+          failure: const HostnameInvalidCharacter('_'),
         ),
         'a space echoes the character': (
           input: 'exa mple.com',
-          failure: const HostnameInvalidCharacters(' '),
+          failure: const HostnameInvalidCharacter(' '),
         ),
         'an empty label reports itself empty': (
           input: 'a..b.example',

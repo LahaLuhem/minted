@@ -41,7 +41,7 @@ final class GeohashInvalidCharacter extends GeohashFailure {
   const new(this.character);
 
   @override
-  String get message => "'$character' is not a geohash character";
+  String get message => '"$character" is not a geohash character';
 
   @override
   bool operator ==(Object other) =>
