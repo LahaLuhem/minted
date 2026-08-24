@@ -67,7 +67,7 @@ extension type const DnsName._(String value) {
     if (offendingCharacter != null) {
       return isNonAscii(offendingCharacter)
           ? const DnsNameNotAscii()
-          : DnsNameInvalidCharacters(offendingCharacter);
+          : DnsNameInvalidCharacter(offendingCharacter);
     }
     if (normalisedInput.length > maxNameLength) return DnsNameTooLong(normalisedInput.length);
 

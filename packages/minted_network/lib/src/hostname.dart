@@ -60,7 +60,7 @@ extension type const Hostname._(String value) {
     if (offendingCharacter != null) {
       return isNonAscii(offendingCharacter)
           ? const HostnameNotAscii()
-          : HostnameInvalidCharacters(offendingCharacter);
+          : HostnameInvalidCharacter(offendingCharacter);
     }
     if (normalisedInput.length > maxNameLength) return HostnameTooLong(normalisedInput.length);
 

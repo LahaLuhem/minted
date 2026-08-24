@@ -55,7 +55,7 @@ void main() {
         ),
         'a space is no DNS character': (
           input: 'a b.example.com',
-          failure: const DnsNameInvalidCharacters(' '),
+          failure: const DnsNameInvalidCharacter(' '),
         ),
         'two dots met': (input: 'a..b.example.com', failure: const DnsNameLabelEmpty()),
         'a leading dot is the same fault': (
@@ -123,7 +123,7 @@ void main() {
           .equals('_dmarc.example.com');
       check(DnsName.tryParse('_sip._tcp.example.com')!.labels)
           .deepEquals(['_sip', '_tcp', 'example', 'com']);
-      check(DnsName.fromLabels(['a b', 'example']).reasonOrNull).isA<DnsNameInvalidCharacters>();
+      check(DnsName.fromLabels(['a b', 'example']).reasonOrNull).isA<DnsNameInvalidCharacter>();
     });
 
     scenario('the failure names the type, not its erased representation', () {

@@ -123,7 +123,7 @@ void main() {
       check(Email.tryParse('jane@bücher.example')!.domainAsHostname().reasonOrNull)
           .isA<HostnameNotAscii>();
       check(Email.tryParse('jane@[192.0.2.1]')!.domainAsHostname().reasonOrNull)
-          .isA<HostnameInvalidCharacters>();
+          .isA<HostnameInvalidCharacter>();
     });
   });
 }

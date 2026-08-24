@@ -313,7 +313,7 @@ void main() {
       'Geohash: a character outside the alphabet echoes itself': (
         failure: GeohashInvalidCharacter('a'),
         typeName: 'Geohash',
-        message: "'a' is not a geohash character",
+        message: '"a" is not a geohash character',
       ),
       'Hostname: non-ASCII names the remedy rather than the rule': (
         failure: HostnameNotAscii(),
@@ -321,12 +321,12 @@ void main() {
         message: 'contains non-ASCII, so punycode it to an A-label first',
       ),
       'Hostname: an underscore is named as a DNS name, not a stray character': (
-        failure: HostnameInvalidCharacters('_'),
+        failure: HostnameInvalidCharacter('_'),
         typeName: 'Hostname',
         message: 'an underscore makes this a DNS name, not a hostname',
       ),
       'Hostname: any other bad character echoes itself': (
-        failure: HostnameInvalidCharacters('%'),
+        failure: HostnameInvalidCharacter('%'),
         typeName: 'Hostname',
         message: '"%" is not a letter, digit or hyphen',
       ),
@@ -361,7 +361,7 @@ void main() {
         message: 'contains non-ASCII, so punycode it to an A-label first',
       ),
       'DnsName: a bad character echoes itself, underscore allowed unlike Hostname': (
-        failure: DnsNameInvalidCharacters('%'),
+        failure: DnsNameInvalidCharacter('%'),
         typeName: 'DnsName',
         message: '"%" is not a letter, digit, hyphen or underscore',
       ),
@@ -601,8 +601,8 @@ void main() {
         ),
         'a non-ASCII hostname': (failure: HostnameNotAscii(), rendered: 'HostnameNotAscii()'),
         'a stray hostname character': (
-          failure: HostnameInvalidCharacters('_'),
-          rendered: 'HostnameInvalidCharacters(_)',
+          failure: HostnameInvalidCharacter('_'),
+          rendered: 'HostnameInvalidCharacter(_)',
         ),
         'a malformed label': (
           failure: HostnameLabelMalformed('-bad'),
@@ -619,8 +619,8 @@ void main() {
         ),
         'a non-ASCII DNS name': (failure: DnsNameNotAscii(), rendered: 'DnsNameNotAscii()'),
         'a DNS name echoing a character': (
-          failure: DnsNameInvalidCharacters('%'),
-          rendered: 'DnsNameInvalidCharacters(%)',
+          failure: DnsNameInvalidCharacter('%'),
+          rendered: 'DnsNameInvalidCharacter(%)',
         ),
         'an empty DNS label': (failure: DnsNameLabelEmpty(), rendered: 'DnsNameLabelEmpty()'),
         'an overlong DNS label': (
@@ -935,9 +935,9 @@ void main() {
           other: HostnameNumericTld(),
         ),
         'a stray character differs by the character': (
-          failure: HostnameInvalidCharacters('_'),
-          twin: HostnameInvalidCharacters('_'),
-          other: HostnameInvalidCharacters('%'),
+          failure: HostnameInvalidCharacter('_'),
+          twin: HostnameInvalidCharacter('_'),
+          other: HostnameInvalidCharacter('%'),
         ),
         'a malformed label differs by where the hyphen sits': (
           failure: HostnameLabelMalformed('-bad'),
@@ -1017,9 +1017,9 @@ void main() {
           other: DnsNameLabelEmpty(),
         ),
         'a DNS character differs by the character': (
-          failure: DnsNameInvalidCharacters('%'),
-          twin: DnsNameInvalidCharacters('%'),
-          other: DnsNameInvalidCharacters('&'),
+          failure: DnsNameInvalidCharacter('%'),
+          twin: DnsNameInvalidCharacter('%'),
+          other: DnsNameInvalidCharacter('&'),
         ),
         'an empty DNS label': (
           failure: DnsNameLabelEmpty(),

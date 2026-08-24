@@ -37,7 +37,7 @@ final class DnsNameNotAscii extends DnsNameFailure {
 }
 
 /// [character] is ASCII but outside the letters, digits, hyphen and underscore this type allows.
-final class DnsNameInvalidCharacters extends DnsNameFailure {
+final class DnsNameInvalidCharacter extends DnsNameFailure {
   /// The first offending character.
   final String character;
 
@@ -49,13 +49,13 @@ final class DnsNameInvalidCharacters extends DnsNameFailure {
 
   @override
   bool operator ==(Object other) =>
-      other is DnsNameInvalidCharacters && other.character == character;
+      other is DnsNameInvalidCharacter && other.character == character;
 
   @override
-  int get hashCode => Object.hash(DnsNameInvalidCharacters, character);
+  int get hashCode => Object.hash(DnsNameInvalidCharacter, character);
 
   @override
-  String toString() => 'DnsNameInvalidCharacters($character)';
+  String toString() => 'DnsNameInvalidCharacter($character)';
 }
 
 /// A label was empty, so two dots met or one sat at an edge. RFC 2181 gives a label one octet

@@ -36,7 +36,7 @@ final class HostnameNotAscii extends HostnameFailure {
 }
 
 /// [character] is ASCII but outside the letters, digits and hyphen RFC 1123 allows.
-final class HostnameInvalidCharacters extends HostnameFailure {
+final class HostnameInvalidCharacter extends HostnameFailure {
   /// The first offending character.
   final String character;
 
@@ -51,13 +51,13 @@ final class HostnameInvalidCharacters extends HostnameFailure {
 
   @override
   bool operator ==(Object other) =>
-      other is HostnameInvalidCharacters && other.character == character;
+      other is HostnameInvalidCharacter && other.character == character;
 
   @override
-  int get hashCode => Object.hash(HostnameInvalidCharacters, character);
+  int get hashCode => Object.hash(HostnameInvalidCharacter, character);
 
   @override
-  String toString() => 'HostnameInvalidCharacters($character)';
+  String toString() => 'HostnameInvalidCharacter($character)';
 }
 
 /// [label] is empty, or opens or closes with a hyphen, which RFC 1123 reserves for the interior.
