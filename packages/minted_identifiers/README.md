@@ -86,3 +86,6 @@ The runnable version is the
 
 The [`minted` README](https://pub.dev/packages/minted) is the family guide: the package index,
 handling failures, and the one caveat (never cast into a minted type).
+
+[APPENDIX.md](./APPENDIX.md) carries the design rationale for these types: the alternatives
+that were weighed and dropped, and what each decision costs.

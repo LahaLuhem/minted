@@ -3,7 +3,7 @@
 /// Shared because `Isbn` gates on these and `IsbnInvalidPrefix` names them in its message, and a
 /// failure may not import its own value type (see `AGENTS.md`, repo layout). Not a registry: these
 /// four constants are fixed by the standard, unlike the hyphenation range table
-/// (`APPENDIX.md#registry-data-ships-a-clock`).
+/// (`/APPENDIX.md#registry-data-ships-a-clock`).
 library;
 
 /// The original Bookland prefix, and the only one with a ten-digit equivalent.

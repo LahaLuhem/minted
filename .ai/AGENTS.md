@@ -5,15 +5,15 @@ this repo. Claude-Code-specific guidance lives in [CLAUDE.md](./CLAUDE.md).
 
 ## Project goal
 
-A family of packages of well-modelled **value types** ("domain primitives") for entities that are routinely
-left as raw `String` / `int` even though they carry real validation or normalisation rules,
-usually from a published standard (ISO / RFC / ITU / GS1): email, IBAN, card numbers, ISBN, and
-so on.
+A family of packages of well-modelled **value types** ("domain primitives") for entities that are
+routinely left as raw `String` / `int` even though they carry real validation or normalisation
+rules, usually from a published standard (ISO / RFC / ITU / GS1): email, IBAN, card numbers, ISBN,
+and so on.
 
 The organising principle is **parse, don't validate**: each type is constructible only through a
 parsing factory, so any instance that exists is guaranteed well-formed, the same way `Uri`
 guarantees a valid URL. This is the direct antidote to primitive obsession. Rationale:
-[`APPENDIX.md#parse-dont-validate`](../APPENDIX.md#parse-dont-validate).
+[rationale][apx-parse-dont-validate].
 
 Pure Dart, so it works in Flutter apps, Dart servers, and CLIs alike. Consistency is the headline
 feature: identical method names and the same failure model across every type.
@@ -23,14 +23,14 @@ feature: identical method names and the same failure model across every type.
 - **Dart**, at the `sdk:` constraint every `pubspec.yaml` carries, on the channel `.fvmrc` names.
   Raise the floor only when a new stable language feature is actually consumed. What the floor buys,
   and why primary (declaring) constructors stay unused despite being stable:
-  [`APPENDIX.md#sdk-floor`](../APPENDIX.md#sdk-floor), which is also where a bump gets recorded.
+  [rationale][apx-sdk-floor], which is also where a bump gets recorded.
 - **`dart test`** for tests; **`dart --no-version-check analyze .`** for pedantic static analysis
   (pedantic mode is intentional). No Flutter dependency, no platform channels.
 - **CI runs two SDKs on purpose.** The `dart format` gate in `repo.yml` takes its Dart from Flutter
   (the channel `.fvmrc` names) because formatter output is version-sensitive; every other job uses
   [`.github/actions/setup-dart`](../.github/actions/setup-dart/action.yml) on Dart stable, which is
   what downstream Dart-only users have. Route a new job through the composite unless it compares
-  formatter output. Why: [`APPENDIX.md#ci-sdk-toolchain`](../APPENDIX.md#ci-sdk-toolchain).
+  formatter output. Why: [rationale][apx-ci-sdk-toolchain].
 - **`dependency_validator`** guards each package's dependency set, per package, and is what caught
   core still declaring engines after their types moved out. `dart_dependency_validator.yaml` scopes
   it to the published surface and skips the example.
@@ -64,7 +64,8 @@ minted/                              Workspace root
 ├── test/tool/                       The tooling's suite, mirroring src/; the root's only Dart tests
 │   └── integration/                 `integration`-tagged; a real release against a throwaway remote
 ├── README.md                        Family index; the GitHub landing page
-├── APPENDIX.md                      Design rationale (anchor-keyed)
+├── APPENDIX.md                      Family-wide design rationale (anchor-keyed); per-type
+│                                    rationale lives in each package's own APPENDIX.md
 ├── CODESTYLE.md                     Library-package code style
 ├── context7.json                    Doc-indexer config for context7.com
 ├── .ai/                             This file + CLAUDE.md (symlinked to repo root)
@@ -82,6 +83,7 @@ minted/                              Workspace root
 
 ```text
 packages/minted/                     Core. A sibling has the same shape, minus shared/
+├── APPENDIX.md                      This package's own design rationale; ships in the tarball
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
 │   ├── internal.dart                Cross-package plumbing for the siblings. NOT public API
@@ -145,10 +147,10 @@ helper subfolders by path segment.
 `tryFrom` and neither parse door. Usually a range over a number; `Percentage` constrains the *unit*
 instead and bounds nothing but finiteness, and a constraint on a `String` qualifies on the same
 terms. `quantities/` holds most of them, but the category is not the directory: `Port` lives in
-`network/` because it belongs there by domain.
-The category is a convention, not a structural check: `conformance_test.dart` deliberately requires
-no door to *exist*, only that nothing lies about what it can do. Rationale:
-[`APPENDIX.md#constraint-types`](../APPENDIX.md#constraint-types).
+`network/` because it belongs there by domain. The category is a convention, not a structural check:
+`conformance_test.dart` deliberately requires no door to *exist*, only that nothing lies about what
+it can do. Rationale:
+[rationale][apx-constraint-types].
 
 **A type's failure vocabulary goes in its package's `failures/`, never in the value-type file**, one
 file per type (`finance/failures/iban_failure.dart` holds `IbanFailure` and its variants). The
@@ -210,14 +212,14 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    so in its return type, and `ParseOutcome.getOrThrow` is the one place a caller opts into a throw,
    raising `MintedFormatError`. This is the package's identity, not a preference.
    Full spec: [`CODESTYLE.md#value-type-contract`](CODESTYLE.md#value-type-contract); rationale in
-   [`APPENDIX.md#per-type-failures`](../APPENDIX.md#per-type-failures) and
-   [`APPENDIX.md#claim-in-source`](../APPENDIX.md#claim-in-source).
+   [rationale][apx-per-type-failures] and
+   [rationale][apx-claim-in-source].
 2. **`minted` is the core and the lowest package; every other package is a sibling that depends on
    it.** A consumer takes `minted` plus one or more siblings. What gets extracted *into* core is
    shareable **plumbing** (`decimalValue`), not whole public features (`NaturalNumber`); where only
    part of a file is shared, split the file and move only that part. A sibling depending on another
    sibling is a last resort. Rationale:
-   [`APPENDIX.md#constraints-package`](../APPENDIX.md#constraints-package).
+   [rationale][apx-constraints-package].
 3. **The public API lives only in `lib/minted.dart`**, which re-exports from `lib/src/`. Don't make
    users import `package:minted/src/…`. Shared internals go in `lib/src/shared/`.
 4. **Validate the real standard, including check digits** (IBAN mod-97, Luhn, ISBN/EAN/ISSN). A
@@ -232,7 +234,7 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    downstream users. A core value type may carry the pure-Dart, web-safe *engine* it is built on
    (`email_validator`, `iban_validator`, `phone_numbers_parser`); *adapter* integrations to other
    ecosystems (`fpdart`, Hive, Flutter form validators) go in companion packages, never in core.
-   See [`APPENDIX.md#packaging-core-and-companions`](../APPENDIX.md#packaging-core-and-companions).
+   See [rationale][apx-packaging-core-and-companions].
 9. **Semver, strictly.** Any change to a public signature, a deletion, or a behavioural change of
    a documented contract (including a normalisation change) is breaking. `cider` enforces the
    version-bump discipline.
@@ -314,3 +316,12 @@ rules to keep in working memory:
   `dart pub publish --dry-run`'s modified-files list. Don't be alarmed and don't try to re-stage or
   "fix" it: the user handles staging and committing. Trust the file contents you wrote, not
   `git status`, as the record of your change.
+
+[apx-ci-sdk-toolchain]: ../APPENDIX.md#ci-sdk-toolchain
+[apx-claim-in-source]: ../packages/minted/APPENDIX.md#claim-in-source
+[apx-constraint-types]: ../packages/minted_constraints/APPENDIX.md#constraint-types
+[apx-constraints-package]: ../packages/minted_constraints/APPENDIX.md#constraints-package
+[apx-packaging-core-and-companions]: ../APPENDIX.md#packaging-core-and-companions
+[apx-parse-dont-validate]: ../APPENDIX.md#parse-dont-validate
+[apx-per-type-failures]: ../packages/minted/APPENDIX.md#per-type-failures
+[apx-sdk-floor]: ../APPENDIX.md#sdk-floor

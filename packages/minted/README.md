@@ -242,9 +242,15 @@ are the only doors in, and a cast into a minted type is a bug. It's also the one
 forged; worth saying out loud, because a package can't stop its callers from casting. Lint for it
 is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The
 class-backed types (`Date`, `Digits`, `PaymentCardNumber`) are ordinary classes, so bad casts throw
-there instead. Why the erasure is
-a deliberate trade rather than an oversight:
-[APPENDIX.md](../../APPENDIX.md#extension-type-representation).
+there instead. Why the erasure is a deliberate trade rather than an oversight:
+[APPENDIX](https://github.com/LahaLuhem/minted/blob/main/APPENDIX.md#extension-type-representation).
+
+## Design rationale
+
+[APPENDIX.md](./APPENDIX.md) carries this package's own: why the outcome type is bespoke rather than
+an `Either`, why the one throw is an `Error`, and why every type gets its own failure vocabulary. The
+[workspace APPENDIX](https://github.com/LahaLuhem/minted/blob/main/APPENDIX.md) holds what spans the
+family, and each sibling ships its own for the types it defines.
 
 ## Contributing
 
