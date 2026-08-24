@@ -86,3 +86,6 @@ The runnable version is the
   reading, while neither can be written from one. Four opt out, and say why in their own docs
 
 The [`minted` README](https://pub.dev/packages/minted) is the family guide.
+
+[APPENDIX.md](./APPENDIX.md) carries the design rationale for these types: the alternatives
+that were weighed and dropped, and what each decision costs.

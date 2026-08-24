@@ -117,7 +117,15 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
   logical chunks in methods.
 - Lint clean via the linterpol image for whatever changed: `actionlint` (workflows), `rumdl`
   (Markdown), `ryl` (YAML). The check set + per-tool config live in
-  `.github/lint-checks.json`, `.rumdl.toml`, and `.yamllint.yaml`.
+  `.github/lint-checks.json`, `.rumdl.toml`, and `.yamllint.yaml`. **Actually run them.** A Docker
+  daemon that is down is a thing to start, not a reason to hand the work over marked "unverified":
+  these are CI gates, so skipping them just moves the failure to the pull request. Run all three
+  together, since a Markdown edit can break `ryl` on a file you never opened:
+
+  ```bash
+  docker run --rm -v "$PWD":/work -w /work ghcr.io/lahaluhem/linterpol:latest sh -c 'actionlint && rumdl check . && ryl .'
+  ```
+
 - `dart pub publish --dry-run` clean if the change is publish-relevant. Do not bump the version or
   edit the CHANGELOG to make it pass; `tool/release.dart` owns those.
 - Public API additions carry `///` dartdoc and are reflected in the README.

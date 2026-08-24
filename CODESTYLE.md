@@ -133,16 +133,17 @@ final cc = s.substring(0, 2);
 
 This is the headline convention: every type in the package presents the **same** surface, so a
 consumer learns one shape and applies it everywhere. Rationale is in
-[`APPENDIX.md#parse-dont-validate`](./APPENDIX.md#parse-dont-validate).
+[rationale][apx-parse-dont-validate].
 
 **Two representations, one contract.** The deciding question is **not how many primitives the value
 spells, but whether its parts are already types this package models**. Where they are, hold them:
 composing from types that carry their own invariants is safer than re-deriving those invariants out
-of text on every accessor, and it is what makes a part impossible to pass in the wrong slot. `Digits`
-sets the pattern by being an `Iterable<Digit>` rather than an extension type over its characters, and
-`Cidr` follows it by holding an `IpAddress` and a prefix length rather than slicing `10.0.0.0/8`
-apart on demand. Reach for an extension type when the value has **no inner structure worth naming**.
-Rationale: [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-from-modelled-parts).
+of text on every accessor, and it is what makes a part impossible to pass in the wrong slot.
+`Digits` sets the pattern by being an `Iterable<Digit>` rather than an extension type over its
+characters, and `Cidr` follows it by holding an `IpAddress` and a prefix length rather than slicing
+`10.0.0.0/8` apart on demand. Reach for an extension type when the value has **no inner structure
+worth naming**. Rationale:
+[rationale][apx-compose-from-modelled-parts].
 
 - **No modelled parts → extension type** over the one primitive, zero runtime cost, private
   primary constructor:
@@ -191,20 +192,21 @@ Rationale: [`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-fro
   }
   ```
 
-  This one ships: [`lib/src/geography/geo_coordinate.dart`](./packages/minted_geography/lib/src/geo_coordinate.dart)
-  is the sketch filled in, so keep the two in step.
+This one ships:
+[`lib/src/geography/geo_coordinate.dart`](./packages/minted_geography/lib/src/geo_coordinate.dart)
+is the sketch filled in, so keep the two in step.
 
 **A second reason to reach for a class, independent of the parts: a delegated `Object` member would
 be wrong for the type.** The delegation an extension type gives you is a feature only while the
 inherited behaviour is the wanted one. `Digits` needs structural `==` that its `Uint8List` will not
 give, and `PaymentCardNumber` needs a `toString` that does not print the card. Rationale:
-[`APPENDIX.md#payment-card-number-value-type`](./APPENDIX.md#payment-card-number-value-type).
+[rationale][apx-payment-card-number-value-type].
 
 **The rule is about the parts a caller sees, not the representation.** `Isbn` and `Imei` stay
 `String`-backed and hand back `Digits` from their digit-segment getters, which is what makes the
 round trip compose without either type giving up its zero-cost representation or its `print` form.
 Where a part has no type to become, it stays text. Which shipped type sits where, and why each one:
-[`APPENDIX.md#compose-from-modelled-parts`](./APPENDIX.md#compose-from-modelled-parts).
+[rationale][apx-compose-from-modelled-parts].
 
 **Non-negotiable across both shapes:**
 
@@ -212,12 +214,12 @@ Where a part has no type to become, it stays text. Which shipped type sits where
    through parsing, so any instance that exists is well-formed. Never add an *unvalidated* public
    constructor; it would break the guarantee the whole package sells. (*Primary constructor* has
    named a Dart language feature since 3.13, which this package does not use, so this rule is about
-   privacy, not syntax. See [`APPENDIX.md#sdk-floor`](./APPENDIX.md#sdk-floor).) A validated named
+   privacy, not syntax. See [rationale][apx-sdk-floor].) A validated named
    factory (`fromComponents`, `fromBody`) that assembles caller-supplied parts and runs the same
 validation before `._` is fine: it's a parsing entry point keyed on parts, not a raw constructor, so
 the guarantee holds.
 2. **`static ParseOutcome<F, T> parse(String input)`** is the primary door and never throws: it
-   returns the value or the type's own [`MintedFailure`](./APPENDIX.md#per-type-failures). It does
+   returns the value or the type's own [`MintedFailure`][apx-per-type-failures]. It does
    the work; the other two derive from it.
 3. **`static T? tryParse(String input)`** is `parse(input).getOrNull()`, so the two can't diverge.
    It stays nullable because `??`, `?.` and `whereType` are worth a dedicated path.
@@ -226,13 +228,13 @@ the guarantee holds.
    be refused. `ParseOutcome.getOrThrow` is the single door that throws, and only because a caller
    typed it: that is them asserting, and a violated assertion raises `MintedFormatError`, an `Error`
    because it is a bug in their source rather than input to handle. Rationale:
-   [`APPENDIX.md#claim-in-source`](./APPENDIX.md#claim-in-source).
+   [rationale][apx-claim-in-source].
    **Their parameters take the package's own types, not raw primitives.** A part that is only ever
    decimal digits is a `Digits`; a part that is genuinely alphanumeric, like an IBAN's `bban`, stays
 a `String`, because `Digits` there would be the wrong type rather than a stronger one. That also
 makes the round trip compose: `Imei.fromComponents(tac: imei.tac, …)` type-checks, because the
 getter hands back what the factory takes. Rationale:
-   [`APPENDIX.md#typed-digit-subparts`](./APPENDIX.md#typed-digit-subparts).
+   [rationale][apx-typed-digit-subparts].
    **A `Digits` reads as `Digits(978)` when interpolated**, not `978`, since it hand-writes
 `toString`. Interpolating one is silent (no diagnostic), so reach for `.asString` in any rendered
 output.
@@ -257,7 +259,8 @@ something that already parsed rather than parsed from text, so it gets named cas
 `switch` instead of `parse` / `tryParse`. Add `from` / `tryFrom` when callers need to build one from
 a primitive, and a failure type only if one of those throws. `conformance_test.dart` holds the line
 both ways: a class or extension type without both doors fails, and so does an enum that declares
-either. Rationale: [`APPENDIX.md#weekday-enum`](./APPENDIX.md#weekday-enum).
+either. Rationale:
+[rationale][apx-weekday-enum].
 
 **Constraint types are not value types either.** The rule that separates them is about standards,
 not numbers:
@@ -270,13 +273,13 @@ unit (`Percentage`, which bounds nothing but finiteness). They declare `tryFrom`
 door. Nothing enforces that structurally; the category is a convention this file records. One
 invariant each leaves nothing a failure could say that `null` doesn't, so they carry none. A type
 still files by domain: `Port` sits in `network/`, not `quantities/`. Rationale:
-[`APPENDIX.md#constraint-types`](./APPENDIX.md#constraint-types).
+[rationale][apx-constraint-types].
 
 **Normalise on parse.** `tryParse` converts input to a single canonical form before constructing
 (trim, case-fold the parts the standard says are case-insensitive, strip separators). Because
-extension-type equality is representation equality, this is what makes
-`Iban.tryParse('gb82 west …') == Iban.tryParse('GB82WEST…')` true. Document each type's
-normalisation in its dartdoc. See [`APPENDIX.md#normalise-on-parse`](./APPENDIX.md#normalise-on-parse).
+extension-type equality is representation equality, this is what makes `Iban.tryParse('gb82 west …')
+== Iban.tryParse('GB82WEST…')` true. Document each type's normalisation in its dartdoc. See
+[rationale][apx-normalise-on-parse].
 
 **Extension-type facts you must design around** (verified against the analyzer, not assumed):
 
@@ -294,7 +297,7 @@ normalisation in its dartdoc. See [`APPENDIX.md#normalise-on-parse`](./APPENDIX.
 
 **Check the real standard, not a shape.** Where a standard defines a checksum (IBAN mod-97, card
 Luhn, ISBN/EAN/ISSN check digits), validate it. A regex that only checks the shape is a bug, not
-a simplification. See [`APPENDIX.md#check-digits-not-regex`](./APPENDIX.md#check-digits-not-regex).
+a simplification. See [rationale][apx-check-digits-not-regex].
 
 ---
 
@@ -515,7 +518,7 @@ Skip it where the context type isn't obvious without re-reading, or where it hur
 When a prefix disappears from a file entirely, drop it from any `show` clauses too. Note this is
 stable at the floor; primary (declaring) constructors are a separate feature, stable since 3.13 but
 still not used, because `public_member_api_docs` cannot be satisfied on one (see
-[`APPENDIX.md#sdk-floor`](./APPENDIX.md#sdk-floor)).
+[rationale][apx-sdk-floor]).
 
 ---
 
@@ -577,7 +580,7 @@ library;
   [`test/support/bdd.dart`](./packages/minted/test/support/bdd.dart) is a small Gherkin vocabulary over
   `package:test`: `feature` (a `group`), `scenario` (a single test), and `scenarioOutline` (one
   test per example row). Why no BDD framework:
-  [`APPENDIX.md#behavioural-tests-helper`](./APPENDIX.md#behavioural-tests-helper).
+  [rationale][apx-behavioural-tests-helper].
 - **Prefer an examples table over scattered literals.** For parse / normalise behaviour, drive a
   `scenarioOutline` from a `Map<String, Row>` where the key names the case and the record `Row`
   groups the input parameters with the expected outcome. Keeping the values together, rather than
@@ -609,6 +612,21 @@ library;
 - **APPENDIX.md is the source of truth for rationale.** Hard rules, pitfalls, and workflow stay
   in `.ai/AGENTS.md` and `.ai/CLAUDE.md`; the "why we do it this way" essays live in
   [`APPENDIX.md`](./APPENDIX.md).
+- **Rationale files split by package, and a decision files with its type.** The root
+  [`APPENDIX.md`](./APPENDIX.md) keeps only what spans the family: parse-don't-validate, the shared
+  rules every type leans on, packaging, tooling. Everything about a specific type lives in its own
+  package's `APPENDIX.md`, which ships in that tarball, so the rationale reaches the people reading
+  the type on pub.dev. A new type's section goes in its package, never at the root.
+- **Cross-file links go reference-style, and a published file links absolutely.** Collect
+  `[label]: url` definitions at the foot of the file and write `[text][label]` inline, so a URL
+  never sets the line width. A package `APPENDIX.md` ships, so anything outside its own directory
+  needs the full `https://github.com/LahaLuhem/minted/blob/main/…` form; a relative path would 404
+  on pub.dev. Root-level docs are never published and stay relative.
+- **In Dart comments, a leading slash means the workspace root.** So
+  `` `/APPENDIX.md#normalise-on-parse` `` is the root file, and a bare
+  `` `APPENDIX.md#hostname-value-type` `` is this package's own. These stay code spans rather than
+  links on purpose: no relative path resolves both on GitHub and in rendered dartdoc, so a pointer
+  a human can follow beats a link that is wrong somewhere.
 - **One layer states the rule, the other argues it, and never both.** AGENTS and this file say what
   to do in the imperative and link out; APPENDIX carries the argument, the rejected alternatives and
   the measured costs. A paragraph that makes a case *and then* links to the section making the same
@@ -619,6 +637,12 @@ library;
   family: install, the shared shape, the failure model, the caveats. Examples and per-type caveats
   belong to the sibling that ships the type, in one place, so the core page can't drift from seven
   others at once.
+- **A re-wrapped line must not open with a block marker.** Reflowing prose to the 100-column width
+  can push an asterisk, a hyphen, `>`, `#` or a `1.` to the start of a line, where the space after it
+  makes Markdown read a list, quote or heading instead of the middle of a sentence. The case that
+  bit: `f * 100` wrapped after the `f`, so the continuation rendered as a bullet. Emphasis
+  (`*word*`, no space) is safe. `rumdl` catches it as MD032, one more reason to run the container
+  lints before handing work over.
 - **Explicit `<a id="…">` anchors** sit above every APPENDIX and CODESTYLE heading. Link via the
   anchor, not the heading text. Anchor stability is load-bearing: when renaming a heading, keep
   the existing anchor, or `rg` the repo and update every caller in the same change.
@@ -636,7 +660,7 @@ library;
   history doesn't move.
 - **British spelling in prose and identifiers** (`normalise`, `canonicalise`, `behaviour`), with
   one carve-out: names fixed by the SDK or a dependency stay as they are (`toJson`, `compareTo`,
-  `hashCode`). See [`APPENDIX.md#spelling`](./APPENDIX.md#spelling).
+  `hashCode`). See [rationale][apx-spelling].
 
 ---
 
@@ -655,3 +679,17 @@ only shell left is `run:` blocks under `.github/workflows/`.
 - **Prefer `# shellcheck disable=SC<code>` + a one-line "why" over refactoring for simple cases.**
   Refactor when the warning points at a real bug; reach for the directive when the code is correct
   and ShellCheck is just over-conservative. Always pair the directive with a comment.
+
+[apx-behavioural-tests-helper]: ./APPENDIX.md#behavioural-tests-helper
+[apx-check-digits-not-regex]: ./APPENDIX.md#check-digits-not-regex
+[apx-claim-in-source]: ./packages/minted/APPENDIX.md#claim-in-source
+[apx-compose-from-modelled-parts]: ./APPENDIX.md#compose-from-modelled-parts
+[apx-constraint-types]: ./packages/minted_constraints/APPENDIX.md#constraint-types
+[apx-normalise-on-parse]: ./APPENDIX.md#normalise-on-parse
+[apx-parse-dont-validate]: ./APPENDIX.md#parse-dont-validate
+[apx-payment-card-number-value-type]: ./packages/minted_finance/APPENDIX.md#payment-card-number-value-type
+[apx-per-type-failures]: ./packages/minted/APPENDIX.md#per-type-failures
+[apx-sdk-floor]: ./APPENDIX.md#sdk-floor
+[apx-spelling]: ./APPENDIX.md#spelling
+[apx-typed-digit-subparts]: ./packages/minted_constraints/APPENDIX.md#typed-digit-subparts
+[apx-weekday-enum]: ./packages/minted_chronology/APPENDIX.md#weekday-enum

@@ -25,7 +25,7 @@ import 'ip_address.dart';
 ///
 /// Holds an [IpAddress] rather than slicing one back out of its own text, so the network address
 /// cannot be malformed and [contains] cannot be handed something that merely looks like an address.
-/// Why: `APPENDIX.md#compose-from-modelled-parts`.
+/// Why: `/APPENDIX.md#compose-from-modelled-parts`.
 ///
 /// {@example /example/minted_network_example.dart#cidr}
 @immutable

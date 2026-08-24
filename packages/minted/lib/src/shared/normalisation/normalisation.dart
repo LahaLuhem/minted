@@ -4,7 +4,7 @@
 ///
 /// Public within `lib/src/` and never re-exported from `lib/minted.dart`: top-level `_` names are
 /// library-private in Dart, so sharing them at all means dropping the underscore. Rationale:
-/// `APPENDIX.md#normalise-on-parse`.
+/// `/APPENDIX.md#normalise-on-parse`.
 library;
 
 /// Whitespace and hyphens together: the separators a standard treats as cosmetic grouping, in a
