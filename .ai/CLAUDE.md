@@ -115,12 +115,9 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 - DCM rules applied by hand (`dart analyze` doesn't run them): `no-empty-block`,
   `newline-before-return`, `prefer-commenting-analyzer-ignores`, plus blank lines segmenting
   logical chunks in methods.
-- Lint clean via the linterpol image for whatever changed: `actionlint` (workflows), `rumdl`
-  (Markdown), `ryl` (YAML). The check set + per-tool config live in
-  `.github/lint-checks.json`, `.rumdl.toml`, and `.yamllint.yaml`. **Actually run them.** A Docker
-  daemon that is down is a thing to start, not a reason to hand the work over marked "unverified":
-  these are CI gates, so skipping them just moves the failure to the pull request. Run all three
-  together, since a Markdown edit can break `ryl` on a file you never opened:
+- Lint clean via the linterpol image. Config lives in `.github/lint-checks.json`, `.rumdl.toml`
+  and `.yamllint.yaml`. Run all three, and start Docker if it's down rather than handing the work
+  over unverified:
 
   ```bash
   docker run --rm -v "$PWD":/work -w /work ghcr.io/lahaluhem/linterpol:latest sh -c 'actionlint && rumdl check . && ryl .'
@@ -129,16 +126,10 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 - `dart pub publish --dry-run` clean if the change is publish-relevant. Do not bump the version or
   edit the CHANGELOG to make it pass; `tool/release.dart` owns those.
 - Public API additions carry `///` dartdoc and are reflected in the README.
-- **A local green is not a CI green.** Once a push has happened, read the run before treating
-  anything as landed: `gh run list --workflow=package.yml --limit 3`, then
-  `gh run view --job <id> --log`. The gates you can run here cannot see a CI-only failure at all.
-- **When CI breaks and the diff is innocent, diff the runs, don't theorise.** Pull the last green
-  job log beside the red one and compare what each actually resolved: `Download action repository`
-  lines (the SHA behind a moving tag), the runner `Version:` lines, the SDK version. A `v1` tag that
-  advanced from one release to another is invisible in `git log` and is what bit here. Correlating a
-  release date with the breakage instead cost a wrong fix and a second red push, because the release
-  that looked new was not the one that introduced the fault.
-- **Read the upstream source before working around it.** `gh api repos/<o>/<r>/contents/<path>
-  -H "Accept: application/vnd.github.raw"` at the tag in question. One `if` in setup-dart's
-  `lib/main.dart` settled what the fix had to be; guessing from the release notes did not.
+- **A local green is not a CI green.** After a push, read the run: `gh run list --limit 3`, then
+  `gh run view --job <id> --log`.
+- **When CI breaks on an innocent diff, diff the runs.** Compare the last green job log against the
+  red one for what each resolved: `Download action repository` SHAs behind moving tags, runner and
+  SDK versions. Read the upstream source at that tag before working around it, rather than inferring
+  from release dates.
 - Explicitly call out what you did NOT verify.

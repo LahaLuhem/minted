@@ -3,12 +3,10 @@ import 'package:minted_constraints/minted_constraints.dart';
 /// A transport-layer port number, `0` to `65535`.
 /// Standard: [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335).
 ///
-/// Parse, don't validate: a port travels beside a host in every connection string, and the bound
-/// goes unchecked until a socket call fails.
+/// Parse, don't validate: the bound otherwise goes unchecked until a socket call fails.
 ///
-/// Exactly [Uint16]'s range, so that type owns the bound. `implements Uint16` lets a `Port` go
-/// wherever a `Uint16` is wanted, never the reverse. Still its own type, because a width is not a
-/// domain: an IPv6 hextet is `0`-`65535` too.
+/// Exactly [Uint16]'s range, so that type owns the bound, and `implements Uint16` lets a `Port` go
+/// wherever a `Uint16` is wanted, never the reverse.
 ///
 /// > [!NOTE]
 /// > Port `0` is accepted, and [isWildcard] says so: it names no destination.

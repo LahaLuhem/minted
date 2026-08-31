@@ -1,10 +1,9 @@
 # APPENDIX — `minted`
 
-Design rationale: the "why" behind decisions that the code and the hard rules alone don't explain.
-This file holds what spans the family; a decision about one type lives with the package that ships
-it, listed under [per-package rationale](#per-package-rationale) below. Hard rules and workflow live
-in [`.ai/AGENTS.md`](./.ai/AGENTS.md); code style in [`CODESTYLE.md`](./CODESTYLE.md). Each heading
-carries an explicit `<a id="…">` anchor; link by anchor, and keep anchors stable across renames.
+Design rationale for what spans the family. A decision about one type lives with the package that
+ships it, listed under [per-package rationale](#per-package-rationale). Hard rules and workflow are
+in [`.ai/AGENTS.md`](./.ai/AGENTS.md), code style in [`CODESTYLE.md`](./CODESTYLE.md). Link by the
+explicit `<a id="…">` anchors and keep them stable across renames.
 
 <!-- TOC start -->
 
@@ -32,8 +31,7 @@ carries an explicit `<a id="…">` anchor; link by anchor, and keep anchors stab
 <a id="per-package-rationale"></a>
 ## Per-package rationale
 
-Decisions about individual types live with the package that ships them, so each one is
-readable on its own and reaches its consumers on pub.dev:
+Each ships in its own tarball, so the rationale reaches whoever is reading the type on pub.dev:
 
 - [`minted`](./packages/minted/APPENDIX.md)
 - [`minted_constraints`](./packages/minted_constraints/APPENDIX.md)

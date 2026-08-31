@@ -13,19 +13,16 @@ import 'failures/uuid_failure.dart';
 /// Standard: [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562), which obsoletes RFC 4122.
 ///
 /// Parse, don't validate: a [Uuid] exists only if it is a well-formed UUID string. The `uuid`
-/// package *generates* UUIDs and hands back a plain `String`; [Uuid] is the value type that
-/// *types* an existing one, so "this is a real UUID" becomes a fact of the type instead of a
-/// `String` every caller re-checks.
+/// package generates them into a `String`; this types one that already exists.
 ///
-/// A UUID carries no checksum, so every structurally well-formed UUID is accepted, including the
-/// [isNil] and [isMax] sentinels and every possible [version] and [variant]. The version and
-/// variant are read back through accessors, never used to reject input: refusing them would reject
-/// values RFC 9562 itself defines as valid.
+/// A UUID carries no checksum, so every structurally well-formed one is accepted, including the
+/// [isNil] and [isMax] sentinels and every possible [version] and [variant]. Those two are read
+/// back through accessors, never used to reject input.
 ///
 /// Normalisation on parse: surrounding whitespace is trimmed, the hex is lower-cased, and an
 /// optional `urn:uuid:` prefix or surrounding `{…}` is stripped, so [value] is always the bare
-/// lowercase canonical form. Because extension-type equality is representation equality, mixed-case,
-/// URN, and brace-wrapped spellings of the same UUID all compare equal. [urn] rebuilds the URN form.
+/// lowercase canonical form and mixed-case, URN and brace-wrapped spellings compare equal. [urn]
+/// rebuilds the URN form.
 ///
 /// {@example /example/minted_identifiers_example.dart#uuid}
 extension type const Uuid._(String value) {

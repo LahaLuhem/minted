@@ -8,15 +8,14 @@ import 'weekday.dart';
 
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.
 ///
-/// The date-only value [DateTime] doesn't give you. A birthday, an invoice date, or a public holiday is a day,
-/// not an instant. Holding one in a [DateTime] drags along an hour, minute, second, and a time zone
-/// the value never had, which is where bugs creep in
-/// (two "equal" dates comparing unequal over a stray time, or a day sliding across a zone boundary).
+/// The date-only value [DateTime] doesn't give you. Held in a [DateTime], a birthday drags along a
+/// time and a zone it never had, so two "equal" dates compare unequal and a day slides across a
+/// zone boundary.
 ///
 /// Parse, don't validate: a [Date] exists only if it is a real calendar date. [parse] and [Date.of]
-/// reject impossible dates (month 13, 30 February, 29 February in a common year) instead of
-/// rolling them over the way [DateTime] does, so any [Date] you hold names a day that genuinely exists.
-/// The canonical form is ISO 8601 `YYYY-MM-DD` ([iso8601]); [year] is held in `0000`-`9999`.
+/// reject the impossible ones (month 13, 30 February, 29 February in a common year) rather than
+/// rolling them over the way [DateTime] does. The canonical form is ISO 8601 `YYYY-MM-DD`
+/// ([iso8601]), and [year] is held in `0000`-`9999`.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
 ///
 /// Ordering is chronological ([compareTo], [isBefore], [isAfter], and `<` / `<=` / `>` / `>=`).

@@ -14,18 +14,14 @@ import 'ip_address.dart';
 /// Standards: [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632) for v4,
 /// [RFC 4291 §2.3](https://www.rfc-editor.org/rfc/rfc4291#section-2.3) for v6.
 ///
-/// Parse, don't validate: firewall rules and allow-lists keep these as strings, and [contains] then
-/// gets hand-rolled as a prefix match on the text, which reads `10.0.0.0/8` as covering `10.1.2.3`
-/// and `100.0.0.1` alike.
+/// Parse, don't validate: [contains] masks bits, where a prefix match on the text reads
+/// `10.0.0.0/8` as covering `100.0.0.1`. [network] is an [IpAddress], not a slice of its own text.
+/// Why: `/APPENDIX.md#compose-from-modelled-parts`.
 ///
 /// > [!IMPORTANT]
-/// > **Host bits must be clear.** `192.168.1.5/24` is refused rather than quietly masked to
-/// > `192.168.1.0/24`, because masking discards an address the caller wrote; the failure offers
-/// > the block they most likely meant. Why: `APPENDIX.md#cidr-value-type`.
-///
-/// Holds an [IpAddress] rather than slicing one back out of its own text, so the network address
-/// cannot be malformed and [contains] cannot be handed something that merely looks like an address.
-/// Why: `/APPENDIX.md#compose-from-modelled-parts`.
+/// > **Host bits must be clear.** `192.168.1.5/24` is refused rather than masked to
+/// > `192.168.1.0/24`, and the failure carries the block most likely meant.
+/// > Why: `APPENDIX.md#cidr-value-type`.
 ///
 /// {@example /example/minted_network_example.dart#cidr}
 @immutable

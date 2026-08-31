@@ -612,37 +612,22 @@ library;
 - **APPENDIX.md is the source of truth for rationale.** Hard rules, pitfalls, and workflow stay
   in `.ai/AGENTS.md` and `.ai/CLAUDE.md`; the "why we do it this way" essays live in
   [`APPENDIX.md`](./APPENDIX.md).
-- **Rationale files split by package, and a decision files with its type.** The root
-  [`APPENDIX.md`](./APPENDIX.md) keeps only what spans the family: parse-don't-validate, the shared
-  rules every type leans on, packaging, tooling. Everything about a specific type lives in its own
-  package's `APPENDIX.md`, which ships in that tarball, so the rationale reaches the people reading
-  the type on pub.dev. A new type's section goes in its package, never at the root.
-- **Cross-file links go reference-style, and a published file links absolutely.** Collect
-  `[label]: url` definitions at the foot of the file and write `[text][label]` inline, so a URL
-  never sets the line width. A package `APPENDIX.md` ships, so anything outside its own directory
-  needs the full `https://github.com/LahaLuhem/minted/blob/main/…` form; a relative path would 404
-  on pub.dev. Root-level docs are never published and stay relative.
-- **In Dart comments, a leading slash means the workspace root.** So
-  `` `/APPENDIX.md#normalise-on-parse` `` is the root file, and a bare
-  `` `APPENDIX.md#hostname-value-type` `` is this package's own. These stay code spans rather than
-  links on purpose: no relative path resolves both on GitHub and in rendered dartdoc, so a pointer
-  a human can follow beats a link that is wrong somewhere.
-- **One layer states the rule, the other argues it, and never both.** AGENTS and this file say what
-  to do in the imperative and link out; APPENDIX carries the argument, the rejected alternatives and
-  the measured costs. A paragraph that makes a case *and then* links to the section making the same
-  case is the smell. **Why:** the copy that isn't the source of truth is the one that goes stale,
-  which is how AGENTS came to call primary constructors an experiment a whole floor bump after they
-  went stable.
-- **A type is documented in its own package's README, not in core's.** `minted`'s README covers the
-  family: install, the shared shape, the failure model, the caveats. Examples and per-type caveats
-  belong to the sibling that ships the type, in one place, so the core page can't drift from seven
-  others at once.
-- **A re-wrapped line must not open with a block marker.** Reflowing prose to the 100-column width
-  can push an asterisk, a hyphen, `>`, `#` or a `1.` to the start of a line, where the space after it
-  makes Markdown read a list, quote or heading instead of the middle of a sentence. The case that
-  bit: `f * 100` wrapped after the `f`, so the continuation rendered as a bullet. Emphasis
-  (`*word*`, no space) is safe. `rumdl` catches it as MD032, one more reason to run the container
-  lints before handing work over.
+- **A decision files with its type.** The root [`APPENDIX.md`](./APPENDIX.md) keeps only what spans
+  the family; everything about one type goes in its package's own `APPENDIX.md`, which ships in that
+  tarball. Same split for READMEs: core's covers the family, a type's belongs to its sibling.
+- **Cross-file links go reference-style, and a published file links absolutely.** `[label]: url`
+  definitions at the foot, `[text][label]` inline, so no URL sets the line width. A package file
+  ships, so anything outside its own directory needs the full
+  `https://github.com/LahaLuhem/minted/blob/main/…` form. Root docs are unpublished and stay
+  relative. In Dart comments a leading slash means the workspace root, and these stay code spans:
+  no relative path resolves both on GitHub and in rendered dartdoc.
+- **One layer states the rule, the other argues it, never both.** AGENTS and this file say what to
+  do and link out. APPENDIX carries the argument and the rejected alternatives. A paragraph that
+  makes a case *and then* links to the section making it is the smell, and the copy that is not the
+  source of truth is the one that goes stale.
+- **A re-wrapped line must not open with a block marker.** An asterisk, hyphen, `>`, `#` or `1.`
+  followed by a space starts a list, quote or heading, so wrapping `f * 100` after the `f` renders a
+  bullet. Emphasis (`*word*`, no space) is safe. `rumdl` catches it as MD032.
 - **Explicit `<a id="…">` anchors** sit above every APPENDIX and CODESTYLE heading. Link via the
   anchor, not the heading text. Anchor stability is load-bearing: when renaming a heading, keep
   the existing anchor, or `rg` the repo and update every caller in the same change.

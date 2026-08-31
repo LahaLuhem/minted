@@ -2,16 +2,15 @@ import 'package:minted/internal.dart';
 
 /// A proportion in hundredths, where `15` is fifteen percent.
 ///
-/// `15` or `0.15` for the same proportion is the bug this deletes: both readings are plausible and
-/// neither is checkable at a call site. [tryFrom] takes the percent, [tryFromFraction] the
-/// fraction, so a caller says which they hold.
+/// `15` or `0.15` for the same proportion is plausible either way and checkable at no call site, so
+/// [tryFrom] takes the percent and [tryFromFraction] the fraction.
 ///
 /// > [!IMPORTANT]
 /// > **Deliberately unbounded.** 250% growth and -12% churn are real values, so the only invariant
 /// > is finiteness. Why: `APPENDIX.md#percentage-constraint-type`.
 ///
 /// Does not implement `double`, unlike its neighbours: [value] is the percent, so
-/// `percentage * 200` would read as fifteen percent of 200 and compute 3000. [of] means it.
+/// `percentage * 200` computes 3000 while reading as fifteen percent of 200. [of] means it.
 ///
 /// [value] is the percent; the string form is `value.toString()`.
 ///

@@ -1,10 +1,8 @@
 # APPENDIX — `minted_identifiers`
 
-Design rationale for the types this package ships: the "why" behind decisions the code and its
-dartdoc alone don't explain. Family-wide rationale (parse-don't-validate, the failure model,
-packaging, the shared rules every type leans on) lives in the [workspace APPENDIX][appendix-md];
-code style in [CODESTYLE.md][codestyle-md]. Each heading carries an explicit `<a id="…">` anchor;
-link by anchor, and keep anchors stable across renames.
+Design rationale for the types this package ships. Family-wide rationale lives in the
+[workspace APPENDIX][appendix-md], code style in [CODESTYLE.md][codestyle-md]. Link by the explicit
+`<a id="…">` anchors and keep them stable across renames.
 
 <!-- TOC start -->
 

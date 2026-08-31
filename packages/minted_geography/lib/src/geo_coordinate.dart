@@ -14,16 +14,14 @@ import 'standards/coordinate_bounds.dart';
 
 /// A point on the Earth's surface: a latitude and a longitude, in decimal degrees.
 ///
-/// Two raw doubles cannot say which is which, so `f(latitude, longitude)` and
-/// `f(longitude, latitude)` compile the same and no range check catches the swap.
+/// Two raw doubles cannot say which is which, and no range check catches the swap.
 ///
 /// Parse, don't validate: a [GeoCoordinate] exists only if [latitude] is within `-90` to `90` and
 /// [longitude] within `-180` to `180`. [parse] reads all three ISO 6709 widths, where the number of
 /// degree digits selects the unit: degrees, degrees-minutes, or degrees-minutes-seconds.
 /// Standard: [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709).
 ///
-/// Two assembly doors, so the range is prevented rather than reported where it can be:
-/// [GeoCoordinate.from] takes a [Latitude] and a [Longitude] and cannot fail, [tryFrom] takes raw
+/// [GeoCoordinate.from] takes a [Latitude] and a [Longitude] and cannot fail. [tryFrom] takes raw
 /// numbers.
 ///
 /// Normalisation on parse: input is trimmed, sexagesimal becomes decimal degrees ([iso6709]),

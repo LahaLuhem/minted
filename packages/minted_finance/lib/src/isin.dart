@@ -19,9 +19,8 @@ import 'standards/iso_country_code.dart';
 /// of its value (`A`=10 … `Z`=35), so an ISIN with letters in its [nsin] weighs more characters
 /// than it shows.
 ///
-/// [prefix] is not required to name a country: `XS` is Euroclear and Clearstream, `EU` is
-/// supranational, and both are as valid as `GB`. [hasCountryPrefix] reports the narrower fact
-/// instead of `parse` refusing what the standard allows.
+/// [prefix] need not name a country: `XS` is Euroclear and Clearstream, `EU` is supranational, and
+/// both are as valid as `GB`. [hasCountryPrefix] reports the narrower fact.
 ///
 /// {@example /example/minted_finance_example.dart#isin}
 extension type const Isin._(String value) {

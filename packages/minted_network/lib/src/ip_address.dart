@@ -17,9 +17,8 @@ import 'failures/ip_address_failure.dart';
 /// [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) for the addresses,
 /// [RFC 5952](https://www.rfc-editor.org/rfc/rfc5952) for the canonical IPv6 text.
 ///
-/// Parse, don't validate: `2001:0DB8::0001` and `2001:db8::1` are one address that a `String`
-/// compares as two, and `InternetAddress` cannot help, being `dart:io` and so absent on the web.
-/// A leading zero is refused rather than read, since it is ambiguous between decimal and octal.
+/// Parse, don't validate: `2001:0DB8::0001` and `2001:db8::1` are one address a `String` compares
+/// as two. A leading zero is refused rather than read, being ambiguous between decimal and octal.
 ///
 /// A v4 and a v6 address are never equal, and neither is converted to the other; [version] reports
 /// which one you hold. An IPv4-mapped address stays v6 and keeps its mixed spelling,

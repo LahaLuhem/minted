@@ -12,16 +12,12 @@ import 'standards/coordinate_bounds.dart';
 /// GeoJSON's `bbox`, whose §5.2 spells the crossing case rather than leaving it to convention.
 ///
 /// Parse, don't validate: `west > east` is not a bug to refuse, it is how §5.2 writes a box across
-/// the antimeridian, so `170,-45,-170,-35` is Fiji rather than most of the planet.
-/// [crossesAntimeridian] reports it and [contains] honours it, which is the bug this type deletes.
+/// the antimeridian, so `170,-45,-170,-35` is Fiji. [crossesAntimeridian] reports it and [contains]
+/// honours it.
 ///
-/// The edges are a [Longitude] and a [Latitude] pair, not two [GeoCoordinate] corners: a coordinate
-/// folds `-180` onto `+180`, one point with two spellings but two distinct edges, and the
-/// whole-world box is written `-180,-90,180,90`. So [from] takes constrained degrees and leaves
-/// only the latitude order to fail, while [tryFrom] takes raw numbers.
-///
-/// A zero-width (`west == east`) or zero-height box is legal and degenerate: it holds its own edge,
-/// not the planet.
+/// The edges are a [Longitude] and a [Latitude] pair rather than two [GeoCoordinate] corners, so
+/// [from] leaves only the latitude order to fail. [tryFrom] takes raw numbers. A zero-width
+/// (`west == east`) or zero-height box is legal, and holds its own edge.
 ///
 /// Normalisation on parse: input is trimmed and one surrounding pair of brackets is dropped.
 ///
