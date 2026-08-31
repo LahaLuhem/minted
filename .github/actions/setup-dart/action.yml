@@ -20,6 +20,11 @@ runs:
     - uses: dart-lang/setup-dart@v1
       with:
         sdk: ${{ inputs.sdk }}
+        # Its matcher path is GITHUB_ACTION_PATH + dart-analyzer.json, and inside a nested composite
+        # that variable holds THIS directory rather than setup-dart's, so registering it fails the
+        # step. The annotations are cosmetic; analyze's exit code is the gate. Re-enable once
+        # https://github.com/dart-lang/setup-dart/issues/198 is fixed.
+        problem-matcher: 'false'
 
     - name: Cache .pub-cache
       uses: actions/cache@v4
