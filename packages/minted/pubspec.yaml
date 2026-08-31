@@ -1,7 +1,7 @@
 name: minted
 description: >-
-  Well-modelled Dart value types (email, IBAN, and more) built on
-  parse-don't-validate, so every instance is guaranteed well-formed. Pure Dart.
+  The shared vocabulary of the minted family: the ParseOutcome and MintedFailure types a parse hands
+  back. The value types themselves live in the minted_* domain packages. Pure Dart.
 version: 3.1.0
 homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
 repository: https://github.com/LahaLuhem/minted
@@ -12,7 +12,6 @@ repository: https://github.com/LahaLuhem/minted
 topics:
   - validation
   - type-safety
-  - identifiers
   - domain-driven-design
   - standards
 

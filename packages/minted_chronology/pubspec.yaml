@@ -3,8 +3,9 @@ description: >-
   Well-modelled Dart value types for calendar dates and durations: Date, Month, Weekday and
   Iso8601Duration. Parse, don't validate. Part of the minted family.
 version: 1.0.2
-homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
-repository: https://github.com/LahaLuhem/minted
+homepage: "https://github.com/LahaLuhem/minted/tree/main/packages/\
+  minted_chronology?tab=readme-ov-file"
+repository: https://github.com/LahaLuhem/minted/tree/main/packages/minted_chronology
 
 topics:
   - validation

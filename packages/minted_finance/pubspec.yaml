@@ -3,8 +3,8 @@ description: >-
   Well-modelled Dart value types for finance: IBAN, BIC, ISIN and payment card numbers, with their
   real check digits. Part of the minted family.
 version: 1.0.2
-homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
-repository: https://github.com/LahaLuhem/minted
+homepage: https://github.com/LahaLuhem/minted/tree/main/packages/minted_finance?tab=readme-ov-file
+repository: https://github.com/LahaLuhem/minted/tree/main/packages/minted_finance
 
 topics:
   - validation

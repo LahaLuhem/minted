@@ -3,8 +3,9 @@ description: >-
   Well-modelled Dart constraint types: primitives carrying a constraint, with no standard defining
   their text form. Part of the minted family.
 version: 1.1.0
-homepage: https://github.com/LahaLuhem/minted?tab=readme-ov-file
-repository: https://github.com/LahaLuhem/minted
+homepage: "https://github.com/LahaLuhem/minted/tree/main/packages/\
+  minted_constraints?tab=readme-ov-file"
+repository: https://github.com/LahaLuhem/minted/tree/main/packages/minted_constraints
 
 topics:
   - validation
