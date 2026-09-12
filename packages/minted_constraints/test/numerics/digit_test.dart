@@ -3,6 +3,18 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import '../support/bdd.dart';
 
+// Each of these three is a const context, so the file failing to build is the assertion: a getter
+// could not stand in any of them.
+const firstThree = <Digit>[.d0, .d1, .d2];
+
+Digit startingAt([Digit start = Digit.d0]) => start;
+
+String nameOf(Digit digit) => switch (digit) {
+  .d0 => 'zero',
+  .d9 => 'nine',
+  _ => 'neither end',
+};
+
 void main() {
   feature('Digit', () {
     // tryFrom takes the numeric value directly; only 0-9 yield a Digit.
@@ -27,6 +39,19 @@ void main() {
     scenario('equal digits are equal, and differing ones are not', () {
       check(Digit.tryFrom(7)).equals(Digit.tryFrom(7));
       check(Digit.tryFrom(7) == Digit.tryFrom(8)).isFalse();
+    });
+
+    scenario('the named constants carry their digit, whichever way one is built', () {
+      check(Digit.d0.value).equals(0);
+      check(Digit.d9.value).equals(9);
+      check(Digit.tryFrom(7)).equals(Digit.d7);
+    });
+
+    scenario('the constants reach const lists, default arguments and case patterns', () {
+      check(firstThree.map((digit) => digit.value)).deepEquals([0, 1, 2]);
+      check(startingAt()).equals(Digit.d0);
+      check(nameOf(Digit.d9)).equals('nine');
+      check(nameOf(Digit.d5)).equals('neither end');
     });
   });
 }
