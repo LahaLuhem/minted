@@ -11,7 +11,7 @@ import 'digit.dart';
 ///
 /// A digits-only identifier (a bank account number, a national phone number, a
 /// SKU) modelled as digits rather than a raw `String`, so letters and other junk
-/// are unrepresentable. It is validated once on construction; after that you
+/// are unrepresentable. It is validated once on construction. After that you
 /// iterate it, index it, or read [asString], without re-checking.
 ///
 /// Backed by a `Uint8List` (one byte per digit, a real `Uint8Array` on the web),

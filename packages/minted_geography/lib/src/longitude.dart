@@ -14,7 +14,7 @@ import 'standards/coordinate_bounds.dart';
 /// `-180` is kept as written: the same meridian as `+180` for a point but a different edge for a
 /// box, so that fold belongs to [GeoCoordinate].
 ///
-/// [value] is the degrees; the string form is `value.toString()`.
+/// [value] is the degrees. The string form is `value.toString()`.
 extension type const Longitude._(double value) implements double {
   /// The [Longitude] of [degrees], or `null` outside `-180` to `180`. A `NaN` is outside, the bound
   /// being written as a positive test.

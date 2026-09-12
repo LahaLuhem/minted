@@ -11,7 +11,7 @@ import 'failures/phone_number_failure.dart';
 ///
 /// Normalisation on parse: the number is resolved to E.164 (`+`, country calling code, national number),
 /// so [value] is comparable and storable. National-format input needs a [tryParse] `region` hint
-/// (ISO 3166-1 alpha-2, e.g. `'GB'`); already-international input (`+…`) parses without one.
+/// (ISO 3166-1 alpha-2, e.g. `'GB'`). Already-international input (`+…`) parses without one.
 ///
 /// {@example /example/minted_contact_example.dart#phone}
 extension type const PhoneNumber._(String value) {
@@ -24,7 +24,8 @@ extension type const PhoneNumber._(String value) {
 
   /// Parses [input] as a phone number, or returns `null` when it is not a valid number.
   ///
-  /// Pass [region] (ISO 3166-1 alpha-2) to resolve national-format input; `+`-international input needs none.
+  /// Pass [region] (ISO 3166-1 alpha-2) to resolve national-format input. `+`-international
+  /// input needs none.
   /// An unknown [region] yields `null`.
   static PhoneNumber? tryParse(String input, {String? region}) =>
       parse(input, region: region).getOrNull();

@@ -32,7 +32,7 @@ extension type const Gtin._(String value) {
   }
 
   /// Parses [input] as a GTIN, or returns `null` when it fails the length, character, or check-digit
-  /// tests. All four lengths are accepted; the result is always fourteen digits.
+  /// tests. All four lengths are accepted. The result is always fourteen digits.
   static Gtin? tryParse(String input) => parse(input).getOrNull();
 
   /// Parses [input] as a GTIN, reporting the [GtinFailure] that says which check failed.
@@ -53,7 +53,7 @@ extension type const Gtin._(String value) {
   String? get gtin8 => _atLength(_length8);
 
   /// The shortest of the four GS1 lengths this number fits, which is [value] when it needs all
-  /// fourteen digits. What a barcode carries; [value] is what a database column should hold.
+  /// fourteen digits. What a barcode carries. [value] is what a database column should hold.
   String get shortestForm => gtin8 ?? gtin12 ?? gtin13 ?? value;
 
   /// The final digit, the GS1 mod-10 check over the other thirteen.

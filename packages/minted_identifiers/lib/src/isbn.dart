@@ -35,7 +35,7 @@ extension type const Isbn._(String value) {
   }
 
   /// Parses [input] as an ISBN, or returns `null` when it fails the length, character, prefix, or
-  /// check-digit tests. Both generations are accepted; the result is always thirteen digits.
+  /// check-digit tests. Both generations are accepted. The result is always thirteen digits.
   static Isbn? tryParse(String input) => parse(input).getOrNull();
 
   /// Parses [input] as an ISBN, reporting the [IsbnFailure] that says which check failed.

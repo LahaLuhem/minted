@@ -123,7 +123,7 @@ final class Iso8601Duration {
   /// This duration as a [Duration], resolved against [from].
   ///
   /// The anchor is required because a month is 28 to 31 days. Calendar components go first,
-  /// clamping the day the way `2026-01-31` plus a month gives `2026-02-28`; a [fraction] on one
+  /// clamping the day the way `2026-01-31` plus a month gives `2026-02-28`. A [fraction] on one
   /// of them scales that component's real length there.
   Duration toDuration({required Date from}) {
     final monthIndex = from.month.value - 1 + years * _monthsPerYear + months;

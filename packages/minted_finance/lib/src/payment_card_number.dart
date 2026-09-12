@@ -18,7 +18,7 @@ import 'failures/payment_card_number_failure.dart';
 /// form compare equal.
 ///
 /// A class rather than an extension type so [toString] can render [masked] instead of [value]: a PAN
-/// in a log line is a leak. The card scheme is reported, never validated; see [cardScheme].
+/// in a log line is a leak. The card scheme is reported, never validated. See [cardScheme].
 ///
 /// {@example /example/minted_finance_example.dart#card}
 @immutable
@@ -98,7 +98,7 @@ final class PaymentCardNumber {
   /// test failure cannot leak the number.
   String get masked => '$_maskGlyphs$last4';
 
-  /// The schemes claiming this number's prefix; see [cardSchemesOf].
+  /// The schemes claiming this number's prefix. See [cardSchemesOf].
   Set<CardScheme> get cardSchemes => cardSchemesOf(value);
 
   /// The single scheme claiming this number, or [CardScheme.unknown] when none does or several do.

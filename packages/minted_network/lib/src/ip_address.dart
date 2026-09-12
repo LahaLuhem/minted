@@ -20,8 +20,8 @@ import 'failures/ip_address_failure.dart';
 /// Parse, don't validate: `2001:0DB8::0001` and `2001:db8::1` are one address a `String` compares
 /// as two. A leading zero is refused rather than read, being ambiguous between decimal and octal.
 ///
-/// A v4 and a v6 address are never equal, and neither is converted to the other; [version] reports
-/// which one you hold. An IPv4-mapped address stays v6 and keeps its mixed spelling,
+/// A v4 and a v6 address are never equal, and neither is converted to the other. [version]
+/// reports which one you hold. An IPv4-mapped address stays v6 and keeps its mixed spelling,
 /// `::ffff:192.0.2.1`, which RFC 5952 §5 asks for on that prefix.
 /// Why: `APPENDIX.md#ip-address-value-type`.
 ///

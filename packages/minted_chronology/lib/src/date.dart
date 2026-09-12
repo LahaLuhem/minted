@@ -52,7 +52,7 @@ final class Date implements Comparable<Date> {
   /// The calendar date of [dateTime], dropping its time-of-day and time zone.
   ///
   /// Fails only when [dateTime]'s year falls outside `0000`-`9999` (an extreme [DateTime] can reach
-  /// beyond it); its month and day are always in range.
+  /// beyond it). Its month and day are always in range.
   static ParseOutcome<DateComponentFailure, Date> fromDateTime(DateTime dateTime) =>
       of(dateTime.year, dateTime.month, dateTime.day);
 
@@ -82,7 +82,7 @@ final class Date implements Comparable<Date> {
   /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
   String get iso8601 => isoDate(year, month.value, day);
 
-  /// The day of the week; [Weekday.value] is the ISO day number, matching [DateTime.weekday].
+  /// The day of the week.
   // DateTime.weekday is always 1-7, so tryFrom cannot return null here.
   Weekday get weekday => Weekday.tryFrom(_utcMidnight.weekday)!;
 

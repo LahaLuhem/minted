@@ -73,8 +73,8 @@ final class Cidr {
     ).getOrThrow();
   }
 
-  /// Whether [address] falls inside this block. A different family is never inside, so a v6 address
-  /// is not in `10.0.0.0/8`; the two do not compare.
+  /// Whether [address] falls inside this block. A different family is never inside, so a v6
+  /// address is not in `10.0.0.0/8`.
   bool contains(IpAddress address) =>
       address.version == network.version && _masked(address, prefixLength) == network;
 
