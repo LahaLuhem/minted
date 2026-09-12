@@ -12,6 +12,8 @@ double asDouble(double value) => value;
 
 String asString(String value) => value;
 
+Uint asUint(Uint value) => value;
+
 void main() {
   feature('the transparent representation', () {
     scenario('a constrained number reads as the number it constrains', () {
@@ -24,6 +26,15 @@ void main() {
       check(digit + 1).equals(8);
       check(digit.toRadixString(2)).equals('111');
       check(<int>[digit, port].reduce((left, right) => left + right)).equals(8087);
+    });
+
+    // NaturalNumber narrows Uint, which narrows int, so it reaches both without a hop through value.
+    scenario('a natural number reads as the Uint it narrows, and as the int under that', () {
+      const natural = NaturalNumber.one;
+
+      check(asUint(natural).value).equals(1);
+      check(asInt(natural)).equals(1);
+      check(natural + 1).equals(2);
     });
 
     // AsciiLetter declares no String of its own: it narrows down to AsciiChar, where it comes from.
