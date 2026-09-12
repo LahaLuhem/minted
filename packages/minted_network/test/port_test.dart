@@ -4,6 +4,9 @@ import 'package:minted_network/minted_network.dart';
 
 import 'support/bdd.dart';
 
+// Const contexts, so the file failing to build is the assertion: these must stay `static const`.
+const wellKnown = <Port>[.wildcard];
+
 void main() {
   feature('Port', () {
     // The expected `.value` doubles as the outcome; null means the input was rejected.
@@ -42,6 +45,8 @@ void main() {
       check(Port.tryFrom(0)!.isWildcard).isTrue();
       check(Port.tryFrom(1)!.isWildcard).isFalse();
       check(Port.tryFrom(65535)!.isWildcard).isFalse();
+      check(Port.wildcard).equals(Port.tryFrom(0)!);
+      check(wellKnown.single.isWildcard).isTrue();
     });
 
     // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a

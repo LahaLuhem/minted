@@ -9,9 +9,10 @@ import 'package:minted_constraints/minted_constraints.dart';
 /// wherever a `Uint16` is wanted, never the reverse.
 ///
 /// > [!NOTE]
-/// > Port `0` is accepted, and [isWildcard] says so: it names no destination.
+/// > Port `0` is accepted, and [isWildcard] says so: it names no destination. [wildcard] is
+/// > that port.
 ///
-/// [value] is the numeric value; the string form is `value.toString()`.
+/// [value] is the numeric value. The string form is `value.toString()`.
 ///
 /// {@example /example/minted_network_example.dart#port}
 extension type const Port._(int value) implements Uint16 {
@@ -27,9 +28,11 @@ extension type const Port._(int value) implements Uint16 {
 
   /// Whether this is port `0`, which asks the OS to pick a free port on `bind`. RFC 6335 gives it no
   /// name of its own, listing it among the reserved edge values.
-  bool get isWildcard => value == _wildcard;
+  bool get isWildcard => value == wildcard;
 
-  static const _wildcard = 0;
+  /// Port `0`, which asks the OS to pick a free port on `bind`.
+  static const wildcard = Port._(0);
+
   static const _systemCeiling = 1023;
   static const _userCeiling = 49151;
 }

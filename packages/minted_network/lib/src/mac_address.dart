@@ -25,6 +25,8 @@ import 'failures/mac_address_failure.dart';
 /// the colon, hyphen, Cisco dot-quad (`0000.5e00.5300`) and bare-hex spellings of one address all
 /// compare equal. [ieee802] and [bareHex] render two of them back; dot-quad is input-only.
 ///
+/// [broadcast] names the all-ones address.
+///
 /// {@example /example/minted_network_example.dart#mac}
 extension type const MacAddress._(String value) {
   /// Parses [input] as a MAC address, or returns `null` unless it is six or eight octets in one
@@ -75,7 +77,10 @@ extension type const MacAddress._(String value) {
 
   /// Whether this is the broadcast address, `ff:ff:ff:ff:ff:ff`, which IEEE 802.3 delivers to every
   /// station on the segment. False for the 64-bit all-ones value, which is no such destination.
-  bool get isBroadcast => value == _broadcast;
+  bool get isBroadcast => value == broadcast.value;
+
+  /// The broadcast address, `ff:ff:ff:ff:ff:ff`, which every station on the segment accepts.
+  static const broadcast = MacAddress._('ff:ff:ff:ff:ff:ff');
 
   /// The IEEE Std 802 hexadecimal representation, `00-00-5E-00-53-00`: hyphen-separated and
   /// upper-case, as the standard writes it and Windows displays it.
@@ -122,5 +127,4 @@ extension type const MacAddress._(String value) {
   static const _prefix24Length = 8;
   static const _individualGroupBit = 0x01;
   static const _universalLocalBit = 0x02;
-  static const _broadcast = 'ff:ff:ff:ff:ff:ff';
 }

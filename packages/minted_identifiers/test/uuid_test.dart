@@ -6,6 +6,10 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 
 import 'support/bdd.dart';
 
+// A const context, so the file failing to build is the assertion: the sentinels must stay
+// `static const` rather than becoming getters.
+const sentinels = <Uuid>[.nil, .max];
+
 void main() {
   feature('Uuid', () {
     // A well-formed UUID round-trips through value (lower-cased, wrappers stripped); null means
@@ -154,6 +158,12 @@ void main() {
       check(max.isNil).isFalse();
       check(ordinary.isNil).isFalse();
       check(ordinary.isMax).isFalse();
+    });
+
+    scenario('the sentinel constants are the values parsing those spellings gives', () {
+      check(Uuid.nil).equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
+      check(Uuid.max).equals(Uuid.tryParse('ffffffff-ffff-ffff-ffff-ffffffffffff')!);
+      check(sentinels.map((sentinel) => sentinel.isNil).toList()).deepEquals([true, false]);
     });
 
     scenario('equal UUIDs are equal, whichever spelling they are built from', () {
