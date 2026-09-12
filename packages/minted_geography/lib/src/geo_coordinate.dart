@@ -99,7 +99,7 @@ final class GeoCoordinate {
 
   /// The display form, degrees-minutes-seconds with a hemisphere letter
   /// (e.g. `'48°51′27.72″N 2°17′42″E'`). Seconds are rounded to two decimals, so it is for display,
-  /// not storage; [iso6709] is what round-trips.
+  /// not storage. [iso6709] is what round-trips.
   String get sexagesimal =>
       '${_sexagesimalField(latitude, 'N', 'S')} ${_sexagesimalField(longitude, 'E', 'W')}';
 

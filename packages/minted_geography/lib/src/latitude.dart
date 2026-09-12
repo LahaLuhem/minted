@@ -11,7 +11,7 @@ import 'standards/coordinate_bounds.dart';
 /// A door taking one cannot be handed an impossible degree, nor a [Longitude]: the swap is the bug
 /// no range check catches, and this is where it stops compiling. A negative zero is cleared.
 ///
-/// [value] is the degrees; the string form is `value.toString()`.
+/// [value] is the degrees. The string form is `value.toString()`.
 extension type const Latitude._(double value) implements double {
   /// The [Latitude] of [degrees], or `null` outside `-90` to `90`. A `NaN` is outside, the bound
   /// being written as a positive test.

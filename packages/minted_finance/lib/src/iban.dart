@@ -14,9 +14,9 @@ import 'failures/iban_failure.dart';
 /// An IBAN: validated for structure, country-specific length, and the mod-97 checksum (via `iban_validator`).
 /// Standard: [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number).
 ///
-/// Normalisation on parse: whitespace stripped and upper-cased, so [value] is the compact electronic form
-/// and [formatted] rebuilds the grouped paper form.
-/// Country coverage tracks `iban_validator`; see the README caveat.
+/// Normalisation on parse: whitespace stripped and upper-cased, so [value] is the compact electronic
+/// form and [formatted] rebuilds the grouped paper form.
+/// Country coverage tracks `iban_validator`. See the README caveat.
 ///
 /// {@example /example/minted_finance_example.dart#iban}
 extension type const Iban._(String value) {
@@ -51,8 +51,7 @@ extension type const Iban._(String value) {
   // Alpha-2 codes are letters, and parse refuses an unknown country.
   AsciiLetters get countryCode => .tryFrom(value.substring(0, _checkDigitsStart))!;
 
-  /// The two check digits (positions 3 and 4) as a `(first, second)` record of
-  /// [Digit]s; read `.first.value` / `.second.value` for their numeric values.
+  /// The two check digits (positions 3 and 4) as a `(first, second)` record of [Digit]s.
   // Both positions are digits in a validated IBAN, so tryParse cannot return null here.
   ({Digit first, Digit second}) get checkDigits => (
     first: .tryFrom(decimalValue(value.codeUnitAt(_checkDigitsStart)))!,

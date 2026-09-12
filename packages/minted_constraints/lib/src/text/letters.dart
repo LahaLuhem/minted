@@ -4,7 +4,7 @@ import 'letter.dart';
 
 /// One or more [Letter]s, in any script.
 ///
-/// Over `String` rather than an `Iterable<Letter>`, because text is what this is; [letters] hands
+/// Over `String` rather than an `Iterable<Letter>`, because text is what this is. [letters] hands
 /// back the elements.
 ///
 /// {@example /example/minted_constraints_example.dart#plurals}

@@ -54,8 +54,8 @@ sealed class ParseOutcome<F extends MintedFailure, T> {
     ParseFailure(:final reason) => throw MintedFormatError.from(reason),
   };
 
-  /// This outcome with a successful value passed through [transform]; a failure is carried across
-  /// untouched.
+  /// This outcome with a successful value passed through [transform]. A failure is carried
+  /// across untouched.
   ParseOutcome<F, U> map<U>(U Function(T value) transform) => switch (this) {
     ParseSuccess(:final value) => ParseSuccess(transform(value)),
     ParseFailure(:final reason) => ParseFailure(reason),

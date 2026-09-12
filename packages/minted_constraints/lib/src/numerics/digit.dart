@@ -9,7 +9,7 @@ library;
 /// check digits and a phone number's national number both read as [Digit]s,
 /// over in `minted_finance` and `minted_contact`.
 ///
-/// [value] is the numeric value (`0`-`9`); the string form is `value.toString()`
+/// [value] is the numeric value (`0`-`9`). The string form is `value.toString()`
 /// or interpolation (`'$digit'`). No parse door: decimal notation is how numbers
 /// are written, not a published format a `Digit` could validate against.
 ///

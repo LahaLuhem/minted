@@ -10,8 +10,8 @@ const _tenGlyph = 'X'; // ten has to fit in one character, so both standards spe
 /// assumed already separator-free. `0`-`9`, or `X` where the value is ten.
 ///
 /// Weights descend from one above [bodyDigits]'s length down to 2, which is what lets one implementation
-/// serve ISO 2108's ISBN-10 (nine digits, leading weight 10) and ISO 3297's ISSN (seven, leading weight 8).
-/// Unlike the mod-10 family, mod-11 catches every transposition.
+/// serve ISO 2108's ISBN-10 (nine digits, leading weight 10) and ISO 3297's ISSN (seven, leading weight
+/// 8). Unlike the mod-10 family, mod-11 catches every transposition.
 String mod11CheckCharacter(String bodyDigits) {
   final leadingWeight = bodyDigits.length + _weightAboveLength;
   final weightedSum = bodyDigits.codeUnits

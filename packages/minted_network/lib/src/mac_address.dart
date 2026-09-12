@@ -9,7 +9,7 @@ import 'package:minted/minted.dart';
 import 'failures/mac_address_failure.dart';
 
 /// A MAC address: the 48- or 64-bit address identifying an IEEE 802 network interface, e.g.
-/// `00:00:5e:00:53:00`. IEEE Std 802 defines the address itself;
+/// `00:00:5e:00:53:00`. IEEE Std 802 defines the address itself.
 /// [RFC 9542](https://www.rfc-editor.org/rfc/rfc9542) fixes the terminology and reserves the
 /// documentation ranges.
 ///
@@ -23,7 +23,7 @@ import 'failures/mac_address_failure.dart';
 ///
 /// Normalisation on parse: whitespace trimmed, hex lower-cased, separator rewritten to a colon, so
 /// the colon, hyphen, Cisco dot-quad (`0000.5e00.5300`) and bare-hex spellings of one address all
-/// compare equal. [ieee802] and [bareHex] render two of them back; dot-quad is input-only.
+/// compare equal. [ieee802] and [bareHex] render two of them back. Dot-quad is input-only.
 ///
 /// [broadcast] names the all-ones address.
 ///

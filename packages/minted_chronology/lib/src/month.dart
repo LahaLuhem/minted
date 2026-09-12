@@ -13,7 +13,7 @@ import 'failures/month_failure.dart';
 /// knowledge that hangs off the month: [daysIn] gives the month's length in a given year, counting
 /// February as 29 days in a leap year.
 ///
-/// [value] is the month number (`1`-`12`); the [january] to [december] constants name a month
+/// [value] is the month number (`1`-`12`). The [january] to [december] constants name a month
 /// without the number.
 extension type const Month._(int value) {
   /// Parses [input] as a month number `1`-`12` (`'7'` or `'07'`), or returns `null` unless it is

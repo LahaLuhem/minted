@@ -8,8 +8,8 @@ import 'char.dart';
 /// A "one character" slot typed as `String` accepts none and accepts twenty. Where only a letter
 /// belongs, use [AsciiLetter].
 ///
-/// Control characters are admitted rather than refused, a delimiter often being one; [isControl]
-/// reports the narrower shape.
+/// Control characters are admitted rather than refused, a delimiter often being one.
+/// [isControl] reports the narrower shape.
 ///
 /// {@example /example/minted_constraints_example.dart#ascii}
 extension type const AsciiChar._(String value) implements Char, String {

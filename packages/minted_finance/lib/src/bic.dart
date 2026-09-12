@@ -16,7 +16,7 @@ import 'standards/iso_country_code.dart';
 /// [bic8] rebuilds the short form.
 ///
 /// ISO 9362 carries no checksum, so any well-formed code is accepted, held by an institution or not.
-/// It also permits an [institutionCode] and [locationCode] wider than SWIFT itself issues;
+/// It also permits an [institutionCode] and [locationCode] wider than SWIFT itself issues.
 /// [isSwiftRegistrable] reports that narrower shape rather than rejecting what the standard allows.
 ///
 /// {@example /example/minted_finance_example.dart#bic}
@@ -79,7 +79,7 @@ extension type const Bic._(String value) {
   AsciiAlphanumerics get bic8 => .tryFrom(value.substring(0, _branchCodeStart))!;
 
   /// Whether SWIFT could have issued this one. ISO 9362 allows digits in [institutionCode] and
-  /// puts no restriction on [locationCode]; the registration authority still uses neither freedom.
+  /// puts no restriction on [locationCode]. The registration authority still uses neither freedom.
   bool get isSwiftRegistrable => _swiftRegistrationForm.hasMatch(value);
 
   // The eight-character form addresses the primary office, which is what XXX spells at eleven.

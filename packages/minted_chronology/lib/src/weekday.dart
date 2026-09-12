@@ -5,8 +5,8 @@ import 'package:collection/collection.dart';
 
 /// A day of the week, Monday to Sunday. [Date.weekday] returns one.
 ///
-/// [value] is the ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday];
-/// read it rather than the inherited `index`, which is `0`-based and so one less.
+/// [value] is the ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
+/// Read it rather than the inherited `index`, which is `0`-based and so one less.
 ///
 /// Ordering ([compareTo], `<` / `<=` / `>` / `>=`) runs Monday to Sunday, the ISO week. That is a
 /// convention, not arithmetic: weeks starting Sunday or Saturday order the same days differently.
@@ -48,7 +48,7 @@ enum Weekday implements Comparable<Weekday> {
   /// The previous day of the week, wrapping from Monday round to Sunday.
   Weekday get previous => minusDays(1);
 
-  /// The weekday [days] days after this one, wrapping round the week; total for any [days].
+  /// The weekday [days] days after this one, wrapping round the week. Total for any [days].
   Weekday plusDays(int days) => values[(index + days) % _daysInWeek];
 
   /// The weekday [days] days before this one, wrapping round the week.

@@ -13,7 +13,7 @@ import 'failures/uuid_failure.dart';
 /// Standard: [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562), which obsoletes RFC 4122.
 ///
 /// Parse, don't validate: a [Uuid] exists only if it is a well-formed UUID string. The `uuid`
-/// package generates them into a `String`; this types one that already exists.
+/// package generates them into a `String`. This types one that already exists.
 ///
 /// A UUID carries no checksum, so every structurally well-formed one is accepted, including the
 /// [isNil] and [isMax] sentinels and every possible [version] and [variant]. Those two are read
@@ -58,7 +58,7 @@ extension type const Uuid._(String value) {
   /// The UUID version, `0`-`15`: the 4-bit version field (the first hex digit of the third group).
   ///
   /// RFC 9562 defines `1` (Gregorian time), `2` (DCE security), `3` (name-based, MD5), `4` (random),
-  /// `5` (name-based, SHA-1), `6` (reordered time), `7` (Unix-epoch time), and `8` (custom); `0` and
+  /// `5` (name-based, SHA-1), `6` (reordered time), `7` (Unix-epoch time), and `8` (custom). `0` and
   /// `9`-`15` are unused or reserved. Left as an `int` rather than an enum because it is a raw 4-bit
   /// field with reserved ranges an enum could not name honestly.
   int get version => int.parse(value[_versionIndex], radix: hexRadix);
@@ -133,17 +133,17 @@ extension type const Uuid._(String value) {
 /// The variant of a [Uuid]: which layout family it belongs to, named by the variant bits (the first
 /// hex digit of the fourth group). See [RFC 9562 §4.1](https://www.rfc-editor.org/rfc/rfc9562#section-4.1).
 enum UuidVariant {
-  /// Reserved for NCS (Network Computing System) backward compatibility; variant bits `0xxx`. The
+  /// Reserved for NCS (Network Computing System) backward compatibility. Variant bits `0xxx`. The
   /// [Uuid.isNil] sentinel falls here.
   ncs,
 
-  /// The layout defined by RFC 9562 (and RFC 4122 before it); variant bits `10xx`. The variant of
+  /// The layout defined by RFC 9562 (and RFC 4122 before it). Variant bits `10xx`. The variant of
   /// essentially every UUID in practice.
   rfc9562,
 
-  /// Reserved for Microsoft backward compatibility; variant bits `110x`.
+  /// Reserved for Microsoft backward compatibility. Variant bits `110x`.
   microsoft,
 
-  /// Reserved for future definition; variant bits `111x`. The [Uuid.isMax] sentinel falls here.
+  /// Reserved for future definition. Variant bits `111x`. The [Uuid.isMax] sentinel falls here.
   future,
 }

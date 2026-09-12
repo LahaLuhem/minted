@@ -20,8 +20,8 @@ const hexDigitsPerByte = 2;
 
 /// The bytes [hex] spells, two digits per byte.
 ///
-/// Assumes an even number of hex digits, which is what a validated hex value holds; an odd count is
-/// a caller bug and throws where the last pair runs off the end.
+/// Assumes an even number of hex digits, which is what a validated hex value holds. An odd count
+/// is a caller bug, and throws where the last pair runs off the end.
 Uint8List hexBytes(String hex) => .fromList([
   for (var offset = 0; offset < hex.length; offset += hexDigitsPerByte)
     int.parse(hex.substring(offset, offset + hexDigitsPerByte), radix: hexRadix),
