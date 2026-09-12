@@ -8,6 +8,22 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import '../support/bdd.dart';
 
+// A const list, so the file failing to build is the assertion: the named ends must stay
+// `static const` rather than drifting back to getters.
+const ends = <int>[
+  Uint2.u0,
+  Uint2.max,
+  Uint4.u0,
+  Uint4.max,
+  Uint8.zero,
+  Uint8.max,
+  Uint16.zero,
+  Uint16.max,
+  Uint32.zero,
+  Uint32.max,
+  Uint.zero,
+];
+
 void main() {
   feature('the fixed-width unsigned integers', () {
     // One table over all five widths. Each row carries the bit count, the ceiling it implies, and a
@@ -34,5 +50,10 @@ void main() {
         check(example.valueFrom(-1)).isNull();
       },
     );
+
+    // tryFrom reads these, so a wrong end here is a wrong range there.
+    scenario('every width names its ends, and Uint its floor', () {
+      check(ends).deepEquals([0, 3, 0, 15, 0, 255, 0, 65535, 0, 4294967295, 0]);
+    });
   });
 }

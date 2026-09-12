@@ -273,8 +273,13 @@ to `december`. They are also permanent public API, so:
 > it is a **landmark** the type or its standard already names. Everything else goes through
 > `tryFrom`.
 
-- **Closed domain: all or none.** `Month` names twelve or it names none. A partial set ("the handy
-  ones") is worse than none, because the gap is invisible at the call site.
+- **Closed domain: all or none, and only where the whole domain is small enough to read.** `Month`
+  names twelve or it names none. A partial set ("the handy ones") is worse than none, because the
+  gap is invisible at the call site. `Uint2` and `Uint4` enumerate their 4 and 16. `Uint8` upward
+  do not, since 256 names nobody types is noise, so they name their two ends instead.
+- **Name it what the domain calls it.** A month is called January, so `Month.january`. A digit is
+  called `3`, so `Digit.d3`, the prefix there only because an identifier cannot start with a digit.
+  A numeral suffix also carries its own value, so a `n0` holding `1` cannot happen.
 - **Landmark: already named, not merely useful.** A bound the type is defined by, or a value its
   standard gives a term. The mechanical test is an existing `bool get isX` with no writing half
   (`Probability.isImpossible`, `Uuid.isNil`, `MacAddress.isBroadcast`, `Port.isWildcard`).
@@ -285,8 +290,8 @@ to `december`. They are also permanent public API, so:
 - Each constant carries a `///` line, and the type's dartdoc points at the set as `Month`'s does.
 
 **Why:** the demand is real (five public members across three packages hand back a `Digit`, so
-callers compare it against literals), and so is the creep. The two clauses are what keep out
-`Uint8.zero, .one, .two` and `AsciiLetter.a` through `.z`.
+callers compare it against literals), and so is the creep. The two clauses are what keep out a
+65,536-member `Uint16` and `AsciiLetter.a` through `.z`.
 
 **Constraint types are not value types either.** The rule that separates them is about standards,
 not numbers:

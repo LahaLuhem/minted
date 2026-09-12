@@ -10,7 +10,7 @@ library;
 /// > counts `0` among the naturals, school arithmetic starts at `1`. This type takes the second
 /// > reading.
 ///
-/// [value] is the numeric value; the string form is `value.toString()`.
+/// [value] is the numeric value. The string form is `value.toString()`.
 ///
 /// [one] is the floor. There is no ceiling.
 ///

@@ -12,7 +12,7 @@ import 'package:minted/internal.dart';
 /// Does not implement `double`, unlike its neighbours: [value] is the percent, so
 /// `percentage * 200` computes 3000 while reading as fifteen percent of 200. [of] means it.
 ///
-/// [value] is the percent; the string form is `value.toString()`.
+/// [value] is the percent. The string form is `value.toString()`.
 ///
 /// {@example /example/minted_constraints_example.dart#percentage}
 extension type const Percentage._(double value) {
