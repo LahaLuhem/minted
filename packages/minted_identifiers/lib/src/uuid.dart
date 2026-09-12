@@ -17,7 +17,7 @@ import 'failures/uuid_failure.dart';
 ///
 /// A UUID carries no checksum, so every structurally well-formed one is accepted, including the
 /// [isNil] and [isMax] sentinels and every possible [version] and [variant]. Those two are read
-/// back through accessors, never used to reject input.
+/// back through accessors, never used to reject input. [nil] and [max] name those two.
 ///
 /// Normalisation on parse: surrounding whitespace is trimmed, the hex is lower-cased, and an
 /// optional `urn:uuid:` prefix or surrounding `{…}` is stripped, so [value] is always the bare
@@ -78,11 +78,17 @@ extension type const Uuid._(String value) {
 
   /// Whether this is the Nil UUID, `00000000-0000-0000-0000-000000000000`: the all-zero sentinel
   /// RFC 9562 uses to mean "no UUID here".
-  bool get isNil => value == _nil;
+  bool get isNil => value == nil.value;
 
   /// Whether this is the Max UUID, `ffffffff-ffff-ffff-ffff-ffffffffffff`: the all-ones sentinel
   /// RFC 9562 uses as an upper bound (e.g. "end of a UUID range").
-  bool get isMax => value == _max;
+  bool get isMax => value == max.value;
+
+  /// The Nil UUID, RFC 9562's all-zero "no UUID here" sentinel.
+  static const nil = Uuid._('00000000-0000-0000-0000-000000000000');
+
+  /// The Max UUID, RFC 9562's all-ones sentinel for the top of a UUID range.
+  static const max = Uuid._('ffffffff-ffff-ffff-ffff-ffffffffffff');
 
   /// The URN form, `urn:uuid:<value>`, for use where a UUID is written as a Uniform Resource Name.
   String get urn => '$_urnPrefix$value';
@@ -119,8 +125,6 @@ extension type const Uuid._(String value) {
   static const _urnPrefix = 'urn:uuid:';
   static const _braceOpen = '{';
   static const _braceClose = '}';
-  static const _nil = '00000000-0000-0000-0000-000000000000';
-  static const _max = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
   static const _rfc9562VariantFloor = 0x8;
   static const _microsoftVariantFloor = 0xc;
   static const _futureVariantFloor = 0xe;

@@ -6,6 +6,9 @@ import 'package:minted_network/minted_network.dart';
 
 import 'support/bdd.dart';
 
+// A const context, so the file failing to build is the assertion: it must stay `static const`.
+const allOnes = <MacAddress>[.broadcast];
+
 void main() {
   feature('MacAddress', () {
     // The canonical form doubles as the expected outcome; null means rejected. Vectors are the
@@ -176,6 +179,8 @@ void main() {
       check(MacAddress.tryParse('33:33:00:00:00:01')!.isBroadcast).isFalse();
       check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff:ff:ff')!.isBroadcast).isFalse();
       check(MacAddress.tryParse('00:00:5e:00:53:00')!.isBroadcast).isFalse();
+      check(MacAddress.broadcast).equals(MacAddress.tryParse('ff:ff:ff:ff:ff:ff')!);
+      check(allOnes.single.isBroadcast).isTrue();
     });
 
     scenario('equal addresses are equal, whichever notation they are built from', () {
