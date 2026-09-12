@@ -40,6 +40,15 @@ extension type const Probability._(double value) implements double {
   /// Whether the event must happen: exactly `1`.
   bool get isCertain => value == _certain;
 
+  /// The event cannot happen: exactly `0`.
+  static const impossible = Probability._(_impossible);
+
+  /// An even chance, the coin toss: exactly `0.5`.
+  static const evenChance = Probability._(0.5);
+
+  /// The event must happen: exactly `1`.
+  static const certain = Probability._(_certain);
+
   static const double _impossible = 0;
   static const double _certain = 1;
 }
