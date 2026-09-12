@@ -9,10 +9,15 @@ library;
 /// > Despite the borrowed name this constrains the sign, not a machine width: nothing wraps,
 /// > and there is no upper bound.
 ///
-/// [value] is the numeric value; the string form is `value.toString()`.
+/// [value] is the numeric value. The string form is `value.toString()`.
+///
+/// [zero] is the floor. There is no ceiling.
 ///
 /// {@example /example/minted_constraints_example.dart#quantities}
 extension type const Uint._(int value) implements int {
   /// The [Uint] with numeric [value], or `null` when it is negative.
-  static Uint? tryFrom(int value) => value < 0 ? null : ._(value);
+  static Uint? tryFrom(int value) => value < zero ? null : ._(value);
+
+  /// The lowest value: `0`.
+  static const zero = Uint._(0);
 }

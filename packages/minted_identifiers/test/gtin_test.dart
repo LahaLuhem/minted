@@ -106,8 +106,8 @@ void main() {
     );
 
     scenario('a GTIN exposes its check digit', () {
-      check(Gtin.tryParse('4006381333931')!.checkDigit).equals(Digit.tryFrom(1)!);
-      check(Gtin.tryParse('96385074')!.checkDigit).equals(Digit.tryFrom(4)!);
+      check(Gtin.tryParse('4006381333931')!.checkDigit).equals(Digit.d1);
+      check(Gtin.tryParse('96385074')!.checkDigit).equals(Digit.d4);
     });
 
     scenarioOutline<({String input, GtinFailure failure})>(

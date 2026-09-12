@@ -33,7 +33,7 @@ void main() {
     );
 
     scenario('a Digit renders as its bare character', () {
-      check(Digit.tryFrom(7)!.toString()).equals('7');
+      check(Digit.d7.toString()).equals('7');
     });
 
     scenario('equal digits are equal, and differing ones are not', () {

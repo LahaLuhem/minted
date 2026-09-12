@@ -52,7 +52,7 @@ void main() {
       check(parsedImei.tac.asString).equals('35209900');
       check(parsedImei.reportingBodyIdentifier.asString).equals('35');
       check(parsedImei.serialNumber.asString).equals('176148');
-      check(parsedImei.checkDigit).equals(Digit.tryFrom(1)!);
+      check(parsedImei.checkDigit).equals(Digit.d1);
       // The parts feed straight back in, which is what the Digits typing buys.
       check(
         Imei.fromComponents(

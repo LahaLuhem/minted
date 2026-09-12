@@ -12,7 +12,7 @@ import 'percentage.dart';
 /// > an empirical `0/n` lands on the first legitimately. [isImpossible] and [isCertain] report them
 /// > rather than the range refusing them. Why: `APPENDIX.md#probability-constraint-type`.
 ///
-/// [value] is the numeric value; the string form is `value.toString()`.
+/// [value] is the numeric value. The string form is `value.toString()`.
 ///
 /// {@example /example/minted_constraints_example.dart#probability}
 extension type const Probability._(double value) implements double {

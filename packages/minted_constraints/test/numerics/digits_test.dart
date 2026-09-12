@@ -25,7 +25,7 @@ void main() {
 
       check(parsedDigits.length).equals(1);
       check(parsedDigits.isEmpty).isFalse();
-      check(parsedDigits[0]).equals(Digit.tryFrom(7)!);
+      check(parsedDigits[0]).equals(Digit.d7);
     });
 
     scenario('an empty sequence has no digits', () {
@@ -39,16 +39,14 @@ void main() {
     scenario('indexing and iteration agree', () {
       final parsedDigits = Digits.tryFrom([9, 0, 5])!;
 
-      check(parsedDigits[0]).equals(Digit.tryFrom(9)!);
-      check(parsedDigits[2]).equals(Digit.tryFrom(5)!);
-      check(parsedDigits.toList())
-          .deepEquals([Digit.tryFrom(9), Digit.tryFrom(0), Digit.tryFrom(5)]);
+      check(parsedDigits[0]).equals(Digit.d9);
+      check(parsedDigits[2]).equals(Digit.d5);
+      check(parsedDigits.toList()).deepEquals(const <Digit>[.d9, .d0, .d5]);
     });
 
     scenario('a Digits is an Iterable of its Digits', () {
       check(Digits.tryFrom([9, 0, 5])!.map((digit) => digit.value).toList()).deepEquals([9, 0, 5]);
-      check(Digits.tryFrom([1, 2, 3, 2, 1])!.where((digit) => digit == Digit.tryFrom(2)!).length)
-          .equals(2);
+      check(Digits.tryFrom([1, 2, 3, 2, 1])!.where((digit) => digit == Digit.d2).length).equals(2);
     });
 
     scenario('equal sequences are equal by value and hash', () {
@@ -61,8 +59,7 @@ void main() {
     });
 
     scenario('of builds a sequence from already-valid Digits', () {
-      check(Digits.of([Digit.tryFrom(9)!, Digit.tryFrom(0)!, Digit.tryFrom(5)!]).asString)
-          .equals('905');
+      check(Digits.of(const <Digit>[.d9, .d0, .d5]).asString).equals('905');
     });
 
     scenario('a Digits renders its digits, not Instance of', () {

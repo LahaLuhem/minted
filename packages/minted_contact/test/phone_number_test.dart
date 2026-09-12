@@ -44,7 +44,7 @@ void main() {
 
       check(parsedPhone.countryCode).equals('33');
       check(parsedPhone.nationalNumber.length).equals(9);
-      check(parsedPhone.nationalNumber.first).equals(Digit.tryFrom(6)!);
+      check(parsedPhone.nationalNumber.first).equals(Digit.d6);
       check(parsedPhone.nationalNumber.asString).equals('655570576');
     });
 

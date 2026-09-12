@@ -15,7 +15,7 @@ String asString(String value) => value;
 void main() {
   feature('the transparent representation', () {
     scenario('a constrained number reads as the number it constrains', () {
-      final digit = Digit.tryFrom(7)!;
+      const digit = Digit.d7;
       final port = Uint16.tryFrom(8080)!;
 
       check(asInt(digit)).equals(7);
