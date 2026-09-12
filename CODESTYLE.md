@@ -262,6 +262,32 @@ both ways: a class or extension type without both doors fails, and so does an en
 either. Rationale:
 [rationale][apx-weekday-enum].
 
+**Named constants are an optional addition to that surface, and the bar is high.** Dart has no
+fallible const constructor, so a private `._` leaves `tryFrom(...)!` as the only way to name a
+known-good value, and that is unusable in a const context: a const collection, a default parameter
+value, a `case` pattern. Named constants are the only fix, which is why `Month` declares `january`
+to `december`. They are also permanent public API, so:
+
+> A type declares constants when consumers need to name an instance at compile time. A value
+> qualifies two ways: it is a member of a **closed domain** the type enumerates, all or none, or
+> it is a **landmark** the type or its standard already names. Everything else goes through
+> `tryFrom`.
+
+- **Closed domain: all or none.** `Month` names twelve or it names none. A partial set ("the handy
+  ones") is worse than none, because the gap is invisible at the call site.
+- **Landmark: already named, not merely useful.** A bound the type is defined by, or a value its
+  standard gives a term. The mechanical test is an existing `bool get isX` with no writing half
+  (`Probability.isImpossible`, `Uuid.isNil`, `MacAddress.isBroadcast`, `Port.isWildcard`).
+- **`static const`, never a getter.** `static Digit get zero => const ._(0)` makes the *object*
+  const and the *member* not, so it fails in every const context the rule exists to serve.
+- **A class-backed type plays only if its representation is const-constructible.** `Digits` is
+  `Uint8List`-backed and that has no const constructor, so it gets none.
+- Each constant carries a `///` line, and the type's dartdoc points at the set as `Month`'s does.
+
+**Why:** the demand is real (five public members across three packages hand back a `Digit`, so
+callers compare it against literals), and so is the creep. The two clauses are what keep out
+`Uint8.zero, .one, .two` and `AsciiLetter.a` through `.z`.
+
 **Constraint types are not value types either.** The rule that separates them is about standards,
 not numbers:
 
