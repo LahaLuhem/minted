@@ -1,6 +1,7 @@
 ## [Unreleased]
 ### Changed
 - Rename the network invalid-character failures
+- Give the value types named constants, under a stated rule
 
 ## [3.1.0] - 2026-08-18
 ### Changed
