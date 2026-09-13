@@ -17,18 +17,22 @@ permissions:
   contents: read
 
 jobs:
-  # The per-package jobs fan out over this, so adding a package needs no edit here. Private
-  # members are excluded by the same `publish_to: none` test the release tool uses: they have no
-  # pub.dev surface to check.
+  # The per-package jobs fan out over these, so adding a package needs no edit here. `publishable`
+  # drops `publish_to: none` members, which have no pub.dev surface to document or release. `all`
+  # keeps them, because a private package's dependencies are still worth checking.
   members:
     name: List workspace members
     runs-on: ubuntu-latest
     outputs:
       publishable: ${{ steps.list.outputs.publishable }}
+      all: ${{ steps.list.outputs.all }}
     steps:
       - uses: actions/checkout@v7
       - id: list
         run: |
+          all="$(for dir in packages/*/; do
+            printf '%s\n' "${dir%/}"
+          done | jq -Rsc 'split("\n") | map(select(length > 0))')"
           publishable="$(for dir in packages/*/; do
             grep -qE '^publish_to: *none' "${dir}pubspec.yaml" && continue
             printf '%s\n' "${dir%/}"
@@ -37,6 +41,7 @@ jobs:
             echo '::error::No publishable package found under packages/.'
             exit 1
           fi
+          echo "all=$all" >> "$GITHUB_OUTPUT"
           echo "publishable=$publishable" >> "$GITHUB_OUTPUT"
 
   analyze:
@@ -74,19 +79,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: ${{ fromJSON(needs.members.outputs.publishable) }}
+        package: ${{ fromJSON(needs.members.outputs.all) }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-dart
-      # Published 5.0.5 caps `analyzer` below the 14.1.0 this package needs to parse. Until
-      # Workiva/dependency_validator#181 releases, run its branch; merging deletes it and fails here
-      - run: |
-          dart pub global activate --source git \
-            https://github.com/Workiva/dependency_validator \
-            --git-ref dependabot/pub/major-0f75c2771b
+      - run: dart pub get
       # Per-package: it reads one pubspec and the imports resolved against it.
-      - working-directory: ${{ matrix.package }}
-        run: dart pub global run dependency_validator
+      - run: dart run dependency_validator -C ${{ matrix.package }}
 
   test:
     name: Unit tests + coverage

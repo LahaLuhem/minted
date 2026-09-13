@@ -1,5 +1,5 @@
 # Never published: it holds the suites that sweep across packages, which belong to no single one.
-# `publish_to: none` is also what keeps it out of the dartdoc, deps and publish jobs.
+# `publish_to: none` is also what keeps it out of the dartdoc and publish jobs.
 name: minted_conformance
 description: >-
   Cross-package conformance and failure-contract suites for the minted family. Private to the
@@ -11,8 +11,10 @@ environment:
 
 resolution: workspace
 
-# Depends on every published member, because the suites here sweep across all of them.
-dependencies:
+# All dev: there is no lib/, so every sibling is used only by the suites that sweep across them.
+dev_dependencies:
+  analyzer: ^14.1.0
+  checks: ^0.3.1
   minted: ^3.1.0
   minted_chronology: ^1.0.2
   minted_contact: ^1.0.2
@@ -20,8 +22,4 @@ dependencies:
   minted_geography: ^1.1.0
   minted_identifiers: ^1.0.1
   minted_network: ^1.1.0
-
-dev_dependencies:
-  analyzer: ^14.1.0
-  checks: ^0.3.1
   test: ^1.31.2
