@@ -48,7 +48,7 @@ melos:
       # second line. Same shape as `coverage` below. `-x integration` keeps the release-flow test
       # out: it wants git, cider and Docker. Run it with `melos run test-release-flow`.
       run: |
-        dart run melos exec --fail-fast --dir-exists=test -- dart test
+        dart run melos exec --fail-fast --group-logs --dir-exists=test -- dart test
         dart test -x integration
 
     test-release-flow:
@@ -67,7 +67,8 @@ melos:
       # minted_conformance and exercises every sibling's failures/, and minted_conformance has no
       # lib at all. That scoping cost 18 points of coverage when the split landed.
       run: |
-        dart run melos exec --fail-fast --dir-exists=test -- dart test --coverage=coverage
+        dart run melos exec --fail-fast --group-logs --dir-exists=test -- \
+          dart test --coverage=coverage
         mkdir -p coverage
         dart pub global run coverage:format_coverage --lcov --check-ignore \
           --in=packages --report-on="$(ls -d packages/*/lib | paste -sd, -)" \
