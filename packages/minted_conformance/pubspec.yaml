@@ -13,8 +13,8 @@ resolution: workspace
 
 # All dev: there is no lib/, so every sibling is used only by the suites that sweep across them.
 dev_dependencies:
-  analyzer: ^14.1.0
-  checks: ^0.3.1
+  analyzer: ^14.4.0
+  checks: ^0.3.2
   minted: ^3.1.0
   minted_chronology: ^1.0.2
   minted_contact: ^1.0.2
@@ -22,4 +22,4 @@ dev_dependencies:
   minted_geography: ^1.1.0
   minted_identifiers: ^1.0.1
   minted_network: ^1.1.0
-  test: ^1.31.2
+  test: ^1.32.0
