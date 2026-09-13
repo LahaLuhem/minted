@@ -53,6 +53,79 @@ void main() {
 
       check(chosen).isNull();
     });
+
+    // The picker passes showSearch, and the cases above only ever press arrows. These drive the
+    // other half.
+    group('search', () {
+      const options = ['minted', 'minted_finance', 'minted_network'];
+
+      test('a typed query narrows to its match', () {
+        final chosen = withScript(
+          TerminalScript.build(
+            (script) => script
+              ..text('finance')
+              ..enter(),
+          ),
+          (ui) => ui.choosePackage(options),
+        );
+
+        check(chosen).equals('minted_finance');
+      });
+
+      test('a query nothing matches is no choice', () {
+        final chosen = withScript(
+          TerminalScript.build(
+            (script) => script
+              ..text('cobol')
+              ..enter(),
+          ),
+          (ui) => ui.choosePackage(options),
+        );
+
+        check(chosen).isNull();
+      });
+
+      test('Backspace edits the query rather than cancelling the prompt', () {
+        final chosen = withScript(
+          TerminalScript.build(
+            (script) => script
+              ..text('financex')
+              ..backspace()
+              ..enter(),
+          ),
+          (ui) => ui.choosePackage(options),
+        );
+
+        check(chosen).equals('minted_finance');
+      });
+
+      // Both are literal query text, not controls. `minted docs` is not a real package: it is here
+      // so a typed space has something to match.
+      test('Space and slash type into the query', () {
+        final spaced = withScript(
+          TerminalScript.build(
+            (script) => script
+              ..text('minted')
+              ..space()
+              ..text('docs')
+              ..enter(),
+          ),
+          (ui) => ui.choosePackage(['minted', 'minted docs']),
+        );
+        final slashed = withScript(
+          TerminalScript.build(
+            (script) => script
+              ..text('minted')
+              ..key(KeyEventType.slash)
+              ..enter(),
+          ),
+          (ui) => ui.choosePackage(['minted', 'minted docs']),
+        );
+
+        check(spaced).equals('minted docs');
+        check(slashed).isNull();
+      });
+    });
   });
 
   group('chooseBump', () {
