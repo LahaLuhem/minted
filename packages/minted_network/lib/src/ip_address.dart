@@ -87,6 +87,7 @@ extension type const IpAddress._(String value) {
       version == .v4 ? .from(IPv4Address(value).toInt()) : IPv6Address(value).toBigInt();
 
   // Single addresses only. A range is a block, so it belongs on `Cidr`, not here.
+  //=================================== UNSPECIFIED & LOOPBACK ===================================//
 
   /// "This host on this network", and what a socket binds to for every interface. RFC 1122 §3.2.1.3.
   static const unspecifiedV4 = IpAddress._('0.0.0.0');
@@ -99,6 +100,8 @@ extension type const IpAddress._(String value) {
 
   /// The v6 loopback, a single address where v4 reserves a whole block. RFC 4291 §2.5.3.
   static const loopbackV6 = IpAddress._('::1');
+
+  //========================================= BROADCAST ==========================================//
 
   /// Every host on this link, which routers never forward. RFC 919, RFC 922.
   static const limitedBroadcast = IpAddress._('255.255.255.255');
