@@ -4,8 +4,32 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
-// Const contexts, so the file failing to build is the assertion: these must stay `static const`.
-const wellKnown = <Port>[.wildcard];
+// A const context, so the file failing to build is the assertion: these must stay `static const`.
+// Every declared constant belongs here. A const Set, so a duplicate is a compile error.
+const namedPorts = <Port>{
+  .wildcard,
+  .ftpData,
+  .ftp,
+  .ssh,
+  .telnet,
+  .smtp,
+  .dns,
+  .http,
+  .pop3,
+  .ntp,
+  .imap,
+  .https,
+  .mysql,
+  .postgresql,
+  .redis,
+  .httpAlt,
+  .mongodb,
+  .nodeDev,
+  .flask,
+  .django,
+  .httpsAlt,
+  .phpFpm,
+};
 
 void main() {
   feature('Port', () {
@@ -41,20 +65,25 @@ void main() {
       },
     );
 
+    scenario('every named constant is one tryFrom accepts', () {
+      for (final port in namedPorts) {
+        check(Port.tryFrom(port.value), because: 'named constant $port').equals(port);
+      }
+    });
+
+    // Through the door rather than off the constant, since isWildcard is defined as equality to it.
     scenario('only port 0 is the wildcard', () {
       check(Port.tryFrom(0)!.isWildcard).isTrue();
       check(Port.tryFrom(1)!.isWildcard).isFalse();
       check(Port.tryFrom(65535)!.isWildcard).isFalse();
-      check(Port.wildcard).equals(Port.tryFrom(0)!);
-      check(wellKnown.single.isWildcard).isTrue();
     });
 
     // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a runtime
-    // test cannot express.
+    // test cannot express, and neither can the const-ness this assignment needs.
     scenario('a Port goes where a Uint16 is wanted', () {
-      final Uint16 widened = Port.tryFrom(443)!;
+      const Uint16 widened = Port.https;
 
-      check(widened).equals(Uint16.tryFrom(443)!);
+      check(widened).equals(Uint16.tryFrom(Port.https.value)!);
     });
 
     scenario('a Port renders as its bare number', () {

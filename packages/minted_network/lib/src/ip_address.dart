@@ -86,70 +86,22 @@ extension type const IpAddress._(String value) {
   BigInt get _packed =>
       version == .v4 ? .from(IPv4Address(value).toInt()) : IPv6Address(value).toBigInt();
 
-  /////////////////////////// RFC 791 / RFC 4291 — Unspecified & Loopback ///////////////////////////
-  /// RFC 791 §3.2
+  // Single addresses only. A range is a block, so it belongs on `Cidr`, not here.
+
+  /// "This host on this network", and what a socket binds to for every interface. RFC 1122 §3.2.1.3.
   static const unspecifiedV4 = IpAddress._('0.0.0.0');
 
-  /// RFC 1122 §3.2.1.3
+  /// The v4 loopback, one address out of the whole `127.0.0.0/8` that carries it. RFC 1122 §3.2.1.3.
   static const loopbackV4 = IpAddress._('127.0.0.1');
 
-  /// RFC 4291 §2.5.2
+  /// The v6 spelling of [unspecifiedV4]. RFC 4291 §2.5.2.
   static const unspecifiedV6 = IpAddress._('::');
 
-  /// RFC 4291 §2.5.3
+  /// The v6 loopback, a single address where v4 reserves a whole block. RFC 4291 §2.5.3.
   static const loopbackV6 = IpAddress._('::1');
 
-  /////////////////////////////////////// RFC 791 — Broadcast ///////////////////////////////////////
-  /// RFC 919, RFC 922
+  /// Every host on this link, which routers never forward. RFC 919, RFC 922.
   static const limitedBroadcast = IpAddress._('255.255.255.255');
-
-  ////////////////////////////////// RFC 1918 — Private-Use (IPv4) //////////////////////////////////
-  static const private10 = IpAddress._('10.0.0.0/8');
-  static const private172 = IpAddress._('172.16.0.0/12');
-  static const private192 = IpAddress._('192.168.0.0/16');
-
-  ////////////////////////////// RFC 6598 — Shared Address Space (CGN) //////////////////////////////
-  static const sharedAddress = IpAddress._('100.64.0.0/10');
-
-  ////////////////////////////////// RFC 3927 — Link-Local (IPv4) //////////////////////////////////
-  static const linkLocalV4 = IpAddress._('169.254.0.0/16');
-
-  ///////////////////////////////// RFC 5737 — Documentation (IPv4) /////////////////////////////////
-  /// TEST-NET-1
-  static const docV4_1 = IpAddress._('192.0.2.0/24');
-
-  /// TEST-NET-2
-  static const docV4_2 = IpAddress._('198.51.100.0/24');
-
-  /// TEST-NET-3
-  static const docV4_3 = IpAddress._('203.0.113.0/24');
-
-  ///////////////////////////// RFC 1112 / RFC 3171 — Multicast (IPv4) /////////////////////////////
-  static const multicastV4 = IpAddress._('224.0.0.0/4');
-
-  //////////////////////////////// RFC 4291 — IPv6 Special Addresses ////////////////////////////////
-  /// RFC 4291 §2.5.5.2
-  static const v4MappedV6 = IpAddress._('::ffff:0:0/96');
-
-  /// RFC 4291 §2.5.5.1 (deprecated)
-  static const v4CompatibleV6 = IpAddress._('::/96');
-
-  ///////////////////////////////// RFC 4193 — Unique Local (IPv6) /////////////////////////////////
-  static const uniqueLocalV6 = IpAddress._('fc00::/7');
-
-  ////////////////////////////////// RFC 4291 — Link-Local (IPv6) //////////////////////////////////
-  static const linkLocalV6 = IpAddress._('fe80::/10');
-
-  /////////////////////////////////// RFC 4291 — Multicast (IPv6) ///////////////////////////////////
-  static const multicastV6 = IpAddress._('ff00::/8');
-
-  ///////////////////////////////// RFC 3849 — Documentation (IPv6) /////////////////////////////////
-  static const docV6 = IpAddress._('2001:db8::/32');
-
-  /////////////////////////////// RFC 5952 — Canonical Text Sentinels ///////////////////////////////
-  static const textUnspecifiedV6 = IpAddress._('::');
-  static const textLoopbackV6 = IpAddress._('::1');
-  static const textV4MappedPrefix = IpAddress._('::ffff:0:0/96');
 }
 
 /// Which family an [IpAddress] belongs to.

@@ -93,54 +93,50 @@ extension type const MacAddress._(String value) {
   bool _firstOctetHas(int bitMask) =>
       int.parse(value.substring(0, hexDigitsPerByte), radix: hexRadix) & bitMask != 0;
 
-  /////////////////////////// IEEE Std 802.3 — Broadcast / Null sentinels ///////////////////////////
+  // IEEE Std 802.3 sentinels.
+
+  /// Names no interface. IEEE Std 802.3 calls it the null address.
   static const allZeros = MacAddress._('00:00:00:00:00:00');
+
+  /// Every station on the link, which [isBroadcast] tests for.
   static const broadcast = MacAddress._('ff:ff:ff:ff:ff:ff');
 
-  /////////////////////// RFC 1112 / RFC 2464 — IP multicast mapping prefixes ///////////////////////
-  /// 01:00:5e:00:00:00/24
-  static const ipv4MulticastPrefix = MacAddress._('01:00:5e');
+  // The IANA OUI, 00-00-5E and its 01-00-5E multicast twin, which RFC 9542 §2.1 splits into blocks
+  // of 256. Each name is a block's first address, so it is a landmark rather than a membership test.
 
-  /// 33:33:00:00:00:00/16
-  static const ipv6MulticastPrefix = MacAddress._('33:33');
-
-  //////////////// RFC 9542 — IANA OUI (00-00-5E) reserved and documentation blocks ////////////////
-  static const ianaOui = MacAddress._('00:00:5e');
-  static const ianaOuiMulticast = MacAddress._('01:00:5e');
-
-  /// /24, IESG Ratification
+  /// Reserved, handed out only on IESG ratification.
   static const ianaReserved = MacAddress._('00:00:5e:00:00:00');
 
-  /// /24, unicast docs
+  /// The virtual router address, last octet the VRID. RFC 5798 §7.3, IPv4 flavour.
+  static const vrrp = MacAddress._('00:00:5e:00:01:00');
+
+  /// Unicast documentation.
   static const ianaDocumentation = MacAddress._('00:00:5e:00:53:00');
 
-  /// /24, multicast docs
+  /// Multicast documentation.
   static const ianaDocMulticast = MacAddress._('01:00:5e:90:10:00');
 
-  /////////////////////////////////// RFC 5798 — VRRP virtual MAC ///////////////////////////////////
-  /// /24
-  static const vrrp = '00:00:5e:00:01:00';
+  // IEEE Std 802.1D / 802.1Q group addresses, which bridges consume rather than forward.
 
-  /////////////////// IEEE Std 802.1D / 802.1Q — Bridge reserved group addresses ///////////////////
-  /// Spanning Tree BPDUs
+  /// Spanning Tree BPDUs, and the nearest customer bridge.
   static const stpBridgeGroup = MacAddress._('01:80:c2:00:00:00');
 
-  /// IEEE MAC-specific control
+  /// MAC-specific control, so PAUSE frames.
   static const macControlGroup = MacAddress._('01:80:c2:00:00:01');
 
-  /// 802.3 Slow Protocols (LACP, etc.)
+  /// Slow Protocols: LACP, link OAM.
   static const slowProtocols = MacAddress._('01:80:c2:00:00:02');
 
-  /// 802.1X PAE, 802.1AE
+  /// The nearest non-TPMR bridge, which 802.1X PAE and 802.1AE address.
   static const nearestNonTpmr = MacAddress._('01:80:c2:00:00:03');
 
-  /// Provider Bridge group
+  /// The provider bridge group.
   static const providerBridge = MacAddress._('01:80:c2:00:00:08');
 
-  /// MVRP
+  /// MVRP, the provider bridge flavour.
   static const providerMvrp = MacAddress._('01:80:c2:00:00:0d');
 
-  /// 802.1AS, 802.1X
+  /// The nearest bridge, which LLDP and 802.1AS address.
   static const nearestBridge = MacAddress._('01:80:c2:00:00:0e');
 }
 

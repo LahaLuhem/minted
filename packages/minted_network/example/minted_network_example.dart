@@ -13,6 +13,7 @@ void main() {
   print(mac.isLocallyAdministered); // false  (the U/L bit, read back rather than gating the parse)
   print(MacAddress.tryParse('0000.5e00.5300') == mac); // true (Cisco dot-quad, same address)
   print(MacAddress.tryParse('0:0:5e:0:53:0')); // null (omitted leading zeros aren't a MAC address)
+  print(mac == MacAddress.ianaDocumentation); // true (RFC 9542's documentation address, named)
   // #endregion
 
   // Enforces what `Uri` waves through: RFC 1123's grammar and both length limits.
@@ -67,11 +68,13 @@ void main() {
 
   // Exactly a `Uint16`'s range, so that type owns the bound. The RFC 6335 band is read back.
   // #region port
-  final port = Port.tryFrom(8080)!;
-  print(port.value); // 8080
-  print(port.range); // PortRange.user
-  print(Port.tryFrom(443)!.range); // PortRange.system  (well-known)
-  print(Port.tryFrom(0)!.isWildcard); // true  (bind(0) asks the OS for a free port)
+  print(Port.httpAlt.value); // 8080
+  print(Port.httpAlt.range); // PortRange.user
+  print(Port.https.range); // PortRange.system  (well-known)
+  print(Port.wildcard.isWildcard); // true  (bind(0) asks the OS for a free port)
   print(Port.tryFrom(65536)); // null (one past the 16-bit ceiling)
+  // A named constant is const, so it reaches where `Port.tryFrom(443)!` cannot.
+  const allowed = <Port>[.https, .httpAlt];
+  print(allowed.map((allowedPort) => allowedPort.value)); // (443, 8080)
   // #endregion
 }
