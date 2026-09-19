@@ -23,11 +23,58 @@ extension type const Port._(int value) implements Uint16 {
   /// Whether this is [wildcard].
   bool get isWildcard => value == wildcard;
 
-  /// Port `0`, which asks the OS to pick a free port on `bind`.
-  static const wildcard = Port._(0);
-
   static const _systemCeiling = 1023;
   static const _userCeiling = 49151;
+
+  ///////////////////////////////////////////// SYSTEM /////////////////////////////////////////////
+
+  /// Port `0`, which asks the OS to pick a free port on `bind`.
+  static const wildcard = Port._(0);
+  static const ftpData = Port._(20);
+  static const ftp = Port._(21);
+
+  /// Secure Shell. RFC 4253.
+  static const ssh = Port._(22);
+
+  static const telnet = Port._(23);
+  static const smtp = Port._(25);
+  static const dns = Port._(53);
+
+  /// Default HTTP port. RFC 9110.
+  static const http = Port._(80);
+
+  static const pop3 = Port._(110);
+  static const ntp = Port._(123);
+  static const imap = Port._(143);
+
+  /// HTTP over TLS. RFC 9110.
+  static const https = Port._(443);
+
+  ////////////////////////////////////////////// USER //////////////////////////////////////////////
+  /// HTTP alternate. Officially registered with IANA.
+  static const httpAlt = Port._(8080);
+
+  static const mysql = Port._(3306);
+  static const postgresql = Port._(5432);
+  static const redis = Port._(6379);
+
+  /// IANA-registered as `pcsync-https`, but widely used as HTTPS-alt.
+  static const httpsAlt = Port._(8443);
+
+  //////////////////////////////////////////// CONVENTION ///////////////////////////////////////////
+  static const nodeDev = Port._(3000);
+
+  /// Flask default. No standard.
+  static const flask = Port._(5000);
+
+  /// Django default. No standard.
+  static const django = Port._(8000);
+
+  /// PHP-FPM default. No standard.
+  static const phpFpm = Port._(9000);
+
+  /// MongoDB default. No IANA registration for MongoDB.
+  static const mongodb = Port._(27017);
 }
 
 /// Which RFC 6335 range a [Port] falls in.
