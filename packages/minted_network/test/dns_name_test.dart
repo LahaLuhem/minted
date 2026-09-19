@@ -1,7 +1,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted_network/minted_network.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 void main() {
   feature('DnsName', () {

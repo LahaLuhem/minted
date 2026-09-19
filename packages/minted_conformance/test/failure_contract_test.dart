@@ -13,7 +13,7 @@ import 'package:minted_geography/minted_geography.dart';
 import 'package:minted_identifiers/minted_identifiers.dart';
 import 'package:minted_network/minted_network.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 void main() {
   feature('the failure contract', () {

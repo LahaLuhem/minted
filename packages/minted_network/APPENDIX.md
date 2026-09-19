@@ -202,7 +202,7 @@ pads it.
 
 **One type for both families, with the family reported.** Same call as
 [`MacAddress`](#mac-address-value-type) makes for its 2 widths: one type, never converted, a
-getter saying which you hold, and the 2 never equal. 2 types would let the compiler refuse
+getter saying which you hold, and the two never equal. Two types would let the compiler refuse
 `v4Network.contains(v6Address)`, which one type can only answer `false` at runtime. That is the
 accepted cost of not tripling the surface, and it is documented where it bites rather than left to
 be discovered.
@@ -278,7 +278,7 @@ on the prefix *is* accepted and folds to the plain number, unlike a leading zero
 `/024` carries none of the octal ambiguity that makes `010` dangerous in an octet.
 
 **A family mismatch answers `false` rather than refusing to compile.** That is the accepted cost of
-[one address type for both families](#ip-address-value-type). 2 types would have let the compiler
+[one address type for both families](#ip-address-value-type). Two types would have let the compiler
 reject `v4Block.contains(v6Address)` outright, where one type can only answer at runtime.
 Documented on `contains` rather than left to be discovered.
 

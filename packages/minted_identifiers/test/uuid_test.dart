@@ -4,7 +4,7 @@ import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 import 'package:minted_identifiers/minted_identifiers.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 // A const context, so the file failing to build is the assertion: the sentinels must stay `static const`
 // rather than becoming getters.

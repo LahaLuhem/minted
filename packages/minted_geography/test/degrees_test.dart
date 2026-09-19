@@ -1,7 +1,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted_geography/minted_geography.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 void main() {
   feature('Latitude and Longitude', () {

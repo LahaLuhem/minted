@@ -2,7 +2,7 @@ import 'package:characters/characters.dart';
 import 'package:checks/checks.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 // Passing a constrained value to these is the assertion: each call is a type error unless the type implements
 // what it constrains.

@@ -2,7 +2,7 @@ import 'package:checks/checks.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_network/minted_network.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 // Const contexts, so the file failing to build is the assertion: these must stay `static const`.
 const wellKnown = <Port>[.wildcard];

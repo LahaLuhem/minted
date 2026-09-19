@@ -1,7 +1,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 
-import '../support/bdd.dart';
+import '../../../../test/support/bdd.dart';
 
 void main() {
   feature('Letters', () {
