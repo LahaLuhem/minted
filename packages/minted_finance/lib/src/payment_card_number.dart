@@ -9,6 +9,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/payment_card_number_failure.dart';
 
+part 'helpers/payment_card_number_helpers.dart';
+
 /// A payment card number: the ISO/IEC 7812 primary account number (PAN). Credit, debit, prepaid
 /// and gift cards all share the numbering scheme.
 /// Standard: [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number).
@@ -109,79 +111,27 @@ final class PaymentCardNumber {
   @override
   String toString() => 'PaymentCardNumber($masked)';
 
-  static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
+  // The test PANs Stripe publishes. A convention: ISO/IEC 7812 reserves no test range.
 
-  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
-  // thing gets named.
-  static PaymentCardNumberFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length < _minLength || compactInput.length > _maxLength =>
-      PaymentCardNumberWrongLength(compactInput.length),
-    _ when !digitsOnly.hasMatch(compactInput) => const PaymentCardNumberInvalidCharacters(),
-    _ when !_checksumHolds(compactInput) => const PaymentCardNumberChecksumFailed(),
-    _ => null,
-  };
+  /// Visa.
+  static const testVisa = PaymentCardNumber._('4242424242424242');
 
-  static bool _checksumHolds(String compactInput) =>
-      compactInput.endsWith(luhnCheckDigit(compactInput.substring(0, compactInput.length - 1)));
+  /// Mastercard.
+  static const testMastercard = PaymentCardNumber._('5555555555554444');
 
-  // Only ranges no other known network contests, so a contested one reads as unknown rather than as
-  // a confident wrong answer. Why the full registry stays out: APPENDIX.md#payment-card-number-value-type.
-  static const _schemeRanges = <_SchemeRange>{
-    (scheme: .visa, digits: 1, from: 4, to: 4),
-    (scheme: .mastercard, digits: 2, from: 51, to: 55),
-    (scheme: .mastercard, digits: 4, from: 2221, to: 2720),
-    (scheme: .americanExpress, digits: 2, from: 34, to: 34),
-    (scheme: .americanExpress, digits: 2, from: 37, to: 37),
-    (scheme: .jcb, digits: 4, from: 3528, to: 3589),
-    (scheme: .dinersClub, digits: 2, from: 30, to: 30),
-    (scheme: .dinersClub, digits: 2, from: 36, to: 36),
-    (scheme: .dinersClub, digits: 2, from: 38, to: 39),
-    (scheme: .discover, digits: 4, from: 6011, to: 6011),
-    (scheme: .discover, digits: 3, from: 644, to: 649),
-    (scheme: .discover, digits: 6, from: 622126, to: 622925),
-    (scheme: .unionPay, digits: 2, from: 62, to: 62),
-  };
+  /// American Express, 15 digits rather than 16.
+  static const testAmericanExpress = PaymentCardNumber._('378282246310005');
 
-  static const _minLength = 8;
-  static const _maxLength = 19;
-  static const _iin6Length = 6;
-  static const _iin8Length = 8;
-  static const _last4Length = 4;
-  static const _maskGlyphs = '••••';
+  /// Discover.
+  static const testDiscover = PaymentCardNumber._('6011111111111117');
+
+  /// Diners Club, 14 digits.
+  static const testDinersClub = PaymentCardNumber._('3056930009020004');
+
+  /// JCB.
+  static const testJcb = PaymentCardNumber._('3566002020360505');
+
+  /// UnionPay.
+  static const testUnionPay = PaymentCardNumber._('6200000000000005');
 }
 
-// One scheme's inclusive prefix range: that many leading digits read as a number. A scheme with several
-// ranges gets a row each, and the result set dedupes them.
-typedef _SchemeRange = ({CardScheme scheme, int digits, int from, int to});
-
-/// The card scheme (network) a [PaymentCardNumber]'s prefix belongs to.
-///
-/// Reported, never validated. ISO/IEC 7812 doesn't assign these ranges, the registry drifts, and some
-/// ranges are contested, so this sits outside the parse guarantee.
-enum CardScheme {
-  /// Visa: `4`.
-  visa,
-
-  /// Mastercard: `51`-`55` and `2221`-`2720`.
-  mastercard,
-
-  /// American Express: `34` and `37`.
-  americanExpress,
-
-  /// JCB: `3528`-`3589`.
-  jcb,
-
-  /// Diners Club International: `30`, `36`, `38` and `39`. Its US and Canada `55` range routes as [mastercard],
-  /// so it reads as one.
-  dinersClub,
-
-  /// Discover: `6011`, `644`-`649`, and the `622126`-`622925` UnionPay co-brand.
-  discover,
-
-  /// China UnionPay: `62`.
-  unionPay,
-
-  /// No listed scheme claims the prefix, or several do. [PaymentCardNumber.cardSchemes] separates those
-  /// 2.
-  unknown,
-}

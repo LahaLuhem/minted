@@ -53,14 +53,14 @@ bic == Bic.tryParse('DEUTDEFFXXX');  // true
 Bic.tryParse('DEUTZZFF');         // null: ZZ is not a country
 
 // PaymentCardNumber masks itself, so a stray log line can't leak the number:
-final card = PaymentCardNumber.tryParse('4111 1111 1111 1111')!;
-'$card';          // 'PaymentCardNumber(••••1111)'
-card.value;       // '4111111111111111'   (the only member that hands the number back)
+final card = PaymentCardNumber.tryParse('4242 4242 4242 4242')!;
+'$card';          // 'PaymentCardNumber(••••4242)'
+card.value;       // '4242424242424242'   (the only member that hands the number back)
 card.cardScheme;  // CardScheme.visa   (read off the prefix, never validated)
 
 // the scheme also reads from partial input, so a form can show the brand while you type:
 PaymentCardNumber.cardSchemesOf('4');             // {CardScheme.visa}
-PaymentCardNumber.tryParse('4111111111111112');   // null: fails the Luhn check
+PaymentCardNumber.tryParse('4242424242424243');   // null: fails the Luhn check
 
 // Isin runs Luhn over the number with each letter expanded to two digits:
 final isin = Isin.tryParse('au0000xvgza3')!;
@@ -77,12 +77,15 @@ The runnable version is the
 The values documentation reaches for, as `const`, so they go where a `tryParse(...)!` can't.
 
 ```dart
-Iban.example.formatted;    // 'GB82 WEST 1234 5698 7654 32'
-Bic.exampleDe.bic8.value;  // 'BANKDEFF'
+Iban.example.formatted;                 // 'GB82 WEST 1234 5698 7654 32'
+Bic.exampleDe.bic8.value;               // 'BANKDEFF'
+Isin.example.value;                     // 'US0000000002'
+PaymentCardNumber.testVisa.cardScheme;  // CardScheme.visa
 ```
 
-> **Habits, not standards.** No IBAN or BIC is reserved for documentation. These are the ones the
-> examples use, and neither `WEST` nor `BANK` names a real institution.
+> **Habits, not standards.** Nothing here is reserved for documentation. `WEST` and `BANK` name no
+> real institution, an all-zero NSIN is the nearest an ISIN gets to naming nothing, and the PANs are
+> the ones every processor publishes for testing.
 
 ## One shape, every type
 

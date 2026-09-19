@@ -5,6 +5,8 @@ import 'package:minted_finance/minted_finance.dart';
 
 import '../../../test/support/bdd.dart';
 
+const namedIsins = <Isin>{.example, .exampleInternational};
+
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
 
@@ -217,6 +219,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsinWrongLength(11));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final isin in namedIsins) {
+        check(Isin.tryParse(isin.value)?.value, because: 'named constant $isin').equals(isin.value);
+      }
     });
   });
 }

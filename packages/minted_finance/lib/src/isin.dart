@@ -9,6 +9,8 @@ import 'encoding/alphanumeric_values.dart';
 import 'failures/isin_failure.dart';
 import 'standards/iso_country_code.dart';
 
+part 'helpers/isin_helpers.dart';
+
 /// An ISIN (International Securities Identification Number).
 /// Standard: [ISO 6166](https://www.iso.org/standard/78502.html).
 ///
@@ -64,29 +66,11 @@ extension type const Isin._(String value) {
   // A validated ISIN ends in a digit, so tryFrom cannot return null.
   Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
-  static String _withCheckDigit(String body) =>
-      '$body${luhnCheckDigit(expandedAlphanumerics(body))}';
+  // ISO 6166 defines no test ISIN, so an all-zero NSIN is the nearest thing.
 
-  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
-  // thing gets named.
-  static IsinFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length != _length => IsinWrongLength(compactInput.length),
-    _ when !_isinForm.hasMatch(compactInput) => const IsinInvalidCharacters(),
-    _ when !_prefixForm.hasMatch(compactInput) => IsinInvalidPrefix(
-      compactInput.substring(0, _prefixLength),
-    ),
-    _ when !_checksumHolds(compactInput) => const IsinChecksumFailed(),
-    _ => null,
-  };
+  /// A US example.
+  static const example = Isin._('US0000000002');
 
-  static bool _checksumHolds(String compactInput) => compactInput.endsWith(
-    luhnCheckDigit(expandedAlphanumerics(compactInput.substring(0, _checkDigitIndex))),
-  );
-
-  static final _isinForm = RegExp(r'^[A-Z0-9]+$');
-  static final _prefixForm = RegExp('^[A-Z]{$_prefixLength}');
-
-  static const _length = 12;
-  static const _prefixLength = 2;
-  static const _checkDigitIndex = 11;
+  /// An international one, under the Euroclear and Clearstream prefix rather than a country.
+  static const exampleInternational = Isin._('XS0000000009');
 }

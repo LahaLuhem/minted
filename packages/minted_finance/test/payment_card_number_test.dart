@@ -6,6 +6,17 @@ import 'package:minted_finance/minted_finance.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
+// Keyed by scheme, so the pairing each constant claims is the thing under test.
+const namedCards = <CardScheme, PaymentCardNumber>{
+  .visa: .testVisa,
+  .mastercard: .testMastercard,
+  .americanExpress: .testAmericanExpress,
+  .discover: .testDiscover,
+  .dinersClub: .testDinersClub,
+  .jcb: .testJcb,
+  .unionPay: .testUnionPay,
+};
+
 void main() {
   feature('PaymentCardNumber', () {
     // The compact form doubles as the expected outcome: a String means "accepted and normalised to this",
@@ -14,8 +25,9 @@ void main() {
     scenarioOutline<({String input, String? canonical})>(
       'tryParse normalises accepted input and rejects input that fails a check',
       examples: {
-        'a Visa test number': (input: '4111111111111111', canonical: '4111111111111111'),
-        'a second Visa test number': (input: '4012888888881881', canonical: '4012888888881881'),
+        'a Visa test number': (input: '4242424242424242', canonical: '4242424242424242'),
+        'a second Visa test number': (input: '4111111111111111', canonical: '4111111111111111'),
+        'a third Visa test number': (input: '4012888888881881', canonical: '4012888888881881'),
         'a Mastercard test number': (input: '5555555555554444', canonical: '5555555555554444'),
         'a second Mastercard test number': (
           input: '5105105105105100',
@@ -32,9 +44,11 @@ void main() {
         ),
         'a Discover test number': (input: '6011111111111117', canonical: '6011111111111117'),
         'a second Discover test number': (input: '6011000990139424', canonical: '6011000990139424'),
-        'a JCB test number': (input: '3530111333300000', canonical: '3530111333300000'),
-        'a Diners Club test number': (input: '30569309025904', canonical: '30569309025904'),
-        'a second Diners Club test number': (input: '38520000023237', canonical: '38520000023237'),
+        'a JCB test number': (input: '3566002020360505', canonical: '3566002020360505'),
+        'a second JCB test number': (input: '3530111333300000', canonical: '3530111333300000'),
+        'a Diners Club test number': (input: '3056930009020004', canonical: '3056930009020004'),
+        'a second Diners Club test number': (input: '30569309025904', canonical: '30569309025904'),
+        'a third Diners Club test number': (input: '38520000023237', canonical: '38520000023237'),
         'a UnionPay test number': (input: '6200000000000005', canonical: '6200000000000005'),
         // ISO/IEC 7812-1 Annex B's worked example: 1789372997 takes the check digit 4.
         'the Luhn example from the standard itself': (
@@ -42,16 +56,16 @@ void main() {
           canonical: '17893729974',
         ),
         'cards are printed in groups, so spaces arrive with them': (
-          input: '4111 1111 1111 1111',
-          canonical: '4111111111111111',
+          input: '4242 4242 4242 4242',
+          canonical: '4242424242424242',
         ),
         'hyphenated input is compacted too': (
-          input: '4111-1111-1111-1111',
-          canonical: '4111111111111111',
+          input: '4242-4242-4242-4242',
+          canonical: '4242424242424242',
         ),
         'surrounding whitespace is stripped': (
-          input: '  4111111111111111  ',
-          canonical: '4111111111111111',
+          input: '  4242424242424242  ',
+          canonical: '4242424242424242',
         ),
         'eight digits is the ISO floor': (input: '00000000', canonical: '00000000'),
         'twelve digits, the shortest length a card is issued at': (
@@ -66,11 +80,11 @@ void main() {
         'twenty digits is over the ceiling': (input: '41111111111111111119', canonical: null),
         'empty': (input: '', canonical: null),
         'a corrupted final digit fails the Luhn check': (
-          input: '4111111111111112',
+          input: '4242424242424243',
           canonical: null,
         ),
         'two transposed digits fail it as well': (input: '4012888888818881', canonical: null),
-        'letters are not card-number characters': (input: '4111111111111abc', canonical: null),
+        'letters are not card-number characters': (input: '4242424242424abc', canonical: null),
         // A separator the compacting step doesn't strip usually lands on the length check instead, a
         // card number having no positions to spend on one. 16 digits plus 3 dots is nineteen
         // characters, so this row reaches the charset check.
@@ -86,23 +100,22 @@ void main() {
     );
 
     scenario('the grouped and compact spellings of one card are equal', () {
-      check(PaymentCardNumber.tryParse('4111 1111 1111 1111')!)
-          .equals(PaymentCardNumber.tryParse('4111111111111111')!);
+      check(PaymentCardNumber.tryParse('4242 4242 4242 4242')!).equals(PaymentCardNumber.testVisa);
       check({
-        PaymentCardNumber.tryParse('4111111111111111')!,
-        PaymentCardNumber.tryParse('4111-1111-1111-1111')!,
-        PaymentCardNumber.tryParse('4111 1111 1111 1111')!,
+        PaymentCardNumber.tryParse('4242424242424242')!,
+        PaymentCardNumber.tryParse('4242-4242-4242-4242')!,
+        PaymentCardNumber.tryParse('4242 4242 4242 4242')!,
       }).length.equals(1);
     });
 
     scenario('a sixteen-digit number exposes each of its parts', () {
-      final parsedNumber = PaymentCardNumber.tryParse('4111111111111111')!;
+      const parsedNumber = PaymentCardNumber.testVisa;
 
       check(parsedNumber.majorIndustryIdentifier.value).equals(4);
-      check(parsedNumber.iin6).equals('411111');
-      check(parsedNumber.iin8).equals('41111111');
-      check(parsedNumber.last4).equals('1111');
-      check(parsedNumber.checkDigit.value).equals(1);
+      check(parsedNumber.iin6).equals('424242');
+      check(parsedNumber.iin8).equals('42424242');
+      check(parsedNumber.last4).equals('4242');
+      check(parsedNumber.checkDigit.value).equals(2);
     });
 
     // An issuer identification number needs a check digit after it, so the shortest numbers cannot report
@@ -126,12 +139,12 @@ void main() {
     );
 
     scenario('the rendered form masks everything but the last four digits', () {
-      final parsedNumber = PaymentCardNumber.tryParse('4111111111111111')!;
+      const parsedNumber = PaymentCardNumber.testVisa;
 
-      check(parsedNumber.masked).equals('••••1111');
+      check(parsedNumber.masked).equals('••••4242');
       // Interpolation and print() both route through toString, so neither can leak the number.
-      check('$parsedNumber').equals('PaymentCardNumber(••••1111)');
-      check(parsedNumber.toString()).not((it) => it.contains('4111111111111111'));
+      check('$parsedNumber').equals('PaymentCardNumber(••••4242)');
+      check(parsedNumber.toString()).not((it) => it.contains('4242424242424242'));
     });
 
     // Mod-10 is blind to a 09/90 transposition and to the twin errors 22/55, 33/66 and 44/77: both members
@@ -167,11 +180,11 @@ void main() {
           failure: const PaymentCardNumberWrongLength(20),
         ),
         'letters inside the window reach the charset check': (
-          input: '4111111111111abc',
+          input: '4242424242424abc',
           failure: const PaymentCardNumberInvalidCharacters(),
         ),
         'a mistyped digit reaches the Luhn check': (
-          input: '4111111111111112',
+          input: '4242424242424243',
           failure: const PaymentCardNumberChecksumFailed(),
         ),
       },
@@ -180,9 +193,9 @@ void main() {
     );
 
     scenario('parse reports the failure rather than throwing', () {
-      check(PaymentCardNumber.parse('4111111111111112'))
+      check(PaymentCardNumber.parse('4242424242424243'))
           .equals(const ParseFailure(PaymentCardNumberChecksumFailed()));
-      check(PaymentCardNumber.parse('4111111111111111').isSuccess).isTrue();
+      check(PaymentCardNumber.parse('4242424242424242').isSuccess).isTrue();
     });
 
     scenario('fromComponents computes the check digit', () {
@@ -237,7 +250,7 @@ void main() {
     scenarioOutline<({String input, CardScheme cardScheme, List<CardScheme> cardSchemes})>(
       'the card scheme is reported from the prefix',
       examples: {
-        'Visa opens with 4': (input: '4111111111111111', cardScheme: .visa, cardSchemes: [.visa]),
+        'Visa opens with 4': (input: '4242424242424242', cardScheme: .visa, cardSchemes: [.visa]),
         'Mastercard in its 51-55 block': (
           input: '5555555555554444',
           cardScheme: .mastercard,
@@ -249,13 +262,13 @@ void main() {
           cardSchemes: [.mastercard],
         ),
         'American Express opens with 37': (
-          input: '371449635398431',
+          input: '378282246310005',
           cardScheme: .americanExpress,
           cardSchemes: [.americanExpress],
         ),
-        'JCB inside 3528-3589': (input: '3530111333300000', cardScheme: .jcb, cardSchemes: [.jcb]),
+        'JCB inside 3528-3589': (input: '3566002020360505', cardScheme: .jcb, cardSchemes: [.jcb]),
         'Diners Club opens with 30': (
-          input: '30569309025904',
+          input: '3056930009020004',
           cardScheme: .dinersClub,
           cardSchemes: [.dinersClub],
         ),
@@ -313,5 +326,25 @@ void main() {
           check(PaymentCardNumber.cardSchemesOf(example.input))
               .unorderedEquals(example.cardSchemes),
     );
+
+    scenario('every scheme but unknown has a named constant', () {
+      check(namedCards.keys)
+          .unorderedEquals(CardScheme.values.where((scheme) => scheme != CardScheme.unknown));
+    });
+
+    scenario('every named constant reports the scheme it is named for', () {
+      for (final MapEntry(key: scheme, value: card) in namedCards.entries) {
+        check(card.cardScheme, because: 'named constant for $scheme').equals(scheme);
+      }
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final card in namedCards.values) {
+        check(
+          PaymentCardNumber.tryParse(card.value)?.value,
+          because: 'named constant $card',
+        ).equals(card.value);
+      }
+    });
   });
 }
