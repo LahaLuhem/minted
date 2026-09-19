@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Network example" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
+    <option name="filePath" value="$PROJECT_DIR$/packages/minted_network/example/minted_network_example.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$/packages/minted_network/example/" />
+    <method v="2" />
+  </configuration>
+</component>
