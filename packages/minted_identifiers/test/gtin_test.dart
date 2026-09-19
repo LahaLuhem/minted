@@ -6,6 +6,8 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
+const namedGtins = <Gtin>{.restrictedCirculation};
+
 void main() {
   feature('Gtin', () {
     // The canonical 14-digit form doubles as the expected outcome: a String means "accepted and
@@ -192,6 +194,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const GtinWrongLength(10));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final gtin in namedGtins) {
+        check(Gtin.tryParse(gtin.value)?.value, because: 'named constant $gtin').equals(gtin.value);
+      }
     });
   });
 }

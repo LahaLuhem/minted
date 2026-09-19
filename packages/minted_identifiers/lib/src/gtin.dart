@@ -8,6 +8,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/gs1_check_digit.dart';
 import 'failures/gtin_failure.dart';
 
+part 'helpers/gtin_helpers.dart';
+
 /// A GTIN (Global Trade Item Number): the number inside an EAN-8, UPC-A, EAN-13 or ITF-14 barcode. Standard:
 /// [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin).
 ///
@@ -59,31 +61,6 @@ extension type const Gtin._(String value) {
       ? null
       : value.substring(_length14 - length);
 
-  static String _withCheckDigit(String bodyDigits) => '$bodyDigits${gs1CheckDigit(bodyDigits)}';
-
-  // GS1's own rule for keeping every length in one field. Safe because the weights run from the right,
-  // so the added zeros change nothing.
-  static String _toGtin14(String compactInput) => compactInput.padLeft(_length14, zeroPad);
-
-  // The one gate parse and fromBody both go through. Widest check first, so the earliest wrong thing
-  // gets named.
-  static GtinFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when !_lengths.contains(compactInput.length) => GtinWrongLength(compactInput.length),
-    _ when !digitsOnly.hasMatch(compactInput) => const GtinInvalidCharacters(),
-    _ when !_checksumHolds(compactInput) => const GtinChecksumFailed(),
-    _ => null,
-  };
-
-  static bool _checksumHolds(String compactInput) =>
-      compactInput.endsWith(gs1CheckDigit(compactInput.substring(0, compactInput.length - 1)));
-
-  static final _nonZeroDigit = RegExp('[^$zeroPad]');
-
-  // GS1 defines no other lengths.
-  static const _length8 = 8;
-  static const _length12 = 12;
-  static const _length13 = 13;
-  static const _length14 = 14;
-  static const _lengths = {_length8, _length12, _length13, _length14};
-  static const _checkDigitIndex = 13;
+  /// A restricted circulation number. GS1 keeps `20`-`29` company-internal, so it names no product.
+  static const restrictedCirculation = Gtin._('02000000000008');
 }
