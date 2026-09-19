@@ -1,7 +1,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 import 'support/failures.dart';
 
 void main() {

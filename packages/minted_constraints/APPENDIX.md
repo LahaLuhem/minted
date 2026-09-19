@@ -155,7 +155,7 @@ emoji is `2`. The 5 `Ascii*` types escape it, code units and characters coincidi
 only `AsciiChar`, `AsciiLetters` and `AsciiAlphanumerics` declare it, the other 2 inheriting
 through the narrowing lattice.
 
-**2 types, not one.** `Uint` (`>= 0`) and `NaturalNumber` (`> 0`) differ by a single value, and
+**Two types, not one.** `Uint` (`>= 0`) and `NaturalNumber` (`> 0`) differ by a single value, and
 that value is the point: an empty cart is a real count, a page size of zero is not. One type would
 push the zero check back to every call site, which is the hand-checking this package deletes.
 
@@ -272,7 +272,7 @@ classification reports and does not gate.
 
 **One door, where [`Percentage`](#percentage-constraint-type) needs 2.** The `0`-`1` range states
 the convention, so there is no `15`-versus-`0.15` question left to ask and no second entry point to
-disambiguate. This is the clearest evidence the 2 types are different shapes rather than one type
+disambiguate. This is the clearest evidence the two types are different shapes rather than one type
 spelled twice.
 
 **The conversion is asymmetric, which is the argument for both types.** Every probability is a

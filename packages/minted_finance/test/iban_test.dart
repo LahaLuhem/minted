@@ -3,7 +3,7 @@ import 'package:minted/minted.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_finance/minted_finance.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;

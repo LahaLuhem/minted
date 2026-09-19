@@ -89,6 +89,9 @@ final cc = s.substring(0, 2);
 - **100 is not a strict width for `//` and `///` prose.** The formatter never reflows a comment, so
   this one is on you: break once the last word over 100 is done, rather than wrapping before it.
   Markdown is capped, not soft: `rumdl` fails the build at 101.
+- **A directive comment never joins a wrapped paragraph.** `// #region`, `// coverage:ignore-start`
+  and `// ignore:` have to sit alone on their line. Wrap prose into one and you silently break
+  dartdoc's `{@example}` regions or `format_coverage`, and neither analyze nor format says a word.
 - **Blank lines separate logical chunks within a method.** Group the guard checks, the
   normalisation, the validation, and the return with one blank line between groups, so a reader
   can scan past chunks they don't need.
@@ -291,8 +294,8 @@ to `december`. They are also permanent public API, so:
   `Uint8List`-backed and that has no const constructor, so it gets none.
 - Each constant carries a `///` line, and the type's dartdoc points at the set as `Month`'s does.
 
-**Why:** the demand is real (5 public members across 3 packages hand back a `Digit`, so
-callers compare it against literals), and so is the creep. The 2 clauses are what keep out a
+**Why:** the demand is real (public members across several packages hand back a `Digit`, so
+callers compare it against literals), and so is the creep. The two clauses are what keep out a
 65,536-member `Uint16` and `AsciiLetter.a` through `.z`.
 
 **Constraint types are not value types either.** The rule that separates them is about standards,
@@ -571,8 +574,9 @@ PR and issue bodies.
   show-hide sections.
 - Prefer not using technical buzz-words, use ELI18 level instead.
 - No AI-tell-tale signs like em-dashes, `;` and others.
-- Numbers as numerals, not words: `1`, `2`, `1st`, `2nd`. "one" stays where it means single or
-  sole, and "first" where it means earliest rather than a position.
+- Numbers as numerals, not words: `1`, `2`, `1st`, `2nd`. Words stay where the number is not a
+  count: "one" meaning single or sole, "first" meaning earliest, and anything contrasted against
+  them ("two types, not one").
 - Keep the tone informal and light. Give it a natural flow.
 
 ---

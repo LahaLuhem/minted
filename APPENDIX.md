@@ -242,8 +242,8 @@ Luhn worked examples, published ISBN/GTIN/IMEI check-digit cases), plus delibera
 variants (one transposed digit, one wrong check digit) that must be rejected.
 
 <a id="check-digit-blind-spots"></a>
-**What the mod-10 family cannot catch**, stated once because 3 types inherit it. Luhn misses a
-`09`/`90` transposition and the twin errors 22/55, 33/66, and 44/77. GS1 mod-10 misses a
+**What the mod-10 family cannot catch**, stated once because every mod-10 type inherits it. Luhn
+misses a `09`/`90` transposition and the twin errors 22/55, 33/66, and 44/77. GS1 mod-10 misses a
 transposition of 2 adjacent digits differing by 5. Both members of each pair carry the same
 weighted sum, so the check digit is identical either way. Only mod-11 (ISBN-10) catches every
 transposition. These are properties of the standards, not of these implementations, and each
@@ -337,8 +337,8 @@ One package therefore cannot hold optional heavy libraries, which is what v3 spl
   `minted_finance`, `ipaddr` in `minted_network`. The engine is the parser or registry the type
   needs to exist, so it belongs wherever that type does.
 - **Core carries only what every domain speaks**: the outcome vocabulary and the numeric
-  primitives, on `collection` and `meta`. A chronology consumer resolves 3 packages where the
-  single package cost 7.
+  primitives, on `collection` and `meta`. A chronology consumer resolves core, the primitives and
+  chronology, where the single package pulled every engine in the family.
 - **Adapters stay separate**, as they always would have: `fpdart`, `hive`, a Flutter form-field
   validator. Each becomes `minted_fpdart` and friends, on core plus its one integration dependency.
 - **Zero-dependency integrations can be opt-in libraries** rather than packages. JSON, where
@@ -355,7 +355,7 @@ within a major.
 
 **The cross-package suites need a host that is never published.**
 [`failure_contract_test.dart`](./packages/minted_conformance/test/failure_contract_test.dart) imports
-all 7 siblings, and every sibling already depends on core, so hosting it in `minted` would point
+every sibling, and every sibling already depends on core, so hosting it in `minted` would point
 a dev-dependency arrow back from core to its own dependents. Locally that resolves by path and looks
 fine. On pub.dev it deadlocks the first publish of either side, because core cannot go up until
 `minted_chronology` is up and `minted_chronology` cannot go up until core is. `publish_to: none`

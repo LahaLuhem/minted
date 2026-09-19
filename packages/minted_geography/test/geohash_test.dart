@@ -3,7 +3,7 @@ import 'package:minted/minted.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_geography/minted_geography.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 // NaturalNumber declares only tryFrom, so every call site would otherwise carry the bang.
 Geohash _geohash({required GeoCoordinate coordinate, required int precision}) =>

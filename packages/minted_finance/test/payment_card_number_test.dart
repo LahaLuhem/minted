@@ -3,8 +3,8 @@ import 'package:minted/minted.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 import 'package:minted_finance/minted_finance.dart';
 
-import 'support/bdd.dart';
-import 'support/digits.dart';
+import '../../../test/support/bdd.dart';
+import '../../../test/support/digits.dart';
 
 void main() {
   feature('PaymentCardNumber', () {

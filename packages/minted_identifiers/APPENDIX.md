@@ -60,7 +60,7 @@ the honest type. Resolved per field, on the merits, never as a reflex toward the
 ## Isni: one type, because Orcid would over-promise
 
 **There is no `Orcid`, and that is the decision.** ORCID issues iDs from a block inside the ISNI
-range, so every ORCID iD *is* an ISNI. 2 types need something to tell them apart and the only
+range, so every ORCID iD *is* an ISNI. Two types need something to tell them apart and the only
 candidate is that block: gating on it makes `Isni` refuse most of its own standard, and not gating
 makes `Orcid.parse` accept Isaac Newton's ISNI `0000000121032683`. The second is the [`Day`
 test][date-value-type], a type named for what it does not guarantee. So one type holds the standard

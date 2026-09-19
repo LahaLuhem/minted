@@ -154,7 +154,7 @@ edges then carry their own ranges, leaving `south <= north` as all `from` can re
 
 **Both implement `double`, which is what makes the getters affordable.** Left opaque,
 `coordinate.latitude * 2` becomes `.value * 2`, and a box built from a coordinate's parts re-proves
-degrees that were already proven. What that buys and costs across the family, and the 2 types left
+degrees that were already proven. What that buys and costs across the family, and the two types left
 opaque anyway, are in [constraint types][constraint-types].
 
 **`parse` still diagnoses, text being where unchecked input arrives.** A constraint type answers

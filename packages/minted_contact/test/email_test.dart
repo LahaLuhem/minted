@@ -3,7 +3,7 @@ import 'package:minted/minted.dart';
 import 'package:minted_contact/minted_contact.dart';
 import 'package:minted_network/minted_network.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 void main() {
   feature('Email', () {

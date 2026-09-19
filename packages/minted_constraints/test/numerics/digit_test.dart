@@ -1,7 +1,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 
-import '../support/bdd.dart';
+import '../../../../test/support/bdd.dart';
 
 // Each of these 3 is a const context, so the file failing to build is the assertion: a getter could
 // not stand in any of them.

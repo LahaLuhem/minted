@@ -4,7 +4,7 @@ import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 import 'package:minted_network/minted_network.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 
 // A const context, so the file failing to build is the assertion: it must stay `static const`.
 const allOnes = <MacAddress>[.broadcast];

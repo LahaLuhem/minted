@@ -4,7 +4,7 @@
 import 'package:checks/checks.dart';
 import 'package:minted/minted.dart';
 
-import 'support/bdd.dart';
+import '../../../test/support/bdd.dart';
 import 'support/failures.dart';
 
 /// A local extension type, so core's own suite never reaches into a package that depends on it.
