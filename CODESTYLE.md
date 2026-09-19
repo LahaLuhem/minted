@@ -521,14 +521,31 @@ everything into one 32-character string and slicing that back apart: the flat st
 only to be taken apart again, and `getRange` keeps each group lazy.
 
 <a id="idioms-parts"></a>
-### `part` / `part of` only when structurally needed
+### `part` / `part of` to keep a value type readable
 
-Legitimate uses: sealed-class cases across files (Dart requires the same library for sealed
-subtypes), code-generation outputs (`*.g.dart`). Avoid it for general organisation, since imports
-are explicit, and parts leak `_private` symbols across files. Each value type is one file under
-`lib/src/`, with its failure vocabulary in a sibling `failures/` file, and neither needs `part`: a
-sealed hierarchy kept whole in one file already shares a library. Where a failure looks like it
-needs `part` to reach its value type's privates, move the shared piece to `shared/` instead.
+A value type's own file should hold the type and nothing else. Everything the type needs but a
+reader does not, the parsing helpers, the private constants, the regexes, goes in
+`helpers/<type>_helpers.dart` as a `part of` it. `ip_address.dart` and `mac_address.dart` are the
+worked examples.
+
+Sharing one library is the point, not a side effect. Two things genuinely cannot be split any other
+way:
+
+- A `const` of the type, because the private `._` constructor is library-private, so a const
+  network address for a `Cidr` constant has to sit inside `IpAddress`'s library.
+- Anything reaching the file's `_private` constants, which is most of the parsing helpers.
+
+Also legitimate: sealed-class cases across files (Dart requires one library for sealed subtypes) and
+code-generation outputs (`*.g.dart`).
+
+**What does not move:** the failure vocabulary, which lives in a sibling `failures/` file behind a
+plain import and must never `part` its way into the value type. A failure may not import its value
+type, so shared data goes to a helper subfolder instead.
+
+**A part file carries its own analyzer ignores.** `// ignore_for_file:` is scoped to the file it is
+written in, not to the library, so splitting code out leaves its ignores behind. Move the ignore
+with the code that needed it, explanation included, and drop it from the file that no longer slices
+anything. `melos run dcm` is what catches this.
 
 <a id="idioms-dot-shorthands"></a>
 ### Static dot shorthands (Dart 3.10+, so stable at the floor)
@@ -616,9 +633,14 @@ library;
 ---
 
 <a id="dcm-rules"></a>
-## DCM rules (applied by hand)
+## DCM rules
 
-`dart analyze` does not run these, but the project treats them as non-negotiable:
+`dart analyze` does not run these. **`dart run melos run dcm` does**, so it is part of the suite
+rather than something to remember. The rule set is the `dart_code_metrics:` block in
+`analysis_options.yaml`, and `dcm analyze` exits non-zero on a warning, so it gates like the others.
+The CLI is a separate install: <https://dcm.dev/docs/getting-started/>.
+
+Three that bite most often:
 
 - **`no-empty-block`:** every block must contain code or a `// TODO(handle): …` explaining the
   gap. Empty `catch` clauses are excused.

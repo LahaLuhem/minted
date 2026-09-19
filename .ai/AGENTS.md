@@ -130,7 +130,12 @@ and `text/`, being a category rather than a domain.
 
 Internals go in a *subfolder* named for the job: `outcomes/` (the only public part of `shared/`,
 what a parse hands back), `encoding/` (characters to numbers, bytes, bits), `normalisation/`,
-`standards/` (fixed data a standard defines), `check_digits/` (one file per algorithm).
+`standards/` (fixed data a standard defines), `check_digits/` (one file per algorithm), and
+`helpers/` (one `<type>_helpers.dart` per value type, `part of` it, holding what the type needs but
+a reader of the type does not). `helpers/` is the one that is *not* excluded from
+`conformance_test.dart`, on purpose: a part file shares its library, so a type declared there is
+still that package's public API. See
+[`CODESTYLE.md#part--part-of-to-keep-a-value-type-readable`](../CODESTYLE.md#idioms).
 
 **Which package a helper lives in depends on how many use it.** 2 or more, core's `shared/`,
 reached through `package:minted/internal.dart`. Exactly one, inside that package under the same job

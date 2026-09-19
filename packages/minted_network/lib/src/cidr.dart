@@ -9,6 +9,8 @@ import 'encoding/octet_bits.dart';
 import 'failures/cidr_failure.dart';
 import 'ip_address.dart';
 
+part 'helpers/cidr_helpers.dart';
+
 /// A CIDR block: a network address and how many leading bits of it the prefix covers, written
 /// `10.0.0.0/8` or `2001:db8::/32`.
 /// Standards: [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632) for v4,
@@ -143,53 +145,3 @@ final class Cidr {
   /// RFC 4291 §2.5.5.2.
   static const v4MappedV6 = Cidr._(v4MappedV6Network, 96);
 }
-
-// Split out so parse reads as its 2 stages: the address, then everything the address decides.
-ParseOutcome<CidrFailure, Cidr> _withPrefix(IpAddress network, String prefixText) {
-  if (!digitsOnly.hasMatch(prefixText)) return const ParseFailure(CidrMalformed());
-
-  final maxPrefixLength = _maxPrefixLengthFor(network.version);
-  final prefixLength = int.parse(prefixText);
-  if (prefixLength > maxPrefixLength) {
-    return ParseFailure(
-      CidrPrefixLengthOutOfRange(maxPrefixLength: maxPrefixLength, actual: prefixLength),
-    );
-  }
-
-  final masked = _masked(network, prefixLength);
-
-  return masked != network
-      ? ParseFailure(CidrHostBitsSet('${masked.value}$_prefixSeparator$prefixLength'))
-      : ParseSuccess(Cidr._(network, prefixLength));
-}
-
-// As lastAddress: the octets come from a parsed address, so the count is already right.
-IpAddress _masked(IpAddress address, int prefixLength) {
-  final octets = address.octets;
-
-  return IpAddress.fromOctets(
-    Uint8List.fromList([
-      for (var index = 0; index < octets.length; index++)
-        octets[index] & _octetMask(index, prefixLength),
-    ]),
-  ).getOrThrow();
-}
-
-// The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max rather
-// than clamp, which is declared on num and would widen the shift operand.
-int _octetMask(int index, int prefixLength) {
-  final coveredBits = min(max(prefixLength - index * bitsPerOctet, 0), bitsPerOctet);
-
-  return _allOctetBits << (bitsPerOctet - coveredBits) & _allOctetBits;
-}
-
-int _maxPrefixLengthFor(IpVersion version) => switch (version) {
-  .v4 => _maxV4PrefixLength,
-  .v6 => _maxV6PrefixLength,
-};
-
-const _prefixSeparator = '/';
-const _partCount = 2;
-const _allOctetBits = 0xff;
-const _maxV4PrefixLength = 32;
-const _maxV6PrefixLength = 128;
