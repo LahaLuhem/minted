@@ -74,9 +74,6 @@ extension type const MacAddress._(String value) {
   /// Whether this is [broadcast]. False for the 64-bit all-ones value, which is no such destination.
   bool get isBroadcast => value == broadcast.value;
 
-  /// The broadcast address, `ff:ff:ff:ff:ff:ff`, which every station on the segment accepts.
-  static const broadcast = MacAddress._('ff:ff:ff:ff:ff:ff');
-
   /// The IEEE Std 802 hexadecimal representation, `00-00-5E-00-53-00`: hyphen-separated and upper-case,
   /// as the standard writes it and Windows displays it.
   ///
@@ -96,28 +93,78 @@ extension type const MacAddress._(String value) {
   bool _firstOctetHas(int bitMask) =>
       int.parse(value.substring(0, hexDigitsPerByte), radix: hexRadix) & bitMask != 0;
 
-  // The canonical form: the stripped digits re-joined in pairs with a colon.
-  static String _colonSeparated(String hex) => Iterable.generate(
-    hex.length ~/ hexDigitsPerByte,
-    (octet) => hex.substring(octet * hexDigitsPerByte, (octet + 1) * hexDigitsPerByte),
-  ).join(_colon);
+  /////////////////////////// IEEE Std 802.3 — Broadcast / Null sentinels ///////////////////////////
+  static const allZeros = MacAddress._('00:00:00:00:00:00');
+  static const broadcast = MacAddress._('ff:ff:ff:ff:ff:ff');
 
-  // One anchored alternative per notation, so a spelling that mixes separators matches none. The bare
-  // form takes digits in pairs, so an odd count fails the shape rather than miscounting.
-  static final _notation = RegExp(
-    '^(?:[0-9a-f]{2}(?::[0-9a-f]{2})*' // colon
-    '|[0-9a-f]{2}(?:-[0-9a-f]{2})*' // hyphen
-    r'|[0-9a-f]{4}(?:\.[0-9a-f]{4})*' // Cisco dot-quad
-    r'|(?:[0-9a-f]{2})+)$', // bare hex
-  );
+  /////////////////////// RFC 1112 / RFC 2464 — IP multicast mapping prefixes ///////////////////////
+  /// 01:00:5e:00:00:00/24
+  static const ipv4MulticastPrefix = MacAddress._('01:00:5e');
 
-  static final _separators = RegExp('[-:.]');
+  /// 33:33:00:00:00:00/16
+  static const ipv6MulticastPrefix = MacAddress._('33:33');
 
-  static const _colon = ':';
-  // The 2 widths IEEE 802 addresses come in: 48-bit (Ethernet, Wi-Fi) and 64-bit (802.15.4).
-  static const _octetCounts = {6, 8};
-  // 3 octets of 2 hex digits, with the 2 colons between them.
-  static const _prefix24Length = 8;
-  static const _individualGroupBit = 0x01;
-  static const _universalLocalBit = 0x02;
+  //////////////// RFC 9542 — IANA OUI (00-00-5E) reserved and documentation blocks ////////////////
+  static const ianaOui = MacAddress._('00:00:5e');
+  static const ianaOuiMulticast = MacAddress._('01:00:5e');
+
+  /// /24, IESG Ratification
+  static const ianaReserved = MacAddress._('00:00:5e:00:00:00');
+
+  /// /24, unicast docs
+  static const ianaDocumentation = MacAddress._('00:00:5e:00:53:00');
+
+  /// /24, multicast docs
+  static const ianaDocMulticast = MacAddress._('01:00:5e:90:10:00');
+
+  /////////////////////////////////// RFC 5798 — VRRP virtual MAC ///////////////////////////////////
+  /// /24
+  static const vrrp = '00:00:5e:00:01:00';
+
+  /////////////////// IEEE Std 802.1D / 802.1Q — Bridge reserved group addresses ///////////////////
+  /// Spanning Tree BPDUs
+  static const stpBridgeGroup = MacAddress._('01:80:c2:00:00:00');
+
+  /// IEEE MAC-specific control
+  static const macControlGroup = MacAddress._('01:80:c2:00:00:01');
+
+  /// 802.3 Slow Protocols (LACP, etc.)
+  static const slowProtocols = MacAddress._('01:80:c2:00:00:02');
+
+  /// 802.1X PAE, 802.1AE
+  static const nearestNonTpmr = MacAddress._('01:80:c2:00:00:03');
+
+  /// Provider Bridge group
+  static const providerBridge = MacAddress._('01:80:c2:00:00:08');
+
+  /// MVRP
+  static const providerMvrp = MacAddress._('01:80:c2:00:00:0d');
+
+  /// 802.1AS, 802.1X
+  static const nearestBridge = MacAddress._('01:80:c2:00:00:0e');
 }
+
+// The canonical form: the stripped digits re-joined in pairs with a colon.
+String _colonSeparated(String hex) => Iterable.generate(
+  hex.length ~/ hexDigitsPerByte,
+  (octet) => hex.substring(octet * hexDigitsPerByte, (octet + 1) * hexDigitsPerByte),
+).join(_colon);
+
+// One anchored alternative per notation, so a spelling that mixes separators matches none. The bare
+// form takes digits in pairs, so an odd count fails the shape rather than miscounting.
+final _notation = RegExp(
+  '^(?:[0-9a-f]{2}(?::[0-9a-f]{2})*' // colon
+  '|[0-9a-f]{2}(?:-[0-9a-f]{2})*' // hyphen
+  r'|[0-9a-f]{4}(?:\.[0-9a-f]{4})*' // Cisco dot-quad
+  r'|(?:[0-9a-f]{2})+)$', // bare hex
+);
+
+final _separators = RegExp('[-:.]');
+
+const _colon = ':';
+// The 2 widths IEEE 802 addresses come in: 48-bit (Ethernet, Wi-Fi) and 64-bit (802.15.4).
+const _octetCounts = {6, 8};
+// 3 octets of 2 hex digits, with the 2 colons between them.
+const _prefix24Length = 8;
+const _individualGroupBit = 0x01;
+const _universalLocalBit = 0x02;
