@@ -111,7 +111,7 @@ Cidr.private10.contains(address);   // masks bits, so 100.0.0.1 is not in 10.0.0
 | `Port`       | the wildcard, the services IANA registers, and a handful of dev-server habits          |
 | `Hostname`   | RFC 2606's reserved names, whole, plus mDNS `local` and the usual private suffixes     |
 | `IpAddress`  | single addresses only: the 2 unspecified, the 2 loopbacks, limited broadcast           |
-| `Cidr`       | the blocks: RFC 1918 and unique-local, CGN, link-local, multicast, the documentation 4 |
+| `Cidr`       | the blocks: RFC 1918 and unique-local, CGN, link-local, multicast, docs, v4-mapped     |
 | `MacAddress` | the null and broadcast sentinels, IANA's `00-00-5E` blocks, the 802.1D group addresses |
 
 A range lives on `Cidr`, never on `IpAddress`: `10.0.0.0/8` is not an address and `IpAddress.parse`

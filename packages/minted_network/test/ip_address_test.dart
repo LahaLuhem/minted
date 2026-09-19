@@ -130,6 +130,20 @@ void main() {
       check(IpAddress.fromOctets(v6.octets).getOrThrow()).equals(v6);
     });
 
+    // RFC 5952 §5 keeps a mapped address in its mixed spelling, which the engine underneath cannot
+    // read. Every member that reads the bits back has to undo that before asking it.
+    scenario('a v4-mapped address reads back, rather than throwing on its own spelling', () {
+      final mapped = IpAddress.tryParse('::ffff:192.0.2.1')!;
+      final plainV6 = IpAddress.tryParse('2001:db8::1')!;
+
+      check(mapped.octets.length).equals(16);
+      check(mapped.octets.skip(12)).deepEquals([192, 0, 2, 1]);
+      check(mapped.isPrivate).isFalse();
+      check(mapped.compareTo(plainV6)).isLessThan(0);
+      check(plainV6.compareTo(mapped)).isGreaterThan(0);
+      check(IpAddress.fromOctets(mapped.octets).getOrThrow()).equals(mapped);
+    });
+
     scenario('fromOctets reports a failure unless there are 4 or 16 octets', () {
       check(IpAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
       check(IpAddress.fromOctets(Uint8List(15)).isFailure).isTrue();

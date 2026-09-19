@@ -21,6 +21,7 @@ const namedBlocks = <Cidr>[
   .docV4_2,
   .docV4_3,
   .docV6,
+  .v4MappedV6,
 ];
 
 void main() {
@@ -216,6 +217,17 @@ void main() {
           .isA<CidrHostBitsSet>();
       check(Cidr.from(network: network, prefixLength: 33).reasonOrNull)
           .isA<CidrPrefixLengthOutOfRange>();
+    });
+
+    // Cidr masks bits, so it reaches straight through IpAddress to the engine, where a mapped
+    // address's mixed spelling used to throw instead of reporting anything.
+    scenario('a v4-mapped address works as a network and as a candidate', () {
+      final mapped = IpAddress.tryParse('::ffff:192.0.2.1')!;
+
+      check(Cidr.tryParse('::ffff:0:0/96')?.asString).equals('::ffff:0.0.0.0/96');
+      check(Cidr.tryParse('::ffff:0:0/96')!.contains(mapped)).isTrue();
+      check(Cidr.tryParse('2001:db8::/32')!.contains(mapped)).isFalse();
+      check(Cidr.tryParse('::ffff:0:0/96')!.lastAddress.value).equals('::ffff:255.255.255.255');
     });
 
     scenario('every named constant parses back to itself, unchanged', () {
