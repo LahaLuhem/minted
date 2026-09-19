@@ -8,8 +8,8 @@ import 'support/digits.dart';
 
 void main() {
   feature('Gtin', () {
-    // The canonical fourteen-digit form doubles as the expected outcome: a String means "accepted
-    // and normalised to this", null means "rejected". Valid rows are published worked examples.
+    // The canonical 14-digit form doubles as the expected outcome: a String means "accepted and
+    // normalised to this", null means "rejected". Valid rows are published worked examples.
     scenarioOutline<({String input, String? canonical})>(
       'Gtin.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -47,7 +47,7 @@ void main() {
         // When the input is parsed as a GTIN ...
         final parsedGtin = Gtin.tryParse(example.input);
 
-        // Then it is normalised to the fourteen-digit form, or rejected (null).
+        // Then it is normalised to the 14-digit form, or rejected (null).
         check(parsedGtin?.value).equals(example.canonical);
       },
     );
@@ -59,8 +59,8 @@ void main() {
       check(Gtin.tryParse('0000096385074')!).equals(paddedGtin14);
     });
 
-    // The shorter forms are re-derived from the padded value, not stored, so these pin that the
-    // padding is genuinely reversible.
+    // The shorter forms are re-derived from the padded value, not stored, so these pin that the padding
+    // is genuinely reversible.
     scenarioOutline<
       ({String input, String? gtin13, String? gtin12, String? gtin8, String shortest})
     >(
@@ -142,10 +142,10 @@ void main() {
       outline: (example) => check(Gtin.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
-    // A property of GS1 mod-10, not a gap in ours: swapping adjacent digits five apart leaves the
-    // weighted sum unchanged. Pinned so nobody "fixes" it later.
+    // A property of GS1 mod-10, not a gap in ours: swapping adjacent digits 5 apart leaves the weighted
+    // sum unchanged. Pinned so nobody "fixes" it later.
     scenario('mod-10 cannot catch a transposition of two adjacent digits differing by five', () {
-      // 3 and 8 sit adjacent and five apart, so both spellings carry check digit 4.
+      // 3 and 8 sit adjacent and 5 apart, so both spellings carry check digit 4.
       check(Gtin.tryParse('96385074')?.value).equals('00000096385074');
       check(Gtin.tryParse('96835074')?.value).equals('00000096835074');
     });
@@ -160,8 +160,8 @@ void main() {
       check(Gtin.tryParse('96385074')?.value).equals('00000096385074');
     });
 
-    // fromBody runs our GS1 mod-10 generator; check it reproduces the published check digit at every
-    // length rather than round-tripping our own output.
+    // fromBody runs our GS1 mod-10 generator, so check it reproduces the published check digit at length
+    // rather than round-tripping our own output.
     scenarioOutline<({String body, String gtin})>(
       'fromBody computes the check digit to match the published GTIN',
       examples: {

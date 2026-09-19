@@ -1,4 +1,4 @@
-// Test file
+// Named for the unit under test rather than for a declaration in it.
 // ignore_for_file: prefer-match-file-name
 
 import 'dart:math';
@@ -8,8 +8,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import '../support/bdd.dart';
 
-// A const list, so the file failing to build is the assertion: the named ends must stay
-// `static const` rather than drifting back to getters.
+// A const list, so the file failing to build is the assertion: the named ends must stay `static const`
+// rather than drifting back to getters.
 const ends = <int>[
   Uint2.u0,
   Uint2.max,
@@ -26,7 +26,7 @@ const ends = <int>[
 
 void main() {
   feature('the fixed-width unsigned integers', () {
-    // One table over all five widths. Each row carries the bit count, the ceiling it implies, and a
+    // One table over all 5 widths. Each row carries the bit count, the ceiling it implies, and a
     // door handing back the numeric value, so the boundary checks run identically against each type.
     final widths = <String, ({int bits, int max, int? Function(int value) valueFrom})>{
       'Uint2': (bits: 2, max: 3, valueFrom: (value) => Uint2.tryFrom(value)?.value),
@@ -40,8 +40,8 @@ void main() {
       'each width accepts its whole range and refuses either side of it',
       examples: widths,
       outline: (example) {
-        // Ties the ceiling to the bit count in the type's own name, so a 65535 typed into Uint32
-        // fails here rather than shipping.
+        // Ties the ceiling to the bit count in the type's own name, so a 65535 typed into Uint32 fails
+        // here rather than shipping.
         check(example.max).equals(pow(2, example.bits).toInt() - 1);
 
         check(example.valueFrom(0)).equals(0);

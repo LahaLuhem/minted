@@ -12,7 +12,7 @@ AsciiAlphanumerics _alphanumerics(String value) => AsciiAlphanumerics.tryFrom(va
 
 void main() {
   feature('Bic', () {
-    // The canonical eleven-character form doubles as the expected outcome: a String means "accepted
+    // The canonical 11-character form doubles as the expected outcome: a String means "accepted
     // and normalised to this", null means "rejected". Valid rows are published bank codes.
     scenarioOutline<({String input, String? canonical})>(
       'Bic.tryParse normalises accepted input and rejects input that fails a check',
@@ -57,7 +57,7 @@ void main() {
         // When the input is parsed as a BIC ...
         final parsedBic = Bic.tryParse(example.input);
 
-        // Then it is normalised to the eleven-character form, or rejected (null).
+        // Then it is normalised to the 11-character form, or rejected (null).
         check(parsedBic?.value).equals(example.canonical);
       },
     );
@@ -83,14 +83,14 @@ void main() {
       check(Bic.tryParse('DEUTDEFF')!.isPrimaryOffice).isTrue();
     });
 
-    // Kosovo has no ISO 3166-1 code of its own, so SWIFT registers its banks under the
-    // user-assigned XK. Accepting it is the point: the alternative rejects real Kosovar BICs.
+    // Kosovo has no ISO 3166-1 code of its own, so SWIFT registers its banks under the user-assigned
+    // XK. Accepting it is the point: the alternative rejects real Kosovar BICs.
     scenario('XK is accepted, because SWIFT registers Kosovo under it', () {
       check(Bic.tryParse('TEBKXKPR')?.value).equals('TEBKXKPRXXX');
     });
 
-    // The standard is wider than the registry, so this is a report, not a rejection. One row per
-    // freedom ISO 9362 grants and SWIFT declines to use.
+    // The standard is wider than the registry, so this is a report, not a rejection. One row per freedom
+    // ISO 9362 grants and SWIFT declines to use.
     scenarioOutline<({String input, bool isSwiftRegistrable})>(
       'isSwiftRegistrable reports the narrower shape SWIFT itself issues',
       examples: {
@@ -110,7 +110,7 @@ void main() {
       outline: (example) {
         final parsedBic = Bic.tryParse(example.input);
 
-        // Every row parses; only the shape report differs.
+        // Every row parses, and only the shape report differs.
         check(parsedBic).isNotNull();
         check(parsedBic!.isSwiftRegistrable).equals(example.isSwiftRegistrable);
       },
@@ -121,8 +121,8 @@ void main() {
       examples: {
         'empty input is no length at all': (input: '', failure: const BicWrongLength(0)),
         'nine characters is neither length': (input: 'DEUTDEFFX', failure: const BicWrongLength(9)),
-        // Hyphenated groupings mostly land on the length check instead, since a BIC has no
-        // separator positions to spend characters on; this one keeps the count at eleven.
+        // Hyphenated groupings mostly land on the length check instead, a BIC having no separator positions
+        // to spend characters on. This one keeps the count at 11.
         'a hyphen before the branch code survives the whitespace strip': (
           input: 'DEUTDEFF-XX',
           failure: const BicInvalidCharacters(),
@@ -141,8 +141,8 @@ void main() {
       check(Bic.parse('DEUTDEFF').isSuccess).isTrue();
     });
 
-    // The two edges a numbering-plan list gets wrong in opposite directions: AQ is ISO-assigned
-    // but has no phone numbers, AC is only reserved, never assigned.
+    // The 2 edges a numbering-plan list gets wrong in opposite directions: AQ is ISO-assigned but
+    // has no phone numbers, AC is only reserved, never assigned.
     scenario('the country check reads the ISO registry, not a numbering-plan list', () {
       check(Bic.tryParse('DEUTAQFF')?.value).equals('DEUTAQFFXXX');
       check(Bic.tryParse('DEUTACFF')).isNull();

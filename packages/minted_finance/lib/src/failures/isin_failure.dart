@@ -4,10 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why an [Isin] refused its input. Sealed, not an enum, because [IsinWrongLength] and [IsinInvalidPrefix]
-/// report values read from the input.
-///
-/// Four variants: ISO 6166 fixes a length, a charset, a two-letter prefix, and a check digit.
+/// Why an [Isin] refused its input. Sealed rather than an enum, because [IsinWrongLength] and [IsinInvalidPrefix]
+/// carry values off the input.
 @immutable
 sealed class IsinFailure implements MintedFailure {
   const new();
@@ -16,9 +14,9 @@ sealed class IsinFailure implements MintedFailure {
   String get typeName => 'Isin';
 }
 
-/// Not twelve characters once whitespace is stripped, so this is not an ISIN.
+/// Not 12 characters once whitespace comes off.
 final class IsinWrongLength extends IsinFailure {
-  /// How many characters were left once whitespace was stripped.
+  /// How many characters were left after whitespace came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -37,7 +35,7 @@ final class IsinWrongLength extends IsinFailure {
   String toString() => 'IsinWrongLength($actualLength)';
 }
 
-/// Something outside `A`-`Z` and `0`-`9` survived normalisation.
+/// Something outside `A`-`Z` and `0`-`9` got through.
 final class IsinInvalidCharacters extends IsinFailure {
   /// Creates the failure.
   const new();
@@ -55,10 +53,10 @@ final class IsinInvalidCharacters extends IsinFailure {
   String toString() => 'IsinInvalidCharacters()';
 }
 
-/// The leading two characters are not both letters. ISO 6166 requires them, whether or not they name
-/// a country: `XS` is Euroclear and Clearstream, and is as valid as `GB`.
+/// The leading 2 characters aren't both letters. ISO 6166 wants letters whether or not they name a
+/// country: `XS` is Euroclear and Clearstream, and as valid as `GB`.
 final class IsinInvalidPrefix extends IsinFailure {
-  /// The two leading characters, as given.
+  /// The 2 leading characters, as given.
   final String prefix;
 
   /// Creates the failure.
@@ -77,7 +75,7 @@ final class IsinInvalidPrefix extends IsinFailure {
   String toString() => 'IsinInvalidPrefix($prefix)';
 }
 
-/// The check digit disagrees with the rest: a character is mistyped or transposed.
+/// The check digit doesn't match the rest. A character is mistyped or swapped.
 final class IsinChecksumFailed extends IsinFailure {
   /// Creates the failure.
   const new();

@@ -1,13 +1,11 @@
-/// Shared plumbing for the `minted_*` sibling packages. **Not public API**: no semver promise is
-/// made about anything here, and a consumer importing it is on their own.
+/// Shared plumbing for the `minted_*` siblings. **Not public API**: no semver promise, and a consumer
+/// importing it is on their own.
 ///
-/// It exists because Dart privacy is library-scoped, so anything more than one sibling needs has
-/// to be importable to be shared at all. A helper with a single sector travels with that sector
-/// instead (see `AGENTS.md`, repo layout).
+/// Dart privacy is library-scoped, so anything 2 siblings share has to be importable to be shared
+/// at all.
 ///
-/// The practical constraint: siblings resolve against any `minted` 3.x, so this is frozen within a
-/// major. Additive changes are fine, and a sibling raises its `minted` floor when it starts using
-/// one. Breaking changes wait for the next core major.
+/// Siblings resolve against any `minted` 3.x, so this is frozen within a major. Adding is fine, breaking
+/// waits for the next core major.
 library;
 
 export 'src/shared/check_digits/luhn_check_digit.dart';

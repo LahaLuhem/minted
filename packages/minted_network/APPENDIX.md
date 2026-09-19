@@ -1,4 +1,4 @@
-# APPENDIX — `minted_network`
+# APPENDIX: `minted_network`
 
 Design rationale for the types this package ships. Family-wide rationale lives in the
 [workspace APPENDIX][appendix-md], code style in [CODESTYLE.md][codestyle-md]. Link by the explicit
@@ -6,8 +6,8 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 
 <!-- TOC start -->
 
-- [MacAddress: two widths, four notations, and no registry](#mac-address-value-type)
-- [Hostname: strict on purpose, in three directions](#hostname-value-type)
+- [MacAddress: 2 widths, 4 notations, and no registry](#mac-address-value-type)
+- [Hostname: strict on purpose, in 3 directions](#hostname-value-type)
 - [DnsName: permissive, but not infinitely so](#dns-name-value-type)
 - [IpAddress: a wrapped engine, but not a wrapped grammar](#ip-address-value-type)
 - [Cidr: a block that masks, not a string that starts with](#cidr-value-type)
@@ -18,7 +18,7 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 ---
 
 <a id="mac-address-value-type"></a>
-## MacAddress: two widths, four notations, and no registry
+## MacAddress: 2 widths, 4 notations, and no registry
 
 **The type is not called `Eui48`, because an EUI-48 is a narrower thing than a 48-bit MAC address.**
 The IEEE Registration Authority's [guidelines for EUI, OUI and
@@ -38,8 +38,8 @@ with [`Isbn`][isbn-value-type], whose 978 fold *is* a bijection, and with [`Gtin
 where padding is lossless. Accepting both widths costs nothing and touches none of it, and an
 802.15.4 or Thread address is a MAC address, so a type named `MacAddress` that refused it would
 under-deliver. The cost is that `octets.length` is not a constant, which is why this was settled
-before the type shipped rather than retrofitted: adding the second width later would be a soft break
-for anyone who assumed six.
+before the type shipped rather than retrofitted: adding the 2nd width later would be a soft break
+for anyone who assumed 6.
 
 **The canonical form is colon-separated lower-case, which knowingly collides with IEEE Std 802
 Clause 8.1.** That clause reads a *colon* separator as the bit-reversed representation, a different
@@ -52,11 +52,11 @@ subclause 8.1" and asked for the bit-reversal reading to move to an informative 
 `ieee802` renders the standard's hyphenated upper-case form for anyone who needs it.
 
 **`prefix24`, not `oui`, because the assignment boundary is not in the address.** The IEEE issues
-three block sizes (RFC 9542 §2.1, Table 1): MA-L at 24 bits, MA-M at 28, MA-S at 36. The RA states
+3 block sizes (RFC 9542 §2.1, Table 1): MA-L at 24 bits, MA-M at 28, MA-S at 36. The RA states
 that "the MA-M does not include assignment of an OUI", and that an OUI-36 assignee "shall not
 truncate the OUI-36 to use as an OUI", since the RA hands the same base prefix to many
 organisations. So for an MA-M or MA-S address the first 24 bits identify nobody, and telling the
-cases apart needs a lookup in three registries. RFC 9542 §2.1.2 adds a second limit: with the local
+cases apart needs a lookup in 3 registries. RFC 9542 §2.1.2 adds a second limit: with the local
 bit set, "the holder of an OUI has no special authority" over those bits at all. A getter named
 `oui` would therefore promise what the data cannot support, the same defect
 [`Isni`][isni-value-type] avoids by reporting the ORCID block rather than gating on it. Vendor
@@ -65,29 +65,29 @@ clock][registry-data-ships-a-clock].
 
 **The bits need no reversal, though they look as if they should.** I/G and U/L are defined by
 transmission order, which is least-significant-bit-first on Ethernet, while hex is written
-most-significant-first. They coincide, because "the first bit transmitted, of each octet, on the LAN
+most-significant-first. They coincide, because "the 1st bit transmitted, of each octet, on the LAN
 medium is the least significant bit of that octet", so a plain mask on the octet's integer value is
-correct. The second hex digit alone therefore fixes both bits, which is what the type's test table
+correct. The 2nd hex digit alone therefore fixes both bits, which is what the type's test table
 walks end to end.
 
 **Deliberately not modelled**, each because it would state more than the address does: EUI-48 to
-EUI-64 conversion in either direction; RFC 4291's "Modified EUI-64" (an IETF construct, itself
-superseded by RFC 7217 and RFC 8064); IEEE 802c's SLAP quadrants, since RFC 9542 §2.1.1 notes the
+EUI-64 conversion in either direction, RFC 4291's "Modified EUI-64" (an IETF construct, itself
+superseded by RFC 7217 and RFC 8064), IEEE 802c's SLAP quadrants, since RFC 9542 §2.1.1 notes the
 SLAP is optional with "no automated way to determine" whether a network runs it, so an enum would
-dress a nominal bit pattern as a fact about the wire; vendor lookup; the bit-reversed colon
-notation; and an `unspecified` constant for `00:00:00:00:00:00`, which is a real Xerox MA-L address
+dress a nominal bit pattern as a fact about the wire, vendor lookup, the bit-reversed colon
+notation, and an `unspecified` constant for `00:00:00:00:00:00`, which is a real Xerox MA-L address
 whose "unspecified" meaning is a per-protocol convention rather than an IEEE reservation.
 
 **Input is strict where the wild is loose.** glibc's `ether_ntoa` omits leading zeros, so
 `1:2:3:4:5:6` is real output somewhere, and it is rejected here: it matches no standard's grammar,
-and a parser that guessed would be hand-writing octets the input did not contain. The four accepted
+and a parser that guessed would be hand-writing octets the input did not contain. The 4 accepted
 notations each get their own anchored alternative in one regex, which is what refuses a spelling
-that mixes two separators.
+that mixes 2 separators.
 
 ---
 
 <a id="hostname-value-type"></a>
-## Hostname: strict on purpose, in three directions
+## Hostname: strict on purpose, in 3 directions
 
 **ASCII only, because punycode is not IDNA.** The tempting shortcut is to depend on a punycode
 package and fold `bücher.example` to `xn--bcher-kva.example` on parse. RFC 5890 §2.3.2.1 does not
@@ -116,20 +116,20 @@ highest-level label is alphabetic" would refuse `server1`. The rule that actuall
 `server1`.
 
 **253, not 255.** RFC 1035 §2.3.4 caps a name at 255 octets, but that is the wire form, which spends
-a length octet per label and a null for the root. Presentation form is therefore two shorter, and
+a length octet per label and a null for the root. Presentation form is therefore 2 shorter, and
 253 is what a string can hold. Both numbers are correct about different things, which is why the
 type names the limit it enforces.
 
 **The trailing dot folds rather than surviving.** RFC 3696 §2 calls `a.b.c` and `a.b.c.` equivalent
-and requires applications to accept the latter, so this is two spellings of one name and gets the
+and requires applications to accept the latter, so this is 2 spellings of one name and gets the
 treatment [`Bic`][bic-value-type] gives its 8- and 11-character forms. `fqdn` rebuilds the explicit
 spelling. A bare `.` is left alone rather than stripped, so it fails as an empty label instead of
 quietly becoming the empty string.
 
-**Six failure variants, where three is the house average.** Not vocabulary inflation: RFC 1123
-genuinely stacks six independent rules, and each one leaves the caller a different thing to do.
+**6 failure variants, where 3 is the house average.** Not vocabulary inflation: RFC 1123
+genuinely stacks 6 independent rules, and each one leaves the caller a different thing to do.
 Punycode it, fix a character, fix a label, shorten a label, shorten the name, or reach for an
-address type. Two of the six branch their message on the payload, the trick
+address type. 2 of the 6 branch their message on the payload, the trick
 [`Imei`][imei-value-type] uses to name a 16-digit input as an IMEISV rather than call it a miscount.
 
 **`Uri` is not this, measured rather than assumed.** `Uri.parse` accepts `-bad.com`, `bad-.com`,
@@ -159,18 +159,18 @@ anywhere else is an error" would make the *permissive* type refuse `a_b.example.
 So the charset is LDH plus underscore, and `isUnderscored` **reports** an RFC 8552 attribute leaf
 rather than gating on one, the way [`Port`](#port-value-type) reports its range.
 
-**Two rules are dropped, not relaxed.** RFC 1123's hyphen-edge and all-numeric-label rules are about
+**2 rules are dropped, not relaxed.** RFC 1123's hyphen-edge and all-numeric-label rules are about
 *host names* and RFC 2181 has neither, so `-bad.example.com` and `192.168.1.1` both parse here.
 Worth stating precisely, because the numeric rule only ever inspected the **last** label:
 `4.3.2.1.in-addr.arpa` was always a valid `Hostname`, `arpa` being alphabetic. Reverse DNS never
-needed this type; underscored names did.
+needed this type. Underscored names did.
 
 **Case-folding survives because the charset is bounded.** RFC 1035 §2.3.3 makes DNS comparison
 case-insensitive, so lower-casing matches `Hostname`. On arbitrary octets "lower-case" has no single
 meaning, which is the second argument for bounding the charset.
 
 **The conversion is asymmetric, and both directions live here.** `fromHostname` is total and
-constructs directly, its input being already normalised and strictly inside these rules;
+constructs directly, its input being already normalised and strictly inside these rules, where
 `tryToHostname` is a parse. Both sit on `DnsName` because `Hostname` shipped first and stays unaware
 of it, the same call [`Probability`][probability-constraint-type] made about `Percentage`.
 
@@ -183,7 +183,7 @@ permissive types drifting on a limit is the failure that file guards against.
 <a id="ip-address-value-type"></a>
 ## IpAddress: a wrapped engine, but not a wrapped grammar
 
-**The engine does the arithmetic; minted does the grammar.**
+**The engine does the arithmetic, minted does the grammar.**
 [`ipaddr`](https://pub.dev/packages/ipaddr) was picked on the usual bar (pure Dart, MIT, zero
 dependencies, `platform:web`, current) and it implements RFC 5952 compression correctly, including
 the rule most hand-rolled versions miss: `::` must not shorten a *single* zero field. What it does
@@ -195,21 +195,21 @@ does not have to mean inheriting its leniency, and the wrapper was translating i
 `ParseOutcome` anyway.
 
 **A leading zero is refused, not read, and that one is a security decision.** `inet_aton` reads
-`010` as octal 8; almost everything else reads decimal 10. Python's `ipaddress` accepted it until
+`010` as octal 8, where almost everything else reads decimal 10. Python's `ipaddress` accepted it until
 3.9.5, and CVE-2021-29921 exists because one component filtering `010` and another connecting to it
 disagree about which host was meant. Refusing costs nothing, since no correct writer of an address
 pads it.
 
 **One type for both families, with the family reported.** Same call as
-[`MacAddress`](#mac-address-value-type) makes for its two widths: one type, never converted, a
-getter saying which you hold, and the two never equal. Two types would let the compiler refuse
+[`MacAddress`](#mac-address-value-type) makes for its 2 widths: one type, never converted, a
+getter saying which you hold, and the 2 never equal. 2 types would let the compiler refuse
 `v4Network.contains(v6Address)`, which one type can only answer `false` at runtime. That is the
 accepted cost of not tripling the surface, and it is documented where it bites rather than left to
 be discovered.
 
 **IPv4-mapped addresses keep their mixed spelling**, `::ffff:192.0.2.1`, which RFC 5952 §5 asks for
 on that well-known prefix. The engine helps in neither direction: it cannot parse the mixed form at
-all, and renders the mapped range as plain hextets. So minted folds the IPv4 tail into two hextets
+all, and renders the mapped range as plain hextets. So minted folds the IPv4 tail into 2 hextets
 on the way in and restores it on the way out. The mapped test is on the address *value*, not its
 text: `0:0:0:0:ffff:0:0:0` also renders with a leading `::ffff:` and is not mapped, so a string
 check would mis-render it as `::ffff:0.0.0.0`.
@@ -218,9 +218,9 @@ check would mis-render it as `::ffff:0.0.0.0`.
 `192.0.2.9`, since `1` sorts before `9`. So `compareTo` orders by family, then by the address as one
 integer, which is the order anyone sorting a firewall list expects.
 
-**`isLoopback` and `isPrivate` ship; a vendor-style lookup does not.** RFC 1918, RFC 4193's
+**`isLoopback` and `isPrivate` ship, a vendor-style lookup does not.** RFC 1918, RFC 4193's
 `fc00::/7`, `127.0.0.0/8` and `::1` are fixed in their RFCs rather than registry-shaped, so they
-carry no [clock][registry-data-ships-a-clock], and they are the two questions people currently
+carry no [clock][registry-data-ships-a-clock], and they are the 2 questions people currently
 answer with a `startsWith('192.168.')`. Anything needing an arbitrary range is `Cidr.contains`,
 which composes instead of growing a getter per block.
 
@@ -255,7 +255,7 @@ genuinely different type, which Python calls `ip_interface`, and can follow if a
 first type to follow [compose from modelled parts][compose-from-modelled-parts], which uses it as
 its worked example. What the composition buys here specifically: the mask is already applied, since
 parsing guarantees the host bits are clear, so `network.octets` *is* the masked network part and
-containment is one comparison rather than two maskings.
+containment is one comparison rather than 2 maskings.
 
 **The engine does nothing here, and that is worth recording.** `ipaddr` earns its place inside
 [`IpAddress`](#ip-address-value-type), where it expands `::` and renders RFC 5952. Its network types
@@ -264,7 +264,7 @@ over a lazy iterable: 16.7 million allocations for a `/8`, and no termination at
 Netmask-from-prefix and the host-bits check are elementary bit maths on octets this package already
 exposes, so `Cidr` adds no dependency surface of its own.
 
-**`lastAddress`, not `broadcast`.** IPv6 has no broadcast at all; it uses multicast. `ipaddr` and
+**`lastAddress`, not `broadcast`.** IPv6 has no broadcast at all, it uses multicast. `ipaddr` and
 Python both call the top of a block its broadcast address, which is a misnomer inherited from IPv4
 and one this package need not repeat, for the same reason `prefix24` declines the name
 [`oui`](#mac-address-value-type). `netmask` and `hostmask` are absent for a different reason: nobody
@@ -278,9 +278,9 @@ on the prefix *is* accepted and folds to the plain number, unlike a leading zero
 `/024` carries none of the octal ambiguity that makes `010` dangerous in an octet.
 
 **A family mismatch answers `false` rather than refusing to compile.** That is the accepted cost of
-[one address type for both families](#ip-address-value-type). Two types would have let the compiler
-reject `v4Block.contains(v6Address)` outright; one type can only answer it at runtime. Documented on
-`contains` rather than left to be discovered.
+[one address type for both families](#ip-address-value-type). 2 types would have let the compiler
+reject `v4Block.contains(v6Address)` outright, where one type can only answer at runtime.
+Documented on `contains` rather than left to be discovered.
 
 ---
 
@@ -302,7 +302,7 @@ is the mistake [a width is not a domain][constraint-types] warns about: an IPv6 
 
 **Not a `Uint16` representation.** Holding one would make `.value` a `Uint16`, so reading the number
 becomes `port.value.value`, against the contract's rule that `.value` *is* the canonical form. The
-representation stays an `int`; only the validation is borrowed.
+representation stays an `int`, and only the validation is borrowed.
 
 **Port `0` is accepted, and named rather than refused.** It is a real member of the range, and
 `bind(0)` asking the OS for a free port is ordinary. Rejecting it would have cost the exact-`Uint16`

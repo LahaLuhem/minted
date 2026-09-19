@@ -5,11 +5,10 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [DnsName] refused its input. Sealed, not an enum, because most variants echo the part of
-/// the input that failed.
+/// Why a [DnsName] refused its input. Sealed rather than an enum, because most variants echo the part
+/// of the input that failed.
 ///
-/// Five where [Hostname] needs six: RFC 2181 drops the hyphen-edge and all-numeric-label rules, and
-/// what is left is ASCII, a charset, an empty label, and the two length limits.
+/// One fewer than [Hostname] needs: RFC 2181 drops the hyphen-edge and all-numeric-label rules.
 @immutable
 sealed class DnsNameFailure implements MintedFailure {
   const new();
@@ -18,7 +17,7 @@ sealed class DnsNameFailure implements MintedFailure {
   String get typeName => 'DnsName';
 }
 
-/// Something outside ASCII survived normalisation, so this may be an internationalised name.
+/// Something outside ASCII got through, so this may be an internationalised name.
 final class DnsNameNotAscii extends DnsNameFailure {
   /// Creates the failure.
   const new();
@@ -36,7 +35,7 @@ final class DnsNameNotAscii extends DnsNameFailure {
   String toString() => 'DnsNameNotAscii()';
 }
 
-/// [character] is ASCII but outside the letters, digits, hyphen and underscore this type allows.
+/// [character] is ASCII but outside the letters, digits, hyphen and underscore this type takes.
 final class DnsNameInvalidCharacter extends DnsNameFailure {
   /// The first offending character.
   final String character;
@@ -58,8 +57,8 @@ final class DnsNameInvalidCharacter extends DnsNameFailure {
   String toString() => 'DnsNameInvalidCharacter($character)';
 }
 
-/// A label was empty, so two dots met or one sat at an edge. RFC 2181 gives a label one octet
-/// minimum, which is the only shape rule left once the hyphen-edge rule goes.
+/// A label was empty, so 2 dots met or one sat at an edge. RFC 2181's one-octet minimum is the only
+/// shape rule left once the hyphen-edge rule goes.
 final class DnsNameLabelEmpty extends DnsNameFailure {
   /// Creates the failure.
   const new();
@@ -99,7 +98,7 @@ final class DnsNameLabelTooLong extends DnsNameFailure {
   String toString() => 'DnsNameLabelTooLong($actualLength)';
 }
 
-/// The whole name ran past 253 characters: RFC 1035's 255-octet wire limit, in presentation form.
+/// The whole name ran past 253 characters, RFC 1035's 255-octet wire limit in presentation form.
 final class DnsNameTooLong extends DnsNameFailure {
   /// How long the name was once normalised.
   final int actualLength;

@@ -6,8 +6,8 @@ import 'support/failures.dart';
 
 void main() {
   feature('MintedFormatError', () {
-    // A failing outcome built by hand: core declares ParseOutcome but owns no fallible door, so
-    // there is no `X.parse` here to produce one. The domain packages cover the real doors.
+    // A failing outcome built by hand: core declares ParseOutcome but owns no fallible door, so there
+    // is no `X.parse` here to produce one. The domain packages cover the real doors.
     const failed = ParseFailure<TestFailure, int>(.malformed);
 
     scenario('from renders the failure type name and message', () {
@@ -26,8 +26,8 @@ void main() {
           .equals('Invalid OtherValue: failed the other check');
     });
 
-    // An Error, not an Exception: reaching it means a caller asserted a value was valid and was
-    // wrong, which is a bug in their source rather than a condition to catch.
+    // An Error, not an Exception: reaching it means a caller asserted a value was valid and was wrong,
+    // which is a bug in their source rather than a condition to catch.
     scenario('it is an Error, so on FormatException no longer catches it', () {
       check(failed.getOrThrow).throws<Error>();
       check(MintedFormatError.from(TestFailure.malformed)).isA<Error>();

@@ -3,13 +3,11 @@ library;
 
 /// An unsigned 4-bit integer, a nibble: `0` to `15`.
 ///
-/// Bounded at both ends, unlike [Uint]. Out-of-range input is refused, never truncated to fit.
-///
-/// [value] is the numeric value. The string form is `value.toString()`.
+/// Bounded at both ends, unlike [Uint]. Out of range is refused, never truncated.
 ///
 /// [u0] to [u15] are provided when the value is const-known. [max] is the top one.
 extension type const Uint4._(int value) implements int {
-  /// The [Uint4] with numeric [value], or `null` unless it is in `0`-`15`.
+  /// The [Uint4] with numeric [value], or `null` unless it's in `0`-`15`.
   static Uint4? tryFrom(int value) => value < u0 || value > max ? null : ._(value);
 
   /// The nibble `0`.

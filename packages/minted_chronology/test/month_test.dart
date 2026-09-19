@@ -6,7 +6,7 @@ import 'support/bdd.dart';
 
 void main() {
   feature('Month', () {
-    // A one or two digit month number round-trips through value; null means rejected.
+    // A one or 2 digit month number round-trips through value. Null means rejected.
     scenarioOutline<({String input, int? value})>(
       'Month.tryParse accepts month numbers 1-12 and rejects the rest',
       examples: {

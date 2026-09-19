@@ -26,8 +26,8 @@ void main() {
       check(unreleasedNotes('## UNRELEASED\n- Something.\n')).equals('- Something.');
     });
 
-    // The regression this whole function exists for: after a release, cider dates the heading, so
-    // anything below it has already shipped.
+    // The regression this whole function exists for: after a release, cider dates the heading, so anything
+    // below it has already shipped.
     test('an `## Unreleased` below a dated heading does not count', () {
       const changelog = '''
 ## 2.0.0 - 2026-02-01

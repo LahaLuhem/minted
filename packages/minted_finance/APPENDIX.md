@@ -1,4 +1,4 @@
-# APPENDIX — `minted_finance`
+# APPENDIX: `minted_finance`
 
 Design rationale for the types this package ships. Family-wide rationale lives in the
 [workspace APPENDIX][appendix-md], code style in [CODESTYLE.md][codestyle-md]. Link by the explicit
@@ -18,16 +18,16 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 ## Isin: a prefix that need not be a country
 
 **Luhn, but over an expansion, which changes the weighting.** ISO 6166 replaces every letter with
-the two digits of its value (`A`=10 ... `Z`=35) and runs Luhn over the result, so `AU0000XVGZA3`
-weighs eighteen characters rather than the twelve it shows. That is why `luhnCheckDigit` had to be
+the 2 digits of its value (`A`=10 ... `Z`=35) and runs Luhn over the result, so `AU0000XVGZA3`
+weighs eighteen characters rather than the 12 it shows. That is why `luhnCheckDigit` had to be
 length-agnostic before this type could reuse it, and why the `A`=10 mapping moved out of
 `iban_check_digits.dart` into `shared/encoding/`: ISO 13616 folds those values into mod-97 and ISO
-6166 spells them out, but the mapping is one convention shared by two standards.
+6166 spells them out, but the mapping is one convention shared by 2 standards.
 
-**The prefix is two letters, not a country.** `XS` is Euroclear and Clearstream, `EU` is
+**The prefix is 2 letters, not a country.** `XS` is Euroclear and Clearstream, `EU` is
 supranational, and both are as valid as `GB`. Gating `parse` on ISO 3166 would [ship a
 clock][registry-data-ships-a-clock] against the set of non-country prefixes, so `parse` enforces
-what the standard actually fixes (two letters) and `hasCountryPrefix` *reports* the narrower fact.
+what the standard actually fixes (2 letters) and `hasCountryPrefix` *reports* the narrower fact.
 Exactly the [`Bic`](#bic-value-type) split between the standard and the registry.
 
 **Its parts stay `String`.** An NSIN is `[A-Z0-9]`, so the [digits-only rule][typed-digit-subparts]
@@ -40,30 +40,30 @@ does not apply and `Digits` there would be a narrower type rather than a stronge
 ## Bic: no checksum, so the standard is the whole check
 
 ISO 9362 defines no check digit. Every other standardised type here leans on one ([check digits, not
-regex][check-digits-not-regex]); `Bic` has nothing to lean on, so what is left is the shape plus one
+regex][check-digits-not-regex]). `Bic` has nothing to lean on, so what is left is the shape plus one
 real lookup: positions 5-6 must be an ISO 3166-1 country. `Bic.parse` will therefore accept a
 well-formed code no institution holds, the same honesty [`Uuid`][uuid-value-type] states about its
 own lack of a checksum. Naming the gap beats pretending to close it.
 
 **The standard is wider than the registry, so the wider rule wins.** ISO 9362:2014 redefined the
-first four characters as alphanumeric, and ISO 20022 retired its letters-only `AnyBICIdentifier`
+first 4 characters as alphanumeric, and ISO 20022 retired its letters-only `AnyBICIdentifier`
 pattern to follow. SWIFT, as registration authority, still issues letters only. Validating against
 current practice would [ship a clock][registry-data-ships-a-clock], so `parse` enforces the standard
 and `isSwiftRegistrable` *reports* the narrower shape, which is a fact about the code rather than
 grounds to refuse it.
 
-**Eight characters folds to eleven.** A branch code of `XXX` means the primary office, which is
-exactly what an eight-character BIC addresses, so the two spellings denote one party and must fold
+**8 characters folds to 11.** A branch code of `XXX` means the primary office, which is
+exactly what an 8-character BIC addresses, so the 2 spellings denote one party and must fold
 to compare equal ([normalise on parse][normalise-on-parse]). Folding up rather than down also fixes
-the length at eleven, so `branchCode` is never null and `bic8` rebuilds the short form.
+the length at 11, so `branchCode` is never null and `bic8` rebuilds the short form.
 
 **The country list is borrowed, not carried.** `phone_numbers_parser` is already a dependency and
-its `IsoCode` has 245 entries, including the `XK` SWIFT uses for Kosovo; it omits only seven
+its `IsoCode` has 245 entries, including the `XK` SWIFT uses for Kosovo. It omits only 7
 uninhabited territories with no banks. `iban_validator`'s list covers IBAN countries alone and would
 reject `CHASUS33`. Borrowing keeps core free of a country table it would have to maintain, at the
 cost of a finance type tracking a phone engine's data, which the README states.
 
-**The location code is documented, not modelled.** By SWIFT convention its second character reads
+**The location code is documented, not modelled.** By SWIFT convention its 2nd character reads
 `0` for a test code, `1` for a passive participant, `2` for reverse billing. ISO 9362 assigns none
 of those, so an enum naming them would overclaim, and its default case worst of all. Same reasoning
 as [`Uuid.version`][uuid-value-type] staying an `int`.
@@ -87,19 +87,19 @@ it would [ship a clock][registry-data-ships-a-clock], so the table carries only 
 known network contests, and a contested one is left out rather than guessed at: `unknown` means
 "cannot say", not "not a card".
 
-Two getters, because one resolution does not fit. `cardScheme` answers the common case;
+2 getters, because one resolution does not fit. `cardScheme` answers the common case, where
 `cardSchemes` answers the co-brands a single value cannot express, `622126`-`622925` being a
 UnionPay that Discover also accepts. `cardScheme` is `cardSchemes.singleOrNull ?? unknown`, so the
-two cannot drift and there is one table. `cardSchemesOf` is static because a half-typed number has
-no check digit yet and so cannot parse, while a checkout form still wants the brand at the fourth
+2 cannot drift and there is one table. `cardSchemesOf` is static because a half-typed number has
+no check digit yet and so cannot parse, while a checkout form still wants the brand at the 4th
 keystroke.
 
-**Eight digits is the floor, though nothing is issued that short.** ISO/IEC 7812 allows 8 to 19; the
-shortest real PAN is a 12-digit Maestro. Enforcing the standard over current practice is the [same
-rule][registry-data-ships-a-clock] again, and Luhn already rejects most of what the wider window
-admits.
+**8 digits is the floor, though nothing is issued that short.** ISO/IEC 7812 allows 8 to 19, and
+the shortest real PAN is a 12-digit Maestro. Enforcing the standard over current practice is the
+[same rule][registry-data-ships-a-clock] again, and Luhn already rejects most of what the wider
+window admits.
 
-**Luhn's blind spots apply**; see [check-digit blind spots][check-digit-blind-spots].
+**Luhn's blind spots apply.** See [check-digit blind spots][check-digit-blind-spots].
 
 [appendix-md]: https://github.com/LahaLuhem/minted/blob/main/APPENDIX.md
 [check-digit-blind-spots]: https://github.com/LahaLuhem/minted/blob/main/APPENDIX.md#check-digit-blind-spots

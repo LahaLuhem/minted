@@ -8,8 +8,8 @@ import 'support/digits.dart';
 
 void main() {
   feature('Imei', () {
-    // The compact fifteen-digit form doubles as the expected outcome: a String means "accepted and
-    // normalised to this", null means "rejected". Valid rows are published test IMEIs.
+    // The compact 15-digit form doubles as the expected outcome: a String means "accepted and normalised
+    // to this", null means "rejected". Valid rows are published test IMEIs.
     scenarioOutline<({String input, String? canonical})>(
       'Imei.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -117,8 +117,8 @@ void main() {
       check(Imei.tryParse('35-209900-176148-1')?.value).equals('352099001761481');
     });
 
-    // fromComponents runs our Luhn generator; check it reproduces the published check digit rather
-    // than round-tripping our own output.
+    // fromComponents runs our Luhn generator, so check it reproduces the published check digit than
+    // round-tripping our own output.
     scenarioOutline<({String tac, String serialNumber, String imei})>(
       'fromComponents computes the check digit to match the published IMEI',
       examples: {

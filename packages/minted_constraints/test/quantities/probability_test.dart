@@ -5,7 +5,7 @@ import '../support/bdd.dart';
 
 void main() {
   feature('Probability', () {
-    // The expected `.value` doubles as the outcome; null means the input was rejected.
+    // The expected `.value` doubles as the outcome. Null means the input was rejected.
     scenarioOutline<({num input, double? value})>(
       'Probability.tryFrom accepts 0 to 1 inclusive and refuses either side',
       examples: {
@@ -44,8 +44,8 @@ void main() {
       },
     );
 
-    // The guarantee is the range, not involution: a third of ordinary values fail to round-trip,
-    // because 1 - (1 - x) is not x in IEEE. Asserted rather than hidden.
+    // The guarantee is the range, not involution: a 3rd of ordinary values fail to round-trip, because
+    // 1 - (1 - x) is not x in IEEE. Asserted rather than hidden.
     scenario('complement stays in range, and only round-trips where doubles allow it', () {
       check(Probability.certain.complement.isImpossible).isTrue();
       check(Probability.impossible.complement.isCertain).isTrue();

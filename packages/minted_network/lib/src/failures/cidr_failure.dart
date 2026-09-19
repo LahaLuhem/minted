@@ -7,7 +7,7 @@ import 'package:minted/minted.dart';
 
 import 'ip_address_failure.dart';
 
-/// Why a [Cidr] refused its input. Sealed, not an enum, because three variants carry what failed,
+/// Why a [Cidr] refused its input. Sealed rather than an enum, because 3 variants carry what failed,
 /// one of them another type's failure.
 @immutable
 sealed class CidrFailure implements MintedFailure {
@@ -17,7 +17,7 @@ sealed class CidrFailure implements MintedFailure {
   String get typeName => 'Cidr';
 }
 
-/// The text is not an address followed by `/` and a decimal prefix length.
+/// The text isn't an address followed by `/` and a decimal prefix length.
 final class CidrMalformed extends CidrFailure {
   /// Creates the failure.
   const new();
@@ -35,10 +35,10 @@ final class CidrMalformed extends CidrFailure {
   String toString() => 'CidrMalformed()';
 }
 
-/// The part before the `/` is not an [IpAddress], and [reason] says why.
+/// The part before the `/` isn't an [IpAddress], and [reason] says why.
 ///
-/// Nested rather than flattened so the diagnosis survives: a caller learns that the address had a
-/// leading zero, not merely that something about it was wrong.
+/// Nested rather than flattened so the diagnosis survives: a caller learns the address had a leading
+/// zero, not just that something about it was wrong.
 final class CidrInvalidAddress extends CidrFailure {
   /// Why the address itself would not parse.
   final IpAddressFailure reason;
@@ -87,8 +87,8 @@ final class CidrPrefixLengthOutOfRange extends CidrFailure {
       'CidrPrefixLengthOutOfRange(maxPrefixLength: $maxPrefixLength, actual: $actual)';
 }
 
-/// Bits are set below the prefix, so this names a host rather than a network. [networkAddress] is
-/// the block the caller most likely meant.
+/// Bits are set below the prefix, so this names a host rather than a network. [networkAddress] is the
+/// block the caller most likely meant.
 final class CidrHostBitsSet extends CidrFailure {
   /// The input with its host bits cleared, offered as the likely intent.
   final String networkAddress;
@@ -97,7 +97,7 @@ final class CidrHostBitsSet extends CidrFailure {
   const new(this.networkAddress);
 
   @override
-  String get message => 'has host bits set below the prefix; the network is "$networkAddress"';
+  String get message => 'has host bits set below the prefix. The network is "$networkAddress"';
 
   @override
   bool operator ==(Object other) =>

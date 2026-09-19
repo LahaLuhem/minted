@@ -7,20 +7,18 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/imei_failure.dart';
 
-/// An IMEI (International Mobile Equipment Identity): validated for digits, the fifteen-digit
-/// length, and the Luhn check digit. Identifies one piece of mobile equipment, not its subscriber.
+/// An IMEI (International Mobile Equipment Identity): names one piece of mobile kit, not its subscriber.
 /// Standard: [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm).
 ///
-/// Normalisation on parse: spaces and hyphens are stripped, so a printed IMEI and its compact form
-/// compare equal. [formatted] rebuilds the printed grouping.
+/// Parsing strips spaces and hyphens, so a printed IMEI and its compact form compare equal. [formatted]
+/// puts the grouping back.
 ///
-/// Rendered in full rather than masked: an IMEI is not a credential, and the systems holding one display
-/// it. Why that differs from a card number: `APPENDIX.md#imei-value-type`.
+/// Shown in full, never masked. An IMEI isn't a credential. Why that differs from a card number:
+/// `APPENDIX.md#imei-value-type`.
 ///
 /// {@example /example/minted_identifiers_example.dart#imei}
 extension type const Imei._(String value) {
-  /// Builds an [Imei] from its [tac] and [serialNumber], computing the Luhn check digit, reporting
-  /// the [ImeiFailure] when the parts don't form a valid IMEI.
+  /// Builds an [Imei] from its [tac] and [serialNumber], working the Luhn check digit out.
   static ParseOutcome<ImeiFailure, Imei> fromComponents({
     required Digits tac,
     required Digits serialNumber,
@@ -31,10 +29,10 @@ extension type const Imei._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledImei));
   }
 
-  /// Parses [input] as an IMEI, or returns `null` when it fails the length, character, or Luhn tests.
+  /// Parses [input], or `null` if it isn't an IMEI.
   static Imei? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an IMEI, reporting the [ImeiFailure] that says which check failed.
+  /// Parses [input], reporting the [ImeiFailure] that says what went wrong.
   static ParseOutcome<ImeiFailure, Imei> parse(String input) {
     final compactInput = compact(input);
     final failure = _failureFor(compactInput);
@@ -42,22 +40,20 @@ extension type const Imei._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(compactInput));
   }
 
-  /// The eight-digit Type Allocation Code: which model of equipment this is, not which unit.
-  /// Read [Digits.asString] for the plain text.
-  // A validated IMEI is all digits, so tryFrom cannot return null in any of these three.
+  /// The 8-digit Type Allocation Code: which model this is, not which unit.
+  // A validated IMEI is all digits, so none of these 4 tryFroms can return null.
   Digits get tac => .tryFrom(decimalValues(value, 0, _tacLength))!;
 
-  /// The two leading digits of [tac], naming the body that allocated it (`35` is BABT, `01` PTCRB).
+  /// The first 2 digits of [tac], naming who allocated it (`35` is BABT, `01` PTCRB).
   Digits get reportingBodyIdentifier => .tryFrom(decimalValues(value, 0, _reportingBodyLength))!;
 
-  /// The six digits the manufacturer assigns to one unit of the model [tac] names.
+  /// The 6 digits the manufacturer gives one unit of the model [tac] names.
   Digits get serialNumber => .tryFrom(decimalValues(value, _tacLength, _checkDigitIndex))!;
 
-  /// The final digit, the Luhn check over the other fourteen.
-  // The last character of a validated IMEI is always a digit, so tryParse cannot return null.
+  /// The last digit, the Luhn check over the other 14.
   Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
-  /// The printed grouping, as a settings screen and the box both show it, e.g. `35-209900-176148-1`.
+  /// The printed grouping, like `35-209900-176148-1`.
   String get formatted =>
       '${reportingBodyIdentifier.asString}-'
       '${value.substring(_reportingBodyLength, _tacLength)}'
@@ -65,8 +61,8 @@ extension type const Imei._(String value) {
 
   static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
 
-  // Why already-compacted input is not an IMEI, or null when it is one. The single gate parse and
-  // fromComponents funnel through; widest check first, so the earliest wrong thing is named.
+  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
+  // thing gets named.
   static ImeiFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when compactInput.length != _length => ImeiWrongLength(compactInput.length),
     _ when !digitsOnly.hasMatch(compactInput) => const ImeiInvalidCharacters(),
@@ -78,8 +74,8 @@ extension type const Imei._(String value) {
       compactInput.endsWith(luhnCheckDigit(compactInput.substring(0, _checkDigitIndex)));
 
   static const _length = 15;
-  // The 2004 revision folded the two-digit Final Assembly Code into the TAC, so there is no separate
-  // part between the TAC and the serial to expose.
+  // The 2004 revision folded the Final Assembly Code into the TAC, so there's nothing left to expose
+  // between the TAC and the serial.
   static const _tacLength = 8;
   static const _reportingBodyLength = 2;
   static const _checkDigitIndex = 14;

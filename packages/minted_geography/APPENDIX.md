@@ -1,4 +1,4 @@
-# APPENDIX — `minted_geography`
+# APPENDIX: `minted_geography`
 
 Design rationale for the types this package ships. Family-wide rationale lives in the
 [workspace APPENDIX][appendix-md], code style in [CODESTYLE.md][codestyle-md]. Link by the explicit
@@ -6,7 +6,7 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 
 <!-- TOC start -->
 
-- [GeoCoordinate: a bounded pair, not two doubles](#geo-coordinate-value-type)
+- [GeoCoordinate: a bounded pair, not 2 doubles](#geo-coordinate-value-type)
 - [Geohash: a cell, not a point](#geohash-value-type)
 - [GeoBounds: a box that may cross the antimeridian](#geo-bounds-value-type)
 
@@ -15,13 +15,13 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 ---
 
 <a id="geo-coordinate-value-type"></a>
-## GeoCoordinate: a bounded pair, not two doubles
+## GeoCoordinate: a bounded pair, not 2 doubles
 
 **The bug this type exists for is a transposition, which no range check can catch.** `f(lat, lng)`
 and `f(lng, lat)` have the same signature, and both arguments are plausible degrees. So the pair is
 named once, at the parse boundary, and `from` / `tryFrom` take **required named** parameters. That
 breaks the habit [`Date`][date-value-type] set with positional `Date(y, m, d)`, deliberately: a
-year, a month and a day are not interchangeable at a glance, whereas two degree values are. Half the
+year, a month and a day are not interchangeable at a glance, whereas 2 degree values are. Half the
 transpositions are caught anyway, because a longitude past 90 is not a latitude, which is exactly
 the half that would otherwise reach production silently.
 
@@ -34,21 +34,21 @@ the string and discarding the altitude is worse still, because a parse that sile
 its input is not a parse. Refusing says what is true: this type is a surface coordinate.
 
 **The canonical form is decimal degrees even though the input may be sexagesimal.** ISO 6709 uses
-the *width* of the degree field as the unit selector — 2/4/6 digits for latitude, 3/5/7 for
-longitude — so one point has three spellings. Folding them to one is the same move
-[`Gtin`][gtin-value-type] makes with its four lengths. The cost is that a coordinate read from
+the *width* of the degree field as the unit selector (2/4/6 digits for latitude, 3/5/7 for
+longitude), so one point has 3 spellings. Folding them to one is the same move
+[`Gtin`][gtin-value-type] makes with its 4 lengths. The cost is that a coordinate read from
 `+501234-0001042/` renders as `+50.20944444444444-000.17833333333333334/`, which is ugly and exact.
 The alternative, rounding to a pretty fixed precision, would break the round-trip the canonical form
 promises, so the digits stay. Rendering searches for the shortest fixed-point decimal that reads
 back as the same `double` rather than using `toString`, which switches to exponential notation below
-`1e-6` — and `1e-7` is a legal latitude but not a legal ISO 6709 field.
+`1e-6`, and `1e-7` is a legal latitude but not a legal ISO 6709 field.
 
 **Round-tripping needs both ends exact, and for a while neither was.** The renderer spells at most
 20 fraction digits, so anything finer fell back to a truncated spelling: `1e-21` rendered as
 `+00.00000000000000000000`, which reads back as zero, and a tiny *negative* degree kept the minus
 sign the negative-zero rule below exists to remove. Parsing had the mirror defect, rebuilding a
 decimal field by adding the fraction to the degrees, which rounds twice and lands up to one ulp from
-converting the field whole, so about one coordinate in four hundred did not survive its own
+converting the field whole, so about one coordinate in 4 hundred did not survive its own
 canonical form. The fixes pair up: `_canonical` snaps every stored degree to one the renderer can
 spell exactly (identity above `1e-20`, so identity for anything measurable), and a plain decimal
 field now goes through one `double.parse`. The sexagesimal path keeps its base-60 arithmetic, its
@@ -57,8 +57,8 @@ The snap is also what lets the renderer drop its "no exact spelling" fallback ra
 untestable branch.
 
 **Normalising negative zero is a correctness requirement, not a cosmetic one.** This is the first
-floating-point value in the package, which makes two IEEE 754 facts load-bearing that no `int`- or
-`String`-backed type had to face. `-0.0 == 0.0` is true while the two need not share a hash code, so
+floating-point value in the package, which makes 2 IEEE 754 facts load-bearing that no `int`- or
+`String`-backed type had to face. `-0.0 == 0.0` is true while the 2 need not share a hash code, so
 an instance holding `-0.0` would break the Set-and-Map-key guarantee
 [normalise on parse][normalise-on-parse] makes. It also happens to be what the standard asks for,
 signing the equator and the prime meridian with a plus. `NaN` needs no special case for the same
@@ -66,18 +66,18 @@ family of reasons: every comparison with it is false, so a range test written as
 <= bound` rejects it for free, which is why the check is written positively rather than as
 `< -bound || > bound`.
 
-**`-180` folds onto `+180`, and a pole keeps its longitude.** Both are cases where two values name
-one place, and they get opposite treatment because only one of them is two spellings of the same
+**`-180` folds onto `+180`, and a pole keeps its longitude.** Both are cases where 2 values name
+one place, and they get opposite treatment because only one of them is 2 spellings of the same
 thing. The standard itself says minus denotes "west longitude *or* the 180° meridian", so the
-antimeridian has two spellings and one location, and RFC 5870 makes that equality normative for
-`geo:` URIs — fold it. At a pole the longitude is *meaningless* rather than redundant, and zeroing
+antimeridian has 2 spellings and one location, and RFC 5870 makes that equality normative for
+`geo:` URIs, so fold it. At a pole the longitude is *meaningless* rather than redundant, and zeroing
 it would discard a number the caller supplied on a guess about what they meant, so it stands.
 
 **Minutes and seconds reaching 60 fail the shape check, not a range check.** The fixed-width scheme
 is what makes the grammar unambiguous, and the digit range `00`-`59` is part of that width rather
 than a bound on a part, so `+5060+00000/` reports `GeoCoordinateNotIso6709`. This keeps the failure
-vocabulary at three variants, one per remedy: fix the format, fix the latitude, fix the longitude.
-The same reasoning is why `+46+2/` must be refused rather than read leniently — an unpadded
+vocabulary at 3 variants, one per remedy: fix the format, fix the latitude, fix the longitude.
+The same reasoning is why `+46+2/` must be refused rather than read leniently. An unpadded
 longitude in a fixed-width format is not a typo the parser can see, it is a *different location*,
 and a lenient parser hands back a plausible wrong answer instead of an error.
 
@@ -97,9 +97,9 @@ point in it, which is the fix. Secondary and more common: `toLowerCase()` is not
 alphabet having dropped `a`, `i`, `l` and `o`.
 
 **No length cap, which is [`Bic`][bic-value-type]'s rule reaching the opposite answer.** Both
-*validate what the standard fixes*: ISO 9362 fixes eight or eleven characters, and nothing readable
-in CTA-5009-A fixes a ceiling. Twelve is where implementations stop, not where the standard does, so
-refusing thirteen would refuse a cell this type represents exactly. `centre` documents where honesty
+*validate what the standard fixes*: ISO 9362 fixes 8 or 11 characters, and nothing readable
+in CTA-5009-A fixes a ceiling. 12 is where implementations stop, not where the standard does, so
+refusing 13 would refuse a cell this type represents exactly. `centre` documents where honesty
 ends instead: beyond about 23 characters a `double` runs out of mantissa and it stops moving,
 measured rather than derived.
 
@@ -111,17 +111,17 @@ reportable, and with a `GeoCoordinate` opposite it nothing is left to refuse, so
 cost is real: constraint types expose only `tryFrom`, so call sites read `NaturalNumber.tryFrom(5)!`
 and pull in `package:minted`.
 
-**Lossy on purpose, unlike the two rules that forbid loss.**
+**Lossy on purpose, unlike the 2 rules that forbid loss.**
 [`GeoCoordinate`](#geo-coordinate-value-type) refuses altitude and [`Cidr`][cidr-value-type] refuses
 host bits, both on "a parse that silently loses input is not a parse". Here `precision` sizes the
 loss and `centre` reads it back, so nothing is silent.
 
 **No `compareTo`.** The alphabet is ASCII-ascending on purpose, so plain string order already is
 geohash order, which is what makes a prefix range query work. Neighbour and parent traversal are
-simply not built yet; the seam problem they solve is real.
+simply not built yet, and the seam problem they solve is real.
 
 **The south-west corner is unreachable through `from`.** `GeoCoordinate` folds `-180` onto `+180`,
-so `(-90, -180)` encodes to `pbpbpb`; the all-zero cell parses fine, its centre just inside it.
+so `(-90, -180)` encodes to `pbpbpb`. The all-zero cell parses fine, its centre just inside it.
 Pinned by a test, because the fold is right for a coordinate and only surprising if you expected the
 grid to have a reachable corner.
 
@@ -132,14 +132,14 @@ grid to have a reachable corner.
 
 **The bug is that `west > east` is legal.** RFC 7946 §5.2 spells a box across the antimeridian by
 putting the western edge east of the eastern one, so `170,-45,-170,-35` is Fiji. Range-check it and
-you refuse Fiji; skip the check and those four numbers mean either a sliver by the dateline or
+you refuse Fiji. Skip the check and those 4 numbers mean either a sliver by the dateline or
 nearly its complement, depending on the reader. Downstream is split too, Elasticsearch handling the
 crossing where PostGIS does not, so `crossesAntimeridian` is a reported fact and `contains` honours
 it.
 
-**The edges are numbers, not two [`GeoCoordinate`](#geo-coordinate-value-type) corners, which is the
+**The edges are numbers, not 2 [`GeoCoordinate`](#geo-coordinate-value-type) corners, which is the
 one place dogfooding had to stop.** A coordinate folds `-180` onto `+180`, right for a point, where
-one meridian has two spellings. An edge is not a point: the whole world is written
+one meridian has 2 spellings. An edge is not a point: the whole world is written
 `-180,-90,180,90`, and folded corners collapse both longitudes to `180`, turning the commonest bbox
 there is into a meridian line. Composition still pays on `contains(GeoCoordinate)` and on the
 failure nesting below.
@@ -154,7 +154,7 @@ edges then carry their own ranges, leaving `south <= north` as all `from` can re
 
 **Both implement `double`, which is what makes the getters affordable.** Left opaque,
 `coordinate.latitude * 2` becomes `.value * 2`, and a box built from a coordinate's parts re-proves
-degrees that were already proven. What that buys and costs across the family, and the two types left
+degrees that were already proven. What that buys and costs across the family, and the 2 types left
 opaque anyway, are in [constraint types][constraint-types].
 
 **`parse` still diagnoses, text being where unchecked input arrives.** A constraint type answers
@@ -165,7 +165,7 @@ with `GeoCoordinate.parse`.
 
 **`west == east` is zero width, and a polar cap is not refused because it cannot be written.** The
 RFC settles neither. Zero width follows `south == north`, which has to be legal as a horizontal
-line, so splitting the axes would be the surprise; the price is spelling the whole world `-180` to
+line, so splitting the axes would be the surprise. The price is spelling the whole world `-180` to
 `180`, which it is. The poles need no check: `north: 90` is a box whose top edge is the pole, and a
 cap *around* one is not a west/south/east/north rectangle.
 

@@ -6,8 +6,8 @@ import 'support/bdd.dart';
 
 void main() {
   feature('GeoBounds', () {
-    // Acceptance and normalisation in one table: the canonical bbox doubles as the expected
-    // outcome. A String means "accepted and normalised to this"; null means "rejected".
+    // Acceptance and normalisation in one table: the canonical bbox doubles as the expected outcome.
+    // A String means "accepted and normalised to this". Null means "rejected".
     scenarioOutline<({String input, String? canonical})>(
       'tryParse takes the GeoJSON bbox form and rejects the rest',
       examples: {
@@ -61,7 +61,7 @@ void main() {
       },
     );
 
-    // Three remedies from one door: supply four numbers, fix a corner, or swap the latitudes.
+    // 3 remedies from one door: supply 4 numbers, fix a corner, or swap the latitudes.
     scenarioOutline<({String input, GeoBoundsFailure failure})>(
       'parse reports which rule broke, not just the shape',
       examples: {
@@ -189,8 +189,8 @@ void main() {
           .equals(ParseSuccess(GeoBounds.tryFrom(west: -10, south: -45, east: 10, north: -35)!));
     });
 
-    // Constrained edges leave one way to fail, so from still answers an outcome where
-    // GeoCoordinate.from became total.
+    // Constrained edges leave one way to fail, so from still answers an outcome where GeoCoordinate.from
+    // became total.
     scenario('from takes constrained degrees and only the latitude order can still fail', () {
       final ordered = GeoBounds.from(
         west: Longitude.tryFrom(-10)!,
@@ -209,9 +209,9 @@ void main() {
       check(inverted.reasonOrNull).equals(const GeoBoundsSouthAboveNorth(south: 50, north: 10));
     });
 
-    // The point of the typed getters: a box builds straight out of two coordinates, with no range
-    // re-check and no bang. A west edge *on* the antimeridian still has to be spelled -180 by hand,
-    // a coordinate having folded it to +180 already.
+    // The point of the typed getters: a box builds straight out of 2 coordinates, with no range re-check
+    // and no bang. A west edge *on* the antimeridian still has to be spelled -180 by hand, a coordinate
+    // having folded it to +180 already.
     scenario('a box composes from coordinates without re-proving their degrees', () {
       final southWest = GeoCoordinate.tryFrom(latitude: -45, longitude: -10)!;
       final northEast = GeoCoordinate.tryFrom(latitude: -35, longitude: 10)!;

@@ -2,8 +2,8 @@ import 'dart:io';
 
 /// Every external command the release flow runs, behind one seam.
 ///
-/// Injected so the order of the git calls, and what gets undone when one fails, is unit-testable
-/// rather than only observable by cutting a real release.
+/// Injected so the order of the git calls, and what gets undone when one fails, is unit-testable rather
+/// than only observable by cutting a real release.
 abstract interface class ProcessRunner {
   /// Runs [executable] and captures its output, for commands whose output is parsed.
   CommandResult capture(String executable, List<String> arguments, {String? workingDirectory});

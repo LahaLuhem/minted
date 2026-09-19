@@ -9,7 +9,7 @@ const wellKnown = <Port>[.wildcard];
 
 void main() {
   feature('Port', () {
-    // The expected `.value` doubles as the outcome; null means the input was rejected.
+    // The expected `.value` doubles as the outcome. Null means the input was rejected.
     scenarioOutline<({int input, int? value})>(
       'Port.tryFrom accepts the whole 16-bit range and refuses either side of it',
       examples: {
@@ -24,7 +24,7 @@ void main() {
       },
     );
 
-    // RFC 6335 §6 fixes these three ranges, so the boundaries are the interesting cases.
+    // RFC 6335 §6 fixes these 3 ranges, so the boundaries are the interesting cases.
     scenarioOutline<({int input, PortRange range})>(
       'range reports the RFC 6335 band, checked at every boundary',
       examples: {
@@ -49,8 +49,8 @@ void main() {
       check(wellKnown.single.isWildcard).isTrue();
     });
 
-    // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a
-    // runtime test cannot express.
+    // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a runtime
+    // test cannot express.
     scenario('a Port goes where a Uint16 is wanted', () {
       final Uint16 widened = Port.tryFrom(443)!;
 

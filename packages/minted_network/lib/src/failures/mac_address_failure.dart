@@ -4,11 +4,11 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [MacAddress] refused its input. Sealed, not an enum, because [MacAddressWrongOctetCount]
-/// reports a count read from the input.
+/// Why a [MacAddress] refused its input. Sealed rather than an enum, because [MacAddressWrongOctetCount]
+/// carries a count off the input.
 ///
-/// Two variants, one per remedy: fix the notation, or fix the width. IEEE 802 has no checksum and
-/// no reserved address, so nothing else can fail.
+/// 2, one per remedy: fix the notation, or fix the width. IEEE 802 has no checksum and no reserved
+/// address, so nothing else can fail.
 @immutable
 sealed class MacAddressFailure implements MintedFailure {
   const new();
@@ -17,7 +17,7 @@ sealed class MacAddressFailure implements MintedFailure {
   String get typeName => 'MacAddress';
 }
 
-/// The text is none of the four accepted notations, or mixes two of them.
+/// The text is none of the 4 accepted notations, or mixes 2 of them.
 final class MacAddressMalformed extends MacAddressFailure {
   /// Creates the failure.
   const new();
@@ -35,8 +35,8 @@ final class MacAddressMalformed extends MacAddressFailure {
   String toString() => 'MacAddressMalformed()';
 }
 
-/// The notation was recognised but held neither six octets (48-bit) nor eight (64-bit). Also what
-/// [MacAddress.fromOctets] rejects.
+/// The notation was recognised but held neither 6 octets (48-bit) nor 8 (64-bit). Also what
+/// [MacAddress.fromOctets] turns down.
 final class MacAddressWrongOctetCount extends MacAddressFailure {
   /// How many octets were supplied.
   final int actual;

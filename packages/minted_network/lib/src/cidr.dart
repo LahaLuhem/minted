@@ -14,9 +14,8 @@ import 'ip_address.dart';
 /// Standards: [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632) for v4,
 /// [RFC 4291 §2.3](https://www.rfc-editor.org/rfc/rfc4291#section-2.3) for v6.
 ///
-/// Parse, don't validate: [contains] masks bits, where a prefix match on the text reads
-/// `10.0.0.0/8` as covering `100.0.0.1`. [network] is an [IpAddress], not a slice of its own text.
-/// Why: `/APPENDIX.md#compose-from-modelled-parts`.
+/// [network] is an [IpAddress], not a slice of text, so [contains] masks bits. Match on the text and
+/// `10.0.0.0/8` looks like it covers `100.0.0.1`. Why: `/APPENDIX.md#compose-from-modelled-parts`.
 ///
 /// > [!IMPORTANT]
 /// > **Host bits must be clear.** `192.168.1.5/24` is refused rather than masked to
@@ -34,18 +33,17 @@ final class Cidr {
 
   const new _(this.network, this.prefixLength);
 
-  /// The block at [network] covering [prefixLength] bits, reporting the [CidrFailure] when the
-  /// prefix does not fit the family or [network] has bits set below it.
+  /// The block at [network] covering [prefixLength] bits, reporting the [CidrFailure] when the prefix
+  /// does not fit the family or [network] has bits set below it.
   static ParseOutcome<CidrFailure, Cidr> from({
     required IpAddress network,
     required int prefixLength,
   }) => parse('${network.value}$_prefixSeparator$prefixLength');
 
-  /// Parses [input] as a CIDR block, or returns `null` when it is not one.
-  /// See the type docs for what is refused.
+  /// Parses [input], or `null` if it isn't a CIDR block.
   static Cidr? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a CIDR block, reporting the [CidrFailure] saying which rule broke.
+  /// Parses [input], reporting the [CidrFailure] saying which rule broke.
   static ParseOutcome<CidrFailure, Cidr> parse(String input) {
     final parts = input.trim().split(_prefixSeparator);
     if (parts.length != _partCount) return const ParseFailure(CidrMalformed());
@@ -59,8 +57,8 @@ final class Cidr {
   /// The canonical text, `10.0.0.0/8`. Round-trips through [parse].
   String get asString => '${network.value}$_prefixSeparator$prefixLength';
 
-  /// The last address the block covers, which for v4 is what other tools call the broadcast
-  /// address. Named for what it is, since IPv6 has no broadcast at all.
+  /// The last address the block covers, which for v4 is what other tools call the broadcast address.
+  /// Named for what it is, since IPv6 has no broadcast.
   // The octet count comes from an address that already parsed, so fromOctets cannot fail here.
   IpAddress get lastAddress {
     final octets = network.octets;
@@ -73,8 +71,8 @@ final class Cidr {
     ).getOrThrow();
   }
 
-  /// Whether [address] falls inside this block. A different family is never inside, so a v6
-  /// address is not in `10.0.0.0/8`.
+  /// Whether [address] falls inside this block. A different family is never inside, so a v6 address
+  /// is not in `10.0.0.0/8`.
   bool contains(IpAddress address) =>
       address.version == network.version && _masked(address, prefixLength) == network;
 
@@ -88,7 +86,7 @@ final class Cidr {
   @override
   String toString() => 'Cidr(network: ${network.value}, prefixLength: $prefixLength)';
 
-  // Split out so parse reads as its two stages: the address, then everything the address decides.
+  // Split out so parse reads as its 2 stages: the address, then everything the address decides.
   static ParseOutcome<CidrFailure, Cidr> _withPrefix(IpAddress network, String prefixText) {
     if (!digitsOnly.hasMatch(prefixText)) return const ParseFailure(CidrMalformed());
 
@@ -119,8 +117,8 @@ final class Cidr {
     ).getOrThrow();
   }
 
-  // The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max
-  // rather than clamp, which is declared on num and would widen the shift operand.
+  // The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max rather
+  // than clamp, which is declared on num and would widen the shift operand.
   static int _octetMask(int index, int prefixLength) {
     final coveredBits = min(max(prefixLength - index * bitsPerOctet, 0), bitsPerOctet);
 

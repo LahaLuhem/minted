@@ -5,7 +5,7 @@ import '../support/bdd.dart';
 
 void main() {
   feature('Digits', () {
-    // Values in, digits out; null means at least one value was not 0-9.
+    // Values in, digits out. Null means at least one value was not 0-9.
     scenarioOutline<({List<int> input, String? canonical})>(
       'Digits.tryFrom accepts in-range values and rejects the rest',
       examples: {
@@ -63,7 +63,7 @@ void main() {
     });
 
     scenario('a Digits renders its digits, not Instance of', () {
-      // Digits is the one value type that hand-writes toString; the extension types inherit theirs.
+      // Digits is the one value type that hand-writes toString. The extension types inherit theirs.
       check(Digits.tryFrom([9, 0, 5])!.toString()).equals('Digits(905)');
       check(Digits.tryFrom([])!.toString()).equals('Digits()');
     });

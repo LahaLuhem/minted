@@ -28,12 +28,12 @@ another domain's engine, and it's pure Dart, so unlike `InternetAddress` it work
 
 | Type         | What it guarantees                                                                       | Standard                                                       |
 |--------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------|
-| `Hostname`   | the RFC 1123 grammar and both length limits; ASCII only, never an address                | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
+| `Hostname`   | the RFC 1123 grammar and both length limits. ASCII only, never an address                | [RFC 1123](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) |
 | `DnsName`    | the permissive counterpart: underscores and the rest of RFC 2181, so DKIM and SRV fit    | [RFC 2181](https://www.rfc-editor.org/rfc/rfc2181#section-11)  |
-| `IpAddress`  | v4 or v6, canonicalised per RFC 5952; a leading zero refused, not read as octal          | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)             |
+| `IpAddress`  | v4 or v6, canonicalised per RFC 5952. A leading zero refused, not read as octal          | [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)             |
 | `Cidr`       | a network block: host bits must be clear, and `contains` masks rather than matching text | [RFC 4632](https://www.rfc-editor.org/rfc/rfc4632)             |
-| `MacAddress` | 48 or 64 bits, four notations folded to one; the I/G and U/L bits read back              | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address)      |
-| `Port`       | the 0-65535 bound; the RFC 6335 band read back rather than gated on                      | [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335)             |
+| `MacAddress` | 48 or 64 bits, 4 notations folded to one. The I/G and U/L bits read back              | [IEEE Std 802](https://en.wikipedia.org/wiki/MAC_address)      |
+| `Port`       | the 0-65535 bound. The RFC 6335 band read back rather than gated on                      | [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335)             |
 
 `Hostname` enforces what `Uri` waves through: `-bad.com`, `a..b.com` and a 64-character label all
 pass `Uri` without complaint. `DnsName` is the permissive counterpart rather than a relaxed
@@ -61,7 +61,7 @@ block.contains(IpAddress.tryParse('100.0.0.1')!);   // false, where a text prefi
 
 // host bits set is refused rather than silently masked, and the failure offers what you meant:
 Cidr.parse('192.168.1.5/24').reasonOrNull?.message;
-// 'has host bits set below the prefix; the network is "192.168.1.0/24"'
+// 'has host bits set below the prefix. The network is "192.168.1.0/24"'
 
 // Hostname: case and a trailing root dot normalise away, so one name has exactly one value:
 final host = Hostname.tryParse('WWW.Example.COM.')!;

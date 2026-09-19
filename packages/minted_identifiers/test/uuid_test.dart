@@ -6,14 +6,14 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 
 import 'support/bdd.dart';
 
-// A const context, so the file failing to build is the assertion: the sentinels must stay
-// `static const` rather than becoming getters.
+// A const context, so the file failing to build is the assertion: the sentinels must stay `static const`
+// rather than becoming getters.
 const sentinels = <Uuid>[.nil, .max];
 
 void main() {
   feature('Uuid', () {
-    // A well-formed UUID round-trips through value (lower-cased, wrappers stripped); null means
-    // rejected. The canonical form doubles as the expected outcome.
+    // A well-formed UUID round-trips through value, lower-cased and unwrapped, so the canonical form
+    // doubles as the expected outcome. Null means rejected.
     scenarioOutline<({String input, String? canonical})>(
       'Uuid.tryParse accepts well-formed UUIDs, normalises them, and rejects the rest',
       examples: {
@@ -80,8 +80,8 @@ void main() {
       },
     );
 
-    // Version is the 4-bit field at the first hex digit of the third group. Vectors are the
-    // RFC 9562 Appendix A examples, one per version, plus the two sentinels.
+    // Version is the 4-bit field at the 1st hex digit of the 3rd group. Vectors are the RFC 9562
+    // Appendix A examples, one per version, plus the 2 sentinels.
     scenarioOutline<({String input, int version})>(
       'Uuid.version reads the version field',
       examples: {
@@ -100,8 +100,8 @@ void main() {
       },
     );
 
-    // Variant is classified from the first hex digit of the fourth group, including the bucket
-    // boundaries (7/8, b/c, d/e).
+    // Variant is classified from the 1st hex digit of the 4th group, including the bucket boundaries
+    // (7/8, b/c, d/e).
     scenarioOutline<({String input, UuidVariant variant})>(
       'Uuid.variant classifies the variant field',
       examples: {
@@ -202,7 +202,7 @@ void main() {
 
       check(earlier.compareTo(later)).isLessThan(0);
       check(later.compareTo(earlier)).isGreaterThan(0);
-      // Comparator test
+      // A comparator has to answer 0 for equal operands, so self-comparison is the point.
       // ignore: avoid-passing-self-as-argument
       check(earlier.compareTo(earlier)).equals(0);
     });

@@ -5,10 +5,10 @@ const _decimalShift = 10; // fold in one digit
 const _twoDigitShift = 100; // a converted letter is two digits
 const _checkDigitLength = 2;
 
-/// The two ISO 7064 mod-97-10 check digits for an IBAN with [countryCode] and [bban] (ISO 13616),
-/// both assumed already upper-cased and separator-free.
+/// The 2 ISO 7064 mod-97-10 check digits for an IBAN with [countryCode] and [bban]. Both assumed upper-cased
+/// and separator-free.
 ///
-/// The digits are chosen so the assembled IBAN satisfies the mod-97 check
+/// Picked so the assembled IBAN passes the mod-97 check.
 String ibanCheckDigits(String countryCode, String bban) {
   final mod97Input = '$bban${countryCode}00';
 
@@ -19,8 +19,7 @@ int _mod97(String alphanumeric) => alphanumeric.codeUnits
     .map(alphanumericValue)
     .fold(
       0,
-      // a digit shifts the remainder one decimal place, a converted letter two, because
-      // `A`-`Z` map to the two-digit values 10-35
+      // a digit shifts the remainder one place, a converted letter 2, `A`-`Z` mapping to 10-35
       (remainder, characterValue) => characterValue < letterOffset
           ? (remainder * _decimalShift + characterValue) % _modulus
           : (remainder * _twoDigitShift + characterValue) % _modulus,

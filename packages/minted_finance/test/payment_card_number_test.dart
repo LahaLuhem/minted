@@ -8,9 +8,9 @@ import 'support/digits.dart';
 
 void main() {
   feature('PaymentCardNumber', () {
-    // The compact form doubles as the expected outcome: a String means "accepted and normalised to
-    // this", null means "rejected". Valid rows are the networks' own published test numbers, which
-    // are designed to be non-issuable; no real card number belongs in a repository.
+    // The compact form doubles as the expected outcome: a String means "accepted and normalised to this",
+    // null means "rejected". Valid rows are the networks' own published test numbers, which are designed
+    // to be non-issuable. No real card number belongs in a repository.
     scenarioOutline<({String input, String? canonical})>(
       'tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -71,9 +71,9 @@ void main() {
         ),
         'two transposed digits fail it as well': (input: '4012888888818881', canonical: null),
         'letters are not card-number characters': (input: '4111111111111abc', canonical: null),
-        // A separator the compacting step doesn't strip usually lands on the length check instead,
-        // since a card number has no positions to spend on one; sixteen digits plus three dots is
-        // nineteen characters, so this row reaches the charset check.
+        // A separator the compacting step doesn't strip usually lands on the length check instead, a
+        // card number having no positions to spend on one. 16 digits plus 3 dots is nineteen
+        // characters, so this row reaches the charset check.
         'dots survive the separator strip': (input: '4111.1111.1111.1111', canonical: null),
       },
       outline: (example) {
@@ -105,8 +105,8 @@ void main() {
       check(parsedNumber.checkDigit.value).equals(1);
     });
 
-    // An issuer identification number needs a check digit after it, so the shortest numbers cannot
-    // report the wider one at all rather than overlapping it.
+    // An issuer identification number needs a check digit after it, so the shortest numbers cannot report
+    // the wider one at all rather than overlapping it.
     scenarioOutline<({String input, String? iin6, String? iin8})>(
       'the issuer identification number is null when the card is too short to hold it',
       examples: {
@@ -134,9 +134,9 @@ void main() {
       check(parsedNumber.toString()).not((it) => it.contains('4111111111111111'));
     });
 
-    // Mod-10 is blind to a 09/90 transposition and to the twin errors 22/55, 33/66 and 44/77: both
-    // members of each pair carry the same weighted sum. That is a property of the standard, not of
-    // this implementation, so it is pinned rather than left to read as a bug.
+    // Mod-10 is blind to a 09/90 transposition and to the twin errors 22/55, 33/66 and 44/77: both members
+    // of each pair carry the same weighted sum. That is a property of the standard, not of this implementation,
+    // so it is pinned rather than left to read as a bug.
     scenarioOutline<({String accepted, String alsoAccepted})>(
       'the Luhn check cannot catch these, a blind spot the standard carries',
       examples: {
@@ -232,8 +232,8 @@ void main() {
           .equals(const PaymentCardNumberWrongLength(7));
     });
 
-    // The scheme is reported, not validated, so every row here parses. One row per listed scheme,
-    // plus the two cases the table deliberately declines to answer.
+    // The scheme is reported, not validated, so every row here parses. One row per listed scheme, plus
+    // the 2 cases the table deliberately declines to answer.
     scenarioOutline<({String input, CardScheme cardScheme, List<CardScheme> cardSchemes})>(
       'the card scheme is reported from the prefix',
       examples: {
@@ -296,8 +296,8 @@ void main() {
       },
     );
 
-    // The static answers from partial input, which no instance getter can do: a half-typed number
-    // has no check digit yet, so it cannot parse.
+    // The static answers from partial input, which no instance getter can do: a half-typed number has
+    // no check digit yet, so it cannot parse.
     scenarioOutline<({String input, List<CardScheme> cardSchemes})>(
       'cardSchemesOf answers while the number is still being typed',
       examples: {

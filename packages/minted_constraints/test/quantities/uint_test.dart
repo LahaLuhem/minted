@@ -5,7 +5,7 @@ import '../support/bdd.dart';
 
 void main() {
   feature('Uint', () {
-    // The expected `.value` doubles as the outcome; null means the input was rejected.
+    // The expected `.value` doubles as the outcome. Null means the input was rejected.
     scenarioOutline<({int input, int? value})>(
       'Uint.tryFrom accepts zero and up, and rejects every negative',
       examples: {

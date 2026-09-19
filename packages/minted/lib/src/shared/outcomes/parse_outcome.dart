@@ -5,8 +5,8 @@ import 'minted_format_error.dart';
 
 /// The result of parsing text: either the value, or the [MintedFailure] saying why not.
 ///
-/// Lossless, unlike a nullable return, and reachable without `try`/`catch`. Sealed, so a `switch`
-/// over [ParseSuccess] and [ParseFailure] is exhaustive and the compiler catches a missed arm.
+/// Lossless, unlike a nullable return, and reachable without `try`/`catch`. Sealed, so a `switch` over
+/// [ParseSuccess] and [ParseFailure] is exhaustive and the compiler catches a missed arm.
 @immutable
 sealed class ParseOutcome<F extends MintedFailure, T> {
   const new();
@@ -17,15 +17,15 @@ sealed class ParseOutcome<F extends MintedFailure, T> {
   /// Whether this holds a failure.
   bool get isFailure => this is ParseFailure<F, T>;
 
-  /// The failure, or `null` when this succeeded. The dual of [getOrNull], and the shortest route
-  /// from parsing to a form-field error message.
+  /// The failure, or `null` when this succeeded. The dual of [getOrNull], and the shortest route from
+  /// a parse to a form-field error.
   F? get reasonOrNull => switch (this) {
     ParseSuccess() => null,
     ParseFailure(:final reason) => reason,
   };
 
-  /// Collapses both cases to a [C], applying [onFailure] or [onSuccess]. The exit from this type:
-  /// use it to reach a widget, a log line, or another library's `Either`.
+  /// Collapses both cases to a [C] with [onFailure] or [onSuccess]. The way out of this type, to a widget,
+  /// a log line, or another library's `Either`.
   C fold<C>(C Function(F reason) onFailure, C Function(T value) onSuccess) => switch (this) {
     ParseSuccess(:final value) => onSuccess(value),
     ParseFailure(:final reason) => onFailure(reason),
@@ -37,31 +37,28 @@ sealed class ParseOutcome<F extends MintedFailure, T> {
     ParseFailure() => null,
   };
 
-  /// The parsed value, or the result of [orElse] when this failed.
+  /// The parsed value, or [orElse]'s result when this failed.
   T getOrElse(T Function() orElse) => switch (this) {
     ParseSuccess(:final value) => value,
     ParseFailure() => orElse(),
   };
 
-  /// The parsed value, throwing [MintedFormatError] when this failed. The only thing in the package
-  /// that throws.
+  /// The parsed value, throwing [MintedFormatError] when this failed. The only thing here that throws.
   ///
-  /// The door for a claim made in source: the caller asserts the value is valid, so a failure is a
-  /// bug in their code rather than a branch to write. Prefer it to `getOrNull()!`, which discards
-  /// the typed reason this outcome is holding and leaves a bare null-check error in its place.
+  /// Beats `getOrNull()!`, which drops the typed reason this outcome is holding and leaves a bare null-check
+  /// error in its place.
   T getOrThrow() => switch (this) {
     ParseSuccess(:final value) => value,
     ParseFailure(:final reason) => throw MintedFormatError.from(reason),
   };
 
-  /// This outcome with a successful value passed through [transform]. A failure is carried
-  /// across untouched.
+  /// This outcome with a successful value passed through [transform]. A failure carries across untouched.
   ParseOutcome<F, U> map<U>(U Function(T value) transform) => switch (this) {
     ParseSuccess(:final value) => ParseSuccess(transform(value)),
     ParseFailure(:final reason) => ParseFailure(reason),
   };
 
-  /// As [map], for a [transform] that is itself fallible. Chains parses without nesting: the first
+  /// As [map], for a [transform] that's fallible itself. Chains parses without nesting, and the first
   /// failure short-circuits the rest.
   ParseOutcome<F, U> flatMap<U>(ParseOutcome<F, U> Function(T value) transform) => switch (this) {
     ParseSuccess(:final value) => transform(value),
@@ -74,8 +71,8 @@ final class ParseSuccess<F extends MintedFailure, T> extends ParseOutcome<F, T> 
   /// The parsed value.
   final T value;
 
-  /// Wraps an already-parsed [value]. Public because there is no invariant to protect: you can
-  /// only pass a [T], which only parsing can produce in the first place.
+  /// Wraps an already-parsed [value]. Public because there's no invariant to protect: you can only pass
+  /// a [T], which only parsing produces.
   const new(this.value);
 
   @override

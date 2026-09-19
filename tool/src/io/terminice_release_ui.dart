@@ -22,8 +22,8 @@ class TerminiceReleaseUi implements ReleaseUi {
   @override
   void error(String message) => _client.error(message);
 
-  /// Straight to stdout, unthemed: the message helpers trim each line and join them, which would
-  /// destroy the indentation and column alignment the plan and the usage text rely on.
+  /// Straight to stdout, unthemed: the message helpers trim each line and join them, which would destroy
+  /// the indentation and column alignment the plan and the usage text rely on.
   @override
   void block(String text) => stdout.writeln(text);
 

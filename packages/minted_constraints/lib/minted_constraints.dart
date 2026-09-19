@@ -1,15 +1,15 @@
 /// Constraint types: primitives carrying a constraint, with no standard defining their text form.
 ///
 /// Each declares `tryFrom` and neither parse door, because decimal notation and "one character" are
-/// how primitives are written rather than published formats a type could enforce. One invariant each
-/// leaves nothing a failure could say that `null` does not, so none carries a failure vocabulary.
+/// how primitives get written, not published formats a type could enforce. One invariant each leaves
+/// nothing a failure could say that `null` doesn't, so none carries a failure vocabulary.
 ///
 /// Most implement their representation, so a constrained value reads as the primitive it constrains
-/// while nothing unconstrained can be written into one. Four opt out and say why in their own docs.
+/// while nothing unconstrained can be written into one. 4 opt out and say why in their own docs.
 /// Rationale: `APPENDIX.md#constraint-types`.
 ///
-/// Nothing here depends on `package:minted`: these are the building blocks, not the vocabulary a
-/// parse hands back.
+/// Nothing here depends on `package:minted`: these are the building blocks, not the vocabulary a parse
+/// hands back.
 library;
 
 export 'src/numerics/digit.dart';

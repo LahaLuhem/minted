@@ -10,7 +10,7 @@ void main() {
       examples: {
         'ASCII lower case': (input: 'x', accepted: 'x'),
         'ASCII upper case': (input: 'Q', accepted: 'Q'),
-        // The three the ASCII type would refuse, which is why this one is unprefixed.
+        // The 3 the ASCII type would refuse, which is why this one is unprefixed.
         'a Danish initial': (input: '\u{00D8}', accepted: '\u{00D8}'),
         'a Polish initial': (input: '\u{0141}', accepted: '\u{0141}'),
         'a Cyrillic initial': (input: '\u{0416}', accepted: '\u{0416}'),

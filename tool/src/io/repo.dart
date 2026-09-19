@@ -40,8 +40,8 @@ class Repo {
     final packages = Directory(absolute('packages'));
     if (!packages.existsSync()) return const [];
 
-    // `toList(growable: false)..sort()` rather than `sorted()`: one allocation, and sorting only
-    // assigns elements, which a fixed-length list allows.
+    // `toList(growable: false)..sort()` rather than `sorted()`: one allocation, and sorting only assigns
+    // elements, which a fixed-length list allows.
     return packages
         .listSync()
         .whereType<Directory>()
@@ -56,8 +56,8 @@ class Repo {
   Map<String, String> memberPubspecs() =>
       memberSources().map((name, source) => MapEntry(name, source.pubspec));
 
-  /// Each member's directory and pubspec text, keyed by the name it declares. One reader, so the
-  /// constraint gates and the repair cannot disagree about what is on disk.
+  /// Each member's directory and pubspec text, keyed by the name it declares. One reader, so the constraint
+  /// gates and the repair cannot disagree about what is on disk.
   Map<String, MemberSource> memberSources() => Map.fromEntries(
     memberDirs()
         .map((dir) => (dir: dir, pubspec: readFile('$dir/pubspec.yaml')))
@@ -87,8 +87,8 @@ class Repo {
     return hasUnreleasedNotes(readFile('$dir/CHANGELOG.md')) ? (dir: dir, name: name) : null;
   }
 
-  /// The lint image and checks. Aborts rather than returning empty, so an unreadable manifest
-  /// cannot silently skip every lint.
+  /// The lint image and checks. Aborts rather than returning empty, so an unreadable manifest cannot
+  /// silently skip every lint.
   ({String image, List<LintCheck> checks}) lintManifest() {
     const malformed = '$lintManifestPath is missing, malformed, or has no checks.';
 

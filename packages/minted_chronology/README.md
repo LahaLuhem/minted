@@ -25,9 +25,9 @@ another domain's engine.
 
 | Type              | What it guarantees                                                       | Standard                                           |
 |-------------------|--------------------------------------------------------------------------|----------------------------------------------------|
-| `Date`            | a real calendar date: no time, no zone; impossible dates rejected        | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Date`            | a real calendar date: no time, no zone. Impossible dates rejected        | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 | `Month`           | a real month `1`-`12` that knows its own length (leap-aware)             | building block                                     |
-| `Weekday`         | one of seven named days, ISO-numbered `1` (Monday) to `7` (Sunday)       | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Weekday`         | one of 7 named days, ISO-numbered `1` (Monday) to `7` (Sunday)       | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 | `Iso8601Duration` | a duration with months and years, which `dart:core` Duration cannot hold | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 
 `Date` is the type `DateTime` isn't: no clock, no zone, and an impossible date is refused rather

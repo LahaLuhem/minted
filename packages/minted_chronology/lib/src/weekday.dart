@@ -5,13 +5,12 @@ import 'package:collection/collection.dart';
 
 /// A day of the week, Monday to Sunday. [Date.weekday] returns one.
 ///
-/// [value] is the ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
-/// Read it rather than the inherited `index`, which is `0`-based and so one less.
-///
-/// Ordering ([compareTo], `<` / `<=` / `>` / `>=`) runs Monday to Sunday, the ISO week. That is a
-/// convention, not arithmetic: weeks starting Sunday or Saturday order the same days differently.
-/// [next], [plusDays] and [daysUntil] are cyclic and assume no week start.
+/// Read [value] rather than the inherited `index`, which is `0`-based and so one less.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
+///
+/// Ordering runs Monday to Sunday, the ISO week. That's a convention rather than arithmetic, since weeks
+/// starting Sunday or Saturday order the same days differently. [next], [plusDays] and [daysUntil] are
+/// cyclic and assume no week start.
 enum Weekday implements Comparable<Weekday> {
   /// Monday, ISO day `1`.
   monday(1),
@@ -39,7 +38,7 @@ enum Weekday implements Comparable<Weekday> {
   /// The ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
   final int value;
 
-  /// The [Weekday] with ISO day number [value], or `null` unless it is in `1`-`7`.
+  /// The [Weekday] with ISO day number [value], or `null` unless it's in `1`-`7`.
   static Weekday? tryFrom(int value) => values.firstWhereOrNull((day) => day.value == value);
 
   /// The next day of the week, wrapping from Sunday round to Monday.
@@ -54,8 +53,7 @@ enum Weekday implements Comparable<Weekday> {
   /// The weekday [days] days before this one, wrapping round the week.
   Weekday minusDays(int days) => plusDays(-days);
 
-  /// Days forward from this weekday to [other], `0`-`6`: `friday.daysUntil(monday)` is `3`, never
-  /// negative.
+  /// Days forward from this weekday to [other], `0`-`6`. `friday.daysUntil(monday)` is `3`.
   int daysUntil(Weekday other) => (other.index - index) % _daysInWeek;
 
   /// Whether this day falls before [other] in the ISO week (Monday first).

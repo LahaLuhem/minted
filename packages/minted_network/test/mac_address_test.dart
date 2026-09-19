@@ -11,8 +11,8 @@ const allOnes = <MacAddress>[.broadcast];
 
 void main() {
   feature('MacAddress', () {
-    // The canonical form doubles as the expected outcome; null means rejected. Vectors are the
-    // documentation ranges RFC 9542 §2.1.4 reserves, plus the IEEE RA's own worked examples.
+    // The canonical form doubles as the expected outcome. Null means rejected. Vectors are the documentation
+    // ranges RFC 9542 §2.1.4 reserves, plus the IEEE RA's own worked examples.
     scenarioOutline<({String input, String? canonical})>(
       'MacAddress.tryParse accepts the four notations, folds them, and rejects the rest',
       examples: {
@@ -71,8 +71,8 @@ void main() {
       },
     );
 
-    // An unrecognised notation and a recognised one of the wrong width are separate remedies, so
-    // they must not collapse into one failure.
+    // An unrecognised notation and a recognised one of the wrong width are separate remedies, so they
+    // must not collapse into one failure.
     scenarioOutline<({String input, MacAddressFailure failure})>(
       'MacAddress.parse attributes the failure',
       examples: {
@@ -96,10 +96,10 @@ void main() {
       },
     );
 
-    // The second hex digit of the first octet fixes both bits, so sixteen rows pin the whole
-    // classification, including that the SLAP bits above them are ignored.
+    // The 2nd hex digit of the 1st octet fixes both bits, so 16 rows pin the whole classification,
+    // including that the SLAP bits above them are ignored.
     scenarioOutline<({String input, bool multicast, bool local})>(
-      'MacAddress reads the I/G and U/L bits off the first octet',
+      'MacAddress reads the I/G and U/L bits off the 1st octet',
       examples: {
         'digit 0 is universal unicast': (
           input: '00:00:5e:00:53:00',
@@ -159,8 +159,8 @@ void main() {
     );
 
     scenario('the addresses every network carries classify as their standards describe', () {
-      // ISO 9542, RFC 2464 and IEEE 802.1D respectively. Only the IPv6 one reads as locally
-      // administered: no IEEE assignment backs `33:33`, where the other two sit under real OUIs.
+      // ISO 9542, RFC 2464 and IEEE 802.1D respectively. Only the IPv6 one reads as locally administered:
+      // no IEEE assignment backs `33:33`, where the other 2 sit under real OUIs.
       final isoEndSystem = MacAddress.tryParse('09:00:2b:00:00:04')!;
       final ipv6Multicast = MacAddress.tryParse('33:33:00:00:00:01')!;
       final spanningTree = MacAddress.tryParse('01:80:c2:00:00:00')!;
@@ -244,7 +244,7 @@ void main() {
 
       check(earlier.compareTo(later)).isLessThan(0);
       check(later.compareTo(earlier)).isGreaterThan(0);
-      // Comparator test
+      // A comparator has to answer 0 for equal operands, so self-comparison is the point.
       // ignore: avoid-passing-self-as-argument
       check(earlier.compareTo(earlier)).equals(0);
     });

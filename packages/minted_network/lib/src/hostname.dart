@@ -12,30 +12,27 @@ import 'standards/dns_names.dart';
 /// Standards: [RFC 1123 §2.1](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) for the grammar,
 /// [RFC 1035 §2.3.4](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4) for the size limits.
 ///
-/// Parse, don't validate: `Uri` accepts `-bad.com`, `a..b.com` and a 64-character label without
-/// complaint, so a malformed host survives as far as a failed DNS lookup. A [Hostname] does not.
+/// `Uri` waves through `-bad.com`, `a..b.com` and a 64-character label, so a broken host survives as
+/// far as a failed DNS lookup. A [Hostname] doesn't.
 ///
-/// Three things it refuses on purpose. Non-ASCII, because punycode alone is not IDNA, so
-/// `xn--bcher-kva.example` parses and `bücher.example` does not. An underscore, which makes a name
-/// a DNS name rather than a hostname. And a dotted quad, which RFC 1123 says a host name never is.
-/// Why: `APPENDIX.md#hostname-value-type`.
+/// 3 things it refuses on purpose. Non-ASCII, because punycode alone isn't IDNA, so `xn--bcher-kva.example`
+/// parses and `bücher.example` doesn't. An underscore, which makes a name a DNS name rather than a hostname.
+/// And a dotted quad, which RFC 1123 says a host name never is. Why: `APPENDIX.md#hostname-value-type`.
 ///
-/// Normalisation on parse: trimmed, lower-cased (RFC 1035 makes DNS comparison case-insensitive),
-/// and one trailing root dot dropped, so `EXAMPLE.com.` and `example.com` are one value. [fqdn]
-/// rebuilds the trailing-dot spelling.
+/// Parsing trims, lower-cases (RFC 1035 makes DNS comparison case-insensitive) and drops one trailing
+/// root dot, so `EXAMPLE.com.` and `example.com` are one value. [fqdn] puts the dot back.
 ///
 /// {@example /example/minted_network_example.dart#hostname}
 extension type const Hostname._(String value) {
-  /// Builds a [Hostname] from its [labels] (`['www', 'example', 'com']`), reporting the
-  /// [HostnameFailure] unless they join into a valid one. The inverse of [labels].
+  /// Builds a [Hostname] from its [labels], reporting the [HostnameFailure] unless they join into a
+  /// valid one. The inverse of [labels].
   static ParseOutcome<HostnameFailure, Hostname> fromLabels(List<String> labels) =>
       parse(labels.join(labelSeparator));
 
-  /// Parses [input] as a hostname, or returns `null` when it breaks any RFC 1123 rule.
-  /// See the type docs for the normalisation applied.
+  /// Parses [input], or `null` if it breaks any RFC 1123 rule.
   static Hostname? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a hostname, reporting the [HostnameFailure] that says which rule it broke.
+  /// Parses [input], reporting the [HostnameFailure] that says which rule it broke.
   static ParseOutcome<HostnameFailure, Hostname> parse(String input) {
     final normalisedInput = rootStripped(input.trim().toLowerCase());
     final failure = _failureFor(normalisedInput);
@@ -46,12 +43,11 @@ extension type const Hostname._(String value) {
   /// The dot-separated labels, most specific first: `['www', 'example', 'com']`.
   List<String> get labels => value.split(labelSeparator);
 
-  /// The fully-qualified spelling, `www.example.com.`, whose trailing dot names the root.
-  /// RFC 3696 calls the two equivalent, which is why parse drops it.
+  /// The fully-qualified spelling, `www.example.com.`, whose trailing dot names the root. RFC 3696 calls
+  /// the 2 equivalent, which is why parsing drops it.
   String get fqdn => '$value$labelSeparator';
 
-  /// Orders two hostnames lexicographically by their canonical form. Extension types cannot
-  /// implement `Comparable<Hostname>`, so this is a plain method, not the [Comparable] interface.
+  /// Orders 2 hostnames lexicographically by their canonical form.
   int compareTo(Hostname other) => value.compareTo(other.value);
 
   // Ordered so each check can assume the ones before it passed.

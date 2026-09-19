@@ -8,21 +8,19 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'failures/bic_failure.dart';
 import 'standards/iso_country_code.dart';
 
-/// A BIC, better known as a SWIFT code: validated for structure and for a real ISO 3166-1 country.
-/// Standard: [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362).
+/// A BIC, better known as a SWIFT code. Standard: [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)
+/// .
 ///
-/// Normalisation on parse: whitespace stripped, upper-cased, and the eight-character form folded to
-/// eleven by appending the `XXX` primary office, so the two spellings of one office compare equal.
-/// [bic8] rebuilds the short form.
+/// Parsing strips whitespace, upper-cases, and folds the 8-character form to 11 by adding the
+/// `XXX` primary office, so both spellings of one office compare equal. [bic8] rebuilds the short form.
 ///
-/// ISO 9362 carries no checksum, so any well-formed code is accepted, held by an institution or not.
-/// It also permits an [institutionCode] and [locationCode] wider than SWIFT itself issues.
-/// [isSwiftRegistrable] reports that narrower shape rather than rejecting what the standard allows.
+/// There's no checksum, so any well-formed code gets in, held by an institution or not. ISO 9362 also
+/// allows an [institutionCode] and [locationCode] wider than SWIFT itself issues, and [isSwiftRegistrable]
+/// reports that narrower shape rather than refusing what the standard allows.
 ///
 /// {@example /example/minted_finance_example.dart#bic}
 extension type const Bic._(String value) {
-  /// Builds a [Bic] from its parts, a null [branchCode] meaning the `XXX` primary office, reporting
-  /// the [BicFailure] when they don't form a valid BIC.
+  /// Builds a [Bic] from its parts, a null [branchCode] meaning the `XXX` primary office.
   // Nullable rather than defaulted: a default must be const, and a constraint type has tryFrom.
   static ParseOutcome<BicFailure, Bic> fromComponents({
     required AsciiAlphanumerics institutionCode,
@@ -42,10 +40,10 @@ extension type const Bic._(String value) {
         : ParseSuccess(._(_withPrimaryOffice(assembledBic)));
   }
 
-  /// Parses [input] as a BIC, or returns `null` when it fails the length, character, or country checks.
+  /// Parses [input], or `null` if it isn't a BIC.
   static Bic? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a BIC, reporting the [BicFailure] that says which check failed.
+  /// Parses [input], reporting the [BicFailure] that says what went wrong.
   static ParseOutcome<BicFailure, Bic> parse(String input) {
     final compactInput = unspacedUpperCase(input);
     final failure = _failureFor(compactInput);
@@ -55,39 +53,39 @@ extension type const Bic._(String value) {
         : ParseSuccess(._(_withPrimaryOffice(compactInput)));
   }
 
-  /// The business party prefix (the first four characters): for a bank, its institution code.
+  /// The business party prefix (the first 4 characters): for a bank, its institution code.
   // A validated BIC is `[A-Z0-9]` throughout, so no slice can be refused.
   AsciiAlphanumerics get institutionCode => .tryFrom(value.substring(0, _countryCodeStart))!;
 
-  /// The ISO 3166-1 alpha-2 country code (the fifth and sixth characters).
+  /// The ISO 3166-1 alpha-2 country code (the 5th and 6th characters).
   // Alpha-2 codes are letters, and parse refuses an unknown country.
   AsciiLetters get countryCode => .tryFrom(value.substring(_countryCodeStart, _locationCodeStart))!;
 
-  /// The business party suffix (the seventh and eighth): the city or entity within the country.
-  /// By SWIFT convention its second character reads `0` for a test code, `1` for a passive
-  /// participant and `2` for reverse billing, meanings ISO 9362 itself does not assign.
+  /// The business party suffix, the 7th and 8th: the city or entity within the country. By SWIFT
+  /// convention its 2nd character reads `0` for a test code, `1` for a passive participant and `2`
+  /// for reverse billing, none of which ISO 9362 itself assigns.
   AsciiAlphanumerics get locationCode =>
       .tryFrom(value.substring(_locationCodeStart, _branchCodeStart))!;
 
-  /// The branch code (the last three characters), `XXX` for the primary office.
+  /// The branch code (the last 3 characters), `XXX` for the primary office.
   AsciiAlphanumerics get branchCode => .tryFrom(value.substring(_branchCodeStart))!;
 
   /// Whether this addresses the primary office rather than one of its branches.
   bool get isPrimaryOffice => branchCode.value == _primaryOfficeBranch;
 
-  /// The eight-character short form, for the systems that write a BIC without its branch code.
+  /// The 8-character short form, for the systems that write a BIC without its branch code.
   AsciiAlphanumerics get bic8 => .tryFrom(value.substring(0, _branchCodeStart))!;
 
-  /// Whether SWIFT could have issued this one. ISO 9362 allows digits in [institutionCode] and
-  /// puts no restriction on [locationCode]. The registration authority still uses neither freedom.
+  /// Whether SWIFT could have issued this one. ISO 9362 allows digits in [institutionCode] and puts
+  /// no bound on [locationCode], and the registration authority uses neither freedom.
   bool get isSwiftRegistrable => _swiftRegistrationForm.hasMatch(value);
 
-  // The eight-character form addresses the primary office, which is what XXX spells at eleven.
+  // The 8-character form addresses the primary office, which is what XXX spells at 11.
   static String _withPrimaryOffice(String compactInput) =>
       compactInput.length != _bic8Length ? compactInput : '$compactInput$_primaryOfficeBranch';
 
-  // Why already-compacted input is not a BIC, or null when it is one. The single gate parse and
-  // fromComponents funnel through; widest check first, so the earliest wrong thing is named.
+  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
+  // thing gets named.
   static BicFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when compactInput.length != _bic8Length && compactInput.length != _bic11Length =>
       BicWrongLength(compactInput.length),
@@ -103,7 +101,7 @@ extension type const Bic._(String value) {
       compactInput.substring(_countryCodeStart, _locationCodeStart);
 
   static final _alphanumeric = RegExp(r'^[A-Z0-9]+$');
-  // The pre-2014 shape ISO 20022 retired and SWIFT still registers by, over the folded eleven.
+  // The pre-2014 shape ISO 20022 retired and SWIFT still registers by, over the folded 11.
   static final _swiftRegistrationForm = RegExp(r'^[A-Z]{6}[A-Z2-9][A-NP-Z0-9][A-Z0-9]{3}$');
 
   static const _bic8Length = 8;

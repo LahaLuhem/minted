@@ -1,14 +1,9 @@
-// Cut a versioned release of one workspace member: bump with cider, date the CHANGELOG, repair any
-// dependent constraint the new version would fall outside, commit, tag `<package>-<version>`, push
-// both atomically. The tag push triggers publish.yml.
+// Cut a versioned release of one workspace member: bump with cider, date the CHANGELOG, repair any dependent
+// constraint the new version would fall outside, commit, tag `<package>-<version>`, push both atomically.
+// The tag push triggers publish.yml. Run it with `--help` for the options.
 //
 // Laptop-only. Every gate runs before the first side effect, and a failure after that auto-reverts.
 // See src/flow/rollback.dart. Sequence and gates: src/flow/release_flow.dart.
-//
-// Usage:
-//   dart run tool/release.dart                        # fully interactive
-//   dart run tool/release.dart patch -p minted --yes  # non-interactive
-//   dart run tool/release.dart --dry-run              # preflight + plan, no side effects
 import 'dart:io';
 
 import 'src/flow/release_flow.dart';
@@ -38,5 +33,5 @@ Future<void> main(List<String> arguments) async {
   }
 }
 
-/// The workspace root, two levels up from this script.
+/// The workspace root, 2 levels up from this script.
 String _repoRoot() => File.fromUri(Platform.script).parent.parent.path;

@@ -4,10 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [Gtin] refused its input. Sealed, not an enum, because [GtinWrongLength] reports a value
-/// read from the input.
-///
-/// Three variants: GS1 gives a GTIN a digit charset, four permitted lengths, and a check digit.
+/// Why a [Gtin] refused its input. Sealed rather than an enum, because [GtinWrongLength] carries a number
+/// off the input.
 @immutable
 sealed class GtinFailure implements MintedFailure {
   const new();
@@ -16,9 +14,9 @@ sealed class GtinFailure implements MintedFailure {
   String get typeName => 'Gtin';
 }
 
-/// The digit count is none of the four GS1 lengths, so this is not a GTIN of any form.
+/// The digit count is none of GS1's 4 lengths.
 final class GtinWrongLength extends GtinFailure {
-  /// How many digits were left once separators were stripped.
+  /// How many digits were left after separators came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -37,7 +35,7 @@ final class GtinWrongLength extends GtinFailure {
   String toString() => 'GtinWrongLength($actualLength)';
 }
 
-/// Something outside `0`-`9` survived normalisation (spaces and hyphens are stripped first).
+/// Something outside `0`-`9` got through. Spaces and hyphens come off first.
 final class GtinInvalidCharacters extends GtinFailure {
   /// Creates the failure.
   const new();
@@ -55,7 +53,7 @@ final class GtinInvalidCharacters extends GtinFailure {
   String toString() => 'GtinInvalidCharacters()';
 }
 
-/// The check digit disagrees with the rest of the number: a digit is mistyped or transposed.
+/// The check digit doesn't match the rest. A digit is mistyped or swapped.
 final class GtinChecksumFailed extends GtinFailure {
   /// Creates the failure.
   const new();

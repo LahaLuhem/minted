@@ -10,20 +10,19 @@ import 'check_digits/mod11_check_character.dart';
 import 'failures/isbn_failure.dart';
 import 'standards/isbn_prefixes.dart';
 
-/// An ISBN (International Standard Book Number): validated for length, prefix, and the ISO 2108
-/// check digit, mod-11 over the ten-digit form and GS1 mod-10 over the thirteen-digit one.
+/// An ISBN (International Standard Book Number).
 /// Standard: [ISO 2108](https://www.isbn-international.org/content/what-isbn).
 ///
-/// Normalisation on parse: spaces and hyphens are stripped, a trailing `x` is upper-cased, and the
-/// ten-digit form is folded into its thirteen-digit equivalent, so [value] is always thirteen digits
-/// and the two spellings of one book compare equal. [isbn10] rebuilds the legacy form.
+/// Parsing strips spaces and hyphens, upper-cases a trailing `x`, and folds the 10-digit form into
+/// the 13-digit one, so both spellings of a book compare equal. [isbn10] rebuilds the old form.
 ///
-/// Not hyphenated: the group boundaries come from ISBN International's range table, not the digits.
+/// No hyphens in [value]: the group boundaries come from ISBN International's range table, not from
+/// the digits.
 ///
 /// {@example /example/minted_identifiers_example.dart#isbn}
 extension type const Isbn._(String value) {
-  /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and nine-digit [body], computing the
-  /// check digit, reporting the [IsbnFailure] when the parts don't form a valid ISBN.
+  /// Builds an [Isbn] from its GS1 [prefix] (`978` or `979`) and 9-digit [body], working the check
+  /// digit out.
   static ParseOutcome<IsbnFailure, Isbn> fromComponents({
     required Digits prefix,
     required Digits body,
@@ -34,11 +33,10 @@ extension type const Isbn._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(assembledIsbn));
   }
 
-  /// Parses [input] as an ISBN, or returns `null` when it fails the length, character, prefix, or
-  /// check-digit tests. Both generations are accepted. The result is always thirteen digits.
+  /// Parses [input], or `null` if it isn't an ISBN. Either generation is fine.
   static Isbn? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an ISBN, reporting the [IsbnFailure] that says which check failed.
+  /// Parses [input], reporting the [IsbnFailure] that says what went wrong.
   static ParseOutcome<IsbnFailure, Isbn> parse(String input) {
     final compactInput = compactUpperCase(input);
     final failure = _failureFor(compactInput);
@@ -46,20 +44,19 @@ extension type const Isbn._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_toIsbn13(compactInput)));
   }
 
-  /// The three-digit GS1 prefix, `978` or `979`. Read [Digits.asString] for the plain text.
-  // A validated ISBN is all digits, so tryFrom cannot return null here or in body.
+  /// The 3-digit GS1 prefix, `978` or `979`.
+  // A validated ISBN is all digits, so none of these 3 tryFroms can return null.
   Digits get prefix => .tryFrom(decimalValues(value, 0, _prefixLength))!;
 
-  /// The nine digits between the prefix and the check digit: registration group, registrant and
-  /// publication, run together. Splitting them needs a range table this package does not carry.
+  /// The 9 digits between the prefix and the check digit: group, registrant and publication, run
+  /// together. Splitting them needs a range table this package doesn't carry.
   Digits get body => .tryFrom(decimalValues(value, _prefixLength, _checkDigitIndex))!;
 
-  /// The final digit, the GS1 mod-10 check over the other twelve.
-  // The last character of a validated ISBN-13 is always a digit, so tryParse cannot return null.
+  /// The last digit, the GS1 mod-10 check over the other 12.
   Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
-  /// The legacy ten-character form (mod-11 check digit, `X` for ten), or `null` for a `979` ISBN,
-  /// which never had one.
+  /// The old 10-character form, whose check digit can be `X`. `null` for a `979` ISBN, which never
+  /// had one.
   String? get isbn10 {
     if (prefix.asString != bookland978) return null;
 
@@ -71,14 +68,14 @@ extension type const Isbn._(String value) {
   static String _withCheckDigit(String twelveDigits) =>
       '$twelveDigits${gs1CheckDigit(twelveDigits)}';
 
-  // Itself when already thirteen digits, otherwise the 978-prefixed equivalent, whose check digit
-  // is recomputed because the two generations use different algorithms.
+  // 13 digits already stays put. Otherwise prefix 978 and redo the check digit, since the 2
+  // generations use different maths.
   static String _toIsbn13(String compactInput) => compactInput.length == _length13
       ? compactInput
       : _withCheckDigit('$bookland978${compactInput.substring(0, _isbn10BodyLength)}');
 
-  // Why already-compacted input is not an ISBN, or null when it is one. The single gate parse and
-  // fromComponents funnel through; widest check first, so the earliest wrong thing is named.
+  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
+  // thing gets named.
   static IsbnFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when compactInput.length != _length10 && compactInput.length != _length13 => IsbnWrongLength(
       compactInput.length,
@@ -91,7 +88,7 @@ extension type const Isbn._(String value) {
     _ => null,
   };
 
-  // Only reached once the length is known to be 10 or 13; X is legal only as the ten-digit check.
+  // Only reached once the length is 10 or 13. X is legal only as the 10-digit check.
   static bool _charsetHolds(String compactInput) => compactInput.length == _length10
       ? _tenDigitForm.hasMatch(compactInput)
       : _thirteenDigitForm.hasMatch(compactInput);

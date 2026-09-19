@@ -67,8 +67,8 @@ void main() {
     check(runner.calls).isEmpty();
   });
 
-  // Caught by the throwaway-remote harness, not by this file: both calls used to omit
-  // `workingDirectory`, so the undo ran in whatever repo the process started in.
+  // Caught by the throwaway-remote harness, not by this file: both calls used to omit `workingDirectory`,
+  // so the undo ran in whatever repo the process started in.
   test('runs git in the checkout being released, not the process cwd', () {
     rollback
       ..phase = .filesTouched

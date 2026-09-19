@@ -22,7 +22,7 @@ void main() {
       check(BumpType.minor.applyTo('1.9.0')).equals('1.10.0');
     });
 
-    // cider does the same for a plain X.Y.Z, so the two agree and can cross-check each other.
+    // cider does the same for a plain X.Y.Z, so the 2 agree and can cross-check each other.
     test('drops pre-release metadata', () {
       check(BumpType.patch.applyTo('3.0.0-beta.1')).equals('3.0.1');
     });

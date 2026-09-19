@@ -27,7 +27,7 @@ What should `parse` / `tryParse` (or the helper) have returned?
 
 **Standard reference (if relevant)**
 Link or cite the clause of the standard (ISO / RFC / GS1 / ITU) that says your
-input is or is not valid — this makes the fix unambiguous.
+input is or is not valid, which makes the fix unambiguous.
 
 **Environment**
  - `minted` version: [e.g. 0.1.0]

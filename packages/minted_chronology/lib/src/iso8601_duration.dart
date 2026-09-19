@@ -10,19 +10,19 @@ import 'month.dart';
 /// An ISO 8601 duration: `P3Y6M4DT12H30M5S`, or the week form `P2W`.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 ///
-/// Parse, don't validate: `dart:core`'s [Duration] cannot express months or years, nor read this
-/// format. Holds components rather than one scalar, because a month has no length until anchored.
+/// `dart:core`'s [Duration] can't express months or years, nor read this format. This holds components
+/// rather than one scalar, because a month has no length until anchored.
 ///
 /// > [!NOTE]
 /// > `P1M` is one month and `PT1M` is one minute. The `T` is what separates them, so it is required
 /// > before a time component and refused without one.
 ///
-/// The week form is exclusive, so `P1Y2W` is refused, and at least one component is required, so
-/// `PT0S` is the zero duration and `P` is not. Only the smallest component may carry a [fraction].
-/// Negative durations are refused: ISO 8601-1 has no sign.
+/// The week form is exclusive, so `P1Y2W` is refused, and at least one component is needed, so `PT0S`
+/// is the zero duration and `P` is not. Only the smallest component may carry a [fraction], and a negative
+/// duration is refused, ISO 8601-1 having no sign.
 ///
-/// Normalisation on parse: a decimal comma becomes a point and zero components collapse, so `P1Y0M`
-/// and `P1Y` are one value. [iso8601] is the canonical form.
+/// Parsing turns a decimal comma into a point and collapses zero components, so `P1Y0M` and `P1Y` are
+/// one value. [iso8601] is the canonical form.
 ///
 /// {@example /example/minted_chronology_example.dart#iso8601Duration}
 @immutable
@@ -48,8 +48,8 @@ final class Iso8601Duration {
   /// Whole seconds.
   final int seconds;
 
-  /// The fractional part and the component carrying it, or `null` when the duration is whole.
-  /// Always the smallest component present, since ISO 8601 allows a fraction nowhere else.
+  /// The fractional part and the component carrying it, or `null` when the duration is whole. Always
+  /// the smallest component present, ISO 8601 allowing a fraction nowhere else.
   final ({Iso8601DurationComponent component, double value})? fraction;
 
   const new _({
@@ -63,12 +63,10 @@ final class Iso8601Duration {
     required this.fraction,
   });
 
-  /// Parses [input] as an ISO 8601 duration, or returns `null` when it is not one.
-  /// See the type docs for the normalisation applied.
+  /// Parses [input], or `null` if it isn't an ISO 8601 duration.
   static Iso8601Duration? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an ISO 8601 duration, reporting the [Iso8601DurationFailure] saying which
-  /// rule broke.
+  /// Parses [input], reporting the [Iso8601DurationFailure] saying which rule broke.
   static ParseOutcome<Iso8601DurationFailure, Iso8601Duration> parse(String input) {
     // A decimal comma is ISO's preferred separator, so it folds to a point before matching.
     final match = _grammar.firstMatch(input.trim().replaceAll(',', '.'));
@@ -122,9 +120,9 @@ final class Iso8601Duration {
 
   /// This duration as a [Duration], resolved against [from].
   ///
-  /// The anchor is required because a month is 28 to 31 days. Calendar components go first,
-  /// clamping the day the way `2026-01-31` plus a month gives `2026-02-28`. A [fraction] on one
-  /// of them scales that component's real length there.
+  /// The anchor is needed because a month is 28 to 31 days. Calendar components go first, clamping the
+  /// day the way `2026-01-31` plus a month gives `2026-02-28`. A [fraction] on one of them scales that
+  /// component's real length there.
   Duration toDuration({required Date from}) {
     final monthIndex = from.month.value - 1 + years * _monthsPerYear + months;
     final anchoredYear = from.year + monthIndex ~/ _monthsPerYear;
@@ -249,8 +247,8 @@ final class Iso8601Duration {
   /// Where the time half starts in [Iso8601DurationComponent]'s declaration order.
   static final _firstTimeComponent = Iso8601DurationComponent.hours.index;
 
-  // Permissive about emptiness on purpose: `P` and `PT` match with no groups, so `parse` can name
-  // the rule they broke rather than calling them malformed.
+  // Permissive about emptiness on purpose: `P` and `PT` match with no groups, so `parse` can name the
+  // rule they broke rather than calling them malformed.
   static final _grammar = RegExp(
     r'^P(?:(\d+(?:\.\d+)?)Y)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)W)?'
     r'(?:(\d+(?:\.\d+)?)D)?'
@@ -258,8 +256,7 @@ final class Iso8601Duration {
   );
 }
 
-/// Which component of an [Iso8601Duration] carries its fractional part. Derived from a duration
-/// that already parsed, so it is a classification rather than a value type: no parse door.
+/// Which component of an [Iso8601Duration] carries its fractional part.
 enum Iso8601DurationComponent {
   /// Years, designator `Y`.
   years,

@@ -1,8 +1,5 @@
-/// The extent of the coordinate space, plus the one range check and the one diagnosis over it, for
-/// the types that bound it or subdivide it.
-///
-/// Public within `lib/src/` and never re-exported: top-level `_` names are library-private in Dart,
-/// so sharing them at all means dropping the underscore.
+/// The extent of the coordinate space, plus the one range check and the one diagnosis over it, for the
+/// types that bound it or subdivide it.
 ///
 /// @docImport '../geo_coordinate.dart';
 library;
@@ -18,8 +15,8 @@ const double maxLongitude = 180;
 /// Whether [degrees] is within `±bound`. A positive test, so a `NaN` falls out as outside.
 bool isWithinBound(num degrees, double bound) => degrees >= -bound && degrees <= bound;
 
-/// Why [latitude] or [longitude] leaves its range, or null when neither does. Shared by the text
-/// doors, so a [GeoCoordinate] and a box diagnose the same degree the same way.
+/// Why [latitude] or [longitude] leaves its range, or null when neither does. Shared by the text doors,
+/// so a [GeoCoordinate] and a box diagnose the same degree the same way.
 GeoCoordinateFailure? degreesFailure({required double latitude, required double longitude}) {
   if (!isWithinBound(latitude, maxLatitude)) return GeoCoordinateLatitudeOutOfRange(latitude);
 

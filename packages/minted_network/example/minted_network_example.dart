@@ -4,8 +4,7 @@
 import 'package:minted_network/minted_network.dart';
 
 void main() {
-  // `MacAddress` folds the four notations one address gets written in, so the spelling a device or
-  // a log happens to use stops mattering. Both widths parse and neither is mapped onto the other.
+  // Folds the 4 notations, so the spelling a device or a log happens to use stops mattering.
   // #region mac
   final mac = MacAddress.tryParse('00-00-5E-00-53-00')!;
   print(mac.value); // 00:00:5e:00:53:00  (canonical: colon-separated, lower-case)
@@ -16,8 +15,7 @@ void main() {
   print(MacAddress.tryParse('0:0:5e:0:53:0')); // null (omitted leading zeros aren't a MAC address)
   // #endregion
 
-  // `Hostname` enforces what `Uri` waves through: RFC 1123's grammar and both length limits. Case
-  // and a trailing root dot normalise away, so one name has exactly one value.
+  // Enforces what `Uri` waves through: RFC 1123's grammar and both length limits.
   // #region hostname
   final host = Hostname.tryParse('WWW.Example.COM.')!;
   print(host.value); // www.example.com
@@ -30,8 +28,8 @@ void main() {
   ); // an underscore makes this a DNS name, not a hostname
   // #endregion
 
-  // `DnsName` is that permissive counterpart: RFC 2181 drops the charset rule, which is why DKIM,
-  // DMARC, ACME and SRV names exist and why `Hostname` cannot hold one.
+  // The permissive counterpart. RFC 2181 drops the charset rule, which is how DKIM, DMARC, ACME and
+  // SRV names get to exist.
   // #region dnsname
   final dmarc = DnsName.tryParse('_DMARC.Example.COM.')!;
   print(dmarc.value); // _dmarc.example.com  (same normalisation Hostname applies)
@@ -41,8 +39,8 @@ void main() {
   print(DnsName.fromHostname(host).value); // www.example.com, and widening never fails
   // #endregion
 
-  // `IpAddress` canonicalises per RFC 5952, so the four spellings of one v6 address stop being four
-  // map keys. `InternetAddress` cannot do this job: it is `dart:io`, so it is absent on the web.
+  // Canonicalises per RFC 5952, so the 4 spellings of one v6 address stop being 4 map keys. `InternetAddress`
+  // can't do this job, being `dart:io` and so absent on the web.
   // #region ipaddress
   final address = IpAddress.tryParse('2001:0DB8:0:0:0:0:0:1')!;
   print(address.value); // 2001:db8::1  (leading zeros gone, longest zero run compressed)
@@ -54,8 +52,8 @@ void main() {
   ); // "010" has a leading zero, which is ambiguous between decimal and octal
   // #endregion
 
-  // `Cidr` holds an `IpAddress` and a prefix length rather than the text, so `contains` masks bits
-  // instead of matching a string prefix. The string version calls 100.0.0.1 part of 10.0.0.0/8.
+  // Holds an `IpAddress` and a prefix length rather than text, so `contains` masks bits. Matching a
+  // string prefix would call 100.0.0.1 part of 10.0.0.0/8.
   // #region cidr
   final block = Cidr.tryParse('10.0.0.0/8')!;
   print(block.asString); // 10.0.0.0/8
@@ -64,11 +62,10 @@ void main() {
   print(block.contains(IpAddress.tryParse('100.0.0.1')!)); // false (a text prefix match says true)
   print(
     Cidr.parse('192.168.1.5/24').reasonOrNull?.message,
-  ); // has host bits set below the prefix; the network is "192.168.1.0/24"
+  ); // has host bits set below the prefix. The network is "192.168.1.0/24"
   // #endregion
 
-  // `Port` is exactly a `Uint16`'s range, so that type owns the bound. The RFC 6335 band is read
-  // back rather than gated on, the way `MacAddress` reads its bits.
+  // Exactly a `Uint16`'s range, so that type owns the bound. The RFC 6335 band is read back.
   // #region port
   final port = Port.tryFrom(8080)!;
   print(port.value); // 8080

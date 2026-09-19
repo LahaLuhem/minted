@@ -4,8 +4,8 @@
 import 'package:minted_chronology/minted_chronology.dart';
 
 void main() {
-  // `Date` is the calendar date `DateTime` doesn't model: no time, no zone. It
-  // rejects impossible dates instead of rolling them over the way `DateTime` does.
+  // The calendar date `DateTime` doesn't model: no time, no zone. Impossible dates are refused, not
+  // rolled over.
   // #region date
   final date = Date.tryParse('2026-07-07')!;
   print(date.iso8601); // 2026-07-07
@@ -15,7 +15,7 @@ void main() {
   print(Date.tryParse('2026-13-01')); // null (no 13th month)
   // #endregion
 
-  // `Iso8601Duration` holds components, because a month has no length until anchored to a date.
+  // Holds components, because a month has no length until anchored to a date.
   // #region iso8601Duration
   final span = Iso8601Duration.tryParse('P1Y2M3DT4H')!;
   print(span.iso8601); // P1Y2M3DT4H

@@ -21,7 +21,7 @@ enum TestFailure implements MintedFailure {
   String get typeName => 'TestValue';
 }
 
-/// A second vocabulary, for the cases that need two unrelated failures.
+/// A second vocabulary, for the cases that need 2 unrelated failures.
 @immutable
 final class OtherFailure implements MintedFailure {
   const new();

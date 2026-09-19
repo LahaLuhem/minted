@@ -6,7 +6,7 @@ import 'support/bdd.dart';
 
 void main() {
   feature('Date', () {
-    // A strict ISO 8601 date round-trips through iso8601; null means rejected.
+    // A strict ISO 8601 date round-trips through iso8601. Null means rejected.
     scenarioOutline<({String input, String? canonical})>(
       'Date.tryParse accepts strict YYYY-MM-DD calendar dates and rejects the rest',
       examples: {
@@ -49,7 +49,7 @@ void main() {
     });
 
     scenario('the factory rejects impossible dates instead of rolling them over', () {
-      // DateTime rolls an out-of-range month over into the next year; Date refuses it.
+      // DateTime rolls an out-of-range month over into the next year. Date refuses it.
       check(DateTime(2026, 13).year).equals(2027);
 
       check(Date.of(2026, 13).isFailure).isTrue();
@@ -62,8 +62,8 @@ void main() {
       check(Date.of(-1).isFailure).isTrue();
     });
 
-    // The narrow failure type is the point of Date.of: a caller assembling from parts has no shape
-    // arm to fold, because the shape was never in question.
+    // The narrow failure type is the point of Date.of: a caller assembling from parts has no shape arm
+    // to fold, because the shape was never in question.
     scenario('Date.of reports only part failures, where parse can also report the shape', () {
       // The outcome's own type argument, so widening Date.of back to DateFailure fails here.
       check(Date.of(2026, 13)).isA<ParseOutcome<DateComponentFailure, Date>>();
@@ -93,9 +93,8 @@ void main() {
           .equals(const DateDayOutOfRange(year: 2024, month: 2, day: 30, maxDay: 29));
     });
 
-    // Both remedies from one door: fix the format, or fix a number. DateYearOutOfRange is absent
-    // deliberately, being unreachable here (a four-digit group can't leave 0000-9999); the factory
-    // covers it.
+    // Both remedies from one door: fix the format, or fix a number. DateYearOutOfRange is absent deliberately,
+    // being unreachable here, since a 4-digit group can't leave 0000-9999. The factory covers it.
     scenarioOutline<({String input, DateFailure failure})>(
       'parse reports the part that is wrong, not just the shape',
       examples: {
@@ -153,10 +152,10 @@ void main() {
       check(Date.of(2026, 7, 7).getOrThrow().isBefore(Date.of(2026, 7, 8).getOrThrow())).isTrue();
       check(Date.of(2026, 7, 7).getOrThrow().isAfter(Date.of(2026, 7, 6).getOrThrow())).isTrue();
       check(Date.of(2025, 12, 31).getOrThrow() < Date.of(2026).getOrThrow()).isTrue();
-      // Checking bounds
+      // `<=` has to hold on equal dates, so comparing one with itself is the point.
       // ignore: avoid-self-compare
       check(Date.of(2026, 7, 7).getOrThrow() <= Date.of(2026, 7, 7).getOrThrow()).isTrue();
-      // Checking bounds
+      // Same for `>=`.
       // ignore: avoid-self-compare
       check(Date.of(2026, 7, 7).getOrThrow() >= Date.of(2026, 7, 7).getOrThrow()).isTrue();
       check(Date.of(2026, 7, 8).getOrThrow() > Date.of(2026, 7, 7).getOrThrow()).isTrue();
@@ -238,8 +237,8 @@ void main() {
     });
 
     scenario('now gives today in the local time zone', () {
-      // Bracketed by two clock reads, so a midnight rollover mid-scenario widens the window
-      // rather than failing.
+      // Bracketed by 2 clock reads, so a midnight rollover mid-scenario widens the window rather than
+      // failing.
       final before = Date.fromDateTime(DateTime.now()).getOrThrow();
       final today = Date.now();
       final after = Date.fromDateTime(DateTime.now()).getOrThrow();

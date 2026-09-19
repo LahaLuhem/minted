@@ -8,8 +8,8 @@ import 'support/bdd.dart';
 
 void main() {
   feature('IpAddress', () {
-    // The canonical form doubles as the expected outcome; null means rejected. Addresses come from
-    // the documentation ranges RFC 5737 and RFC 3849 reserve, and the shapes from RFC 5952 §4.
+    // The canonical form doubles as the expected outcome. Null means rejected. Addresses come from the
+    // documentation ranges RFC 5737 and RFC 3849 reserve, and the shapes from RFC 5952 §4.
     scenarioOutline<({String input, String? canonical})>(
       'IpAddress.tryParse accepts both families, canonicalises them, and rejects the rest',
       examples: {
@@ -160,7 +160,7 @@ void main() {
       // Within v6 too, where '::9' sorts lexicographically after '::10' but numerically before it.
       check(IpAddress.tryParse('2001:db8::9')!.compareTo(IpAddress.tryParse('2001:db8::10')!))
           .isLessThan(0);
-      // Comparator test
+      // A comparator has to answer 0 for equal operands, so self-comparison is the point.
       // ignore: avoid-passing-self-as-argument
       check(ninth.compareTo(ninth)).equals(0);
     });

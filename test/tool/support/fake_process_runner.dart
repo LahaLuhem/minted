@@ -7,8 +7,8 @@ class FakeProcessRunner implements ProcessRunner {
   /// Every command run, in order.
   final List<String> calls = [];
 
-  /// The same commands with the directory each ran in. Recorded because a command aimed at the
-  /// wrong checkout looks identical in [calls].
+  /// The same commands with the directory each ran in. Recorded because a command aimed at the wrong
+  /// checkout looks identical in [calls].
   final List<({String command, String? workingDirectory})> invocations = [];
 
   final CommandResult Function(String command)? _onCapture;

@@ -5,7 +5,7 @@ import 'support/bdd.dart';
 
 void main() {
   feature('Weekday', () {
-    // The ISO day number round-trips through value; null means out of range.
+    // The ISO day number round-trips through value. Null means out of range.
     scenarioOutline<({int input, Weekday? day})>(
       'Weekday.tryFrom accepts ISO day numbers 1-7 and rejects the rest',
       examples: {

@@ -12,22 +12,16 @@
 **minted** gives you real types for the values you'd usually keep in a `String` and hope for the
 best: emails, IBANs, phone numbers, and more. Every type is built on *parse, don't validate*: the
 parser is the only door in, so anything that came through it is well-formed by construction. Once
-you hold an `Email`, it *is* a valid email. No more carrying "is this string actually valid?" three
+you hold an `Email`, it *is* a valid email. No more carrying "is this string actually valid?" 3
 functions deep. (One asterisk on that, see [Caveats](#caveats).)
 
 It's pure Dart, so it runs everywhere Dart does: Flutter apps, servers, CLIs, and the web. And every
 type wears the same small API, so learning one teaches you the rest.
 
 **minted** is a family. This package holds the vocabulary every type speaks (`ParseOutcome`,
-`MintedFailure`); the types themselves live in sibling packages you add one at a time, so a project
+`MintedFailure`). The types themselves live in sibling packages you add one at a time, so a project
 that wants `Date` doesn't resolve the phone-number metadata. [Install](#install) says which package
 holds what, and each sibling documents its own types.
-
-> Coming from 2.x, where one package held everything?
-> [MIGRATION.md](./MIGRATION.md#migrating-to-minted-300) is the path: no type or behaviour changed,
-> so it's a dependency and import edit the compiler walks you through. From 1.x, start
-> [one section down](./MIGRATION.md#migrating-to-minted-200): that's the release where no door
-> throws any more.
 
 <details>
 <summary><b>Why "parse, don't validate"?</b></summary>
@@ -38,12 +32,12 @@ downstream has to trust the check happened, or re-check it. A parser takes a `St
 type system: checked once, carried everywhere.
 
 That's what `int.parse` and `Uri.parse` already do, and it's what every `minted` type does for its
-domain. `String email, String phone, String name` are three interchangeable, mixed-up-able
-parameters; `Email`, `PhoneNumber`, `PersonName` are not.
+domain. `String email, String phone, String name` are 3 interchangeable, mixed-up-able
+parameters. `Email`, `PhoneNumber` and `PersonName` are not.
 
 The phrase comes from Alexis King's essay,
 [*Parse, don't validate*](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/). It's
-written in Haskell, but nothing in the argument depends on that; it reads fine from Dart.
+written in Haskell, but nothing in the argument depends on that, so it reads fine from Dart.
 
 </details>
 
@@ -81,7 +75,7 @@ behind it. Add it directly only if you name `ParseOutcome` or a failure yourself
 ## A quick taste
 
 ```dart
-// Email comes from minted_contact; every domain type is imported from its own package.
+// Email comes from minted_contact. Every domain type is imported from its own package.
 final email = Email.tryParse('Jane.Doe@Example.COM')!;
 email.value;   // 'Jane.Doe@example.com'   (domain lower-cased for you)
 email.domain;  // 'example.com'
@@ -98,14 +92,14 @@ Email.tryParse('not-an-email');   // null, nothing thrown
 `MintedFormatError`. Every type lives in a sibling, each documenting its own in one place rather
 than a second copy here:
 
-- [`minted_constraints`](https://pub.dev/packages/minted_constraints) — the primitives the rest are
+- [`minted_constraints`](https://pub.dev/packages/minted_constraints): the primitives the rest are
   cut from: digits, bounded numbers, single characters, and letters
-- [`minted_chronology`](https://pub.dev/packages/minted_chronology) — calendar dates and durations
-- [`minted_contact`](https://pub.dev/packages/minted_contact) — email addresses and phone numbers
-- [`minted_finance`](https://pub.dev/packages/minted_finance) — IBANs, BICs, ISINs, card numbers
-- [`minted_geography`](https://pub.dev/packages/minted_geography) — coordinates and geohashes
-- [`minted_identifiers`](https://pub.dev/packages/minted_identifiers) — UUIDs, ISBNs, IMEIs, and kin
-- [`minted_network`](https://pub.dev/packages/minted_network) — addresses, blocks, host names, ports
+- [`minted_chronology`](https://pub.dev/packages/minted_chronology): calendar dates and durations
+- [`minted_contact`](https://pub.dev/packages/minted_contact): email addresses and phone numbers
+- [`minted_finance`](https://pub.dev/packages/minted_finance): IBANs, BICs, ISINs, card numbers
+- [`minted_geography`](https://pub.dev/packages/minted_geography): coordinates and geohashes
+- [`minted_identifiers`](https://pub.dev/packages/minted_identifiers): UUIDs, ISBNs, IMEIs, and kin
+- [`minted_network`](https://pub.dev/packages/minted_network): addresses, blocks, host names, ports
 
 Each sibling's README is the place to look for its own runnable examples, the standard behind each
 type, and the per-type caveats: what a type refuses, what it only reports, and what it leaves
@@ -132,7 +126,7 @@ Learn one type and you've learned them all. Each one gives you:
   `getOrNull()!` would throw it away
 - getters that fit the type: `email.domain`, `iban.checkDigits`, `phone.nationalNumber`
 
-Two exceptions, both deliberate. A few types are **classifications** rather than parsed values.
+2 exceptions, both deliberate. A few types are **classifications** rather than parsed values.
 `Weekday`, `UuidVariant` and `PhoneNumberType` are enums a value type hands back, derived from
 something that already parsed, so they give you named cases and an exhaustive `switch` instead of
 `tryParse` / `parse`. `Weekday` still has `from` / `tryFrom` to build one from an ISO day number.
@@ -178,7 +172,7 @@ String? ibanError(String input) => switch (Iban.parse(input).reasonOrNull) {
 ```
 
 The vocabulary is sized to what the standard can actually distinguish, so it varies by type: `Iban`
-has five variants, `Date` four, `Email` one. That last is the honest ceiling rather than a shortcut,
+has 5 variants, `Date` 4, `Email` one. That last is the honest ceiling rather than a shortcut,
 since the underlying validator reports only pass or fail, and a guessed "invalid domain" would be
 worse than saying less. Switching is exhaustive per type, so adding a variant is a compile error at
 your call site, not a silent gap.
@@ -192,7 +186,7 @@ switch (Iban.parse(input)) {
 }
 ```
 
-Three other doors, when you don't need the reason:
+3 other doors, when you don't need the reason:
 
 | You want               | Use                                    | On failure                     |
 |------------------------|----------------------------------------|--------------------------------|
@@ -206,7 +200,7 @@ bad input. It is an `Error` for that reason, so `on FormatException` will not ca
 carries the same typed `failure`. Every other door reports instead, assembly factories included.
 
 <details>
-<summary><b>Using an FP library? Three lines.</b></summary>
+<summary><b>Using an FP library? 3 lines.</b></summary>
 
 `ParseOutcome` is `Either`-shaped on purpose, but minted doesn't depend on an FP package: that
 dependency would show up in every signature and force itself on everyone. Bridge it in your own app
@@ -239,7 +233,7 @@ rawStrings as List<Email>;   // a whole list at once, no per-element check
 That `Email` blows up the moment you read `.localPart`. So `parse`, `tryParse` and `fromComponents`
 are the only doors in, and a cast into a minted type is a bug. It's also the one place the
 `int.parse` / `Uri.parse` comparison breaks down, since those return real classes that can't be
-forged; worth saying out loud, because a package can't stop its callers from casting. Lint for it
+forged. Worth saying out loud, because a package can't stop its callers from casting. Lint for it
 is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310). The
 class-backed types (`Date`, `Digits`, `PaymentCardNumber`) are ordinary classes, so bad casts throw
 there instead. Why the erasure is a deliberate trade rather than an oversight:

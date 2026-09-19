@@ -37,7 +37,7 @@ void main() {
       check(AsciiLetter.tryFrom('Q') == AsciiLetter.tryFrom('q')).isFalse();
     });
 
-    // Extension types erase to their representation, so the two compare equal at runtime.
+    // Extension types erase to their representation, so the 2 compare equal at runtime.
     scenario('a letter equals the character spelling it', () {
       check(AsciiLetter.tryFrom('Q') == AsciiChar.tryFrom('Q')).isTrue();
     });

@@ -6,12 +6,12 @@ import 'dart:io';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
-/// Drives the real `tool/release.dart` against a throwaway bare remote, which no `publish.yml`
-/// watches, so nothing here can reach pub.dev.
+/// Drives the real `tool/release.dart` against a throwaway bare remote, which no `publish.yml` watches,
+/// so nothing here can reach pub.dev.
 ///
-/// The unit suites fake the process runner, so only this proves the real `cider bump`, commit, tag
-/// and atomic push behave as the flow assumes. It caught the rollback running git in whatever
-/// directory the process started in, which every unit test passed over.
+/// The unit suites fake the process runner, so only this proves the real `cider bump`, commit, tag and
+/// atomic push behave as the flow assumes. It caught the rollback running git in whatever directory
+/// the process started in, which every unit test passed over.
 void main() {
   final dart = Platform.resolvedExecutable;
   final repoRoot = Directory.current.path;
@@ -38,8 +38,8 @@ void main() {
 
   /// A workspace at `<work>/clone` with a bare origin, holding one member at 1.0.0 with notes.
   ///
-  /// Only what the real preflight reads, plus everything `pub publish --dry-run` insists on, since
-  /// that gate runs post-commit for real.
+  /// Only what the real preflight reads, plus everything `pub publish --dry-run` insists on, since that
+  /// gate runs post-commit for real.
   Future<String> scaffold({String package = 'scratch_pkg'}) async {
     final clone = '${work.path}/clone';
     final origin = '${work.path}/origin.git';
@@ -62,8 +62,8 @@ void main() {
 
     void write(String path, String contents) => File('$clone/$path').writeAsStringSync(contents);
 
-    // A manifest must parse and be non-empty or the preflight aborts. Alpine, not linterpol: this
-    // proves the flow's `docker run` works, not that a linter does, and it is far smaller to pull.
+    // A manifest must parse and be non-empty or the preflight aborts. Alpine, not linterpol: this proves
+    // the flow's `docker run` works, not that a linter does, and it is far smaller to pull.
     write('.github/lint-checks.json', '''
 { "image": "alpine:3", "checks": [{ "name": "shell", "cmd": "true" }] }
 ''');

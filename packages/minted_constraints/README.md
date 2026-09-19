@@ -8,7 +8,7 @@
 Constraint types: primitives carrying a constraint, with no standard defining their text form.
 
 Part of the [minted](https://github.com/LahaLuhem/minted) family: the building blocks the domain
-types are cut from. Two groups, one idea — the character types a consumer reaches for directly, and
+types are cut from. 2 groups, one idea: the character types a consumer reaches for directly, and
 the numeric primitives every sibling shares.
 
 ## Install
@@ -30,14 +30,14 @@ dart pub add minted_constraints
 | `AsciiLetter`        | exactly one ASCII letter, `A`-`Z`, `a`-`z`                 |
 | `AsciiLetters`       | one or more of those                                       |
 | `Digit` / `Digits`   | one decimal digit, or a sequence keeping its leading zeros |
-| `Uint`               | never negative; a sign, not a width, so nothing wraps       |
+| `Uint`               | never negative. A sign, not a width, so nothing wraps       |
 | `NaturalNumber`      | `1` or more, where `Uint` allows zero                       |
 | `Uint2` … `Uint32`   | one fixed machine width each, and the widths do not mix     |
 | `Percentage`         | which unit you meant, so `15` and `0.15` cannot be swapped  |
 | `Probability`        | `0` to `1` inclusive, both ends reported, not refused       |
 
 A "single character" field is a `String` in almost every codebase, which means it accepts none and
-accepts twenty. Every narrowing on the singulars is declared, so an `AsciiLetter` is an
+accepts 20. Every narrowing on the singulars is declared, so an `AsciiLetter` is an
 `AsciiAlphanumeric`, an `AsciiChar`, a `Letter` and a `Char`, and passes wherever any of them is
 wanted.
 
@@ -48,8 +48,8 @@ string equality and printing are the behaviour you want. The elements are a gett
 Control characters are admitted rather than refused: a delimiter or a padding character is often one,
 and a tab is a character by any reading. `AsciiChar.isControl` reports the narrower shape instead.
 
-`Char` is a **grapheme cluster**, not a code unit or code point: a skin-toned thumbs-up is two code
-points, a flag two, a joined family five. `length == 1` refuses all three and admits half a surrogate
+`Char` is a **grapheme cluster**, not a code unit or code point: a skin-toned thumbs-up is 2 code
+points, a flag 2, a joined family 5. `length == 1` refuses all 3 and admits half a surrogate
 pair. `Letter` narrows `Char` by the base rune, so `Ø` and a decomposed `é` qualify, an emoji does
 not.
 
@@ -83,7 +83,7 @@ The runnable version is the
 - no failure vocabulary: one invariant leaves nothing a failure could say that `null` does not
 - value equality and the printed form come from the representation, since each is an extension type
 - most implement that representation, so a `Digit` is an `int` and an `AsciiLetter` a `String` for
-  reading, while neither can be written from one. Four opt out, and say why in their own docs
+  reading, while neither can be written from one. 4 opt out, and say why in their own docs
 
 The [`minted` README](https://pub.dev/packages/minted) is the family guide.
 

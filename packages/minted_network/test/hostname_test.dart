@@ -8,8 +8,8 @@ void main() {
   feature('Hostname', () {
     final maxLabel = 'a' * 63;
 
-    // The canonical form doubles as the expected outcome; null means rejected. Vectors are the
-    // RFC 1123 and RFC 3696 rules, one row per rule, plus the cases Uri lets through.
+    // The canonical form doubles as the expected outcome. Null means rejected. Vectors are the RFC 1123
+    // and RFC 3696 rules, one row per rule, plus the cases Uri lets through.
     scenarioOutline<({String input, String? canonical})>(
       'Hostname.tryParse accepts RFC 1123 names, normalises them, and rejects the rest',
       examples: {
@@ -67,7 +67,7 @@ void main() {
       },
     );
 
-    // One row per variant, plus both arms of the two whose message branches on its payload.
+    // One row per variant, plus both arms of the 2 whose message branches on its payload.
     scenarioOutline<({String input, HostnameFailure failure})>(
       'Hostname.parse attributes the failure',
       examples: {
@@ -103,7 +103,7 @@ void main() {
     );
 
     scenario('the whole name is capped at 253 characters, not RFC 1035 wire format 255', () {
-      // Four maximal labels and their dots make 255; trimming the last to 61 lands on the limit.
+      // 4 maximal labels and their dots make 255, so trimming the last to 61 lands on the limit.
       final atLimit = [maxLabel, maxLabel, maxLabel, 'a' * 61].join('.');
       final pastLimit = [maxLabel, maxLabel, maxLabel, maxLabel].join('.');
 
@@ -152,7 +152,7 @@ void main() {
 
       check(earlier.compareTo(later)).isLessThan(0);
       check(later.compareTo(earlier)).isGreaterThan(0);
-      // Comparator test
+      // A comparator has to answer 0 for equal operands, so self-comparison is the point.
       // ignore: avoid-passing-self-as-argument
       check(earlier.compareTo(earlier)).equals(0);
     });

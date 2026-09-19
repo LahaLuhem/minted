@@ -4,9 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [GeoCoordinate] refused its input. Sealed, not an enum, because the range variants report
-/// the offending number back. Two remedies: [GeoCoordinateNotIso6709] means fix the format, the
-/// other two mean fix a number.
+/// Why a [GeoCoordinate] refused its input. Sealed rather than an enum, because the range variants hand
+/// the offending number back.
 @immutable
 sealed class GeoCoordinateFailure implements MintedFailure {
   const new();
@@ -15,8 +14,8 @@ sealed class GeoCoordinateFailure implements MintedFailure {
   String get typeName => 'GeoCoordinate';
 }
 
-/// The text is not the ISO 6709 shape: a signed, fixed-width latitude and longitude closed by `/`.
-/// Minutes or seconds reaching `60` land here too, being part of the grammar, not a separate range.
+/// The text isn't the ISO 6709 shape: a signed, fixed-width latitude and longitude closed by `/`. Minutes
+/// or seconds reaching `60` land here too, being grammar rather than a separate range.
 final class GeoCoordinateNotIso6709 extends GeoCoordinateFailure {
   /// Creates the failure.
   const new();

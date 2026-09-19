@@ -54,8 +54,8 @@ void main() {
       check(chosen).isNull();
     });
 
-    // The picker passes showSearch, and the cases above only ever press arrows. These drive the
-    // other half.
+    // The picker passes showSearch, and the cases above only ever press arrows. These drive the other
+    // half.
     group('search', () {
       const options = ['minted', 'minted_finance', 'minted_network'];
 
@@ -99,8 +99,8 @@ void main() {
         check(chosen).equals('minted_finance');
       });
 
-      // Both are literal query text, not controls. `minted docs` is not a real package: it is here
-      // so a typed space has something to match.
+      // Both are literal query text, not controls. `minted docs` is not a real package: it is here so
+      // a typed space has something to match.
       test('Space and slash type into the query', () {
         final spaced = withScript(
           TerminalScript.build(

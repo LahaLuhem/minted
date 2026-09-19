@@ -1,8 +1,7 @@
 /// Standardised identifiers as well-modelled value types.
 ///
-/// Every type is built on "parse, don't validate": build one through `parse`
-/// (returning a `ParseOutcome`) or `tryParse` (returning `null`), never a public
-/// constructor, so any instance that exists is guaranteed well-formed.
+/// Every type is built on "parse, don't validate": no public constructor, so an instance that exists
+/// is well-formed. `parse` reports why it refused, where `tryParse` just hands back `null`.
 library;
 
 export 'src/failures/gtin_failure.dart';

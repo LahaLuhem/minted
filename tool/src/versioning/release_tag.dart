@@ -1,7 +1,7 @@
 /// The tag a release of [version] of [package] carries.
 ///
-/// No `v` prefix: publish.yml routes on the package half, and each pub.dev package is configured
-/// with a matching `<package>-{{version}}` pattern.
+/// No `v` prefix: publish.yml routes on the package half, and each pub.dev package is configured with
+/// a matching `<package>-{{version}}` pattern.
 String releaseTag({required String package, required String version}) => '$package-$version';
 
 /// [tag] split back into package and version, or null when it is not a tag.

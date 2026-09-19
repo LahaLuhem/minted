@@ -7,33 +7,26 @@ import 'failures/month_failure.dart';
 
 /// A month of the year, `1` (January) to `12` (December).
 ///
-/// A building-block value type for calendar code: a month is one of twelve, not any `int`, so
-/// modelling it as [Month] makes "this is a real month" a fact of the type instead of something
-/// every caller re-checks. [Date] holds its month as a [Month], and the type carries the calendar
-/// knowledge that hangs off the month: [daysIn] gives the month's length in a given year, counting
-/// February as 29 days in a leap year.
-///
-/// [value] is the month number (`1`-`12`). The [january] to [december] constants name a month
-/// without the number.
+/// A month is one of 12, not any `int`, so this makes "a real month" a fact of the type rather than
+/// something every caller re-checks. It also carries the calendar knowledge hanging off a month: [daysIn]
+/// gives the length in a given year, February included.
 extension type const Month._(int value) {
-  /// Parses [input] as a month number `1`-`12` (`'7'` or `'07'`), or returns `null` unless it is
-  /// one or two digits naming a month in range.
+  /// Parses [input] as a month number, `'7'` or `'07'`, or `null` unless it names one in `1`-`12`.
   static Month? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a month number `1`-`12`, reporting [MonthFailure] unless it is one or two
-  /// digits naming a month in range.
+  /// Parses [input] as a month number, reporting [MonthFailure] unless it names one in `1`-`12`.
   static ParseOutcome<MonthFailure, Month> parse(String input) {
     final parsedMonth = !_digits.hasMatch(input) ? null : tryFrom(int.parse(input));
 
     return parsedMonth == null ? const ParseFailure(.notAMonth) : ParseSuccess(parsedMonth);
   }
 
-  /// The [Month] with number [value], or `null` unless it is in `1`-`12`.
+  /// The [Month] with number [value], or `null` unless it's in `1`-`12`.
   static Month? tryFrom(int value) =>
       value >= january.value && value <= december.value ? ._(value) : null;
 
-  /// The number of days in this month during [year] (`28`-`31`), counting February as `29` in a
-  /// leap year (proleptic Gregorian: divisible by 4, except centuries not divisible by 400).
+  /// How many days this month has in [year], `28`-`31`. February gets `29` in a leap year, by the proleptic
+  /// Gregorian rule: divisible by 4, bar centuries not divisible by 400.
   int daysIn(int year) =>
       value == february.value && _isLeapYear(year) ? _daysInLeapFebruary : _lengths[value - 1];
 
