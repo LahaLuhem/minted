@@ -5,6 +5,8 @@ import 'package:minted_finance/minted_finance.dart';
 
 import '../../../test/support/bdd.dart';
 
+const namedIbans = <Iban>{.example};
+
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
 
@@ -53,16 +55,13 @@ void main() {
     });
 
     scenario('an IBAN exposes its country code, check digits, and BBAN', () {
-      final parsedIban = Iban.tryParse('GB29NWBK60161331926819')!;
-
-      check(parsedIban.countryCode.value).equals('GB');
-      check(parsedIban.checkDigits).equals((first: Digit.d2, second: Digit.d9));
-      check(parsedIban.bban.value).equals('NWBK60161331926819');
+      check(Iban.example.countryCode.value).equals('GB');
+      check(Iban.example.checkDigits).equals((first: Digit.d8, second: Digit.d2));
+      check(Iban.example.bban.value).equals('WEST12345698765432');
     });
 
     scenario('an IBAN rebuilds the grouped paper form', () {
-      check(Iban.tryParse('GB29NWBK60161331926819')!.formatted)
-          .equals('GB29 NWBK 6016 1331 9268 19');
+      check(Iban.example.formatted).equals('GB82 WEST 1234 5698 7654 32');
     });
 
     scenarioOutline<({String input, IbanFailure failure})>(
@@ -191,6 +190,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IbanInvalidLength(expected: 22, actual: 12));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final iban in namedIbans) {
+        check(Iban.tryParse(iban.value)?.value, because: 'named constant $iban').equals(iban.value);
+      }
     });
   });
 }

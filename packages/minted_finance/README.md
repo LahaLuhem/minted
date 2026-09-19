@@ -72,6 +72,18 @@ Isin.tryParse('US0378331006');   // null: fails the Luhn check
 The runnable version is the
 [example](https://github.com/LahaLuhem/minted/blob/main/packages/minted_finance/example/minted_finance_example.dart).
 
+## Named constants
+
+The values documentation reaches for, as `const`, so they go where a `tryParse(...)!` can't.
+
+```dart
+Iban.example.formatted;    // 'GB82 WEST 1234 5698 7654 32'
+Bic.exampleDe.bic8.value;  // 'BANKDEFF'
+```
+
+> **Habits, not standards.** No IBAN or BIC is reserved for documentation. These are the ones the
+> examples use, and neither `WEST` nor `BANK` names a real institution.
+
 ## One shape, every type
 
 - `Type.tryParse(input)` hands back the value, or `null` when the input isn't valid

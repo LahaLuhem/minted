@@ -5,6 +5,28 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
+const namedEmails = <Email>{
+  .postmaster,
+  .hostmaster,
+  .usenet,
+  .news,
+  .webmaster,
+  .www,
+  .uucp,
+  .ftp,
+  .abuse,
+  .noc,
+  .security,
+  .info,
+  .marketing,
+  .sales,
+  .support,
+  .mailerDaemon,
+  .noReply,
+  .admin,
+  .root,
+};
+
 void main() {
   feature('Email', () {
     // Acceptance and normalisation in one table: the canonical form doubles as the expected outcome.
@@ -57,8 +79,7 @@ void main() {
     });
 
     scenario('an email builds a mailto: URI', () {
-      check(Email.tryParse('jane.doe@example.com')!.mailtoUri.toString())
-          .equals('mailto:jane.doe@example.com');
+      check(Email.postmaster.mailtoUri.toString()).equals('mailto:postmaster@example.com');
     });
 
     scenario('every door reports the one failure the engine can distinguish', () {
@@ -124,6 +145,24 @@ void main() {
           .isA<HostnameNotAscii>();
       check(Email.tryParse('jane@[192.0.2.1]')!.domainAsHostname().reasonOrNull)
           .isA<HostnameInvalidCharacter>();
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final email in namedEmails) {
+        check(
+          Email.tryParse(email.value)?.value,
+          because: 'named constant $email',
+        ).equals(email.value);
+      }
+    });
+
+    scenario('every named constant sits at the documentation domain, addressing no real inbox', () {
+      for (final email in namedEmails) {
+        check(
+          email.domainAsHostname().getOrNull(),
+          because: 'named constant $email',
+        ).equals(Hostname.exampleCom);
+      }
     });
   });
 }
