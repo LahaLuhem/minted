@@ -8,6 +8,8 @@ import 'package:minted/minted.dart';
 import 'failures/hostname_failure.dart';
 import 'standards/dns_names.dart';
 
+part 'helpers/hostname_helpers.dart';
+
 /// A hostname: the dot-separated name of a host on a network, e.g. `www.example.com`.
 /// Standards: [RFC 1123 §2.1](https://www.rfc-editor.org/rfc/rfc1123#section-2.1) for the grammar,
 /// [RFC 1035 §2.3.4](https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4) for the size limits.
@@ -49,35 +51,6 @@ extension type const Hostname._(String value) {
 
   /// Orders 2 hostnames lexicographically by their canonical form.
   int compareTo(Hostname other) => value.compareTo(other.value);
-
-  // Ordered so each check can assume the ones before it passed.
-  static HostnameFailure? _failureFor(String normalisedInput) {
-    final offendingCharacter = _offendingCharacter(normalisedInput);
-    if (offendingCharacter != null) {
-      return isNonAscii(offendingCharacter)
-          ? const HostnameNotAscii()
-          : HostnameInvalidCharacter(offendingCharacter);
-    }
-    if (normalisedInput.length > maxNameLength) return HostnameTooLong(normalisedInput.length);
-
-    final labels = normalisedInput.split(labelSeparator);
-    final malformedLabel = labels.firstWhereOrNull(_isMalformed);
-    if (malformedLabel != null) return HostnameLabelMalformed(malformedLabel);
-
-    final overlongLabel = labels.firstWhereOrNull((label) => label.length > maxLabelLength);
-    if (overlongLabel != null) return HostnameLabelTooLong(overlongLabel.length);
-
-    return !digitsOnly.hasMatch(labels.last) ? null : const HostnameNumericTld();
-  }
-
-  // The first character that is neither a label character nor the separator, or null when all pass.
-  static String? _offendingCharacter(String normalisedInput) =>
-      normalisedInput.split('').firstWhereOrNull((character) => !_allowed.hasMatch(character));
-
-  static bool _isMalformed(String label) =>
-      label.isEmpty || label.startsWith(hyphen) || label.endsWith(hyphen);
-
-  static final _allowed = RegExp('[0-9a-z.-]');
 
   //===================================== RFC 2606 RESERVED ======================================//
   // Both of its sets, whole: 4 top-level names in §2 and 3 second-level ones in §3.

@@ -109,9 +109,9 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 - New / changed types honour the [value-type contract](../CODESTYLE.md#value-type-contract):
   private constructor, `tryParse` + `parse`, `MintedFormatError`, value equality, canonical
   string form, documented normalisation.
-- DCM rules applied by hand (`dart analyze` doesn't run them): `no-empty-block`,
-  `newline-before-return`, `prefer-commenting-analyzer-ignores`, plus blank lines segmenting
-  logical chunks in methods.
+- `dart run melos run dcm` clean. It runs the `dart_code_metrics:` rules `dart analyze` can't, and
+  exits non-zero on a warning. Needs the DCM CLI installed. The one it can't check for you is blank
+  lines segmenting logical chunks in methods.
 - Lint clean via the linterpol image. Config lives in `.github/lint-checks.json`, `.rumdl.toml`
   and `.yamllint.yaml`. Run all 3, and start Docker if it's down rather than handing the work
   over unverified:

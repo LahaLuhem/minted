@@ -5,6 +5,8 @@ import 'failures/dns_name_failure.dart';
 import 'hostname.dart';
 import 'standards/dns_names.dart';
 
+part 'helpers/dns_name_helpers.dart';
+
 /// A DNS name: the permissive counterpart to [Hostname], e.g. `_dmarc.example.com`.
 /// Standards: [RFC 2181 §11](https://www.rfc-editor.org/rfc/rfc2181#section-11) for the syntax,
 /// [RFC 8552](https://www.rfc-editor.org/rfc/rfc8552) for the underscored names that need it.
@@ -56,30 +58,4 @@ extension type const DnsName._(String value) {
 
   /// Orders 2 names lexicographically by their canonical form.
   int compareTo(DnsName other) => value.compareTo(other.value);
-
-  // Ordered so each check can assume the ones before it passed.
-  static DnsNameFailure? _failureFor(String normalisedInput) {
-    final offendingCharacter = _offendingCharacter(normalisedInput);
-    if (offendingCharacter != null) {
-      return isNonAscii(offendingCharacter)
-          ? const DnsNameNotAscii()
-          : DnsNameInvalidCharacter(offendingCharacter);
-    }
-    if (normalisedInput.length > maxNameLength) return DnsNameTooLong(normalisedInput.length);
-
-    final labels = normalisedInput.split(labelSeparator);
-    if (labels.any((label) => label.isEmpty)) return const DnsNameLabelEmpty();
-
-    final overlongLabel = labels.firstWhereOrNull((label) => label.length > maxLabelLength);
-
-    return overlongLabel != null ? DnsNameLabelTooLong(overlongLabel.length) : null;
-  }
-
-  // The first character that is neither a label character nor the separator, or null when all pass.
-  static String? _offendingCharacter(String normalisedInput) =>
-      normalisedInput.split('').firstWhereOrNull((character) => !_allowed.hasMatch(character));
-
-  static final _allowed = RegExp('[0-9a-z._-]');
-
-  static const _underscore = '_';
 }
