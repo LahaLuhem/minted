@@ -44,6 +44,13 @@ melos:
       description: Repo-wide format check, the gate CI applies.
       run: dart format --output=none --set-exit-if-changed .
 
+    dcm:
+      description: >-
+        The rules `dart analyze` cannot run, from the `dart_code_metrics:` block in
+        analysis_options.yaml. Needs the DCM CLI: https://dcm.dev/docs/getting-started/.
+      # Exits 2 on a warning by default, so no --fatal-* flag is needed to make it a gate.
+      run: dcm analyze .
+
     test:
       description: Each member's suite, plus the root's own tooling suite.
       # `exec` visits members only, and the root is not one of them, so the root's tests need the

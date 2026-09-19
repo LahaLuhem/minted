@@ -136,6 +136,12 @@ final class Cidr {
 
   /// `2001:db8::/32`, the v6 documentation block. RFC 3849.
   static const docV6 = Cidr._(docV6Network, 32);
+
+  //======================================== IPV4-MAPPED =========================================//
+
+  /// `::ffff:0.0.0.0/96`, where a v4 address sits when a dual-stack socket reports it as v6.
+  /// RFC 4291 §2.5.5.2.
+  static const v4MappedV6 = Cidr._(v4MappedV6Network, 96);
 }
 
 // Split out so parse reads as its 2 stages: the address, then everything the address decides.

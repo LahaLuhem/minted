@@ -8,6 +8,8 @@ import 'package:minted/minted.dart';
 
 import 'failures/mac_address_failure.dart';
 
+part 'helpers/mac_address_helpers.dart';
+
 /// A MAC address: the 48- or 64-bit address identifying an IEEE 802 network interface, e.g. `00:00:5e:00:53:00`.
 /// IEEE Std 802 defines the address itself. [RFC 9542](https://www.rfc-editor.org/rfc/rfc9542) fixes
 /// the terminology and reserves the documentation ranges.
@@ -141,28 +143,3 @@ extension type const MacAddress._(String value) {
   /// The nearest bridge, and the individual LAN scope group address.
   static const nearestBridge = MacAddress._('01:80:c2:00:00:0e');
 }
-
-// The canonical form: the stripped digits re-joined in pairs with a colon.
-String _colonSeparated(String hex) => Iterable.generate(
-  hex.length ~/ hexDigitsPerByte,
-  (octet) => hex.substring(octet * hexDigitsPerByte, (octet + 1) * hexDigitsPerByte),
-).join(_colon);
-
-// One anchored alternative per notation, so a spelling that mixes separators matches none. The bare
-// form takes digits in pairs, so an odd count fails the shape rather than miscounting.
-final _notation = RegExp(
-  '^(?:[0-9a-f]{2}(?::[0-9a-f]{2})*' // colon
-  '|[0-9a-f]{2}(?:-[0-9a-f]{2})*' // hyphen
-  r'|[0-9a-f]{4}(?:\.[0-9a-f]{4})*' // Cisco dot-quad
-  r'|(?:[0-9a-f]{2})+)$', // bare hex
-);
-
-final _separators = RegExp('[-:.]');
-
-const _colon = ':';
-// The 2 widths IEEE 802 addresses come in: 48-bit (Ethernet, Wi-Fi) and 64-bit (802.15.4).
-const _octetCounts = {6, 8};
-// 3 octets of 2 hex digits, with the 2 colons between them.
-const _prefix24Length = 8;
-const _individualGroupBit = 0x01;
-const _universalLocalBit = 0x02;

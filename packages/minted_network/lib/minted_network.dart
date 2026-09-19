@@ -28,6 +28,7 @@ export 'src/ip_address.dart'
         private172Network,
         private192Network,
         sharedAddressNetwork,
-        uniqueLocalV6Network;
+        uniqueLocalV6Network,
+        v4MappedV6Network;
 export 'src/mac_address.dart';
 export 'src/port.dart';
