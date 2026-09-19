@@ -8,8 +8,8 @@ import 'support/digits.dart';
 
 void main() {
   feature('Isbn', () {
-    // The canonical thirteen-digit form doubles as the expected outcome: a String means "accepted
-    // and normalised to this", null means "rejected". Valid rows are published worked examples.
+    // The canonical 13-digit form doubles as the expected outcome: a String means "accepted and
+    // normalised to this", null means "rejected". Valid rows are published worked examples.
     scenarioOutline<({String input, String? canonical})>(
       'Isbn.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -51,7 +51,7 @@ void main() {
         // When the input is parsed as an ISBN ...
         final parsedIsbn = Isbn.tryParse(example.input);
 
-        // Then it is normalised to the thirteen-digit form, or rejected (null).
+        // Then it is normalised to the 13-digit form, or rejected (null).
         check(parsedIsbn?.value).equals(example.canonical);
       },
     );
@@ -71,8 +71,8 @@ void main() {
           .equals(parsedIsbn);
     });
 
-    // The legacy form is rebuilt, not stored, so these check our mod-11 generator against the
-    // published ISBN-10 rather than round-tripping our own output.
+    // The legacy form is rebuilt, not stored, so these check our mod-11 generator against the published
+    // ISBN-10 rather than round-tripping our own output.
     scenarioOutline<({String input, String? isbn10})>(
       'a 978 ISBN rebuilds its legacy ten-digit form, and a 979 one has none',
       examples: {
@@ -125,8 +125,8 @@ void main() {
           .equals('"9790" is the ISMN range for printed music, not an ISBN');
     });
 
-    // A property of GS1 mod-10, not a gap in ours: swapping adjacent digits five apart leaves the
-    // weighted sum unchanged. Pinned so nobody "fixes" it later.
+    // A property of GS1 mod-10, not a gap in ours: swapping adjacent digits 5 apart leaves the weighted
+    // sum unchanged. Pinned so nobody "fixes" it later.
     scenario('mod-10 cannot catch a transposition of two adjacent digits differing by five', () {
       check(Isbn.tryParse('9780306401657')?.value).equals('9780306401657');
       check(Isbn.tryParse('9780306406157')?.value).equals('9780306406157');
@@ -142,7 +142,7 @@ void main() {
       check(Isbn.tryParse('0-306-40615-2')?.value).equals('9780306406157');
     });
 
-    // fromComponents runs our GS1 mod-10 generator; check it reproduces the published check digit
+    // fromComponents runs our GS1 mod-10 generator, so check it reproduces the published check digit
     // across both Bookland prefixes.
     scenarioOutline<({String prefix, String body, String isbn})>(
       'fromComponents computes the check digit to match the published ISBN',

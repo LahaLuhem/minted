@@ -9,8 +9,8 @@ bool _isHeading(String line) => line.startsWith('## ');
 
 /// Notes under [changelog]'s first `## ` heading, when that heading is `## Unreleased`.
 ///
-/// Only the first heading counts: a dated one on top means the last release consumed everything
-/// below it. Empty for anything else, so "nothing here" reads as "nothing to release".
+/// Only the first heading counts: a dated one on top means the last release consumed everything below
+/// it. Empty for anything else, so "nothing here" reads as "nothing to release".
 String unreleasedNotes(String changelog) {
   final lines = const LineSplitter().convert(changelog);
   final opening = lines.indexWhere(_isHeading);

@@ -4,11 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [PaymentCardNumber] refused its input. Sealed, not an enum, because
-/// [PaymentCardNumberWrongLength] reports a value read from the input.
-///
-/// Three variants: ISO/IEC 7812 is a length window, a charset, and the Luhn check, and the card
-/// scheme is reported rather than validated, so there is nothing else to fail against.
+/// Why a [PaymentCardNumber] refused its input. Sealed rather than an enum, because [PaymentCardNumberWrongLength]
+/// carries a value off the input.
 @immutable
 sealed class PaymentCardNumberFailure implements MintedFailure {
   const new();
@@ -19,7 +16,7 @@ sealed class PaymentCardNumberFailure implements MintedFailure {
 
 /// Outside the 8-to-19-digit window ISO/IEC 7812 allows a primary account number.
 final class PaymentCardNumberWrongLength extends PaymentCardNumberFailure {
-  /// How many characters were left once separators were stripped.
+  /// How many characters were left after separators came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -39,7 +36,7 @@ final class PaymentCardNumberWrongLength extends PaymentCardNumberFailure {
   String toString() => 'PaymentCardNumberWrongLength($actualLength)';
 }
 
-/// Something outside `0`-`9` survived normalisation (spaces and hyphens are stripped first).
+/// Something outside `0`-`9` got through. Spaces and hyphens come off first.
 final class PaymentCardNumberInvalidCharacters extends PaymentCardNumberFailure {
   /// Creates the failure.
   const new();
@@ -57,7 +54,7 @@ final class PaymentCardNumberInvalidCharacters extends PaymentCardNumberFailure 
   String toString() => 'PaymentCardNumberInvalidCharacters()';
 }
 
-/// The final digit disagrees with the rest of the number: a digit is mistyped or transposed.
+/// The last digit doesn't match the rest. A digit is mistyped or swapped.
 final class PaymentCardNumberChecksumFailed extends PaymentCardNumberFailure {
   /// Creates the failure.
   const new();

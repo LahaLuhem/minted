@@ -25,8 +25,8 @@ void main() {
           .equals((package: 'minted_identifiers', version: '1.0.1'));
     });
 
-    // The reason the split is on the FIRST hyphen: pub names cannot contain one, so every later
-    // hyphen belongs to the version.
+    // The reason the split is on the FIRST hyphen: pub names cannot contain one, so every later hyphen
+    // belongs to the version.
     test('leaves a pre-release version intact', () {
       check(splitReleaseTag('minted-3.0.0-beta.1'))
           .equals((package: 'minted', version: '3.0.0-beta.1'));

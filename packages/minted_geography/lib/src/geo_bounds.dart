@@ -7,27 +7,24 @@ import 'latitude.dart';
 import 'longitude.dart';
 import 'standards/coordinate_bounds.dart';
 
-/// A bounding box: the rectangle between a west, south, east and north edge, which may cross the
-/// antimeridian. Standard: [RFC 7946 §5](https://www.rfc-editor.org/rfc/rfc7946#section-5),
-/// GeoJSON's `bbox`, whose §5.2 spells the crossing case rather than leaving it to convention.
+/// A bounding box: the rectangle between a west, south, east and north edge, which may cross the antimeridian.
+/// Standard: [RFC 7946 §5](https://www.rfc-editor.org/rfc/rfc7946#section-5), GeoJSON's `bbox`, whose
+/// §5.2 spells the crossing case rather than leaving it to convention.
 ///
-/// Parse, don't validate: `west > east` is not a bug to refuse, it is how §5.2 writes a box across
-/// the antimeridian, so `170,-45,-170,-35` is Fiji. [crossesAntimeridian] reports it and [contains]
-/// honours it.
+/// `west > east` isn't a bug to refuse, it's how §5.2 writes a box across the antimeridian, so `170,-45,-170,-35`
+/// is Fiji. [crossesAntimeridian] reports it and [contains] honours it.
 ///
-/// The edges are a [Longitude] and a [Latitude] pair rather than two [GeoCoordinate] corners, so
-/// [from] leaves only the latitude order to fail. [tryFrom] takes raw numbers. A zero-width
-/// (`west == east`) or zero-height box is legal, and holds its own edge.
+/// The edges are a [Longitude] and a [Latitude] pair rather than 2 [GeoCoordinate] corners, so [from]
+/// leaves only the latitude order to fail and [tryFrom] takes raw numbers. A zero-width (`west == east`)
+/// or zero-height box is legal, and holds its own edge.
 ///
-/// Normalisation on parse: input is trimmed and one surrounding pair of brackets is dropped.
-///
-/// Equality is by value over the four edges.
+/// Parsing trims and drops one surrounding pair of brackets.
 ///
 /// {@example /example/minted_geography_example.dart#bounds}
 @immutable
 final class GeoBounds {
-  /// The western edge. Above [east] exactly when the box crosses the antimeridian. A `double`, so
-  /// arithmetic and formatting need no unwrapping.
+  /// The western edge, above [east] exactly when the box crosses the antimeridian. A `double`, so arithmetic
+  /// and formatting need no unwrapping.
   final Longitude west;
 
   /// The southern edge. Never above [north].
@@ -41,8 +38,8 @@ final class GeoBounds {
 
   const new _({required this.west, required this.south, required this.east, required this.north});
 
-  /// The box with these four edges, reporting [GeoBoundsSouthAboveNorth] when the latitudes are the
-  /// wrong way round. The only failure left: the edges carry their own ranges, and west past east
+  /// The box with these 4 edges, reporting [GeoBoundsSouthAboveNorth] when the latitudes are the
+  /// wrong way round. The only failure left, since the edges carry their own ranges and west past east
   /// is the crossing rather than a mistake.
   static ParseOutcome<GeoBoundsFailure, GeoBounds> from({
     required Longitude west,
@@ -53,9 +50,8 @@ final class GeoBounds {
       ? ParseFailure(GeoBoundsSouthAboveNorth(south: south, north: north))
       : ParseSuccess(GeoBounds._(west: west, south: south, east: east, north: north));
 
-  /// The box with these four edges in decimal degrees, or `null` when one is out of range or the
-  /// latitudes are the wrong way round. The raw-number door, where [from] takes degrees already
-  /// constrained.
+  /// The box with these 4 edges in decimal degrees, or `null` if one is out of range or the latitudes
+  /// are the wrong way round. The raw-number door, where [from] takes degrees already constrained.
   static GeoBounds? tryFrom({
     required num west,
     required num south,
@@ -80,10 +76,10 @@ final class GeoBounds {
           ).getOrNull();
   }
 
-  /// Parses [input] as a GeoJSON `bbox`, or returns `null` unless it is four numbers naming a box.
+  /// Parses [input], or `null` unless it's 4 numbers naming a GeoJSON `bbox`.
   static GeoBounds? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a GeoJSON `bbox`, reporting the [GeoBoundsFailure] that names what broke.
+  /// Parses [input], reporting the [GeoBoundsFailure] that names what broke.
   static ParseOutcome<GeoBoundsFailure, GeoBounds> parse(String input) {
     final numbers = _numbersOf(input);
     if (numbers == null) return const ParseFailure(GeoBoundsNotFourNumbers());
@@ -104,12 +100,11 @@ final class GeoBounds {
           );
   }
 
-  /// The canonical GeoJSON `bbox` text, `west,south,east,north` (e.g.
-  /// `'170.0,-45.0,-170.0,-35.0'`). Round-trips through [parse].
+  /// The canonical GeoJSON `bbox` text, `'170.0,-45.0,-170.0,-35.0'`. Round-trips through [parse].
   String get bbox => '$west,$south,$east,$north';
 
-  /// Whether the box wraps the antimeridian, which RFC 7946 §5.2 writes as a western edge east of
-  /// the eastern one. The reading a `west <= east` check would refuse outright.
+  /// Whether the box wraps the antimeridian, which RFC 7946 §5.2 writes as a western edge east of the
+  /// eastern one. The reading a `west <= east` check would refuse outright.
   bool get crossesAntimeridian => west > east;
 
   /// Whether [coordinate] falls inside, edges included, honouring a box that wraps.
@@ -132,8 +127,8 @@ final class GeoBounds {
   @override
   String toString() => 'GeoBounds(west: $west, south: $south, east: $east, north: $north)';
 
-  // A coordinate folds -180 onto +180, so the antimeridian only ever arrives as the plus spelling
-  // and a box whose western edge is the minus one has to be offered both.
+  // A coordinate folds -180 onto +180, so the antimeridian only ever arrives as the plus spelling and
+  // a box whose western edge is the minus one has to be offered both.
   bool _holdsLongitude(double longitude) =>
       _spansLongitude(longitude) || (longitude == maxLongitude && _spansLongitude(-maxLongitude));
 
@@ -142,7 +137,7 @@ final class GeoBounds {
       ? longitude >= west || longitude <= east
       : longitude >= west && longitude <= east;
 
-  // The four numbers in [input], or null when it holds anything else.
+  // The 4 numbers in [input], or null when it holds anything else.
   static ({double west, double south, double east, double north})? _numbersOf(String input) {
     final trimmedInput = input.trim();
     final unwrapped = _bracketed.firstMatch(trimmedInput)?.group(1) ?? trimmedInput;
@@ -158,8 +153,8 @@ final class GeoBounds {
     };
   }
 
-  // One surrounding pair, so a bbox pasted out of GeoJSON parses. dotAll for a pretty-printed
-  // array, whose newlines double.tryParse then trims.
+  // One surrounding pair, so a bbox pasted out of GeoJSON parses. dotAll for a pretty-printed array,
+  // whose newlines double.tryParse then trims.
   static final _bracketed = RegExp(r'^\[(.*)\]$', dotAll: true);
 
   static const _separator = ',';

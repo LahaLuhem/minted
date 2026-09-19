@@ -10,7 +10,7 @@ Coordinates, geohashes and bounding boxes as well-modelled value types.
 Part of the [minted](https://github.com/LahaLuhem/minted) family: pure-Dart value types built on
 *parse, don't validate*, so the parser is the only door in and anything that came through it is
 well-formed by construction. Once you hold a `GeoCoordinate`, both halves are in range and in the
-order you meant; once you hold a `Geohash`, it decodes.
+order you meant, and once you hold a `Geohash`, it decodes.
 
 ## Install
 
@@ -28,8 +28,8 @@ another domain's engine.
 
 | Type            | What it guarantees                                                          | Standard                                                 |
 |-----------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
-| `GeoCoordinate` | a bounded latitude and longitude; all three ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)       |
-| `Geohash`       | a base32 cell, not a point; the four letters base32 drops are refused       | [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/) |
+| `GeoCoordinate` | a bounded latitude and longitude. All 3 ISO 6709 widths read as degrees | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)       |
+| `Geohash`       | a base32 cell, not a point. The 4 letters base32 drops are refused       | [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/) |
 | `GeoBounds`     | a box that may cross the antimeridian, which `west <= east` would refuse    | [RFC 7946 §5](https://www.rfc-editor.org/rfc/rfc7946#section-5) |
 
 A swapped latitude and longitude is a type bug no range check catches, so the pair is named at the

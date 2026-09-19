@@ -6,8 +6,8 @@ import 'package:minted/minted.dart';
 
 import '../normalisation/iso_date_format.dart';
 
-/// Why a [Date] refused its input. Sealed, not an enum, because the variants report the offending
-/// number back. Two remedies: [DateNotIso8601] means fix the format, the rest mean fix a number.
+/// Why a [Date] refused its input. Sealed rather than an enum, because the variants hand the offending
+/// number back.
 @immutable
 sealed class DateFailure implements MintedFailure {
   const new();
@@ -16,14 +16,14 @@ sealed class DateFailure implements MintedFailure {
   String get typeName => 'Date';
 }
 
-/// Why one of a date's parts was refused: the subset [Date.of] can report, where the shape is not in
+/// Why one of a date's parts was refused: the subset [Date.of] can report, where the shape isn't in
 /// question. Lets a caller assembling from parts switch without an arm for [DateNotIso8601].
 @immutable
 sealed class DateComponentFailure extends DateFailure {
   const new();
 }
 
-/// The text is not the ISO 8601 `YYYY-MM-DD` shape.
+/// The text isn't the ISO 8601 `YYYY-MM-DD` shape.
 final class DateNotIso8601 extends DateFailure {
   /// Creates the failure.
   const new();
@@ -83,8 +83,8 @@ final class DateMonthOutOfRange extends DateComponentFailure {
   String toString() => 'DateMonthOutOfRange($month)';
 }
 
-/// The day falls outside `1`-[maxDay]. The bound is leap-year aware, so 29 February is out of
-/// range in a common year and in range in a leap one.
+/// The day falls outside `1`-[maxDay]. Leap-year aware, so 29 February is out of range in a common year
+/// and in range in a leap one.
 final class DateDayOutOfRange extends DateComponentFailure {
   /// The year the day was given for.
   final int year;

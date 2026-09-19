@@ -8,8 +8,8 @@ import 'support/digits.dart';
 
 void main() {
   feature('Issn', () {
-    // The hyphenated form doubles as the expected outcome: a String means "accepted and normalised
-    // to this", null means "rejected". Valid rows are real, published ISSNs.
+    // The hyphenated form doubles as the expected outcome: a String means "accepted and normalised to
+    // this", null means "rejected". Valid rows are real, published ISSNs.
     scenarioOutline<({String input, String? canonical})>(
       'Issn.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -99,9 +99,9 @@ void main() {
       outline: (example) => check(Issn.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
-    // Mod-11 is the one algorithm here with no transposition blind spot, where the mod-10 family
-    // cannot see a swapped adjacent pair differing by five. Each row swaps exactly such a pair in a
-    // real ISSN, so a "simplification" to mod-10 would turn these green and be caught.
+    // Mod-11 is the one algorithm here with no transposition blind spot, where the mod-10 family cannot
+    // see a swapped adjacent pair differing by 5. Each row swaps exactly such a pair in a real ISSN,
+    // so a "simplification" to mod-10 would turn these green and be caught.
     scenarioOutline<({String valid, String transposed})>(
       'mod-11 catches the adjacent transpositions mod-10 would miss',
       examples: {
@@ -125,8 +125,8 @@ void main() {
       check(Issn.tryParse('03178471')?.value).equals('0317-8471');
     });
 
-    // fromBody runs our mod-11 generator; check it reproduces the published check character rather
-    // than round-tripping our own output.
+    // fromBody runs our mod-11 generator, so check it reproduces the published check character than
+    // round-tripping our own output.
     scenarioOutline<({String body, String issn})>(
       'fromBody computes the check character to match the published ISSN',
       examples: {

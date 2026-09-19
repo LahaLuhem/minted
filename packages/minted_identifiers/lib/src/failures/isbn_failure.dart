@@ -6,11 +6,8 @@ import 'package:minted/minted.dart';
 
 import '../standards/isbn_prefixes.dart';
 
-/// Why an [Isbn] refused its input. Sealed, not an enum, because [IsbnWrongLength] and [IsbnInvalidPrefix]
-/// report values read from the input.
-///
-/// Four variants because ISO 2108 is a prefix range plus a check digit, so it has independent things
-/// to fail against, each with its own remedy.
+/// Why an [Isbn] refused its input. Sealed rather than an enum, because [IsbnWrongLength] and [IsbnInvalidPrefix]
+/// carry values off the input.
 @immutable
 sealed class IsbnFailure implements MintedFailure {
   const new();
@@ -19,10 +16,9 @@ sealed class IsbnFailure implements MintedFailure {
   String get typeName => 'Isbn';
 }
 
-/// Neither ten nor thirteen characters survived normalisation, so this is not an ISBN of either generation.
-/// Count again, or keep typing.
+/// Neither 10 nor 13 characters, so it's neither generation.
 final class IsbnWrongLength extends IsbnFailure {
-  /// How many characters were left once separators were stripped.
+  /// How many characters were left after separators came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -41,8 +37,8 @@ final class IsbnWrongLength extends IsbnFailure {
   String toString() => 'IsbnWrongLength($actualLength)';
 }
 
-/// Something outside `0`-`9` survived normalisation (spaces and hyphens are stripped first). `X` counts
-/// only as the last character of the ten-digit form, where it stands for the value ten.
+/// Something outside `0`-`9` got through. `X` counts only as the 10-digit form's last character, where
+/// it stands for 10.
 final class IsbnInvalidCharacters extends IsbnFailure {
   /// Creates the failure.
   const new();
@@ -60,11 +56,11 @@ final class IsbnInvalidCharacters extends IsbnFailure {
   String toString() => 'IsbnInvalidCharacters()';
 }
 
-/// Thirteen digits, but [prefix] is not a range ISO 2108 gives to books: this is some other GS1 article
-/// number wearing the same shape.
+/// 13 digits, but [prefix] isn't a range ISO 2108 gives to books. Some other GS1 article number
+/// in the same shape.
 final class IsbnInvalidPrefix extends IsbnFailure {
-  /// The leading digits that identify the range: three for a GS1 prefix, or `9790`, the one range
-  /// that needs a fourth digit to tell apart.
+  /// The leading digits naming the range: 3 for a GS1 prefix, or `9790`, which needs a 4th to
+  /// tell apart.
   final String prefix;
 
   /// Creates the failure.
@@ -85,7 +81,7 @@ final class IsbnInvalidPrefix extends IsbnFailure {
   String toString() => 'IsbnInvalidPrefix($prefix)';
 }
 
-/// The check digit disagrees with the rest of the number: a character is mistyped or transposed.
+/// The check digit doesn't match the rest. A character is mistyped or swapped.
 final class IsbnChecksumFailed extends IsbnFailure {
   /// Creates the failure.
   const new();

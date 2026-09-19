@@ -29,8 +29,8 @@ another domain's engine.
 |---------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------------------|
 | `Iban`              | structure, country length, and the mod-97 checksum                              | [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number) |
 | `Bic`               | a SWIFT code: structure and a real country, folded to 11                        | [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)                           |
-| `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn; masked when printed                       | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
-| `Isin`              | a securities ID: charset, two-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html)                          |
+| `PaymentCardNumber` | digits, the 8-to-19 window, and Luhn. Masked when printed                       | [ISO/IEC 7812](https://en.wikipedia.org/wiki/Payment_card_number)            |
+| `Isin`              | a securities ID: charset, 2-letter prefix, and Luhn over its letter expansion | [ISO 6166](https://www.iso.org/standard/78502.html)                          |
 
 The check digits actually run: `Iban` computes mod-97 rather than matching a country's shape, and
 `PaymentCardNumber` is a class rather than an `extension type` precisely so printing one can't leak

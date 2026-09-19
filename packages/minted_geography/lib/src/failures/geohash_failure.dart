@@ -4,8 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [Geohash] refused its input. Sealed, not an enum, so the character variant reports the
-/// offender back. Two remedies: supply a geohash, or fix a character.
+/// Why a [Geohash] refused its input. Sealed rather than an enum, so the character variant hands the
+/// offender back.
 @immutable
 sealed class GeohashFailure implements MintedFailure {
   const new();

@@ -4,8 +4,7 @@
 import 'package:minted_finance/minted_finance.dart';
 
 void main() {
-  // `Iban` is validated against structure, country, length, and mod-97, then
-  // normalised to its compact form.
+  // Structure, country, length and mod-97 all checked, then normalised to the compact form.
   // #region iban
   final iban = Iban.tryParse('gb29 nwbk 6016 1331 9268 19')!;
   print(iban.value); // GB29NWBK60161331926819
@@ -13,8 +12,8 @@ void main() {
   print(iban.formatted); // GB29 NWBK 6016 1331 9268 19
   // #endregion
 
-  // `Bic` folds the 8-character SWIFT code into the 11-character one, `XXX` being the primary
-  // office, so both spellings of one office are the same value.
+  // Folds the 8-character SWIFT code into the 11-character one, `XXX` being the primary office, so both
+  // spellings of one office are the same value.
   // #region bic
   final bic = Bic.tryParse('deut de ff')!;
   print(bic.value); // DEUTDEFFXXX
@@ -23,8 +22,7 @@ void main() {
   print(Bic.tryParse('DEUTZZFF')); // null (ZZ is not a country)
   // #endregion
 
-  // `PaymentCardNumber` is a class rather than an extension type so its rendered form can mask the
-  // number: printing one cannot leak a PAN.
+  // A class, not an extension type, so its rendered form masks the number. Printing can't leak.
   // #region card
   final card = PaymentCardNumber.tryParse('4111 1111 1111 1111')!;
   print(card); // PaymentCardNumber(••••1111)
@@ -34,8 +32,8 @@ void main() {
   print(PaymentCardNumber.tryParse('4111111111111112')); // null (fails the Luhn check)
   // #endregion
 
-  // `Isin` runs Luhn over the number with its letters expanded to two digits each, so a letter in
-  // the NSIN weighs more characters than it shows.
+  // Runs Luhn over the number with its letters expanded to 2 digits each, so a letter in the NSIN
+  // weighs more characters than it shows.
   // #region isin
   final isin = Isin.tryParse('au0000xvgza3')!;
   print(isin.value); // AU0000XVGZA3

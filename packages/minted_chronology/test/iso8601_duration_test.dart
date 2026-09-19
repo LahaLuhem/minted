@@ -5,7 +5,7 @@ import 'support/bdd.dart';
 
 void main() {
   feature('Iso8601Duration', () {
-    // The canonical form doubles as the outcome; null means the input was rejected.
+    // The canonical form doubles as the outcome. Null means the input was rejected.
     scenarioOutline<({String input, String? iso8601})>(
       'Iso8601Duration.tryParse accepts the ISO 8601 grammar and normalises it',
       examples: {
@@ -123,8 +123,8 @@ void main() {
           from: Date.of(2026).getOrThrow(),
           expected: const Duration(seconds: 1, milliseconds: 500),
         ),
-        // A fraction on a calendar component scales that component's real length at the anchor,
-        // so half a leap year is half a day longer than half a common one.
+        // A fraction on a calendar component scales that component's real length at the anchor, so half
+        // a leap year is half a day longer than half a common one.
         'half a common year': (
           input: 'P0.5Y',
           from: Date.of(2026).getOrThrow(),

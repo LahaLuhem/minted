@@ -6,12 +6,10 @@ const _weightAboveLength = 1; // the leading digit counts for one more than the 
 const _tenValue = 10;
 const _tenGlyph = 'X'; // ten has to fit in one character, so both standards spell it X
 
-/// The weighted mod-11 check character for [bodyDigits], everything before the check character itself,
-/// assumed already separator-free. `0`-`9`, or `X` where the value is ten.
+/// The weighted mod-11 check character for [bodyDigits], `0`-`9` or `X` for 10. Assumed separator-free.
 ///
-/// Weights descend from one above [bodyDigits]'s length down to 2, which is what lets one implementation
-/// serve ISO 2108's ISBN-10 (nine digits, leading weight 10) and ISO 3297's ISSN (seven, leading weight
-/// 8). Unlike the mod-10 family, mod-11 catches every transposition.
+/// Weights count down from one above the body's length, which is what lets one version cover both ISO
+/// 2108's ISBN-10 and ISO 3297's ISSN. Unlike mod-10, mod-11 catches every transposition.
 String mod11CheckCharacter(String bodyDigits) {
   final leadingWeight = bodyDigits.length + _weightAboveLength;
   final weightedSum = bodyDigits.codeUnits

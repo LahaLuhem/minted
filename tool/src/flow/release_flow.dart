@@ -24,8 +24,8 @@ typedef ReleasePlan = ({
 
 /// Cuts a versioned release of one workspace member.
 ///
-/// Order is the contract: gates run cheapest-first, and the execute phase advances one [Rollback]
-/// as it goes.
+/// Order is the contract: gates run cheapest-first, and the execute phase advances one [Rollback] as
+/// it goes.
 class ReleaseFlow {
   new({required this.repo, required this.runner, required this.ui, required this.options});
 
@@ -174,8 +174,8 @@ class ReleaseFlow {
     _dart = _resolveDart();
     ui.log('Using Dart from: $_dart');
 
-    // Run cider rather than just resolve it: a stale snapshot makes `pub global run` rebuild and
-    // print resolution chatter, so probing here fails fast and leaves the snapshot warm.
+    // Run cider rather than just resolve it: a stale snapshot makes `pub global run` rebuild and print
+    // resolution chatter, so probing here fails fast and leaves the snapshot warm.
     final probe = runner.capture('cider', ['version'], workingDirectory: _dirOf(selected));
     if (probe.notFound) {
       throw ReleaseAbort('cider not on PATH. Install: dart pub global activate cider');
@@ -258,7 +258,7 @@ class ReleaseFlow {
     ui.step('Compute new version for ${selected.name}');
 
     // From the file rather than `cider version`: pub's resolution chatter reached stdout and became
-    // the version once. Reading it here also leaves the cider cross-check two independent sides.
+    // the version once. Reading it here also leaves the cider cross-check 2 independent sides.
     final current = pubspecVersion(pubspec);
     if (current == null || !semverPattern.hasMatch(current)) {
       throw ReleaseAbort(
@@ -293,7 +293,7 @@ class ReleaseFlow {
     ui.log('Sibling constraints match the tree.');
   }
 
-  /// The two lines one stale constraint is reported over.
+  /// The 2 lines one stale constraint is reported over.
   Iterable<String> _staleConstraintReport(String selectedName, StaleConstraint constraint) {
     final summary =
         '$selectedName wants ${constraint.member} ${constraintOf(constraint.declared)}, but this '
@@ -319,8 +319,8 @@ class ReleaseFlow {
     final manifest = repo.lintManifest();
 
     for (final check in manifest.checks) {
-      // Through the image's own shell, so a glob in the manifest expands against the mounted
-      // checkout. That is what repo.yml's matrix does, and the manifest is written for it.
+      // Through the image's own shell, so a glob in the manifest expands against the mounted checkout.
+      // That is what repo.yml's matrix does, and the manifest is written for it.
       final result = await ui.task(
         'lint: ${check.name}',
         () => runner.run('docker', [
@@ -343,8 +343,8 @@ class ReleaseFlow {
 
   /// The repo-wide format and analyze gates, which hold for every member at once.
   ///
-  /// `pub publish --dry-run` is absent on purpose: it only means anything post-bump, so it runs in
-  /// [_execute] where the rollback covers it.
+  /// `pub publish --dry-run` is absent on purpose: it only means anything post-bump, so it runs in [_execute]
+  /// where the rollback covers it.
   Future<void> _preflightRepoDart() async {
     _abortOnFailure(
       await ui.task(
@@ -362,8 +362,7 @@ class ReleaseFlow {
 
   /// Rewrites each dependent's constraint in place, so the tree still resolves once [next] lands.
   ///
-  /// A line replacement, not a YAML round trip: these files stay byte-identical but for the one
-  /// constraint.
+  /// A line replacement, not a YAML round trip: these files stay byte-identical but for the one constraint.
   void _applyRepairs(List<BlockingConstraint> repairs, String next) {
     if (repairs.isEmpty) return;
 
@@ -459,8 +458,8 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
       repairedPubspecs: repairedPubspecs,
     );
 
-    // Dart neither unwinds reliably on Ctrl-C nor reports 130. Rolling back before the `exit` is
-    // what makes it safe, since `exit` skips the `finally` below.
+    // Dart neither unwinds reliably on Ctrl-C nor reports 130. Rolling back before the `exit` is what
+    // makes it safe, since `exit` skips the `finally` below.
     final interrupts = ProcessSignal.sigint.watch().listen((_) {
       ui.error('Interrupted.');
       rollback.run();
@@ -512,8 +511,8 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
 
       rollback.phase = .commitLanded;
 
-      // Post-commit on purpose. Pub cross-checks the version field against a CHANGELOG header AND
-      // that no checked-in file is modified, so both only hold once the prep commit has landed.
+      // Post-commit on purpose. Pub cross-checks the version field against a CHANGELOG header AND that
+      // no checked-in file is modified, so both only hold once the prep commit has landed.
       _abortOnFailure(
         await ui.task(
           'dart pub -C ${selected.dir} publish --dry-run',
@@ -605,8 +604,8 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
 
   /// The `dart` to shell out to: the FVM symlink first, then PATH.
   ///
-  /// Resolved rather than taken from [Platform.resolvedExecutable], so subprocesses get the
-  /// `.fvmrc`-pinned SDK even when a host `dart` started this script.
+  /// Resolved rather than taken from [Platform.resolvedExecutable], so subprocesses get the `.fvmrc`-pinned
+  /// SDK even when a host `dart` started this script.
   String _resolveDart() {
     const pinned = '.fvm/flutter_sdk/bin/dart';
     if (repo.fileExists(pinned)) return repo.absolute(pinned);

@@ -6,30 +6,29 @@ import 'geo_bounds.dart';
 import 'geo_coordinate.dart';
 import 'standards/coordinate_bounds.dart';
 
-/// A geohash: a base32 string naming a rectangular cell of the Earth's surface, where each further
-/// character narrows the cell and every prefix encloses it.
-/// Standard: [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/), public domain since 2008.
+/// A geohash: a base32 string naming a rectangular cell of the Earth's surface, where each further character
+/// narrows the cell and every prefix encloses it. Standard: [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/),
+/// public domain since 2008.
 ///
-/// Parse, don't validate: `toLowerCase()` is not validation, because the alphabet omits `a`, `i`,
-/// `l` and `o`. And a geohash is a *cell*, not a point, which a `String` leaves callers no way to
-/// say. See [centre].
+/// `toLowerCase()` isn't validation, the alphabet omitting `a`, `i`, `l` and `o`. And a geohash names
+/// a *cell*, not a point, which a `String` leaves callers no way to say. See [centre].
 ///
-/// Normalisation on parse: surrounding whitespace trimmed, then lower-cased, the alphabet's own case.
+/// Parsing trims, then lower-cases to the alphabet's own case.
 ///
-/// Sorting is spatial for free, the alphabet being ASCII-ascending: plain string order is geohash
-/// order, which is what makes a prefix range query work.
+/// Sorting comes out spatial for free, the alphabet being ASCII-ascending, which is what makes a prefix
+/// range query work.
 ///
 /// {@example /example/minted_geography_example.dart#geohash}
 extension type const Geohash._(String value) {
-  /// The geohash of [precision] characters whose cell contains [coordinate]. Cannot fail: both
-  /// parameters carry their own invariants, so an absurd [precision] builds an absurd string rather
-  /// than being refused.
+  /// The geohash of [precision] characters whose cell holds [coordinate]. Can't fail: both parameters
+  /// carry their own invariants, so an absurd [precision] builds an absurd string rather than getting
+  /// refused.
   ///
-  /// Lossy by design, and [precision] sizes the loss: a coarse cell is wide, so [centre] will not
-  /// hand [coordinate] back.
+  /// Lossy by design, and [precision] sizes the loss. A coarse cell is wide, so [centre] won't hand
+  /// [coordinate] back.
   //
-  // A constructor rather than the family's usual static assembly door, because it is the first one
-  // that cannot fail: a ParseOutcome return is what stops the others being constructors.
+  // A constructor rather than the family's usual static assembly door, because it's the first one that
+  // can't fail. A ParseOutcome return is what stops the others being constructors.
   factory from({required GeoCoordinate coordinate, required NaturalNumber precision}) {
     final intervals = _wholeEarth();
     final targets = [coordinate.longitude, coordinate.latitude];
@@ -59,11 +58,10 @@ extension type const Geohash._(String value) {
     return Geohash._(characters.toString());
   }
 
-  /// Parses [input] as a geohash, or returns `null` when it is empty or holds a character the
-  /// alphabet does not.
+  /// Parses [input], or `null` if it's empty or holds a character outside the alphabet.
   static Geohash? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a geohash, reporting the [GeohashFailure] that names what broke.
+  /// Parses [input], reporting the [GeohashFailure] that names what broke.
   static ParseOutcome<GeohashFailure, Geohash> parse(String input) {
     final normalisedInput = input.trim().toLowerCase();
     final failure = _failureFor(normalisedInput);
@@ -76,8 +74,8 @@ extension type const Geohash._(String value) {
 
   /// The cell itself, as a box. What a geohash actually names, where [centre] is one point in it.
   ///
-  /// Never crosses the antimeridian: halving `-180` to `180` cannot put a western edge east of an
-  /// eastern one, which is also why the box cannot fail to build.
+  /// Never crosses the antimeridian, since halving `-180` to `180` can't put a western edge east of
+  /// an eastern one. Which is also why the box can't fail to build.
   GeoBounds get bounds {
     final intervals = _cellOf(value);
     final (low: south, high: north) = intervals[_latitudeAxis];
@@ -86,8 +84,8 @@ extension type const Geohash._(String value) {
     return GeoBounds.tryFrom(west: west, south: south, east: east, north: north)!;
   }
 
-  /// The centre of the cell, which is not the coordinate the geohash was built from: a coarse cell
-  /// is wide. Re-encoding this at [precision] does return this geohash.
+  /// The centre of the cell, which isn't the coordinate the geohash was built from, a coarse cell being
+  /// wide. Re-encoding this at [precision] does give this geohash back.
   ///
   /// Beyond about 23 characters a `double` runs out of mantissa, so the centre stops moving.
   GeoCoordinate get centre {
@@ -100,8 +98,7 @@ extension type const Geohash._(String value) {
     )!;
   }
 
-  // Why normalised input is not a geohash, or null when it is one. The one gate parse funnels
-  // through.
+  // The one gate parse goes through.
   static GeohashFailure? _failureFor(String normalisedInput) {
     if (normalisedInput.isEmpty) return const GeohashEmpty();
 
@@ -110,8 +107,8 @@ extension type const Geohash._(String value) {
     return offendingCharacter == null ? null : GeohashInvalidCharacter(offendingCharacter);
   }
 
-  // The cell [geohashValue] narrows to. Reached only from a parsed value, so every character is in
-  // the alphabet and indexOf cannot answer -1.
+  // The cell [geohashValue] narrows to. Only ever reached from a parsed value, so indexOf can't answer
+  // -1.
   static List<({double low, double high})> _cellOf(String geohashValue) {
     final intervals = _wholeEarth();
     var bit = 0;
@@ -134,8 +131,8 @@ extension type const Geohash._(String value) {
     return intervals;
   }
 
-  // Both axes at full extent, longitude first because it takes the first bit. Fresh per call: the
-  // walk narrows it in place.
+  // Both axes at full extent, longitude first because it takes the 1st bit. Fresh per call: the walk
+  // narrows it in place.
   static List<({double low, double high})> _wholeEarth() => [
     (low: -maxLongitude, high: maxLongitude),
     (low: -maxLatitude, high: maxLatitude),
@@ -145,8 +142,8 @@ extension type const Geohash._(String value) {
   static double _middleOf(({double low, double high}) interval) =>
       (interval.low + interval.high) / 2;
 
-  // The 36 alphanumerics less `a`, `i`, `l` and `o`, leaving 32 and dropping the letters that read
-  // as digits. ASCII-ascending on purpose, which is what makes string order spatial order.
+  // The 36 alphanumerics less the 4 letters that read as digits, leaving 32. ASCII-ascending on purpose,
+  // which is what makes string order spatial order.
   static const _alphabet = '0123456789bcdefghjkmnpqrstuvwxyz';
 
   static final _alphabetCodeUnits = _alphabet.codeUnits;
@@ -155,7 +152,7 @@ extension type const Geohash._(String value) {
   static const _bitsPerCharacter = 5;
   static const _highestCharacterBit = 1 << (_bitsPerCharacter - 1);
 
-  // Longitude takes the first bit and the two alternate, so a bit index's parity picks its axis.
+  // Longitude takes the 1st bit and the 2 alternate, so a bit index's parity picks its axis.
   static const _axisCount = 2;
   static const _longitudeAxis = 0;
   static const _latitudeAxis = 1;

@@ -1,5 +1,5 @@
-// Data-carrying failures are built without `const` on purpose: const canonicalisation would make
-// the twin identical to the original, so `==` would ride on identity instead of doing any work.
+// Data-carrying failures are built without `const` on purpose: const canonicalisation would make the
+// twin identical to the original, so `==` would ride on identity instead of doing any work.
 // ignore_for_file: prefer_const_constructors
 
 import 'dart:io';
@@ -17,8 +17,8 @@ import 'support/bdd.dart';
 
 void main() {
   feature('the failure contract', () {
-    // Every failure the package can report. A variant missing here is one nothing pins the wording
-    // of, and the message is what reaches a log or a fallback UI.
+    // Every failure the package can report. A variant missing here is one nothing pins the wording of,
+    // and the message is what reaches a log or a fallback UI.
     final rendering = <String, ({MintedFailure failure, String typeName, String message})>{
       'Month has one way to fail': (
         failure: MonthFailure.notAMonth,
@@ -33,7 +33,7 @@ void main() {
       'Iso8601Duration: the zero duration is named, not left to P': (
         failure: Iso8601DurationEmpty(),
         typeName: 'Iso8601Duration',
-        message: 'has no components; a zero duration is "PT0S", not "P"',
+        message: 'has no components. A zero duration is "PT0S", not "P"',
       ),
       'Iso8601Duration: a T with nothing after it': (
         failure: Iso8601DurationDanglingTimeDesignator(),
@@ -420,7 +420,7 @@ void main() {
       'Cidr: host bits set offers the block that was meant': (
         failure: CidrHostBitsSet('192.168.1.0/24'),
         typeName: 'Cidr',
-        message: 'has host bits set below the prefix; the network is "192.168.1.0/24"',
+        message: 'has host bits set below the prefix. The network is "192.168.1.0/24"',
       ),
     };
 
@@ -430,7 +430,7 @@ void main() {
       outline: (example) {
         check(example.failure.typeName).equals(example.typeName);
         check(example.failure.message).equals(example.message);
-        // The error derives its message from these two, so this is the rendered form too.
+        // The error derives its message from these 2, so this is the rendered form too.
         check(MintedFormatError.from(example.failure).message)
             .equals('Invalid ${example.typeName}: ${example.message}');
       },
@@ -658,8 +658,8 @@ void main() {
       outline: (example) => check(example.failure.toString()).equals(example.rendered),
     );
 
-    // A separately-built twin, and a near-miss that differs in exactly one field, so an `==` that
-    // compared only the type (or forgot a field) would fail here.
+    // A separately-built twin, and a near-miss that differs in exactly one field, so an `==` that compared
+    // only the type (or forgot a field) would fail here.
     scenarioOutline<({MintedFailure failure, MintedFailure twin, MintedFailure other})>(
       'failures are equal by value, hash with their equals, and reject near-misses',
       examples: {
@@ -984,7 +984,7 @@ void main() {
           twin: CidrMalformed(),
           other: CidrHostBitsSet('192.168.1.0/24'),
         ),
-        // Equality has to reach through the nesting: two wrappers over different reasons differ.
+        // Equality has to reach through the nesting: 2 wrappers over different reasons differ.
         'a nested address failure differs by its inner reason': (
           failure: CidrInvalidAddress(IpAddressLeadingZero('010')),
           twin: CidrInvalidAddress(IpAddressLeadingZero('010')),
@@ -1045,8 +1045,8 @@ void main() {
       },
     );
 
-    // The tables above are hand-written, so a new vocabulary is only covered if someone remembers
-    // to add it. DnsName's five variants went uncovered from 1.1.0 until this check existed.
+    // The tables above are hand-written, so a new vocabulary is only covered if someone remembers to
+    // add it. DnsName's 5 variants went uncovered from 1.1.0 until this check existed.
     scenario('every failure variant declared in the family appears above', () {
       final suite = File('test/failure_contract_test.dart').readAsStringSync();
       final unnamed = _declaredVariants().where((variant) => !suite.contains(variant));
@@ -1059,8 +1059,8 @@ void main() {
   });
 }
 
-/// Concrete failure variants across every package: the `final class` arms of a sealed vocabulary,
-/// and whole `enum` vocabularies. The sealed base itself is not a variant.
+/// Concrete failure variants across every package: the `final class` arms of a sealed vocabulary, and
+/// whole `enum` vocabularies. The sealed base itself is not a variant.
 Set<String> _declaredVariants() =>
     Directory('..')
         .listSync()

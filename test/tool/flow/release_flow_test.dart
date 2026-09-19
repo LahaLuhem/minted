@@ -192,8 +192,8 @@ void main() {
   });
 
   group('dependent-constraint repair', () {
-    // Without this the major lands, every dependent's caret excludes it, and pub get stops
-    // resolving the workspace for every later release in the train.
+    // Without this the major lands, every dependent's caret excludes it, and pub get stops resolving
+    // the workspace for every later release in the train.
     test('a major bump repairs a dependent that would exclude it, in the same commit', () async {
       fixture
         ..addMember(name: 'core', version: '1.5.0')
@@ -354,8 +354,8 @@ void main() {
       check(runner.ran('git push')).isFalse();
     });
 
-    // Past the dry-run the window is the user's: a push that half-succeeded must not be second
-    // guessed, so the flow prints the recipe instead of running it.
+    // Past the dry-run the window is the user's: a push that half-succeeded must not be second guessed,
+    // so the flow prints the recipe instead of running it.
     test('a failed push undoes nothing and prints the recovery recipe', () async {
       fixture.addMember(name: 'core', version: '3.0.0');
       final runner = FakeProcessRunner(

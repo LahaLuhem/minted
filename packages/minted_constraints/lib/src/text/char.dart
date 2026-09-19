@@ -6,17 +6,17 @@ import 'package:characters/characters.dart';
 
 /// Exactly one character as a reader sees it: one Unicode grapheme cluster.
 ///
-/// Not one code unit or code point: a skin-toned thumbs-up is two code points, a flag two, a joined
-/// family five, and each fills one slot. `length == 1` refuses all three and admits half a surrogate
-/// pair, which this refuses instead.
+/// Not one code unit or code point: a skin-toned thumbs-up is 2 code points, a flag 2, a joined
+/// family 5, and each fills one slot. `length == 1` refuses all 3 and lets half a surrogate pair
+/// through, which this refuses instead.
 ///
-/// Control characters are admitted, as on [AsciiChar]. Where only a letter belongs, use [Letter].
+/// Control characters get in, as on [AsciiChar]. Where only a letter belongs, use [Letter].
 ///
 /// {@example /example/minted_constraints_example.dart#char}
-// Does not implement String, unlike the Ascii types: a grapheme can span two code units, so
-// `length` would answer 2. Letter and Letters are opaque for the same reason.
+// Does not implement String, unlike the Ascii types: a grapheme can span 2 code units, so `length`
+// would answer 2. Letter and Letters are opaque for the same reason.
 extension type const Char._(String value) {
-  /// The [Char] spelled by [value], or `null` unless it is exactly one character.
+  /// The [Char] spelled by [value], or `null` unless it's exactly one character.
   static Char? tryFrom(String value) =>
       value.characters.length != 1 || _hasUnpairedSurrogate(value) ? null : ._(value);
 

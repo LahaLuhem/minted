@@ -9,16 +9,14 @@ import 'standards/dns_names.dart';
 /// Standards: [RFC 2181 §11](https://www.rfc-editor.org/rfc/rfc2181#section-11) for the syntax,
 /// [RFC 8552](https://www.rfc-editor.org/rfc/rfc8552) for the underscored names that need it.
 ///
-/// Parse, don't validate: `_acme-challenge.example.com`, DKIM selectors and SRV names are what
-/// ACME, DMARC and service discovery actually use, and [Hostname] refuses every one by design.
+/// `_acme-challenge.example.com`, DKIM selectors and SRV names are what ACME, DMARC and service discovery
+/// actually use, and [Hostname] refuses every one by design.
 ///
-/// Three things it takes that [Hostname] refuses: an underscore, a hyphen opening or closing a
-/// label, and an all-numeric last label, so `192.168.1.1` is a name here. Still ASCII, for the
-/// reason [Hostname] gives, and still inside RFC 2181's lengths, which is the application limit
-/// that RFC leaves open. Why: `APPENDIX.md#dns-name-value-type`.
+/// 3 things it takes that [Hostname] refuses: an underscore, a hyphen opening or closing a label,
+/// and an all-numeric last label, so `192.168.1.1` is a name here. Still ASCII, for the reason [Hostname]
+/// gives, and still inside RFC 2181's lengths. Why: `APPENDIX.md#dns-name-value-type`.
 ///
-/// Normalisation on parse: trimmed, lower-cased (RFC 1035 makes DNS comparison case-insensitive),
-/// and one trailing root dot dropped. [fqdn] rebuilds the trailing-dot spelling.
+/// Parsing trims, lower-cases and drops one trailing root dot. [fqdn] puts the dot back.
 ///
 /// {@example /example/minted_network_example.dart#dnsname}
 extension type const DnsName._(String value) {
@@ -26,16 +24,15 @@ extension type const DnsName._(String value) {
   // Already normalised and strictly inside this type's rules, so there is nothing left to check.
   static DnsName fromHostname(Hostname hostname) => ._(hostname.value);
 
-  /// Builds a [DnsName] from its [labels] (`['_dmarc', 'example', 'com']`), reporting the
-  /// [DnsNameFailure] unless they join into a valid one. The inverse of [labels].
+  /// Builds a [DnsName] from its [labels], reporting the [DnsNameFailure] unless they join into a valid
+  /// one. The inverse of [labels].
   static ParseOutcome<DnsNameFailure, DnsName> fromLabels(List<String> labels) =>
       parse(labels.join(labelSeparator));
 
-  /// Parses [input] as a DNS name, or returns `null` when it breaks a charset or length rule.
-  /// See the type docs for the normalisation applied.
+  /// Parses [input], or `null` if it breaks a charset or length rule.
   static DnsName? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a DNS name, reporting the [DnsNameFailure] that says which rule it broke.
+  /// Parses [input], reporting the [DnsNameFailure] that says which rule it broke.
   static ParseOutcome<DnsNameFailure, DnsName> parse(String input) {
     final normalisedInput = rootStripped(input.trim().toLowerCase());
     final failure = _failureFor(normalisedInput);
@@ -43,8 +40,8 @@ extension type const DnsName._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(normalisedInput));
   }
 
-  /// This name as a [Hostname], or `null` when it uses the freedom [Hostname] refuses. Partial
-  /// where [fromHostname] is total, which is what makes these two types rather than one.
+  /// This name as a [Hostname], or `null` when it uses the freedom [Hostname] refuses. Partial where
+  /// [fromHostname] is total, which is what makes these 2 types rather than one.
   Hostname? tryToHostname() => Hostname.tryParse(value);
 
   /// The dot-separated labels, most specific first: `['_dmarc', 'example', 'com']`.
@@ -53,12 +50,11 @@ extension type const DnsName._(String value) {
   /// The fully-qualified spelling, `_dmarc.example.com.`, whose trailing dot names the root.
   String get fqdn => '$value$labelSeparator';
 
-  /// Whether this is an underscored name in RFC 8552's sense: some label opens with an underscore,
-  /// which is what marks a DKIM, DMARC, ACME or SRV attribute leaf.
+  /// Whether some label opens with an underscore, RFC 8552's mark of a DKIM, DMARC, ACME or SRV attribute
+  /// leaf.
   bool get isUnderscored => labels.any((label) => label.startsWith(_underscore));
 
-  /// Orders two names lexicographically by their canonical form. Extension types cannot implement
-  /// `Comparable<DnsName>`, so this is a plain method, not the [Comparable] interface.
+  /// Orders 2 names lexicographically by their canonical form.
   int compareTo(DnsName other) => value.compareTo(other.value);
 
   // Ordered so each check can assume the ones before it passed.

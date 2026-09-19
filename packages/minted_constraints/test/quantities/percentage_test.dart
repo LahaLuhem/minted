@@ -5,7 +5,7 @@ import '../support/bdd.dart';
 
 void main() {
   feature('Percentage', () {
-    // The expected `.value` doubles as the outcome; null means the input was rejected.
+    // The expected `.value` doubles as the outcome. Null means the input was rejected.
     scenarioOutline<({num input, double? value})>(
       'Percentage.tryFrom takes the percent and bounds nothing but finiteness',
       examples: {

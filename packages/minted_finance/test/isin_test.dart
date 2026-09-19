@@ -12,8 +12,8 @@ AsciiAlphanumerics _alphanumerics(String value) => AsciiAlphanumerics.tryFrom(va
 
 void main() {
   feature('Isin', () {
-    // The compact twelve-character form doubles as the expected outcome: a String means "accepted
-    // and normalised to this", null means "rejected". Valid rows are real, published ISINs.
+    // The compact 12-character form doubles as the expected outcome: a String means "accepted and
+    // normalised to this", null means "rejected". Valid rows are real, published ISINs.
     scenarioOutline<({String input, String? canonical})>(
       'Isin.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -77,10 +77,10 @@ void main() {
       },
     );
 
-    // The prefix is enforced as two letters, never as a country: rejecting XS would refuse real
-    // ISINs, so the country fact is reported instead. Same call as Bic.isSwiftRegistrable.
-    // The two non-country numbers below are constructed to satisfy the check digit rather than
-    // taken from a published security; only the prefixes they carry are the point.
+    // The prefix is enforced as 2 letters, never as a country: rejecting XS would refuse real ISINs,
+    // so the country fact is reported instead. Same call as Bic.isSwiftRegistrable. The 2 non-country
+    // numbers below are constructed to satisfy the check digit rather than taken from a published security,
+    // and only the prefixes they carry are the point.
     scenarioOutline<({String input, bool hasCountryPrefix})>(
       'a non-country prefix parses, and says so rather than being refused',
       examples: {
@@ -143,9 +143,9 @@ void main() {
       check(Isin.tryParse('us0378331005')?.value).equals('US0378331005');
     });
 
-    // fromComponents runs our expand-then-Luhn generator; check it reproduces the published check
-    // digit rather than round-tripping our own output. Letter-carrying NSINs are the interesting
-    // rows, because those are the ones whose expansion changes the weighting.
+    // fromComponents runs our expand-then-Luhn generator, so check it reproduces the published digit
+    // rather than round-tripping our own output. Letter-carrying NSINs are the interesting rows, because
+    // those are the ones whose expansion changes the weighting.
     scenarioOutline<({AsciiLetters prefix, AsciiAlphanumerics nsin, String isin})>(
       'fromComponents computes the check digit to match the published ISIN',
       examples: {
@@ -198,8 +198,8 @@ void main() {
       },
     );
 
-    // Typing the parts moved two checks off the door and onto the boundary: an out-of-charset NSIN
-    // and a prefix carrying a digit cannot be built at all. `parse` still reports both.
+    // Typing the parts moved 2 checks off the door and onto the boundary: an out-of-charset NSIN and
+    // a prefix carrying a digit cannot be built at all. `parse` still reports both.
     scenario('the parts refuse what fromComponents used to report', () {
       check(AsciiAlphanumerics.tryFrom('0378331@0')).isNull();
       check(AsciiLetters.tryFrom('1S')).isNull();

@@ -7,8 +7,8 @@ import 'support/bdd.dart';
 
 void main() {
   feature('PhoneNumber', () {
-    // A String canonical means "accepted and normalised to this E.164"; null
-    // means "rejected". National-format input resolves only with a region.
+    // A String canonical means "accepted and normalised to this E.164". Null means "rejected", and
+    // national-format input resolves only with a region.
     scenarioOutline<({String input, String? region, String? canonical})>(
       'PhoneNumber.tryParse resolves valid numbers to E.164 and rejects the rest',
       examples: {
@@ -56,8 +56,8 @@ void main() {
       check(PhoneNumber.tryParse('+33 655 5705 76')!.telUri.toString()).equals('tel:+33655570576');
     });
 
-    // Only unknownCountryCallingCode comes from the engine: notFound is the one code
-    // phone_numbers_parser actually throws, and everything else arrives as isValid() == false.
+    // Only unknownCountryCallingCode comes from the engine: notFound is the one code phone_numbers_parser
+    // actually throws, and everything else arrives as isValid() == false.
     scenarioOutline<({String input, String? region, PhoneNumberFailure failure})>(
       'parse reports which check the input failed',
       examples: {

@@ -7,8 +7,8 @@ import 'support/bdd.dart';
 
 void main() {
   feature('Email', () {
-    // Acceptance and normalisation in one table: the canonical form doubles as
-    // the expected outcome. A String means "accepted and normalised to this". `null` means "rejected".
+    // Acceptance and normalisation in one table: the canonical form doubles as the expected outcome.
+    // A String means "accepted and normalised to this". `null` means "rejected".
     scenarioOutline<({String input, String? canonical})>(
       'Email.tryParse normalises accepted input and rejects malformed input',
       examples: {

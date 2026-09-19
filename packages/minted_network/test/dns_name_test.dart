@@ -26,7 +26,7 @@ void main() {
       },
     );
 
-    // The three freedoms over Hostname, each its own rule that RFC 2181 drops.
+    // The 3 freedoms over Hostname, each its own rule that RFC 2181 drops.
     scenarioOutline<({String input, String? value})>(
       'the RFC 1123 rules that do not survive RFC 2181',
       examples: {

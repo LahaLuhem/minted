@@ -3,8 +3,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import '../support/bdd.dart';
 
-// Each of these three is a const context, so the file failing to build is the assertion: a getter
-// could not stand in any of them.
+// Each of these 3 is a const context, so the file failing to build is the assertion: a getter could
+// not stand in any of them.
 const firstThree = <Digit>[.d0, .d1, .d2];
 
 Digit startingAt([Digit start = Digit.d0]) => start;
@@ -17,7 +17,7 @@ String nameOf(Digit digit) => switch (digit) {
 
 void main() {
   feature('Digit', () {
-    // tryFrom takes the numeric value directly; only 0-9 yield a Digit.
+    // tryFrom takes the numeric value directly, and only 0-9 yield a Digit.
     scenarioOutline<({int input, int? value})>(
       'Digit.tryFrom accepts 0-9 and rejects out-of-range integers',
       examples: {

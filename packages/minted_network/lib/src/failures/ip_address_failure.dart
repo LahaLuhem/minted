@@ -4,8 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why an [IpAddress] refused its input. Sealed, not an enum, because three variants echo the part
-/// of the input that failed.
+/// Why an [IpAddress] refused its input. Sealed rather than an enum, because 3 variants echo the
+/// part of the input that failed.
 @immutable
 sealed class IpAddressFailure implements MintedFailure {
   const new();
@@ -34,8 +34,8 @@ final class IpAddressMalformed extends IpAddressFailure {
 
 /// [part] carries a leading zero, which is refused rather than read.
 ///
-/// `inet_aton` reads `010` as octal 8 where most parsers read decimal 10, so accepting it lets one
-/// component filter an address a second then connects to. Why: `APPENDIX.md#ip-address-value-type`.
+/// `inet_aton` reads `010` as octal 8 where most parsers read decimal 10, so taking it lets one component
+/// filter an address that another then connects to. Why: `APPENDIX.md#ip-address-value-type`.
 final class IpAddressLeadingZero extends IpAddressFailure {
   /// The offending part, as written.
   final String part;
@@ -56,8 +56,8 @@ final class IpAddressLeadingZero extends IpAddressFailure {
   String toString() => 'IpAddressLeadingZero($part)';
 }
 
-/// [part] is a well-formed number that does not fit its field: an octet past 255, or a hextet past
-/// four digits.
+/// [part] is a well-formed number that doesn't fit its field: an octet past 255, or a hextet past 4
+/// digits.
 final class IpAddressPartOutOfRange extends IpAddressFailure {
   /// The offending part, as written.
   final String part;
@@ -78,7 +78,7 @@ final class IpAddressPartOutOfRange extends IpAddressFailure {
   String toString() => 'IpAddressPartOutOfRange($part)';
 }
 
-/// [IpAddress.fromOctets] got other than the 4 octets of IPv4 or the 16 of IPv6.
+/// [IpAddress.fromOctets] got neither the 4 octets of IPv4 nor the 16 of IPv6.
 final class IpAddressWrongOctetCount extends IpAddressFailure {
   /// How many octets were supplied.
   final int actual;

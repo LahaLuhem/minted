@@ -36,15 +36,15 @@ void main() {
           check(Longitude.tryFrom(example.degrees) != null).equals(example.accepted),
     );
 
-    // GeoCoordinate folds -180 onto +180 because a point has one antimeridian. An edge has two, so
-    // the number keeps what it was given and the fold stays with the coordinate.
+    // GeoCoordinate folds -180 onto +180 because a point has one antimeridian. An edge has 2, so the
+    // number keeps what it was given and the fold stays with the coordinate.
     scenario('Longitude keeps -180 as written, unlike the coordinate built from it', () {
       check(Longitude.tryFrom(-180)?.value).equals(-180);
       check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)?.longitude.value).equals(180);
     });
 
-    // Both implement double, so a degree reads as one everywhere it is read and nowhere it is
-    // written: no `.value` for arithmetic or formatting, and still no way in without tryFrom.
+    // Both implement double, so a degree reads as one everywhere it is read and nowhere it is written:
+    // no `.value` for arithmetic or formatting, and still no way in without tryFrom.
     scenario('a degree reads as a double without unwrapping', () {
       final latitude = Latitude.tryFrom(45)!;
 

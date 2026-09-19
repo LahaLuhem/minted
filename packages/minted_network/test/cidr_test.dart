@@ -6,7 +6,7 @@ import 'support/bdd.dart';
 
 void main() {
   feature('Cidr', () {
-    // The canonical form doubles as the expected outcome; null means rejected. Blocks come from the
+    // The canonical form doubles as the expected outcome. Null means rejected. Blocks come from the
     // documentation ranges RFC 5737 and RFC 3849 reserve, plus the RFC 1918 ones people use.
     scenarioOutline<({String input, String? canonical})>(
       'Cidr.tryParse accepts well-formed blocks and rejects the rest',
@@ -77,8 +77,8 @@ void main() {
       },
     );
 
-    // The nesting is the point: a caller learns the address had a leading zero, not merely that
-    // something about it was wrong.
+    // The nesting is the point: a caller learns the address had a leading zero, not merely that something
+    // about it was wrong.
     scenario('the nested address failure survives into the message', () {
       check(Cidr.parse('192.168.010.0/24').reasonOrNull?.message).equals(
         'the network address is invalid: "010" has a leading zero, '

@@ -5,7 +5,7 @@ import '../support/bdd.dart';
 
 void main() {
   feature('AsciiChar', () {
-    // A String means "accepted, and this is the character"; null means "rejected".
+    // A String means "accepted, and this is the character". Null means "rejected".
     scenarioOutline<({String input, String? accepted})>(
       'tryFrom takes exactly one ASCII character',
       examples: {
@@ -20,7 +20,7 @@ void main() {
         'an empty string': (input: '', accepted: null),
         // One code unit, but not an ASCII one.
         'a non-ASCII letter': (input: '\u{00D8}', accepted: null),
-        // Two code units, so a length check alone would already refuse it.
+        // 2 code units, so a length check alone would already refuse it.
         'an emoji': (input: '\u{1F44D}', accepted: null),
       },
       outline: (example) {

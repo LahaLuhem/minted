@@ -23,13 +23,12 @@ that came through it is well-formed by construction.
 | [`minted_network`](./packages/minted_network)         | `IpAddress`, `Cidr`, `Hostname`, `DnsName`, `MacAddress`, `Port`                 | [![Pub Version](https://img.shields.io/pub/v/minted_network.svg)](https://pub.dev/packages/minted_network)         |
 
 Take only the domains you use: nothing drags in another domain's engine. A `minted_chronology`
-consumer resolves `collection` and `meta`; the phone engine arrives only if you ask for
+consumer resolves `collection` and `meta`, and the phone engine arrives only if you ask for
 `minted_contact`. There is also a private `minted_conformance` member holding the suites that sweep
 across packages, which never ships.
 
-The siblings landed with `minted` 3.0.0 and the primitives followed in 4.0.0, leaving `minted` the
-outcome vocabulary alone. [MIGRATION.md](./packages/minted/MIGRATION.md) walks every cutover, newest
-first.
+The siblings landed with `minted` 3.0.0 and the primitives followed in 3.1.0, leaving `minted` the
+outcome vocabulary alone. Each package's CHANGELOG carries its own cutovers.
 
 **[`packages/minted/README.md`](./packages/minted/README.md) is the documentation you actually
 want**: the pub.dev landing page, with the type catalogue and usage guide. This file is the map.
@@ -40,7 +39,7 @@ It is a [pub workspace](https://dart.dev/tools/pub/workspaces): one resolution, 
 `pubspec.lock`, shared by every member.
 
 ```bash
-dart pub get             # once at the root; resolves every member
+dart pub get             # once at the root, resolves every member
 dart run melos run       # lists what you can run
 dart run melos run test  # every member's suite, fanned out
 ```

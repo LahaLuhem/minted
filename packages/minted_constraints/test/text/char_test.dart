@@ -5,8 +5,8 @@ import '../support/bdd.dart';
 
 void main() {
   feature('Char', () {
-    // Each accepted row is one character spanning one to five code points, which is why the
-    // invariant is a cluster.
+    // Each accepted row is one character spanning one to 5 code points, which is why the invariant
+    // is a cluster.
     scenarioOutline<({String input, String? accepted})>(
       'tryFrom takes exactly one grapheme cluster',
       examples: {

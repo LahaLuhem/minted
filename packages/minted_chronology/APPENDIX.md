@@ -1,4 +1,4 @@
-# APPENDIX — `minted_chronology`
+# APPENDIX: `minted_chronology`
 
 Design rationale for the types this package ships. Family-wide rationale lives in the
 [workspace APPENDIX][appendix-md], code style in [CODESTYLE.md][codestyle-md]. Link by the explicit
@@ -20,17 +20,17 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 `DateTime` is the stdlib's time type, but it models an *instant*: a date, a time-of-day, and a zone,
 down to the microsecond. A birthday or an invoice date is none of those things below the day, yet
 `DateTime` is what everyone reaches for, so a plain date ends up carrying a stray `00:00:00` and a
-zone. That is where the bugs come from: two "equal" dates that differ by a time nobody set, or a
+zone. That is where the bugs come from: 2 "equal" dates that differ by a time nobody set, or a
 date that slides across midnight when it crosses a zone. Dart has no date-only sibling to `DateTime`
 (no `LocalDate`), so `Date` is that missing value.
 
-**An immutable class, not an extension type.** Three fields means the [multi-part
+**An immutable class, not an extension type.** 3 fields means the [multi-part
 shape][extension-type-representation], and the zero-cost alternatives do not hold up: an extension
 type over `DateTime` cannot override `toString`, so it would print `2026-07-07 00:00:00.000` and
-inherit the rollover; one over a packed `int` has an opaque canonical form and needs arithmetic to
+inherit the rollover. One over a packed `int` has an opaque canonical form and needs arithmetic to
 read a component back.
 
-**`Month` is a type; `day` and `year` are plain `int`.** A month is one of twelve regardless of
+**`Month` is a type, `day` and `year` are plain `int`.** A month is one of 12 regardless of
 context, so `Month` is a clean building block, and it owns the calendar knowledge that hangs off a
 month (`Month.daysIn(year)` is leap-aware, so `Date` delegates rather than carrying a length table).
 A *day* is only valid relative to a month and a year, so a standalone `Day(1-31)` would be a shape
@@ -41,7 +41,7 @@ overpromises on its name. `year` would be only a thin bounded `int`. This is the
 **A validating factory, not a raw constructor.** `Date.of(2026, 7, 7)` validates and reports, backed
 by a private `Date._`. A plain `const` constructor cannot promise the guarantee, because its
 `assert`s are stripped in release builds, so `Date.of(2026, 13, 40)` would leak into production. The
-cost is that `Date.of(...)` is not `const`; neither is `DateTime(...)`.
+cost is that `Date.of(...)` is not `const`, and neither is `DateTime(...)`.
 
 **Named, because a factory constructor cannot return an outcome.** `Date(y, m, d)` was the spelling
 until v2, and a factory constructor must return its own type, so only the named form could grow the
@@ -59,26 +59,26 @@ a UTC day is always 24 hours when a daylight-saving transition makes a local one
 would skew the count.
 
 **`Date.now()` types the clock, it does not read it**, being `Date.fromDateTime(DateTime.now())`:
-the same division of labour as [`Uuid`][uuid-value-type]. Local, matching its sibling; for the UTC
+the same division of labour as [`Uuid`][uuid-value-type]. Local, matching its sibling. For the UTC
 day, `Date.fromDateTime(DateTime.now().toUtc())`.
 
 **Year `0000`-`9999`**, so the canonical `YYYY-MM-DD` form is always well defined. The expanded ISO
 representation (a leading sign and more digits) is out of scope and can be added later without
-breaking the four-digit forms.
+breaking the 4-digit forms.
 
 ---
 
 <a id="weekday-enum"></a>
 ## Weekday: an enum, where Month is an extension type
 
-Two closed sets of named numbers, two different shapes, and the deciding question is not size but
-what the value *is*. `Month` is a **parsed component**: position two of `YYYY-MM-DD`, stored by
+2 closed sets of named numbers, 2 different shapes, and the deciding question is not size but
+what the value *is*. `Month` is a **parsed component**: position 2 of `YYYY-MM-DD`, stored by
 `Date`, read out of text by `Month.parse`. `Weekday` is **derived**: nothing stores it, it never
 appears in a canonical form, and it only comes from a date that already parsed. That is
 `UuidVariant`'s profile, and the package already splits on it: parsed components take the
 [value-type contract][value-type-contract], derived classifications are a plain enum.
 
-**An enum, because seven days is a set that can be named honestly**, which is the same test
+**An enum, because 7 days is a set that can be named honestly**, which is the same test
 [`Uuid.version` fails and `UuidVariant` passes][uuid-value-type]. The payoff is exhaustiveness: a
 `switch` over a `Weekday` needs no default arm and the compiler catches the day you forgot, which is
 most of what weekday code does. An extension type over `int` cannot offer that at any price, since
@@ -108,18 +108,18 @@ carrying nothing.
 **It does not extend `Duration`, and the reason is not that Dart forbids it.** Both `extends` and
 `implements` are allowed. But a subclass must hand `super` a microsecond count, and `P1M` has none,
 so the seed is a fiction every inherited member then reports with confidence: `inDays` answers 30,
-`P1M == Duration(days: 30)` is true, and `P1M > P31D` is false. `toString` can be overridden;
+`P1M == Duration(days: 30)` is true, and `P1M > P31D` is false. `toString` can be overridden, but
 `inDays`, `==`, `compareTo` and the arithmetic operators read the private field directly and cannot
 be made to say "it depends on the anchor". Inheriting converts "unanswerable without a date" into a
 wrong answer, which is the opposite of what the type is for. `implements` costs more, not less:
-about twenty members written by hand, each facing the same problem.
+about 20 members written by hand, each facing the same problem.
 
 **Composing a `Duration` for the exact part was the closer call.** Weeks down to seconds are all
-fixed-length, so `years`, `months` and one `Duration` would replace eight fields and drop the
+fixed-length, so `years`, `months` and one `Duration` would replace 8 fields and drop the
 component enum, roughly 50 lines. It was declined because a fraction of a month is not a fixed
-`Duration`, so `P0.5Y` and `P0.5M` become inexpressible unless those two fields turn into doubles,
+`Duration`, so `P0.5Y` and `P0.5M` become inexpressible unless those 2 fields turn into doubles,
 and `P2W` collapses into `P14D` without a flag to hold the form. The components model keeps the
-fidelity; the saving was not worth trading it for.
+fidelity, and the saving was not worth trading it for.
 
 **`toDuration` takes a required named `from`.** A month is 28 to 31 days, so the anchor is what
 makes the question answerable at all, and a named parameter makes it impossible to supply by

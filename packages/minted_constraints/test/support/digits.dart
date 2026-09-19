@@ -1,7 +1,7 @@
 /// Digit fixtures written as text, since `Digits` takes values rather than a string.
 ///
-/// Keeps example tables reading as the identifiers they describe (`prefix: '978'`) instead of as
-/// int lists, and does the decode a consumer would do in one place.
+/// Keeps example tables reading as the identifiers they describe (`prefix: '978'`) rather than as int
+/// lists, and does the decode a consumer would do in one place.
 library;
 
 import 'package:minted_constraints/minted_constraints.dart';

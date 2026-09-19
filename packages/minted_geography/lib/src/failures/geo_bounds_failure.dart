@@ -6,9 +6,8 @@ import 'package:minted/minted.dart';
 
 import 'geo_coordinate_failure.dart';
 
-/// Why a [GeoBounds] refused its input. Sealed, not an enum, because two variants carry what
-/// failed, one of them a corner's own failure. Three remedies: supply four numbers, fix a corner,
-/// or swap the latitudes.
+/// Why a [GeoBounds] refused its input. Sealed rather than an enum, because 2 variants carry what
+/// failed, one of them a corner's own failure.
 @immutable
 sealed class GeoBoundsFailure implements MintedFailure {
   const new();
@@ -17,8 +16,7 @@ sealed class GeoBoundsFailure implements MintedFailure {
   String get typeName => 'GeoBounds';
 }
 
-/// The text is not four comma-separated numbers, with or without the surrounding brackets GeoJSON
-/// writes them in.
+/// The text isn't 4 comma-separated numbers, brackets or no brackets.
 final class GeoBoundsNotFourNumbers extends GeoBoundsFailure {
   /// Creates the failure.
   const new();
@@ -36,8 +34,8 @@ final class GeoBoundsNotFourNumbers extends GeoBoundsFailure {
   String toString() => 'GeoBoundsNotFourNumbers()';
 }
 
-/// A corner is out of range. Nested rather than flattened so the diagnosis survives: a caller
-/// learns which half left which range, not merely that a corner was wrong.
+/// A corner is out of range. Nested rather than flattened so the diagnosis survives: a caller learns
+/// which half left which range, not just that a corner was wrong.
 final class GeoBoundsInvalidCorner extends GeoBoundsFailure {
   /// Why the corner itself would not build.
   final GeoCoordinateFailure reason;
@@ -58,8 +56,8 @@ final class GeoBoundsInvalidCorner extends GeoBoundsFailure {
   String toString() => 'GeoBoundsInvalidCorner($reason)';
 }
 
-/// The southern edge is above the northern one. Latitude is linear, so unlike the longitudes this
-/// pair has no reading as a box that wraps.
+/// The southern edge is above the northern one. Latitude is linear, so unlike the longitudes this pair
+/// has no reading as a box that wraps.
 final class GeoBoundsSouthAboveNorth extends GeoBoundsFailure {
   /// The southern edge, in decimal degrees.
   final double south;

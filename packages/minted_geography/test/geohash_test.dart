@@ -14,7 +14,7 @@ void main() {
 
   feature('Geohash', () {
     // Acceptance and normalisation in one table: the canonical form doubles as the expected outcome.
-    // A String means "accepted and normalised to this"; null means "rejected".
+    // A String means "accepted and normalised to this". Null means "rejected".
     scenarioOutline<({String input, String? canonical})>(
       'tryParse takes the alphabet, at any length, in either case',
       examples: {
@@ -28,7 +28,7 @@ void main() {
           input: 'ezs42e44yx967',
           canonical: 'ezs42e44yx967',
         ),
-        // The four base32 dropped, one row each, because a shape-only check accepts them all.
+        // The 4 base32 dropped, one row each, because a shape-only check accepts them all.
         'the letter a': (input: 'ezsa2', canonical: null),
         'the letter i': (input: 'ezsi2', canonical: null),
         'the letter l': (input: 'ezsl2', canonical: null),
@@ -43,7 +43,7 @@ void main() {
       },
     );
 
-    // Two remedies from one door: supply a geohash, or fix a character.
+    // 2 remedies from one door: supply a geohash, or fix a character.
     scenarioOutline<({String input, GeohashFailure failure})>(
       'parse names the character that broke it, not just the shape',
       examples: {
@@ -99,8 +99,8 @@ void main() {
       check(_geohash(coordinate: cell.centre, precision: 5)).equals(cell);
     });
 
-    // What a geohash names is the box, so the point it was built from has to sit inside it while
-    // the centre generally is not that point.
+    // What a geohash names is the box, so the point it was built from has to sit inside it while the
+    // centre generally is not that point.
     scenario('bounds holds both the encoded point and the centre', () {
       final cell = _geohash(coordinate: eiffelTower, precision: 5);
 

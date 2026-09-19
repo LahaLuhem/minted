@@ -1,4 +1,4 @@
-// Test file
+// Named for the unit under test rather than for a declaration in it.
 // ignore_for_file: prefer-match-file-name
 
 import 'package:checks/checks.dart';
@@ -50,8 +50,8 @@ void main() {
       check(failure.getOrThrow).throws<MintedFormatError>();
     });
 
-    // The whole reason it exists over `getOrNull()!`: the typed reason survives, so a violated
-    // claim-in-source says which type refused and why instead of "null check on a null value".
+    // The whole reason it exists over `getOrNull()!`: the typed reason survives, so a violated claim-in-source
+    // says which type refused and why instead of "null check on a null value".
     scenario('getOrThrow keeps the reason that getOrNull would have discarded', () {
       check(failure.getOrThrow)
           .throws<MintedFormatError>()

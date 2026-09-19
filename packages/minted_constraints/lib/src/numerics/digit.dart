@@ -3,19 +3,10 @@ library;
 
 /// A single decimal digit, `0`-`9`.
 ///
-/// A building-block value type. Where a validated whole exposes a digit-only
-/// part, that part is a [Digit] (or a [Digits] sequence) so "these are digits"
-/// is a fact of the type, not an assumption every caller re-checks: an IBAN's
-/// check digits and a phone number's national number both read as [Digit]s,
-/// over in `minted_finance` and `minted_contact`.
-///
-/// [value] is the numeric value (`0`-`9`). The string form is `value.toString()`
-/// or interpolation (`'$digit'`). No parse door: decimal notation is how numbers
-/// are written, not a published format a `Digit` could validate against.
-///
-/// [d0] to [d9] are provided for convenience when the value is const-known.
+/// Where a validated whole exposes a digit-only part, that part is a [Digit] (or a [Digits] sequence),
+/// so "these are digits" is a fact of the type rather than something every caller re-checks.
 extension type const Digit._(int value) implements int {
-  /// The [Digit] with numeric [value], or `null` unless it is in `0`-`9`.
+  /// The [Digit] with numeric [value], or `null` unless it's in `0`-`9`.
   static Digit? tryFrom(int value) => value >= 0 && value < 10 ? ._(value) : null;
 
   /// The digit `0`.

@@ -1,22 +1,16 @@
 import 'package:minted_constraints/minted_constraints.dart';
 
-/// A transport-layer port number, `0` to `65535`.
-/// Standard: [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335).
+/// A transport-layer port number, `0` to `65535`. Standard: [RFC 6335](https://www.rfc-editor.org/rfc/rfc6335)
+/// .
 ///
-/// Parse, don't validate: the bound otherwise goes unchecked until a socket call fails.
+/// Without the type the bound goes unchecked until a socket call fails.
 ///
-/// Exactly [Uint16]'s range, so that type owns the bound, and `implements Uint16` lets a `Port` go
-/// wherever a `Uint16` is wanted, never the reverse.
-///
-/// > [!NOTE]
-/// > Port `0` is accepted, and [isWildcard] says so: it names no destination. [wildcard] is
-/// > that port.
-///
-/// [value] is the numeric value. The string form is `value.toString()`.
+/// Exactly [Uint16]'s range, so that type owns the bound, and `implements Uint16` lets a `Port` go wherever
+/// a `Uint16` is wanted, never the reverse.
 ///
 /// {@example /example/minted_network_example.dart#port}
 extension type const Port._(int value) implements Uint16 {
-  /// The [Port] with numeric [value], or `null` unless it is in `0`-`65535`.
+  /// The [Port] with numeric [value], or `null` unless it's in `0`-`65535`.
   static Port? tryFrom(int value) => Uint16.tryFrom(value) == null ? null : ._(value);
 
   /// Which RFC 6335 range this port falls in.
@@ -26,8 +20,7 @@ extension type const Port._(int value) implements Uint16 {
     _ => .dynamic,
   };
 
-  /// Whether this is port `0`, which asks the OS to pick a free port on `bind`. RFC 6335 gives it no
-  /// name of its own, listing it among the reserved edge values.
+  /// Whether this is [wildcard].
   bool get isWildcard => value == wildcard;
 
   /// Port `0`, which asks the OS to pick a free port on `bind`.
@@ -37,8 +30,7 @@ extension type const Port._(int value) implements Uint16 {
   static const _userCeiling = 49151;
 }
 
-/// Which RFC 6335 range a [Port] falls in. Derived from a port that already parsed, so it is a
-/// classification rather than a value type: no parse door of its own.
+/// Which RFC 6335 range a [Port] falls in.
 enum PortRange {
   /// System (well-known) ports, `0`-`1023`. Assignment needs IANA review.
   system,

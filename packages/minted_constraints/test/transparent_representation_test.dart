@@ -4,8 +4,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import 'support/bdd.dart';
 
-// Passing a constrained value to these is the assertion: each call is a type error unless the type
-// implements what it constrains.
+// Passing a constrained value to these is the assertion: each call is a type error unless the type implements
+// what it constrains.
 int asInt(int value) => value;
 
 double asDouble(double value) => value;
@@ -57,7 +57,7 @@ void main() {
       check(fifteen.of(200)).equals(30);
     });
 
-    // Why Char, Letter and Letters stay opaque: one grapheme, two code units.
+    // Why Char, Letter and Letters stay opaque: one grapheme, 2 code units.
     scenario('a Char is one character that String would measure as two', () {
       final emoji = Char.tryFrom('\u{1F389}')!;
 

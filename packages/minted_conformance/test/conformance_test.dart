@@ -1,4 +1,4 @@
-// Test file
+// Named for the unit under test rather than for a declaration in it.
 // ignore_for_file: prefer-match-file-name
 
 import 'dart:io';
@@ -9,25 +9,25 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
-/// Enforces structurally what the value-type contract cannot state in the type system, over every
-/// public type in every package: each member's `lib/src/`, minus the helper subfolders and the
-/// per-category `failures/` directories. It lives in its own package because it belongs to no
-/// single one, and adding a package brings it under the sweep with no edit here.
+/// Enforces structurally what the value-type contract cannot state in the type system, over every public
+/// type in every package: each member's `lib/src/`, minus the helper subfolders and the per-category
+/// `failures/` directories. It lives in its own package because it belongs to no single one, and adding
+/// a package brings it under the sweep with no edit here.
 ///
 /// 1. **Nothing throws but an [Error].** A fallible door reports its failure in its return type, so
-///    a `throw` here would be a door lying about what it can do. An `Error` is allowed through
-///    because it says a caller asserted something false, which is a bug rather than input to handle.
+/// a `throw` here would be a door lying about what it can do. An `Error` is allowed through because
+/// it says a caller asserted something false, which is a bug rather than input to handle.
 /// 2. **An extension type names its representation `value`**, so the canonical form is `.value`.
 /// 3. **A classification declares no parse door.** An `enum` in this space is derived from something
 ///    already parsed, and a `parse` on one would read as a value type while escaping every check.
 ///
-/// It deliberately requires no door to *exist*. Prescribing a spine (`parse` and `tryParse` on
-/// everything) needed one carve-out per category, and each was a shape forced on a domain that did
-/// not want it. Forbidding dishonesty needs none.
+/// It deliberately requires no door to *exist*. Prescribing a spine (`parse` and `tryParse` on everything)
+/// needed one carve-out per category, and each was a shape forced on a domain that did not want it.
+/// Forbidding dishonesty needs none.
 void main() {
-  // Helper directories declare no types, and a failure vocabulary is not a value type. `shared/`
-  // is core's cross-sector root; the rest are the job-named subfolders a sector keeps its own
-  // helpers in.
+  // Helper directories declare no types, and a failure vocabulary is not a value type. `shared/` is
+  // core's cross-sector root, and the rest are the job-named subfolders a sector keeps its own helpers
+  // in.
   const notTypes = {'shared', 'failures', 'check_digits', 'encoding', 'normalisation', 'standards'};
 
   // Every package's `lib/src`, since the value types live in sibling packages now. Run from
@@ -98,7 +98,7 @@ const _parseDoors = {'parse', 'tryParse'};
 /// A thrown name ending in `Error` is a bug signal rather than input handling, so it is allowed.
 final _errorThrow = RegExp(r'\b\w*Error\b');
 
-/// A type discovered in a source file, and what the three rules need to know about it.
+/// A type discovered in a source file, and what the 3 rules need to know about it.
 class _ValueType {
   new(
     this.name, {
@@ -117,8 +117,8 @@ class _ValueType {
   final List<String> nonErrorThrows = [];
 }
 
-/// Collects the types declared in one compilation unit, using only AST primitives stable across
-/// analyzer versions.
+/// Collects the types declared in one compilation unit, using only AST primitives stable across analyzer
+/// versions.
 class _TypeCollector extends RecursiveAstVisitor<void> {
   final List<_ValueType> types = [];
   _ValueType? _current;

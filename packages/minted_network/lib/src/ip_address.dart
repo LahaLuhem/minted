@@ -17,21 +17,17 @@ import 'failures/ip_address_failure.dart';
 /// [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291) for the addresses,
 /// [RFC 5952](https://www.rfc-editor.org/rfc/rfc5952) for the canonical IPv6 text.
 ///
-/// Parse, don't validate: `2001:0DB8::0001` and `2001:db8::1` are one address a `String` compares
-/// as two. A leading zero is refused rather than read, being ambiguous between decimal and octal.
+/// Parsing trims, lower-cases and renders v6 per RFC 5952, so `2001:0DB8::0001` and `2001:db8::1` are
+/// one value. A leading zero is refused rather than read, being ambiguous between decimal and octal.
 ///
-/// A v4 and a v6 address are never equal, and neither is converted to the other. [version]
-/// reports which one you hold. An IPv4-mapped address stays v6 and keeps its mixed spelling,
-/// `::ffff:192.0.2.1`, which RFC 5952 §5 asks for on that prefix.
+/// v4 and v6 never compare equal and neither converts to the other. [version] says which you hold. An
+/// IPv4-mapped address stays v6 and keeps its `::ffff:192.0.2.1` spelling, which RFC 5952 §5 asks for.
 /// Why: `APPENDIX.md#ip-address-value-type`.
-///
-/// Normalisation on parse: trimmed, lower-cased, and rendered per RFC 5952 for v6, so leading zeros
-/// go, `::` takes the longest zero run, and a single zero field is never compressed.
 ///
 /// {@example /example/minted_network_example.dart#ipaddress}
 extension type const IpAddress._(String value) {
-  /// Builds an [IpAddress] from its [octets], 4 for v4 or 16 for v6, reporting
-  /// [IpAddressWrongOctetCount] on any other count. The inverse of [octets].
+  /// Builds an [IpAddress] from its [octets], 4 for v4 or 16 for v6, reporting [IpAddressWrongOctetCount]
+  /// on any other count. The inverse of [octets].
   static ParseOutcome<IpAddressFailure, IpAddress> fromOctets(Uint8List octets) {
     if (octets.length == _ipv4OctetCount) {
       return ParseSuccess(._(octets.join(_octetSeparator)));
@@ -43,11 +39,10 @@ extension type const IpAddress._(String value) {
     return ParseSuccess(._(_canonicalIpv6(.tryParseFromInt(_bigIntOf(octets))!)));
   }
 
-  /// Parses [input] as an IP address, or returns `null` when it is neither family.
-  /// See the type docs for the normalisation applied.
+  /// Parses [input], or `null` if it's neither family.
   static IpAddress? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an IP address, reporting the [IpAddressFailure] saying which rule broke.
+  /// Parses [input], reporting the [IpAddressFailure] saying which rule broke.
   static ParseOutcome<IpAddressFailure, IpAddress> parse(String input) {
     final normalisedInput = input.trim().toLowerCase();
     final failure = _failureFor(normalisedInput);
@@ -57,7 +52,7 @@ extension type const IpAddress._(String value) {
         : ParseSuccess(._(_canonicalise(normalisedInput)));
   }
 
-  /// Which family this address belongs to. The two never compare equal, whatever they spell.
+  /// Which family this address belongs to.
   IpVersion get version => value.contains(_hextetSeparator) ? .v6 : .v4;
 
   /// The raw octets, 4 for v4 and 16 for v6, the inverse of [fromOctets].
@@ -69,8 +64,8 @@ extension type const IpAddress._(String value) {
   bool get isLoopback =>
       version == IpVersion.v4 ? octets.first == _v4LoopbackFirstOctet : value == _v6Loopback;
 
-  /// Whether this is from a range reserved for private use and never routed on the public internet:
-  /// RFC 1918 for v4, RFC 4193's `fc00::/7` unique local addresses for v6.
+  /// Whether this is in a range kept for private use and never routed on the public internet. RFC 1918
+  /// for v4, RFC 4193's `fc00::/7` for v6.
   bool get isPrivate {
     final octets = this.octets;
     if (version == IpVersion.v6) return octets.first & _uniqueLocalMask == _uniqueLocalPrefix;
@@ -82,8 +77,7 @@ extension type const IpAddress._(String value) {
         (octets.first == _privateC && octets[1] == _privateCSecond);
   }
 
-  /// Orders two addresses by family first, then numerically within it. Extension types cannot
-  /// implement `Comparable<IpAddress>`, so this is a plain method, not the [Comparable] interface.
+  /// Orders 2 addresses by family first, then numerically within it.
   int compareTo(IpAddress other) {
     final familyOrder = version.index.compareTo(other.version.index);
 
@@ -94,9 +88,8 @@ extension type const IpAddress._(String value) {
   BigInt get _packed =>
       version == .v4 ? .from(IPv4Address(value).toInt()) : IPv6Address(value).toBigInt();
 
-  // The engine parses structure and renders RFC 5952; minted owns the grammar, because the
-  // engine's part gates are `int.tryParse`, which admits signs and whitespace.
-  // Why: `APPENDIX.md#ip-address-value-type`.
+  // minted owns the grammar because the engine's part gates are `int.tryParse`, which lets signs and
+  // whitespace through. Why: `APPENDIX.md#ip-address-value-type`.
   static IpAddressFailure? _failureFor(String normalisedInput) =>
       normalisedInput.contains(_hextetSeparator)
       ? _ipv6FailureFor(normalisedInput)
@@ -147,7 +140,7 @@ extension type const IpAddress._(String value) {
       ? _canonicalIpv6(IPv6Address(_hextetOnly(validatedInput)))
       : IPv4Address(validatedInput).toString();
 
-  // The engine cannot read the mixed spelling at all, so an IPv4 tail becomes two hextets before it
+  // The engine cannot read the mixed spelling at all, so an IPv4 tail becomes 2 hextets before it
   // sees the address. RFC 4291 §2.2 defines the form and dual-stack sockets emit it routinely.
   static String _hextetOnly(String candidate) {
     final lastSeparator = candidate.lastIndexOf(_hextetSeparator);
@@ -205,13 +198,12 @@ extension type const IpAddress._(String value) {
   static const _privateBCeiling = 32;
   static const _privateC = 192;
   static const _privateCSecond = 168;
-  // RFC 4193: fc00::/7, so the top seven bits of the first octet.
+  // RFC 4193: fc00::/7, so the top 7 bits of the 1st octet.
   static const _uniqueLocalMask = 0xfe;
   static const _uniqueLocalPrefix = 0xfc;
 }
 
-/// Which family an [IpAddress] belongs to. Derived from an address that already parsed, so it is a
-/// classification rather than a value type: no parse door of its own.
+/// Which family an [IpAddress] belongs to.
 enum IpVersion {
   /// A 32-bit IPv4 address, written as a dotted quad.
   v4,

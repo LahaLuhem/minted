@@ -8,22 +8,20 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/mod11_check_character.dart';
 import 'failures/issn_failure.dart';
 
-/// An ISSN (International Standard Serial Number): validated for characters, the eight-character
-/// length, and the ISO 3297 mod-11 check character. Identifies a serial title, not one issue of it.
-/// Standard: [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/).
+/// An ISSN (International Standard Serial Number): names a serial title, not one issue of it. Standard:
+/// [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/).
 ///
-/// Normalisation on parse: spaces are stripped, a trailing `x` is upper-cased, and the hyphen is placed
-/// after the fourth character, so [value] is always the printed `NNNN-NNNC` form. The hyphen belongs
-/// to the canonical form because ISO 3297 fixes it at one position, unlike an ISBN's groups.
-/// [compact] drops it again for a URL or a database key.
+/// Parsing strips spaces, upper-cases a trailing `x`, and puts the hyphen after the 4th character,
+/// so [value] is always `NNNN-NNNC`. The hyphen counts as part of the canonical form because ISO 3297
+/// pins it to one spot, unlike an ISBN's groups. [compact] drops it again.
 ///
-/// ISSN-L, the linking ISSN that ties a title's print and online numbers together, needs the ISSN
-/// Register and so is out of scope.
+/// No ISSN-L, the linking ISSN that ties a title's print and online numbers together. It needs the ISSN
+/// Register.
 ///
 /// {@example /example/minted_identifiers_example.dart#issn}
 extension type const Issn._(String value) {
-  /// Builds an [Issn] from [bodyDigits], the seven digits before the check character, computing that
-  /// character, reporting the [IssnFailure] when they don't form a valid ISSN.
+  /// Builds an [Issn] from [bodyDigits], the 7 before the check character, working that character
+  /// out.
   static ParseOutcome<IssnFailure, Issn> fromBody(Digits bodyDigits) {
     final body = bodyDigits.asString;
     final assembledIssn = '$body${mod11CheckCharacter(body)}';
@@ -32,10 +30,10 @@ extension type const Issn._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_hyphenated(assembledIssn)));
   }
 
-  /// Parses [input] as an ISSN, or returns `null` when it fails the length, character, or check tests.
+  /// Parses [input], or `null` if it isn't an ISSN.
   static Issn? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an ISSN, reporting the [IssnFailure] that says which check failed.
+  /// Parses [input], reporting the [IssnFailure] that says what went wrong.
   static ParseOutcome<IssnFailure, Issn> parse(String input) {
     final compactInput = compactUpperCase(input);
     final failure = _failureFor(compactInput);
@@ -43,20 +41,17 @@ extension type const Issn._(String value) {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._(_hyphenated(compactInput)));
   }
 
-  /// The eight characters without the hyphen, for a URL or a database key.
+  /// The 8 characters without the hyphen, for a URL or a database key.
   String get compact => value.replaceAll(hyphen, '');
 
-  /// The final character, the mod-11 check over the other seven. A `String` rather than a `Digit`,
-  /// because ISO 3297 spells the value ten as `X`.
+  /// The last character. A `String`, not a `Digit`, because ISO 3297 spells 10 as `X`.
   String get checkCharacter => value.substring(_checkCharacterIndex);
 
-  // ISO 3297 fixes the hyphen after the fourth character, so it carries no information and is
-  // reinserted rather than stored through parsing.
   static String _hyphenated(String compactInput) =>
       '${compactInput.substring(0, _groupSize)}$hyphen${compactInput.substring(_groupSize)}';
 
-  // Why already-compacted input is not an ISSN, or null when it is one. The single gate parse and
-  // fromBody funnel through; widest check first, so the earliest wrong thing is named.
+  // The one gate parse and fromBody both go through. Widest check first, so the earliest wrong thing
+  // gets named.
   static IssnFailure? _failureFor(String compactInput) => switch (compactInput) {
     _ when compactInput.length != _length => IssnWrongLength(compactInput.length),
     _ when !_issnForm.hasMatch(compactInput) => const IssnInvalidCharacters(),

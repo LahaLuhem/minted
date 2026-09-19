@@ -4,11 +4,10 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why an [Iban] refused its input. Sealed, not an enum, because [IbanUnknownCountry] and
-/// [IbanInvalidLength] report values read from the input.
+/// Why an [Iban] refused its input. Sealed rather than an enum, because [IbanUnknownCountry] and [IbanInvalidLength]
+/// carry values off the input.
 ///
-/// Five variants because ISO 13616 is a registry plus a checksum, so it has independent things to
-/// fail against, each with its own remedy.
+/// 5, because ISO 13616 is a registry plus a checksum, and each has its own remedy.
 @immutable
 sealed class IbanFailure implements MintedFailure {
   const new();
@@ -17,8 +16,7 @@ sealed class IbanFailure implements MintedFailure {
   String get typeName => 'Iban';
 }
 
-/// Under four characters (empty included), so the country and check digits aren't there to inspect
-/// yet. Keep typing.
+/// Under 4 characters, empty included, so the country and check digits aren't there yet.
 final class IbanTooShort extends IbanFailure {
   /// Creates the failure.
   const new();
@@ -36,7 +34,7 @@ final class IbanTooShort extends IbanFailure {
   String toString() => 'IbanTooShort()';
 }
 
-/// Something outside `A`-`Z` and `0`-`9` survived normalisation (whitespace is stripped first).
+/// Something outside `A`-`Z` and `0`-`9` got through. Whitespace comes off first.
 final class IbanInvalidCharacters extends IbanFailure {
   /// Creates the failure.
   const new();
@@ -54,9 +52,9 @@ final class IbanInvalidCharacters extends IbanFailure {
   String toString() => 'IbanInvalidCharacters()';
 }
 
-/// [countryCode] is not in the IBAN registry, so this is unsupported rather than mistyped.
+/// [countryCode] isn't in the IBAN registry, so this is unsupported rather than mistyped.
 final class IbanUnknownCountry extends IbanFailure {
-  /// The unrecognised leading two characters.
+  /// The unrecognised leading 2 characters.
   final String countryCode;
 
   /// Creates the failure.
@@ -100,7 +98,7 @@ final class IbanInvalidLength extends IbanFailure {
   String toString() => 'IbanInvalidLength(expected: $expected, actual: $actual)';
 }
 
-/// The mod-97 check digits disagree with the rest of the number: a character is mistyped.
+/// The mod-97 check digits don't match the rest. A character is mistyped.
 final class IbanChecksumFailed extends IbanFailure {
   /// Creates the failure.
   const new();

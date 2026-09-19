@@ -1,5 +1,3 @@
-# APPENDIX — `minted`
-
 Design rationale for what spans the family. A decision about one type lives with the package that
 ships it, listed under [per-package rationale](#per-package-rationale). Hard rules and workflow are
 in [`.ai/AGENTS.md`](./.ai/AGENTS.md), code style in [`CODESTYLE.md`](./CODESTYLE.md). Link by the
@@ -46,7 +44,7 @@ Each ships in its own tarball, so the rationale reaches whoever is reading the t
 <a id="ai-files-symlinked"></a>
 ## `AGENTS.md` and `CLAUDE.md` are symlinks into `.ai/`
 
-The canonical files live in [`.ai/`](./.ai/); the repo-root `AGENTS.md` and `CLAUDE.md` are
+The canonical files live in [`.ai/`](./.ai/). The repo-root `AGENTS.md` and `CLAUDE.md` are
 symlinks to them. Keeping the sources in `.ai/` groups the agent-facing docs in one place while
 still letting tools that look at the repo root (and humans) find them. `.pubignore` excludes both
 the symlinks and the targets so none of it ships in the published tarball.
@@ -62,7 +60,7 @@ server, a CLI, a web app, and a Flutter app alike, which is exactly the set of p
 primitives (email, IBAN, card numbers) show up.
 
 Anything that would need Flutter (a `FormField` validator, a `TextInputFormatter`) or another
-heavy dependency does not go here; it goes in an adapter package (see
+heavy dependency does not go here. It goes in an adapter package (see
 [packaging](#packaging-core-and-companions)). Every package's dependency list is a promise to its
 downstream users, so each stays as short as the validation honestly requires.
 
@@ -78,7 +76,7 @@ Dart stable through the [`setup-dart` composite](./.github/actions/setup-dart/ac
 
 **What forced it:** Dart stable runs ahead of Flutter's bundled Dart, and the formatter changed
 between them. `sdk: stable` gave CI 3.13.0 against a local 3.12.2, so a green tree met a red gate
-that reformatted fifteen files the pull request had never touched. The decisive property is that a
+that reformatted 15 files the pull request had never touched. The decisive property is that a
 format failure must be *reproducible*: whatever CI rejects, `dart format .` locally has to be able to
 fix, which neither Dart stable nor a pinned literal promises once it drifts from the machine the code
 is written on.
@@ -86,7 +84,7 @@ is written on.
 **Elsewhere the newer SDK is the point.** Those jobs run Dart stable, which is what
 [`pubspec.yaml`](./packages/minted/pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on.
 The known cost is that the analyzer is version-sensitive too, so a Dart-stable-only diagnostic would
-be fixed slightly blind; explicit rules in [`analysis_options.yaml`](./analysis_options.yaml) stop
+be fixed slightly blind, so explicit rules in [`analysis_options.yaml`](./analysis_options.yaml) stop
 new lints switching themselves on, and if it ever stops being tolerable the format job's recipe moves
 into the composite.
 
@@ -96,16 +94,16 @@ Flutter, and the published package stays usable from a plain Dart SDK.
 
 **When the gate goes red, check which Dart CI is carrying.** Both sides name the `stable` channel,
 but a local FVM install is frozen until the next `fvm install` while CI resolves stable at run time,
-so the two can still drift. Flutter's release metadata gives the mapping:
+so the 2 can still drift. Flutter's release metadata gives the mapping:
 
 ```bash
 curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
   | jq -r '.current_release.stable as $h | .releases[] | select(.hash == $h) | .dart_sdk_version'
 ```
 
-Compare that against `dart --version`; `fvm install stable` closes any gap. Pinning that literal on
-both sides would close it too, at the cost of a coordinated bump every release, and pinning CI alone
-would be worse than the channel, since local would still float.
+Compare that against `dart --version`, and `fvm install stable` closes any gap. Pinning that
+literal on both sides would close it too, at the cost of a coordinated bump every release, and
+pinning CI alone would be worse than the channel, since local would still float.
 
 ---
 
@@ -113,7 +111,7 @@ would be worse than the channel, since local would still float.
 ## Parse, don't validate
 
 The organising principle, after Alexis King's essay of the same name. A function that *validates*
-takes a `String`, checks it, and hands the same `String` back; every later consumer has to trust
+takes a `String`, checks it, and hands the same `String` back, so every later consumer has to trust
 that the check happened and re-check if unsure. A function that *parses* takes a `String` and
 returns a **different type** that can only exist if the input was well-formed. The validity
 becomes a fact of the type system, checked once, carried everywhere.
@@ -125,13 +123,13 @@ type does for its domain. The mechanics that enforce it:
 - The only ways in are `parse` and the assembly factories (both return a
   [`ParseOutcome`][parse-outcome]), and `tryParse` (returns `T?`). All run the same full check, and
   none of them throws.
-- Therefore, an instance of `Iban` is a proof that the string passed mod-97; a `PaymentCardNumber`
+- Therefore, an instance of `Iban` is a proof that the string passed mod-97, and a `PaymentCardNumber`
   is a proof that it passed Luhn. Downstream code stops re-checking and stops carrying "is this
   string actually valid?" as an open question.
 
 This is the direct antidote to primitive obsession: `String email, String phone, String card`
-are three interchangeable, mixed-up-able parameters; `Email`, `PhoneNumber`, `PaymentCardNumber`
-are not.
+are 3 interchangeable, mixed-up-able parameters. `Email`, `PhoneNumber` and
+`PaymentCardNumber` are not.
 
 ---
 
@@ -144,7 +142,7 @@ are not.
 **A single primitive gets an extension type because the delegation is free and correct.** At runtime
 the instance *is* the `String`, so there is no allocation and no indirection, and `==` / `hashCode`
 / `toString` all delegate to the representation. For a `String`-backed value type that delegation
-is exactly the wanted behaviour: two `Email`s that normalise to the same string are equal and hash
+is exactly the wanted behaviour: 2 `Email`s that normalise to the same string are equal and hash
 equal for nothing, and `print(email)` shows the email. The cost is that type safety is compile-time
 only, so `'nope' as Email` is a no-op cast that succeeds. That is unfixable from inside the package
 (a lint is proposed in [dart-lang/sdk#59310](https://github.com/dart-lang/sdk/issues/59310)), so the
@@ -190,13 +188,13 @@ structure worth naming.
 
 **Where the audit landed, and why each type sits where it does.** `Isbn` and `Imei` keep their
 `String` representation and hand back `Digits` from their digit-segment getters, which is the whole
-benefit (the round trip type-checks) without the two costs of holding one: hand-written equality,
+benefit (the round trip type-checks) without the 2 costs of holding one: hand-written equality,
 and `print` rendering `Digits(978…)` instead of the identifier. The rest are correctly extension
 types over text, each for its own reason:
 
 - `Iban`'s `bban`, `Isin`'s `nsin` and `Bic`'s codes are alphanumeric, and now hold
   [`AsciiAlphanumerics`][constraints-package]. Minting that type was declined once, on a call-site
-  count over `lib/` that read zero; the count was the wrong test for a type whose job is the public
+  count over `lib/` that read zero. The count was the wrong test for a type whose job is the public
   surface.
 - `Hostname` and `DnsName` labels have no type either, because a label's validity is **positional**.
   `Hostname` refuses an all-numeric *last* label, so a valid label at one index is invalid at
@@ -217,14 +215,14 @@ types over text, each for its own reason:
 `tryParse` reduces input to one canonical form before it constructs the instance: trim
 whitespace, strip the separators the standard treats as cosmetic (spaces in an IBAN, dashes in a
 card number), and case-fold the parts the standard says are case-insensitive (an IBAN is
-upper-case; an email's domain is lower-case, its local-part left as-is).
+upper-case, an email's domain lower-case, its local-part left as-is).
 
 This is not cosmetic. Extension-type equality is representation equality, so the stored canonical
 form *is* the equality key. Normalising on the way in is what makes
 `Iban.parse('gb82 west 1234') == Iban.parse('GB82WEST1234')` hold, and what makes these types
 safe to use in a `Set` or as a `Map` key. Each type documents its exact normalisation in dartdoc
 so the canonicalisation is never a surprise. Render helpers (`Iban.formatted`, the grouped paper
-form) reconstruct a display form from the canonical one on demand; they do not change what is
+form) reconstruct a display form from the canonical one on demand. They do not change what is
 stored.
 
 ---
@@ -244,9 +242,9 @@ Luhn worked examples, published ISBN/GTIN/IMEI check-digit cases), plus delibera
 variants (one transposed digit, one wrong check digit) that must be rejected.
 
 <a id="check-digit-blind-spots"></a>
-**What the mod-10 family cannot catch**, stated once because three types inherit it. Luhn misses a
-`09`/`90` transposition and the twin errors 22/55, 33/66, and 44/77; GS1 mod-10 misses a
-transposition of two adjacent digits differing by five. Both members of each pair carry the same
+**What the mod-10 family cannot catch**, stated once because 3 types inherit it. Luhn misses a
+`09`/`90` transposition and the twin errors 22/55, 33/66, and 44/77. GS1 mod-10 misses a
+transposition of 2 adjacent digits differing by 5. Both members of each pair carry the same
 weighted sum, so the check digit is identical either way. Only mod-11 (ISBN-10) catches every
 transposition. These are properties of the standards, not of these implementations, and each
 affected type pins its own case in a test so it does not read as a bug later.
@@ -262,7 +260,7 @@ quietly wrong afterwards**, because the registry moves and a published package d
 worse than under-validating: rejecting a real value, or confidently mis-rendering one, costs the
 caller more than saying less would have.
 
-So the rule is uniform. Validate what the *standard* fixes; **report** what a registry merely
+So the rule is uniform. Validate what the *standard* fixes, then **report** what a registry merely
 observes, and leave the caller to decide what to do with it. Every instance:
 
 | Type                | Registry kept out                              | What is done instead                                                                 |
@@ -273,7 +271,7 @@ observes, and leave the caller to decide what to do with it. Every instance:
 | `Gtin`              | GS1's company-prefix boundary                  | no company-prefix / item-reference split                                             |
 | `Email`             | anything past the engine's single `bool`       | exactly one failure variant, no guessed diagnosis                                    |
 
-Two consequences worth naming. It keeps mutable data out of core entirely, which is why no type here
+2 consequences worth naming. It keeps mutable data out of core entirely, which is why no type here
 carries a table it would have to maintain (`Bic` borrows its country list rather than owning one).
 And it is not hypothetical: a real digit-prefixed BIC already broke a mature validator in production,
 which is the concrete case the rule exists to avoid.
@@ -291,20 +289,20 @@ assertions still written in `package:checks`.
 A real Gherkin runner was evaluated and turned down on the merits, not on availability. An earlier
 `bdd_framework` dev-dependency was dropped for pulling in `flutter_test` (which breaks `dart test`
 off Flutter), but the pure-Dart `gherkin` package *does* resolve and run Flutter-free here. It was
-still rejected, for four reasons independent of any version:
+still rejected, for 4 reasons independent of any version:
 
 - **No audience for the payoff.** Gherkin earns its keep when non-technical stakeholders read and
   write `.feature` files. This package's consumers are Dart developers, and the specification is
   already the published standard plus the dartdoc plus the structural
   [`conformance_test.dart`](./packages/minted_conformance/test/conformance_test.dart).
 - **Ceremony over pure functions.** A value type is a single-call, stateless parse. `World` context
-  and multistep flows mean inventing a stateful world to carry one input across three steps.
+  and multistep flows mean inventing a stateful world to carry one input across 3 steps.
 - **It degrades `dart test`.** A whole feature reports as one opaque test, so scenario counting,
   `-n` filtering, and per-case failure attribution all stop working.
 - **Frozen.** Last released 2022, resolves under Dart 3 only because pub relaxes the legacy SDK cap,
   and it holds `uuid` below 4.
 
-The helper keeps the readability and drops all four costs, since every example row stays a genuine
+The helper keeps the readability and drops all 4 costs, since every example row stays a genuine
 `dart test` case. The examples’ table is the point: each row groups its inputs with the expected
 outcome under a descriptive name. Where a type normalises on parse, the canonical form doubles as
 that outcome (a string means "accepted and normalised to this", `null` means "rejected"), folding
@@ -316,7 +314,7 @@ acceptance, rejection, and normalisation into one table. How-to in
 <a id="public-api-via-single-export-file"></a>
 ## Public API funnelled through `lib/minted.dart`
 
-The mechanics are [hard rule 2](./.ai/AGENTS.md#hard-rules); the reason is that one barrel makes the
+The mechanics are [hard rule 2](./.ai/AGENTS.md#hard-rules). The reason is that one barrel makes the
 public surface auditable in a single file, and makes any move inside `lib/src/` a non-breaking
 change. That is what buys the freedom to regroup types into sector directories, or lift a shared
 check-digit algorithm out of one, without a semver event.
@@ -329,8 +327,8 @@ check-digit algorithm out of one, without a semver event.
 No consumer should resolve a dependency for a type they never touch. Dart declares dependencies per
 package, not per library, so the moment any file in a package imports something, it lands in every
 consumer's lockfile. Tree-shaking is no answer: measured, a program importing all of `minted` and
-using only `Date` compiles byte-identical to hello-world, yet the lockfile still lists all seven
-dependencies. Dead code is free; a dependency-graph entry is not.
+using only `Date` compiles byte-identical to hello-world, yet the lockfile still lists all 7
+dependencies. Dead code is free, where a dependency-graph entry is not.
 
 One package therefore cannot hold optional heavy libraries, which is what v3 splits:
 
@@ -339,8 +337,8 @@ One package therefore cannot hold optional heavy libraries, which is what v3 spl
   `minted_finance`, `ipaddr` in `minted_network`. The engine is the parser or registry the type
   needs to exist, so it belongs wherever that type does.
 - **Core carries only what every domain speaks**: the outcome vocabulary and the numeric
-  primitives, on `collection` and `meta`. A chronology consumer resolves three packages where the
-  single package cost seven.
+  primitives, on `collection` and `meta`. A chronology consumer resolves 3 packages where the
+  single package cost 7.
 - **Adapters stay separate**, as they always would have: `fpdart`, `hive`, a Flutter form-field
   validator. Each becomes `minted_fpdart` and friends, on core plus its one integration dependency.
 - **Zero-dependency integrations can be opt-in libraries** rather than packages. JSON, where
@@ -348,18 +346,18 @@ One package therefore cannot hold optional heavy libraries, which is what v3 spl
   nothing on anyone.
 
 All of it lives in one repo, a pub workspace since the run-up to v3. Separate repositories were the
-earlier plan; one tree won because a release across eight repos is worse than a release picker in
+earlier plan. One tree won because a release across 8 repos is worse than a release picker in
 one, and because a type and its tests should move together.
 
-The cost is real and was accepted: seven publish surfaces, and helpers used by more than one
+The cost is real and was accepted: 7 publish surfaces, and helpers used by more than one
 package become `package:minted/internal.dart`, which carries no semver promise but cannot break
 within a major.
 
 **The cross-package suites need a host that is never published.**
 [`failure_contract_test.dart`](./packages/minted_conformance/test/failure_contract_test.dart) imports
-all seven siblings, and every sibling already depends on core, so hosting it in `minted` would point
+all 7 siblings, and every sibling already depends on core, so hosting it in `minted` would point
 a dev-dependency arrow back from core to its own dependents. Locally that resolves by path and looks
-fine; on pub.dev it deadlocks the first publish of either side, because core cannot go up until
+fine. On pub.dev it deadlocks the first publish of either side, because core cannot go up until
 `minted_chronology` is up and `minted_chronology` cannot go up until core is. `publish_to: none`
 breaks the cycle, since a package that never reaches pub.dev may depend on anything. The
 [cutover order](./tool/README.md) is the softer version of the same constraint, and the
@@ -368,7 +366,7 @@ sibling-constraint preflight exists because that one already bit.
 **Keeping it a workspace member, rather than moving the suites to the workspace root, is a separate
 decision that coverage settles.** `melos exec` visits members only, and `format_coverage
 --in=packages` reads only what lands under `packages/`, so a suite at the root would be collected by
-neither. These suites cover seven other packages' `lib/` while `minted_conformance` owns no `lib` of
+neither. These suites cover 7 other packages' `lib/` while `minted_conformance` owns no `lib` of
 its own, which makes that scoping the whole of their coverage contribution. The inverse follows too:
 a suite whose coverage nobody attributes has no reason to be a member.
 
@@ -381,7 +379,7 @@ Prose and identifiers use British spelling (`normalise`, `canonicalise`, `behavi
 the maintainer's other packages. The one carve-out is any name fixed by the SDK or a dependency:
 `toJson`, `compareTo`, `hashCode`, and the `LICENSE` filename stay as they are. This costs almost
 nothing on this package's surface, because the value-type API (`parse`, `tryParse`, `value`,
-`formatted`, `checkDigits`, `mailtoUri`) barely contains a spelling-divergent identifier;
+`formatted`, `checkDigits`, `mailtoUri`) barely contains a spelling-divergent identifier, and
 "normalise" stays internal to parsing.
 
 ---
@@ -398,7 +396,7 @@ starting current avoids churn later. Record any bump here.
 **Primary (declaring) constructors went stable in 3.13 and are still not used**, for a new reason.
 `public_member_api_docs`, which this package enables, reports the implicit primary constructor as an
 undocumented public member at the class name, where there is no declaration to hang a `///` on.
-Verified across const, non-const and zero-parameter forms; the old form with a documented
+Verified across const, non-const and zero-parameter forms. The old form with a documented
 constructor is clean. The ways out are an `// ignore:` per class, which `document_ignores` then
 makes you justify (more noise than the docstring it replaced), or dropping the lint package-wide. It
 has fired on constructors with nowhere to document before
@@ -416,7 +414,7 @@ parameter through to a field page. Revisit if the lint learns about them.
 Dart stdlib or a strong existing package already handles well:
 
 - **Stdlib already covers:** URLs/URIs (`Uri`), instants and durations (`DateTime` / `Duration`),
-  big integers (`BigInt`); in Flutter, `Color`, `Locale`, `TimeOfDay`.
+  big integers (`BigInt`), and in Flutter `Color`, `Locale`, `TimeOfDay`.
 - **Strong existing packages cover (wrap or reuse, don't reimplement):** money/decimals (`money2`,
   `decimal`, `rational`), SemVer (`pub_semver`), formatting and ISO code *lists* (`intl`,
   `sealed_countries`, `sealed_currencies`), IANA time zones (`timezone`), hashes (`crypto`).

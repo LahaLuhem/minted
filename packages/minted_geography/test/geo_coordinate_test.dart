@@ -6,9 +6,9 @@ import 'support/bdd.dart';
 
 void main() {
   feature('GeoCoordinate', () {
-    // Acceptance and normalisation in one table: the canonical decimal-degree form doubles as the
-    // expected outcome. A String means "accepted and normalised to this"; null means "rejected".
-    // The valid rows are the examples published with ISO 6709, one per field width.
+    // Acceptance and normalisation in one table: the canonical decimal-degree form doubles as the expected
+    // outcome. A String means "accepted and normalised to this". Null means "rejected". The valid rows
+    // are the examples published with ISO 6709, one per field width.
     scenarioOutline<({String input, String? canonical})>(
       'tryParse accepts the three ISO 6709 widths and rejects the rest',
       examples: {
@@ -58,8 +58,8 @@ void main() {
         'a space between the fields is': (input: '+48.8577 +002.295/', canonical: null),
         'an unsigned latitude': (input: '50.12-000.10/', canonical: null),
         'no closing solidus': (input: '+50.12-000.10', canonical: null),
-        // Fixed widths are the whole reason this must fail: a loose parser reads it as a plausible
-        // but wrong location rather than as an error.
+        // Fixed widths are the whole reason this must fail: a loose parser reads it as a plausible but
+        // wrong location rather than as an error.
         'an unpadded longitude': (input: '+46+2/', canonical: null),
         'a three-digit latitude, which is no width at all': (input: '+050+000/', canonical: null),
         'minutes reaching 60': (input: '+5060+00000/', canonical: null),
@@ -82,7 +82,7 @@ void main() {
       },
     );
 
-    // Two remedies from one door: fix the format, or fix a number.
+    // 2 remedies from one door: fix the format, or fix a number.
     scenarioOutline<({String input, GeoCoordinateFailure failure})>(
       'parse reports which part is wrong, not just the shape',
       examples: {
@@ -132,8 +132,8 @@ void main() {
       check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180.1)).isNull();
     });
 
-    // The range moved into the degree types, so the assembly doors prevent it rather than report
-    // it. The diagnosis survives on parse, the one door that meets text nobody has checked.
+    // The range moved into the degree types, so the assembly doors prevent it rather than report it.
+    // The diagnosis survives on parse, the one door that meets text nobody has checked.
     scenario('the degree types refuse what is out of range, and parse is what names it', () {
       check(Latitude.tryFrom(91)).isNull();
       check(Longitude.tryFrom(181)).isNull();
@@ -150,7 +150,7 @@ void main() {
           .equals(const GeoCoordinateLatitudeOutOfRange(91));
     });
 
-    // Latitude's narrower range catches the swaps outright; named parameters catch the rest.
+    // Latitude's narrower range catches the swaps outright, and named parameters catch the rest.
     scenario('a swapped pair whose longitude exceeds 90 is refused', () {
       check(GeoCoordinate.tryFrom(latitude: 174.7762, longitude: -36.8509)).isNull();
       check(GeoCoordinate.tryFrom(latitude: -36.8509, longitude: 174.7762)).isNotNull();
@@ -169,7 +169,7 @@ void main() {
       check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180)!.longitude.value).equals(180);
     });
 
-    // -0.0 == 0.0 while the two need not hash alike, so storing one would break Set and Map keys.
+    // -0.0 == 0.0 while the 2 need not hash alike, so storing one would break Set and Map keys.
     scenario('a negative zero is normalised away', () {
       // -0 in a double context is IEEE negative zero, not integer zero.
       final origin = GeoCoordinate.tryFrom(latitude: -0, longitude: -0)!;
@@ -200,8 +200,8 @@ void main() {
       }
     });
 
-    // Converting the whole field in one go, rather than adding the fraction to the degrees, which
-    // rounds a second time and lands an ulp away for about one coordinate in four hundred.
+    // Converting the whole field in one go, rather than adding the fraction to the degrees, which rounds
+    // a second time and lands an ulp away for about one coordinate in 4 hundred.
     scenario('a full-precision decimal field parses to the exact double', () {
       final coordinate = GeoCoordinate.tryParse('+06.523984073660007-006.45826944430357/')!;
 
@@ -209,8 +209,8 @@ void main() {
       check(coordinate.longitude.value).equals(-6.45826944430357);
     });
 
-    // The canonical form spells at most 20 fraction digits, so a finer degree is snapped to one it
-    // can. Without that, distinct coordinates render alike and the rendering reads back as neither.
+    // The canonical form spells at most 20 fraction digits, so a finer degree is snapped to one it can.
+    // Without that, distinct coordinates render alike and the rendering reads back as neither.
     scenario('a degree finer than the canonical form can spell is snapped to one it can', () {
       final subAtomic = GeoCoordinate.tryFrom(latitude: 3.7182818284590454e-13, longitude: 0)!;
 

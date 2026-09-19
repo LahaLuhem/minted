@@ -14,38 +14,33 @@ import 'standards/coordinate_bounds.dart';
 
 /// A point on the Earth's surface: a latitude and a longitude, in decimal degrees.
 ///
-/// Two raw doubles cannot say which is which, and no range check catches the swap.
-///
-/// Parse, don't validate: a [GeoCoordinate] exists only if [latitude] is within `-90` to `90` and
-/// [longitude] within `-180` to `180`. [parse] reads all three ISO 6709 widths, where the number of
-/// degree digits selects the unit: degrees, degrees-minutes, or degrees-minutes-seconds.
+/// 2 raw doubles can't say which is which, and no range check catches the swap.
 /// Standard: [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709).
 ///
-/// [GeoCoordinate.from] takes a [Latitude] and a [Longitude] and cannot fail. [tryFrom] takes raw
-/// numbers.
+/// [parse] reads all 3 ISO 6709 widths, the count of degree digits picking the unit: degrees, degrees-minutes,
+/// or degrees-minutes-seconds. [GeoCoordinate.from] takes a [Latitude] and a [Longitude] and can't fail,
+/// where [tryFrom] takes raw numbers.
 ///
-/// Normalisation on parse: input is trimmed, sexagesimal becomes decimal degrees ([iso6709]),
-/// `-180` becomes `+180` (one meridian, two spellings), a negative zero becomes positive, the sign
-/// the standard gives the equator and the prime meridian, and a degree finer than [iso6709] can
-/// spell is snapped to one it can. Altitude and a CRS are refused, not dropped.
-///
-/// Equality is by value over [latitude] and [longitude].
+/// Parsing trims, folds sexagesimal to decimal degrees, turns `-180` into `+180` (one meridian, 2
+/// spellings), clears a negative zero (the sign the standard gives the equator and the prime meridian),
+/// and snaps a degree finer than [iso6709] can spell to one it can. Altitude and a CRS are refused,
+/// not dropped.
 ///
 /// {@example /example/minted_geography_example.dart#geo}
 @immutable
 final class GeoCoordinate {
-  /// The latitude in decimal degrees. Negative is south of the equator. A `double`, so arithmetic
-  /// and formatting need no unwrapping.
+  /// The latitude in decimal degrees, negative south of the equator. A `double`, so arithmetic and formatting
+  /// need no unwrapping.
   final Latitude latitude;
 
-  /// The longitude in decimal degrees. Negative is west of the prime meridian.
+  /// The longitude in decimal degrees, negative west of the prime meridian.
   final Longitude longitude;
 
   const new _(this.latitude, this.longitude);
 
-  // The only door that constructs, so every instance normalises alike. A negative zero prints as
-  // "-0.0000" here, and the snap runs inside the clearing, because a tiny negative degree rounds
-  // to -0.0. Neither step can push a bounded degree past its bound, hence the asserted rewrap.
+  // The only door that constructs, so every instance normalises alike. A negative zero prints as "-0.0000"
+  // here, and the snap runs inside the clearing, because a tiny negative degree rounds to -0.0. Neither
+  // step can push a bounded degree past its bound, hence the asserted rewrap.
   factory _canonical(double latitude, double longitude) {
     final folded = longitude == -maxLongitude ? maxLongitude : longitude;
 
@@ -55,17 +50,17 @@ final class GeoCoordinate {
     );
   }
 
-  /// The coordinate at [latitude] and [longitude]. Cannot fail: each parameter carries its own
-  /// range, and neither can be written where the other belongs.
+  /// The coordinate at [latitude] and [longitude]. Can't fail: each parameter carries its own range,
+  /// and neither goes where the other belongs.
   //
-  // A constructor rather than the family's usual static door, because it is total: a ParseOutcome
-  // return is what stops the others being constructors.
+  // A constructor rather than the family's usual static door, because it's total. A ParseOutcome return
+  // is what stops the others being constructors.
   factory from({required Latitude latitude, required Longitude longitude}) =>
       GeoCoordinate._canonical(latitude, longitude);
 
-  /// The coordinate at [latitude] and [longitude] decimal degrees, or `null` when either leaves its
-  /// range. A `NaN` is out of range on both. The raw-number door, where [GeoCoordinate.from] takes
-  /// degrees already constrained.
+  /// The coordinate at [latitude] and [longitude] decimal degrees, or `null` if either leaves its range.
+  /// A `NaN` is out of range on both. The raw-number door, where [GeoCoordinate.from] takes degrees
+  /// already constrained.
   static GeoCoordinate? tryFrom({required num latitude, required num longitude}) {
     final boundedLatitude = Latitude.tryFrom(latitude);
     final boundedLongitude = Longitude.tryFrom(longitude);
@@ -75,12 +70,12 @@ final class GeoCoordinate {
         : GeoCoordinate.from(latitude: boundedLatitude, longitude: boundedLongitude);
   }
 
-  /// Parses [input] as an ISO 6709 latitude and longitude, or returns `null` unless it is exactly
-  /// that shape (signed, fixed-width, closed by `/`, no altitude) and both parts are in range.
+  /// Parses [input], or `null` unless it's exactly the ISO 6709 shape (signed, fixed-width, closed by
+  /// `/`, no altitude) with both parts in range.
   static GeoCoordinate? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an ISO 6709 latitude and longitude, reporting the [GeoCoordinateFailure]
-  /// that says whether the shape or one of the parts is wrong.
+  /// Parses [input], reporting the [GeoCoordinateFailure] that says whether the shape or one of the
+  /// parts is wrong.
   static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> parse(String input) {
     final degrees = _degreesOf(input.trim());
     if (degrees == null) return const ParseFailure(GeoCoordinateNotIso6709());
@@ -91,14 +86,13 @@ final class GeoCoordinate {
     return failure != null ? ParseFailure(failure) : ParseSuccess(._canonical(latitude, longitude));
   }
 
-  /// The canonical ISO 6709 form: decimal degrees, signed and zero-padded, closed by a solidus
-  /// (e.g. `'+48.8577+002.295/'`). Round-trips through [parse].
+  /// The canonical ISO 6709 form, `'+48.8577+002.295/'`: decimal degrees, signed, zero-padded and closed
+  /// by a solidus. Round-trips through [parse].
   String get iso6709 =>
       '${_decimalField(latitude, _latitudeDegreeWidth)}'
       '${_decimalField(longitude, _longitudeDegreeWidth)}/';
 
-  /// The display form, degrees-minutes-seconds with a hemisphere letter
-  /// (e.g. `'48°51′27.72″N 2°17′42″E'`). Seconds are rounded to two decimals, so it is for display,
+  /// The display form, `'48°51′27.72″N 2°17′42″E'`. Seconds round to 2 decimals, so it's for display,
   /// not storage. [iso6709] is what round-trips.
   String get sexagesimal =>
       '${_sexagesimalField(latitude, 'N', 'S')} ${_sexagesimalField(longitude, 'E', 'W')}';
@@ -113,8 +107,8 @@ final class GeoCoordinate {
   @override
   String toString() => 'GeoCoordinate(latitude: $latitude, longitude: $longitude)';
 
-  // Snapped to a value [iso6709] can spell exactly, so the canonical form always reads back as
-  // itself. Identity above 1e-20 degrees. Why: `APPENDIX.md#geo-coordinate-value-type`.
+  // Snapped to a value [iso6709] can spell exactly, so the canonical form always reads back as itself.
+  // Identity above 1e-20 degrees. Why: `APPENDIX.md#geo-coordinate-value-type`.
   static double _renderable(double degrees) =>
       double.parse(degrees.toStringAsFixed(_maxFractionDigits));
 
@@ -131,8 +125,8 @@ final class GeoCoordinate {
         : (latitude: latitude, longitude: longitude);
   }
 
-  // One signed field in decimal degrees, or null when its whole part is not the degree width plus
-  // zero, one, or two sexagesimal pairs, or a minute or second reaches 60.
+  // One signed field in decimal degrees, or null when its whole part is not the degree width plus zero,
+  // one, or 2 sexagesimal pairs, or a minute or second reaches 60.
   static double? _degreesIn(RegExpMatch fieldMatch, int signGroup, int degreeWidth) {
     final whole = fieldMatch.group(signGroup + 1)!;
     final sexagesimalDigits = whole.length - degreeWidth;
@@ -152,10 +146,10 @@ final class GeoCoordinate {
 
     final fraction = fieldMatch.group(signGroup + 2) ?? '';
 
-    // Degrees, minutes, and seconds are digits of one base-60 number: fold to a count of the
-    // smallest unit the fraction joins, and scale down once. One rounding, not one per field.
-    // A plain decimal field skips all of it, because adding the fraction to the degrees rounds a
-    // second time and lands up to one ulp off what converting the whole field gives.
+    // Degrees, minutes, and seconds are digits of one base-60 number: fold to a count of the smallest
+    // unit the fraction joins, and scale down once. One rounding, not one per field. A plain decimal
+    // field skips all of it, because adding the fraction to the degrees rounds a second time and lands
+    // up to one ulp off what converting the whole field gives.
     final degrees = int.parse(whole.substring(0, degreeWidth));
     final smallestUnits = sexagesimalPairs.fold(
       degrees,
@@ -172,8 +166,8 @@ final class GeoCoordinate {
   static String _decimalField(double degrees, int degreeWidth) =>
       '${degrees < 0 ? hyphen : '+'}${_wholePadded(_shortestExact(degrees.abs()), degreeWidth)}';
 
-  // Rounding once, on hundredths of a second, then decomposing is what carries 59.999" into the
-  // minute instead of rendering it as 60".
+  // Rounding once, on hundredths of a second, then decomposing is what carries 59.999" into the minute
+  // instead of rendering it as 60".
   static String _sexagesimalField(double degrees, String positive, String negative) {
     final hundredths = (degrees.abs() * _secondHundredthsPerDegree).round();
     final degreeRemainder = hundredths % _secondHundredthsPerDegree;
@@ -186,11 +180,11 @@ final class GeoCoordinate {
         '${degrees < 0 ? negative : positive}';
   }
 
-  // The shortest fixed-point decimal, over rising decimal-place counts, that reads back as exactly
-  // this double. Not toString: it goes exponential below 1e-6, which is not an ISO 6709 field.
+  // The shortest fixed-point decimal, over rising decimal-place counts, that reads back as exactly this
+  // double. Not toString: it goes exponential below 1e-6, which is not an ISO 6709 field.
   //
-  // No orElse: _renderable snaps every stored degree to something the widest candidate spells, and
-  // seconds arrive as hundredths, so a StateError here would mean that invariant had broken.
+  // No orElse: _renderable snaps every stored degree to something the widest candidate spells, and seconds
+  // arrive as hundredths, so a StateError here would mean that invariant had broken.
   static String _shortestExact(double magnitude) => Iterable.generate(
     _maxFractionDigits + 1,
     magnitude.toStringAsFixed,
@@ -204,7 +198,7 @@ final class GeoCoordinate {
     return '${whole.padLeft(width, zeroPad)}$fraction';
   }
 
-  // Sign, whole part, and optional fraction for each of the two fields, then the closing solidus.
+  // Sign, whole part, and optional fraction for each of the 2 fields, then the closing solidus.
   static final _coordinatePair = RegExp(r'^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?/$');
 
   static const _signGroup = 1;

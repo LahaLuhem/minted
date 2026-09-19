@@ -12,11 +12,10 @@ AsciiAlphanumerics _alphanumerics(String value) => AsciiAlphanumerics.tryFrom(va
 
 void main() {
   feature('Iban', () {
-    // Acceptance and normalisation in one table: the canonical (compact,
-    // upper-cased) form doubles as the expected outcome. A String means
-    // "accepted and normalised to this"; null means "rejected". The valid rows
-    // are registry examples, including Oman (mandated 2024/2025) to show the
-    // country table tracks recent adoptions rather than a frozen snapshot.
+    // Acceptance and normalisation in one table: the canonical (compact, upper-cased) form doubles as
+    // the expected outcome. A String means "accepted and normalised to this". Null means "rejected".
+    // The valid rows are registry examples, including Oman (mandated 2024/2025) to show the country
+    // table tracks recent adoptions rather than a frozen snapshot.
     scenarioOutline<({String input, String? canonical})>(
       'Iban.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -91,8 +90,8 @@ void main() {
       outline: (example) => check(Iban.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
-    // A BBAN outside `[A-Z0-9]` cannot be built, so the check-digit generator never sees one: its
-    // charset guard is an assert now, not a runtime branch.
+    // A BBAN outside `[A-Z0-9]` cannot be built, so the check-digit generator never sees one: its charset
+    // guard is an assert now, not a runtime branch.
     scenario('a BBAN outside A-Z and 0-9 cannot be built at all', () {
       check(AsciiAlphanumerics.tryFrom('NWBK-6016133192681')).isNull();
       check(Iban.parse('GB29NWBK-016133192681').reasonOrNull).equals(const IbanInvalidCharacters());
@@ -140,10 +139,9 @@ void main() {
       ).isTrue();
     });
 
-    // fromComponents runs our own mod-97-10 generator (check_digits.dart); check
-    // it reproduces the registry check digits across countries, letters and
-    // digits-only BBANs and different lengths. That is our code, not the
-    // validator's.
+    // fromComponents runs our own mod-97-10 generator (check_digits.dart), so check it reproduces the
+    // registry check digits across countries, letters and digits-only BBANs and different lengths. That
+    // is our code, not the validator's.
     scenarioOutline<({AsciiLetters countryCode, AsciiAlphanumerics bban, String iban})>(
       'fromComponents computes the check digits to match the registry IBAN',
       examples: {

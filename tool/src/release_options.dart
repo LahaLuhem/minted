@@ -37,7 +37,7 @@ class ReleaseOptions {
     try {
       parsed = _parser.parse(arguments);
     } on FormatException catch (error) {
-      // args' message is the whole value here; a parser trace would bury it.
+      // args' message is the whole value here, and a parser trace would bury it.
       // ignore: avoid-throw-in-catch-block
       throw ReleaseAbort('${error.message} (use --help)', code: usageErrorCode);
     }
@@ -57,7 +57,7 @@ class ReleaseOptions {
   /// The usage text, kept here so `--help` and the error paths cannot drift apart.
   static String get usage =>
       '''
-release.dart — bump version, finalise CHANGELOG, commit, tag, push to origin.
+release.dart: bump version, finalise CHANGELOG, commit, tag, push to origin.
 
 Usage:
   dart run tool/release.dart [BUMP] [OPTIONS]

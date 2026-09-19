@@ -4,8 +4,7 @@
 import 'package:minted_identifiers/minted_identifiers.dart';
 
 void main() {
-  // `Uuid` types an existing UUID (the `uuid` package generates them). Case, a `urn:uuid:`
-  // prefix, and surrounding braces are normalised to the bare lowercase form.
+  // Case, a `urn:uuid:` prefix and braces all normalise away.
   // #region uuid
   final id = Uuid.tryParse('URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6')!;
   print(id.value); // f81d4fae-7dec-11d0-a765-00a0c91e6bf6
@@ -14,8 +13,7 @@ void main() {
   print(Uuid.tryParse('not-a-uuid')); // null
   // #endregion
 
-  // `Isbn` folds both generations into the 13-digit form, so the two spellings of one book are
-  // the same value.
+  // Both generations fold into the 13-digit form, so one book is one value.
   // #region isbn
   final isbn = Isbn.tryParse('0-306-40615-2')!;
   print(isbn.value); // 9780306406157
@@ -23,8 +21,7 @@ void main() {
   print(Isbn.tryParse('9790260000438')); // null (an ISMN: printed music, not a book)
   // #endregion
 
-  // `Gtin` folds all four GS1 lengths into the 14-digit form, so a UPC-A and its EAN-13 spelling
-  // are the same trade item. Padding is safe: GS1 weights from the right.
+  // All 4 GS1 lengths fold into the 14-digit form, so a UPC-A and its EAN-13 are one item.
   // #region gtin
   final gtin = Gtin.tryParse('036000291452')!;
   print(gtin.value); // 00036000291452
@@ -33,7 +30,7 @@ void main() {
   print(Gtin.tryParse('4006381333932')); // null (fails the GS1 mod-10 check)
   // #endregion
 
-  // `Imei` runs the Luhn check the printed grouping hides, and hands back the parts.
+  // Runs the Luhn check the printed grouping hides, and hands back the parts.
   // #region imei
   final imei = Imei.tryParse('35-209900-176148-1')!;
   print(imei.value); // 352099001761481
@@ -44,8 +41,7 @@ void main() {
   ); // 16 digits is an IMEISV, not an IMEI
   // #endregion
 
-  // `Issn` keeps the hyphen, because ISO 3297 fixes it at one position (unlike an ISBN's groups,
-  // which come from a range table). Its check character can be `X`, standing for ten.
+  // The hyphen stays, because ISO 3297 pins it to one spot. The check character can be `X`.
   // #region issn
   final issn = Issn.tryParse('1050124x')!;
   print(issn.value); // 1050-124X  (hyphen placed, x upper-cased)
@@ -54,8 +50,7 @@ void main() {
   print(Issn.tryParse('0317-8470')); // null (fails the mod-11 check)
   // #endregion
 
-  // `Isni` covers ORCID iDs too, since ORCID issues from a block inside the ISNI range. The block
-  // is reported, not gated: refusing everything outside it would refuse most of the standard.
+  // ORCID iDs parse here too, since ORCID issues from a block inside the ISNI range.
   // #region isni
   final isni = Isni.tryParse('0000-0002-1825-0097')!;
   print(isni.value); // 0000000218250097  (separators stripped)

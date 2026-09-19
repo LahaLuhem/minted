@@ -8,18 +8,15 @@ import 'weekday.dart';
 
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.
 ///
-/// The date-only value [DateTime] doesn't give you. Held in a [DateTime], a birthday drags along a
-/// time and a zone it never had, so two "equal" dates compare unequal and a day slides across a
-/// zone boundary.
-///
-/// Parse, don't validate: a [Date] exists only if it is a real calendar date. [parse] and [Date.of]
-/// reject the impossible ones (month 13, 30 February, 29 February in a common year) rather than
-/// rolling them over the way [DateTime] does. The canonical form is ISO 8601 `YYYY-MM-DD`
-/// ([iso8601]), and [year] is held in `0000`-`9999`.
+/// The date-only value [DateTime] doesn't give you. Held in a [DateTime], a birthday drags along a time
+/// and a zone it never had, so 2 "equal" dates compare unequal and a day slides across a zone boundary.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
 ///
-/// Ordering is chronological ([compareTo], [isBefore], [isAfter], and `<` / `<=` / `>` / `>=`).
-/// Equality is by value over [year], [month], and [day].
+/// [parse] and [Date.of] refuse the impossible dates (month 13, 30 February, 29 February in a common
+/// year) rather than rolling them over the way [DateTime] does. [year] is held in `0000`-`9999`, and
+/// [iso8601] is the canonical form.
+///
+/// Ordering is chronological, on [compareTo], [isBefore], [isAfter] and `<` / `<=` / `>` / `>=`.
 ///
 /// {@example /example/minted_chronology_example.dart#date}
 @immutable
@@ -27,7 +24,7 @@ final class Date implements Comparable<Date> {
   /// The year, `0000`-`9999`.
   final int year;
 
-  /// The month of the year, as a [Month] (`1`/January to `12`/December).
+  /// The month of the year.
   final Month month;
 
   /// The day of the month, `1` to the last day of [month] (leap-year aware).
@@ -35,12 +32,11 @@ final class Date implements Comparable<Date> {
 
   const new _(this.year, this.month, this.day);
 
-  /// The [Date] for [year] (`0000`-`9999`), [month] (`1`-`12`), and [day] (bounded by the month),
-  /// reporting which part is out of range on an impossible date.
+  /// The [Date] for [year], [month] and [day], reporting which part is out of range on an impossible
+  /// date.
   ///
-  /// Unlike [DateTime], out-of-range parts are rejected, not rolled over: `Date.of(2026, 13, 1)`
-  /// reports [DateMonthOutOfRange] rather than silently becoming 2027-01-01. The failure type is
-  /// the parts-only subset, so there is no shape arm to fold here.
+  /// Nothing rolls over: `Date.of(2026, 13, 1)` reports [DateMonthOutOfRange] rather than quietly becoming
+  /// 2027-01-01. The failure type is the parts-only subset, so there's no shape arm to fold here.
   static ParseOutcome<DateComponentFailure, Date> of(int year, [int month = 1, int day = 1]) {
     final parsedDate = _tryFromParts(year, month, day);
 
@@ -49,24 +45,21 @@ final class Date implements Comparable<Date> {
         : ParseSuccess(parsedDate);
   }
 
-  /// The calendar date of [dateTime], dropping its time-of-day and time zone.
-  ///
-  /// Fails only when [dateTime]'s year falls outside `0000`-`9999` (an extreme [DateTime] can reach
-  /// beyond it). Its month and day are always in range.
+  /// The calendar date of [dateTime], dropping its time-of-day and time zone. Fails only when its year
+  /// falls outside `0000`-`9999`, which an extreme [DateTime] can reach.
   static ParseOutcome<DateComponentFailure, Date> fromDateTime(DateTime dateTime) =>
       of(dateTime.year, dateTime.month, dateTime.day);
 
-  /// Today's date in the local time zone, the date-only sibling of [DateTime.now]. For the UTC day,
-  /// use `Date.fromDateTime(DateTime.now().toUtc())`.
+  /// Today's date in the local time zone. For the UTC day, use `Date.fromDateTime(DateTime.now().toUtc())`.
   // The local clock is always inside 0000-9999, so this cannot fail.
   factory now() => fromDateTime(DateTime.now()).getOrThrow();
 
-  /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, or returns `null` unless it is exactly
-  /// that shape (four-digit year, zero-padded two-digit month and day) and a real date.
+  /// Parses [input], or `null` unless it's exactly `YYYY-MM-DD` (4-digit year, zero-padded month
+  /// and day) and a real date.
   static Date? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as an ISO 8601 calendar date `YYYY-MM-DD`, reporting the [DateFailure] that
-  /// says whether the shape or one of the parts is wrong.
+  /// Parses [input], reporting the [DateFailure] that says whether the shape or one of the parts is
+  /// wrong.
   static ParseOutcome<DateFailure, Date> parse(String input) {
     final dateParts = _partsOf(input);
     if (dateParts == null) return const ParseFailure(DateNotIso8601());
@@ -79,31 +72,28 @@ final class Date implements Comparable<Date> {
         : ParseSuccess(parsedDate);
   }
 
-  /// The canonical ISO 8601 form, `YYYY-MM-DD` (e.g. `'2026-07-07'`). Round-trips through [parse].
+  /// The canonical ISO 8601 form, `'2026-07-07'`. Round-trips through [parse].
   String get iso8601 => isoDate(year, month.value, day);
 
   /// The day of the week.
   // DateTime.weekday is always 1-7, so tryFrom cannot return null here.
   Weekday get weekday => Weekday.tryFrom(_utcMidnight.weekday)!;
 
-  /// This date as a [DateTime] at local midnight.
-  ///
-  /// Mirrors the `DateTime(year, month, day)` callers reach for today, so migrating a value to [Date]
+  /// This date as a [DateTime] at local midnight, matching the `DateTime(year, month, day)` that callers
+  /// reach for today.
   DateTime toDateTime() => DateTime(year, month.value, day);
 
-  /// The date [days] days after this one (pass a negative [days] to go back), or `null` when the
-  /// result leaves `0000`-`9999`.
+  /// The date [days] days after this one, negative to go back, or `null` if the result leaves `0000`-`9999`.
   Date? tryAddDays(int days) {
     final shiftedUtc = _utcMidnight.add(Duration(days: days));
 
     return _tryFromParts(shiftedUtc.year, shiftedUtc.month, shiftedUtc.day);
   }
 
-  /// The date [days] days before this one, or `null` when the result leaves `0000`-`9999`.
+  /// The date [days] days before this one, or `null` if the result leaves `0000`-`9999`.
   Date? trySubtractDays(int days) => tryAddDays(-days);
 
-  /// The whole number of days from [other] to this date (`this - other`), negative when this
-  /// date is the earlier one.
+  /// The whole days from [other] to this date, negative when this one is earlier.
   int differenceInDays(Date other) => _utcMidnight.difference(other._utcMidnight).inDays;
 
   /// Whether this date falls chronologically before [other].
@@ -145,8 +135,8 @@ final class Date implements Comparable<Date> {
   @override
   String toString() => 'Date($iso8601)';
 
-  // UTC midnight, used for day arithmetic: a UTC day is always 24 hours, so tryAddDays and
-  // differenceInDays can't be skewed by a daylight-saving transition the way a local day can.
+  // UTC midnight, used for day arithmetic: a UTC day is always 24 hours, so tryAddDays and differenceInDays
+  // can't be skewed by a daylight-saving transition the way a local day can.
   DateTime get _utcMidnight => DateTime.utc(year, month.value, day);
 
   // The parts of an ISO 8601 YYYY-MM-DD string, or null when the input isn't that shape.
@@ -162,8 +152,7 @@ final class Date implements Comparable<Date> {
           );
   }
 
-  // The [Date] for these parts, or null when they don't form a real calendar date. The single
-  // validation gate that parse, the factory, and fromDateTime all funnel through.
+  // The one gate parse, the factory and fromDateTime all go through.
   static Date? _tryFromParts(int year, int month, int day) {
     final parsedMonth = Month.tryFrom(month);
     if (parsedMonth == null) return null;
@@ -173,8 +162,8 @@ final class Date implements Comparable<Date> {
     return !wellFormed ? null : Date._(year, parsedMonth, day);
   }
 
-  // Which part of the given date is out of range. Reached only after _tryFromParts returns null,
-  // so exactly one of these conditions holds.
+  // Which part of the given date is out of range. Reached only after _tryFromParts returns null, so
+  // exactly one of these conditions holds.
   static DateComponentFailure _partsFailure(int year, int month, int day) {
     if (year < 0 || year > _maxYear) return DateYearOutOfRange(year);
 

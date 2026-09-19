@@ -1,19 +1,13 @@
 /// The patterns, characters and conversions every value type normalises input with, in one place so
-/// a type's documented contract ("spaces and hyphens are stripped") cannot drift from four other
-/// types'.
-///
-/// Public within `lib/src/` and never re-exported from `lib/minted.dart`: top-level `_` names are
-/// library-private in Dart, so sharing them at all means dropping the underscore. Rationale:
-/// `/APPENDIX.md#normalise-on-parse`.
+/// one type's documented contract ("spaces and hyphens are stripped") can't drift from the next one's.
+/// Rationale: `/APPENDIX.md#normalise-on-parse`.
 library;
 
-/// Whitespace and hyphens together: the separators a standard treats as cosmetic grouping, in a
-/// value whose charset excludes both. Stripped by `Gtin`, `Imei`, `Isbn`, `Issn` and
-/// `PaymentCardNumber`.
+/// Whitespace and hyphens, the separators a standard treats as cosmetic grouping, for a value whose
+/// charset excludes both.
 final cosmeticSeparators = RegExp(r'[\s-]+');
 
-/// Whitespace alone, for a value whose charset is `A-Z0-9` so a hyphen would be invalid rather than
-/// cosmetic. Stripped by `Iban` and `Bic`.
+/// Whitespace alone, for a charset of `A-Z0-9`, where a hyphen is invalid rather than cosmetic.
 final whitespace = RegExp(r'\s+');
 
 /// A whole string of nothing but decimal digits.
@@ -25,17 +19,17 @@ const hyphen = '-';
 /// The character a fixed-width field is left-padded with.
 const zeroPad = '0';
 
-/// [input] with its cosmetic grouping stripped. For `Gtin`, `Imei` and `PaymentCardNumber`, whose
-/// charsets are digits alone, so case-folding would be a no-op.
+/// [input] with its cosmetic grouping stripped, for a digits-only charset where upper-casing would do
+/// nothing.
 String compact(String input) => input.replaceAll(cosmeticSeparators, '');
 
-/// [input] compacted and case-folded, for a charset admitting letters too: `Isbn`, `Isni`, `Issn`.
+/// [input] compacted and upper-cased, for a charset that admits letters too.
 String compactUpperCase(String input) => compact(input).toUpperCase();
 
-/// [input] with whitespace alone stripped, then case-folded, for a charset where a hyphen is
-/// invalid rather than cosmetic: `Bic`, `Iban`, `Isin`.
+/// [input] with whitespace alone stripped, then upper-cased, for a charset where a hyphen is invalid
+/// rather than cosmetic.
 String unspacedUpperCase(String input) => input.replaceAll(whitespace, '').toUpperCase();
 
-/// [value] with a negative zero's sign cleared, for `GeoCoordinate` and `Percentage`. `-0.0` equals
-/// `0.0` and hashes alike, so it is only the rendered form that needs this.
+/// [value] with a negative zero's sign cleared. `-0.0` already equals `0.0` and hashes alike, so it's
+/// only the rendered form that needs this.
 double positiveZeroed(double value) => value.isNegative && value == 0 ? 0 : value;

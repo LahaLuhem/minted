@@ -4,11 +4,10 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [Bic] refused its input. Sealed, not an enum, because [BicWrongLength] and [BicUnknownCountry]
-/// report values read from the input.
+/// Why a [Bic] refused its input. Sealed rather than an enum, because [BicWrongLength] and [BicUnknownCountry]
+/// carry values off the input.
 ///
-/// Three variants where IBAN has five: ISO 9362 has no checksum and no per-country length, so there
-/// are only the shape and the country registry to fail against.
+/// 2 fewer than IBAN needs: ISO 9362 has no checksum and no per-country length.
 @immutable
 sealed class BicFailure implements MintedFailure {
   const new();
@@ -17,9 +16,9 @@ sealed class BicFailure implements MintedFailure {
   String get typeName => 'Bic';
 }
 
-/// Neither eight nor eleven characters survived normalisation, so this is a BIC of neither length.
+/// Neither 8 nor 11 characters, so it's a BIC of neither length.
 final class BicWrongLength extends BicFailure {
-  /// How many characters were left once whitespace was stripped.
+  /// How many characters were left after whitespace came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -38,7 +37,7 @@ final class BicWrongLength extends BicFailure {
   String toString() => 'BicWrongLength($actualLength)';
 }
 
-/// Something outside `A`-`Z` and `0`-`9` survived normalisation (whitespace is stripped first).
+/// Something outside `A`-`Z` and `0`-`9` got through. Whitespace comes off first.
 final class BicInvalidCharacters extends BicFailure {
   /// Creates the failure.
   const new();
@@ -56,10 +55,10 @@ final class BicInvalidCharacters extends BicFailure {
   String toString() => 'BicInvalidCharacters()';
 }
 
-/// [countryCode] is not an ISO 3166-1 alpha-2 code, so positions 5 and 6 are mistyped. Digits
-/// landing there arrive here too, since they cannot name a country either.
+/// [countryCode] is no ISO 3166-1 alpha-2 code, so positions 5 and 6 are mistyped. Digits landing there
+/// arrive here too, naming no country either.
 final class BicUnknownCountry extends BicFailure {
-  /// The unrecognised fifth and sixth characters.
+  /// The unrecognised 5th and 6th characters.
   final String countryCode;
 
   /// Creates the failure.

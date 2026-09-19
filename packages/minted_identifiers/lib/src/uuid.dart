@@ -8,30 +8,21 @@ import 'package:minted/minted.dart';
 
 import 'failures/uuid_failure.dart';
 
-/// A UUID (Universally Unique IDentifier): 128 bits in the canonical `8-4-4-4-12` hex form, e.g.
-/// `f81d4fae-7dec-11d0-a765-00a0c91e6bf6`.
-/// Standard: [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562), which obsoletes RFC 4122.
+/// A UUID: 128 bits as `8-4-4-4-12` hex, like `f81d4fae-7dec-11d0-a765-00a0c91e6bf6`.
+/// Standard: [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562).
 ///
-/// Parse, don't validate: a [Uuid] exists only if it is a well-formed UUID string. The `uuid`
-/// package generates them into a `String`. This types one that already exists.
+/// The `uuid` package makes them. This types one you already have. There's no checksum, so anything
+/// shaped right gets in, sentinels and all.
 ///
-/// A UUID carries no checksum, so every structurally well-formed one is accepted, including the
-/// [isNil] and [isMax] sentinels and every possible [version] and [variant]. Those two are read
-/// back through accessors, never used to reject input. [nil] and [max] name those two.
-///
-/// Normalisation on parse: surrounding whitespace is trimmed, the hex is lower-cased, and an
-/// optional `urn:uuid:` prefix or surrounding `{…}` is stripped, so [value] is always the bare
-/// lowercase canonical form and mixed-case, URN and brace-wrapped spellings compare equal. [urn]
-/// rebuilds the URN form.
+/// Parsing trims spaces, lower-cases the hex, and drops a `urn:uuid:` prefix or `{…}` wrapper, so all
+/// those spellings compare equal.
 ///
 /// {@example /example/minted_identifiers_example.dart#uuid}
 extension type const Uuid._(String value) {
-  /// Parses [input] as a UUID, or returns `null` unless it is the canonical `8-4-4-4-12` hex form
-  /// (case-insensitive), optionally wrapped as `urn:uuid:…` or `{…}`.
+  /// Parses [input], or `null` if it isn't a UUID.
   static Uuid? tryParse(String input) => parse(input).getOrNull();
 
-  /// Parses [input] as a UUID, reporting [UuidMalformed] unless it is a well-formed UUID string
-  /// (canonical, `urn:uuid:`-prefixed, or brace-wrapped).
+  /// Parses [input], reporting [UuidMalformed] if it isn't a UUID.
   static ParseOutcome<UuidFailure, Uuid> parse(String input) {
     final unwrappedInput = _unwrap(input.trim().toLowerCase());
 
@@ -40,10 +31,8 @@ extension type const Uuid._(String value) {
         : ParseSuccess(._(unwrappedInput));
   }
 
-  /// Builds a [Uuid] from its 16 [bytes] (big-endian, the standard byte order), reporting
-  /// [UuidWrongByteCount] unless there are exactly 16. Every 16-byte sequence is a valid UUID, so
-  /// that is all it rejects. The inverse of [bytes].
-  // Hands the grouped hex to parse rather than re-deriving the verdict: one gate, one vocabulary.
+  /// Builds a [Uuid] from its 16 [bytes], big-endian. The inverse of [bytes].
+  // Goes back through parse so only one place decides what a UUID is.
   static ParseOutcome<UuidFailure, Uuid> fromBytes(Uint8List bytes) => bytes.length != _byteCount
       ? ParseFailure(UuidWrongByteCount(expected: _byteCount, actual: bytes.length))
       : parse(
@@ -55,16 +44,12 @@ extension type const Uuid._(String value) {
           ).join(hyphen),
         );
 
-  /// The UUID version, `0`-`15`: the 4-bit version field (the first hex digit of the third group).
-  ///
-  /// RFC 9562 defines `1` (Gregorian time), `2` (DCE security), `3` (name-based, MD5), `4` (random),
-  /// `5` (name-based, SHA-1), `6` (reordered time), `7` (Unix-epoch time), and `8` (custom). `0` and
-  /// `9`-`15` are unused or reserved. Left as an `int` rather than an enum because it is a raw 4-bit
-  /// field with reserved ranges an enum could not name honestly.
+  /// The version nibble, `0`-`15`: the 3rd group's 1st hex digit. RFC 9562 uses `1`-`8` and reserves
+  /// the rest.
+  // An int, not an enum, because the reserved values have no honest name.
   int get version => int.parse(value[_versionIndex], radix: hexRadix);
 
-  /// The [UuidVariant] this UUID belongs to: the layout family named by the variant bits (the first
-  /// hex digit of the fourth group).
+  /// Which [UuidVariant] the 4th group's 1st hex digit puts this in.
   UuidVariant get variant {
     final nibble = int.parse(value[_variantIndex], radix: hexRadix);
 
@@ -76,33 +61,28 @@ extension type const Uuid._(String value) {
     };
   }
 
-  /// Whether this is the Nil UUID, `00000000-0000-0000-0000-000000000000`: the all-zero sentinel
-  /// RFC 9562 uses to mean "no UUID here".
+  /// Whether this is [nil].
   bool get isNil => value == nil.value;
 
-  /// Whether this is the Max UUID, `ffffffff-ffff-ffff-ffff-ffffffffffff`: the all-ones sentinel
-  /// RFC 9562 uses as an upper bound (e.g. "end of a UUID range").
+  /// Whether this is [max].
   bool get isMax => value == max.value;
 
-  /// The Nil UUID, RFC 9562's all-zero "no UUID here" sentinel.
+  /// All zeros, RFC 9562's "no UUID here".
   static const nil = Uuid._('00000000-0000-0000-0000-000000000000');
 
-  /// The Max UUID, RFC 9562's all-ones sentinel for the top of a UUID range.
+  /// All ones, RFC 9562's top of a UUID range.
   static const max = Uuid._('ffffffff-ffff-ffff-ffff-ffffffffffff');
 
-  /// The URN form, `urn:uuid:<value>`, for use where a UUID is written as a Uniform Resource Name.
+  /// The `urn:uuid:<value>` form.
   String get urn => '$_urnPrefix$value';
 
-  /// The 16 raw bytes (big-endian), the inverse of [fromBytes]. Handy for binary interop (a database
-  /// `uuid` column, a byte protocol) where the hex string would waste space.
+  /// The 16 raw bytes, big-endian. The inverse of [fromBytes], and what a binary column or protocol
+  /// wants instead of the hex.
   Uint8List get bytes => hexBytes(value.replaceAll(hyphen, ''));
 
-  /// Orders two UUIDs lexicographically by their canonical form. For [version] `7`, whose leading
-  /// bits are a timestamp, this is also creation-time order. Extension types cannot implement
-  /// `Comparable<Uuid>`, so this is a plain method rather than the [Comparable] interface.
+  /// Sorts by the canonical text. For a version `7` UUID that's creation order too.
   int compareTo(Uuid other) => value.compareTo(other.value);
 
-  // Strips an optional `urn:uuid:` prefix or a surrounding `{…}` from the already-lowercased input.
   static String _unwrap(String lowerInput) {
     if (lowerInput.startsWith(_urnPrefix)) return lowerInput.substring(_urnPrefix.length);
     if (lowerInput.startsWith(_braceOpen) && lowerInput.endsWith(_braceClose)) {
@@ -119,8 +99,7 @@ extension type const Uuid._(String value) {
   static const _versionIndex = 14;
   static const _variantIndex = 19;
   static const _byteCount = 16;
-  // Cut points bracketing the 4-2-2-2-6 byte groups of the 8-4-4-4-12 hex form (one more than the
-  // group count).
+  // Cut points around the 4-2-2-2-6 byte groups behind the 8-4-4-4-12 hex.
   static const _groupByteBoundaries = [0, 4, 6, 8, 10, _byteCount];
   static const _urnPrefix = 'urn:uuid:';
   static const _braceOpen = '{';
@@ -130,20 +109,18 @@ extension type const Uuid._(String value) {
   static const _futureVariantFloor = 0xe;
 }
 
-/// The variant of a [Uuid]: which layout family it belongs to, named by the variant bits (the first
-/// hex digit of the fourth group). See [RFC 9562 §4.1](https://www.rfc-editor.org/rfc/rfc9562#section-4.1).
+/// Which layout family a [Uuid] belongs to. See [RFC 9562 §4.1](https://www.rfc-editor.org/rfc/rfc9562#section-4.1)
+/// .
 enum UuidVariant {
-  /// Reserved for NCS (Network Computing System) backward compatibility. Variant bits `0xxx`. The
-  /// [Uuid.isNil] sentinel falls here.
+  /// Bits `0xxx`, kept for NCS. [Uuid.nil] lands here.
   ncs,
 
-  /// The layout defined by RFC 9562 (and RFC 4122 before it). Variant bits `10xx`. The variant of
-  /// essentially every UUID in practice.
+  /// Bits `10xx`. What essentially every UUID in the wild is.
   rfc9562,
 
-  /// Reserved for Microsoft backward compatibility. Variant bits `110x`.
+  /// Bits `110x`, kept for Microsoft.
   microsoft,
 
-  /// Reserved for future definition. Variant bits `111x`. The [Uuid.isMax] sentinel falls here.
+  /// Bits `111x`, reserved. [Uuid.max] lands here.
   future,
 }

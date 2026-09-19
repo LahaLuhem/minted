@@ -8,8 +8,8 @@ import 'support/digits.dart';
 
 void main() {
   feature('Isni', () {
-    // The compact sixteen-character form doubles as the expected outcome: a String means "accepted
-    // and normalised to this", null means "rejected". Valid rows are real, published identifiers.
+    // The compact 16-character form doubles as the expected outcome: a String means "accepted and
+    // normalised to this", null means "rejected". Valid rows are real, published identifiers.
     scenarioOutline<({String input, String? canonical})>(
       'Isni.tryParse normalises accepted input and rejects input that fails a check',
       examples: {
@@ -79,8 +79,8 @@ void main() {
       },
     );
 
-    // An ORCID iD is an ISNI from ORCID's block. Reported, never gated: gating would refuse most
-    // of the standard this type exists to hold.
+    // An ORCID iD is an ISNI from ORCID's block. Reported, never gated: gating would refuse most of
+    // the standard this type exists to hold.
     scenarioOutline<({String input, bool isInOrcidBlock})>(
       'an ISNI says whether it is also an ORCID iD',
       examples: {
@@ -96,8 +96,8 @@ void main() {
       },
     );
 
-    // Built rather than transcribed, so each carries a real check character. Sixteen digits
-    // overflow the web's safe integer range, which is why the block test compares text.
+    // Built rather than transcribed, so each carries a real check character. 16 digits overflow
+    // the web's safe integer range, which is why the block test compares text.
     scenario('the block boundary is inclusive at its lower bound', () {
       final atStart = Isni.fromBody(Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 0])!)
           .getOrThrow();
@@ -137,8 +137,8 @@ void main() {
       outline: (example) => check(Isni.parse(example.input).reasonOrNull).equals(example.failure),
     );
 
-    // Pinned because the two mod-11s share a modulus and an X glyph, which makes them look
-    // interchangeable when they are not: mod11CheckCharacter rejects every one of these.
+    // Pinned because the 2 mod-11s share a modulus and an X glyph, which makes them look interchangeable
+    // when they are not: mod11CheckCharacter rejects every one of these.
     scenario('the weighted mod-11 would reject these, so the two algorithms cannot be swapped', () {
       check(Isni.tryParse('0000000218250097')?.value).equals('0000000218250097');
       check(Isni.tryParse('0000000121032683')?.value).equals('0000000121032683');
@@ -154,8 +154,8 @@ void main() {
       check(Isni.tryParse('0000 0001 2103 2683')?.value).equals('0000000121032683');
     });
 
-    // fromBody runs our MOD 11-2 generator; check it reproduces the published check character
-    // rather than round-tripping our own output.
+    // fromBody runs our MOD 11-2 generator, so check it reproduces the published check character rather
+    // than round-tripping our own output.
     scenarioOutline<({String body, String isni})>(
       'fromBody computes the check character to match the published identifier',
       examples: {

@@ -4,10 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why an [Isni] refused its input. Sealed, not an enum, because [IsniWrongLength] reports a value
-/// read from the input.
-///
-/// Three variants: ISO 27729 fixes a length, a charset, and a check character.
+/// Why an [Isni] refused its input. Sealed rather than an enum, because [IsniWrongLength] carries a
+/// number off the input.
 @immutable
 sealed class IsniFailure implements MintedFailure {
   const new();
@@ -16,9 +14,9 @@ sealed class IsniFailure implements MintedFailure {
   String get typeName => 'Isni';
 }
 
-/// Not sixteen characters once separators are stripped, so this is not an ISNI.
+/// Not 16 characters once separators come off.
 final class IsniWrongLength extends IsniFailure {
-  /// How many characters were left once separators were stripped.
+  /// How many characters were left after separators came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -37,8 +35,8 @@ final class IsniWrongLength extends IsniFailure {
   String toString() => 'IsniWrongLength($actualLength)';
 }
 
-/// Something outside `0`-`9` survived normalisation. `X` counts only as the final character, where
-/// it stands for the value ten.
+/// Something outside `0`-`9` got through. `X` counts only as the last character, where it stands for
+/// 10.
 final class IsniInvalidCharacters extends IsniFailure {
   /// Creates the failure.
   const new();
@@ -56,7 +54,7 @@ final class IsniInvalidCharacters extends IsniFailure {
   String toString() => 'IsniInvalidCharacters()';
 }
 
-/// The check character disagrees with the rest: a character is mistyped or transposed.
+/// The check character doesn't match the rest. A character is mistyped or swapped.
 final class IsniChecksumFailed extends IsniFailure {
   /// Creates the failure.
   const new();

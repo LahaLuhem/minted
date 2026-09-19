@@ -27,14 +27,14 @@ another domain's engine.
 
 | Type   | What it guarantees                                                                 | Standard                                                                 |
 |--------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `Uuid` | a well-formed UUID; version and variant read back, Nil/Max recognised              | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)                       |
-| `Isbn` | prefix and check digit; both generations folded to ISBN-13                         | [ISO 2108](https://www.isbn-international.org/content/what-isbn)         |
-| `Imei` | fifteen digits and the Luhn check; TAC and serial read back                        | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
-| `Issn` | eight characters and the mod-11 check; kept in printed `NNNN-NNNC` form            | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
-| `Isni` | sixteen characters and the ISO 7064 MOD 11-2 check; says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/)                                       |
-| `Gtin` | digits, one of the four GS1 lengths, and the mod-10 check digit; folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin)                   |
+| `Uuid` | a well-formed UUID. Version and variant read back, Nil/Max recognised              | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)                       |
+| `Isbn` | prefix and check digit. Both generations folded to ISBN-13                         | [ISO 2108](https://www.isbn-international.org/content/what-isbn)         |
+| `Imei` | 15 digits and the Luhn check. TAC and serial read back                        | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
+| `Issn` | 8 characters and the mod-11 check. Kept in printed `NNNN-NNNC` form            | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
+| `Isni` | 16 characters and the ISO 7064 MOD 11-2 check. Says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/)                                       |
+| `Gtin` | digits, one of the 4 GS1 lengths, and the mod-10 check digit. Folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin)                   |
 
-Each one folds its spellings into a single canonical value, so two ways of writing one identifier
+Each one folds its spellings into a single canonical value, so 2 ways of writing one identifier
 compare equal. `Uuid` is a value type rather than a generator: mint new ones with the
 [`uuid`](https://pub.dev/packages/uuid) package, then type the result here.
 

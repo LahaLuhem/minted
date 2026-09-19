@@ -4,11 +4,10 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [Hostname] refused its input. Sealed, not an enum, because most variants echo the part of
-/// the input that failed.
+/// Why a [Hostname] refused its input. Sealed rather than an enum, because most variants echo the part
+/// of the input that failed.
 ///
-/// Six where most types need three, because RFC 1123 stacks that many independent rules: ASCII, a
-/// charset, two length limits, a label shape, and the not-an-address rule.
+/// Twice the usual 3, because RFC 1123 stacks that many independent rules.
 @immutable
 sealed class HostnameFailure implements MintedFailure {
   const new();
@@ -17,7 +16,7 @@ sealed class HostnameFailure implements MintedFailure {
   String get typeName => 'Hostname';
 }
 
-/// Something outside ASCII survived normalisation, so this may be an internationalised name.
+/// Something outside ASCII got through, so this may be an internationalised name.
 final class HostnameNotAscii extends HostnameFailure {
   /// Creates the failure.
   const new();
@@ -43,7 +42,7 @@ final class HostnameInvalidCharacter extends HostnameFailure {
   /// Creates the failure.
   const new(this.character);
 
-  // An underscore is the one that is valid somewhere else, so it is named rather than lumped in.
+  // An underscore is the one that's valid somewhere else, so it gets named rather than lumped in.
   @override
   String get message => character == '_'
       ? 'an underscore makes this a DNS name, not a hostname'
@@ -60,9 +59,9 @@ final class HostnameInvalidCharacter extends HostnameFailure {
   String toString() => 'HostnameInvalidCharacter($character)';
 }
 
-/// [label] is empty, or opens or closes with a hyphen, which RFC 1123 reserves for the interior.
+/// [label] is empty, or opens or closes with a hyphen, which RFC 1123 keeps for the interior.
 final class HostnameLabelMalformed extends HostnameFailure {
-  /// The offending label, empty when two dots met.
+  /// The offending label, empty when 2 dots met.
   final String label;
 
   /// Creates the failure.
@@ -105,7 +104,7 @@ final class HostnameLabelTooLong extends HostnameFailure {
   String toString() => 'HostnameLabelTooLong($actualLength)';
 }
 
-/// The whole name ran past 253 characters: RFC 1035's 255-octet wire limit, in presentation form.
+/// The whole name ran past 253 characters, RFC 1035's 255-octet wire limit in presentation form.
 final class HostnameTooLong extends HostnameFailure {
   /// How long the name was once normalised.
   final int actualLength;
@@ -126,7 +125,7 @@ final class HostnameTooLong extends HostnameFailure {
   String toString() => 'HostnameTooLong($actualLength)';
 }
 
-/// The last label is all digits, which RFC 1123 says a host name never is. It is an address.
+/// The last label is all digits, which RFC 1123 says a host name never is. That's an address.
 final class HostnameNumericTld extends HostnameFailure {
   /// Creates the failure.
   const new();

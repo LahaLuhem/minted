@@ -1,5 +1,5 @@
 Library-package code style. Project facts (goal, stack, repo layout, hard rules) live in
-[`.ai/AGENTS.md`](./.ai/AGENTS.md); design rationale lives in [`APPENDIX.md`](./APPENDIX.md).
+[`.ai/AGENTS.md`](./.ai/AGENTS.md). Design rationale lives in [`APPENDIX.md`](./APPENDIX.md).
 
 The lint posture is deliberately strict (see [`analysis_options.yaml`](./analysis_options.yaml)).
 The house style values explicit types, no ambient mutability, small focused types, and a
@@ -17,6 +17,7 @@ text, so renames don't break callers.
 - [Class structure](#class-structure)
 - [The value-type contract](#value-type-contract)
 - [Idioms](#idioms)
+- [Prose & voice](#prose)
 - [Comments & dartdoc](#dartdoc)
 - [DCM rules (applied by hand)](#dcm-rules)
 - [Test style](#test-style)
@@ -29,19 +30,19 @@ text, so renames don't break callers.
 ## Type safety & nullability
 
 - **Type-annotate every public symbol.** Inference is fine on locals
-  (`omit_local_variable_types` is on); public surfaces are not the place to rely on it.
+  (`omit_local_variable_types` is on). Public surfaces are not the place to rely on it.
 - **`final` by default for fields and locals.** `prefer_final_fields`, `prefer_final_locals`,
   `prefer_final_in_for_each` are all on. Parameters are not required to be `final`, consistent
   with `avoid_final_parameters` and `parameter_assignments` (which forbids the actual bad
   behaviour: mutating a parameter inside the body).
 - **Nullability is explicit.** Use `T?` everywhere a value can be missing. `cast_nullable_to_non_nullable`
   is on, so `as T` on a `T?` fails lint. In this package the canonical "value can be missing"
-  path is `tryParse`, which returns `T?`; never reach for a cast to launder that nullability away.
+  path is `tryParse`, which returns `T?`. Never reach for a cast to launder that nullability away.
 - **No Java ceremony.** No getter-only abstract base classes, no `AbstractFooFactory`, no
   interface-per-class. Use extension types, immutable classes, sealed classes, records, and
   enums where they add clarity, not weight.
 
-The `dynamic`-escape-hatch ban and the `print()`-in-library ban are contracts, not style; they
+The `dynamic`-escape-hatch ban and the `print()`-in-library ban are contracts, not style, so they
 live under [*Hard rules* in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules).
 
 ---
@@ -51,18 +52,18 @@ live under [*Hard rules* in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules).
 
 - **Capitalise standard acronyms as words in type names.** Effective-Dart and the
   `camel_case_types` lint want `Iban`, `Bic`, `Isbn`, `Ean`, `Gtin`, `Mac`, not `IBAN` / `BIC`.
-  Two-letter acronyms stay fully capitalised (`ID`, `IO`). This is the one place the package
+  2-letter acronyms stay fully capitalised (`ID`, `IO`). This is the one place the package
   deliberately does not spell the standard out: the type name is the well-known identifier.
 - **Expand abbreviations everywhere else.** In code, comments, docstrings, and messages,
-  spell novel domain terms out (`checkDigits`, not `chkDig`; `countryCode`, not `cc`).
+  spell novel domain terms out (`checkDigits`, not `chkDig`, and `countryCode`, not `cc`).
   Widely-known protocol initialisms inside prose (HTTP, DNS, RFC, ISO) stay as-is.
 - **Local variables carry a concise type-suffix.** A reader without IDE inlay-hints can't see
-  an inferred type; the name has to do that work. When a domain type exists, the suffix is the
-  type name (`parsedIban`, not `parsed`; `candidateDigits`, not `candidate`). Callback and
+  an inferred type, so the name has to do that work. When a domain type exists, the suffix is the
+  type name (`parsedIban`, not `parsed`, and `candidateDigits`, not `candidate`). Callback and
   comparator parameters are exempt and stay single-word (`input`, `digit`, `(a, b)`), because
   the call site already pins the type.
 - **In a multi-stage pipeline, name each callback parameter for what the value has *become*.**
-  The exemption above rests on the type being recoverable at the call site; in a chain the type
+  The exemption above rests on the type being recoverable at the call site. In a chain the type
   never changes, so what a reader cannot recover is which filters have already run
   (`candidateRange` → `placeableRange` → `claimingRange` in `PaymentCardNumber.cardSchemesOf`).
   Well worth the small noise, and reuse the surrounding dartdoc's words where it has them.
@@ -82,16 +83,17 @@ final cc = s.substring(0, 2);
 <a id="formatting"></a>
 ## Formatting
 
-- **Wrap text-file content at 100 columns.** [`.editorconfig`](./.editorconfig) is authoritative;
-  Markdown, Dart, and YAML share the same cap. The formatter's `page_width: 100` in
-  `analysis_options.yaml` matches it; keep them aligned if either moves. Dartdoc `///` prose is the
-  exception: the formatter never reflows comments, so soft-wrap it roughly, for smooth break-less
-  reading, rather than hard-capping at 100.
+- **Wrap text-file content at 100 columns.** [`.editorconfig`](./.editorconfig) is authoritative,
+  and Markdown, Dart, and YAML share the same cap. The formatter's `page_width: 100` in
+  `analysis_options.yaml` matches it, so keep them aligned if either moves.
+- **100 is not a strict width for `//` and `///` prose.** The formatter never reflows a comment, so
+  this one is on you: break once the last word over 100 is done, rather than wrapping before it.
+  Markdown is capped, not soft: `rumdl` fails the build at 101.
 - **Blank lines separate logical chunks within a method.** Group the guard checks, the
   normalisation, the validation, and the return with one blank line between groups, so a reader
   can scan past chunks they don't need.
 - **Prefer expression bodies** (`prefer_expression_function_bodies`) and **single quotes**
-  (`prefer_single_quotes`). Parsing factories are frequently one expression; write them as one.
+  (`prefer_single_quotes`). Parsing factories are frequently one expression, so write them as one.
 
 ---
 
@@ -102,7 +104,7 @@ final cc = s.substring(0, 2);
   descriptive identifier: `Iban` length bounds, the Luhn radix, ISO table sizes, and so on.
 - **Keep a type's own constants on that type.** A check-digit modulus or a fixed field width
   belongs as a `static const` on the type that uses it, close to where it is read. Genuinely
-  cross-package constants (shared radices, a shared alphabet) go in core's `lib/src/shared/`; one
+  cross-package constants (shared radices, a shared alphabet) go in core's `lib/src/shared/`. One
   that only a single package reads goes in that package's own helper subfolder (AGENTS.md, repo
   layout). Before introducing a new constant, check whether a shared one already exists.
 
@@ -113,7 +115,7 @@ final cc = s.substring(0, 2);
 
 - **Fields, then constructors, then other members.** A reader scans the state shape first, then
   how to construct it, then how to use it. Unnamed constructor first, then named/factory
-  (matches `sort_unnamed_constructors_first`); static members (including `tryParse` / `parse`)
+  (matches `sort_unnamed_constructors_first`), static members (including `tryParse` / `parse`)
   after the instance members. This applies to both shapes: extension types and immutable classes.
 - **`assert` for dev-time errors, `throw` for runtime ones.** A constraint a caller can see
   violated during development (a private helper handed a negative index) belongs in `assert`:
@@ -135,7 +137,7 @@ This is the headline convention: every type in the package presents the **same**
 consumer learns one shape and applies it everywhere. Rationale is in
 [rationale][apx-parse-dont-validate].
 
-**Two representations, one contract.** The deciding question is **not how many primitives the value
+**2 representations, one contract.** The deciding question is **not how many primitives the value
 spells, but whether its parts are already types this package models**. Where they are, hold them:
 composing from types that carry their own invariants is safer than re-deriving those invariants out
 of text on every accessor, and it is what makes a part impossible to pass in the wrong slot.
@@ -194,7 +196,7 @@ worth naming**. Rationale:
 
 This one ships:
 [`lib/src/geography/geo_coordinate.dart`](./packages/minted_geography/lib/src/geo_coordinate.dart)
-is the sketch filled in, so keep the two in step.
+is the sketch filled in, so keep the 2 in step.
 
 **A second reason to reach for a class, independent of the parts: a delegated `Object` member would
 be wrong for the type.** The delegation an extension type gives you is a feature only while the
@@ -212,7 +214,7 @@ Where a part has no type to become, it stays text. Which shipped type sits where
 
 1. **Private constructor** (`._`). There is no public way to build an instance except
    through parsing, so any instance that exists is well-formed. Never add an *unvalidated* public
-   constructor; it would break the guarantee the whole package sells. (*Primary constructor* has
+   constructor, which would break the guarantee the whole package sells. (*Primary constructor* has
    named a Dart language feature since 3.13, which this package does not use, so this rule is about
    privacy, not syntax. See [rationale][apx-sdk-floor].) A validated named
    factory (`fromComponents`, `fromBody`) that assembles caller-supplied parts and runs the same
@@ -220,8 +222,8 @@ validation before `._` is fine: it's a parsing entry point keyed on parts, not a
 the guarantee holds.
 2. **`static ParseOutcome<F, T> parse(String input)`** is the primary door and never throws: it
    returns the value or the type's own [`MintedFailure`][apx-per-type-failures]. It does
-   the work; the other two derive from it.
-3. **`static T? tryParse(String input)`** is `parse(input).getOrNull()`, so the two can't diverge.
+   the work, and the other 2 derive from it.
+3. **`static T? tryParse(String input)`** is `parse(input).getOrNull()`, so the 2 can't diverge.
    It stays nullable because `??`, `?.` and `whereType` are worth a dedicated path.
 4. **No door throws.** Assembly factories (`fromComponents`, `fromBody`, `fromBytes`, `Date.of`)
    return the same `ParseOutcome` as `parse`, so a caller sees in the signature that the parts can
@@ -230,7 +232,7 @@ the guarantee holds.
    because it is a bug in their source rather than input to handle. Rationale:
    [rationale][apx-claim-in-source].
    **Their parameters take the package's own types, not raw primitives.** A part that is only ever
-   decimal digits is a `Digits`; a part that is genuinely alphanumeric, like an IBAN's `bban`, stays
+   decimal digits is a `Digits`. A part that is genuinely alphanumeric, like an IBAN's `bban`, stays
 a `String`, because `Digits` there would be the wrong type rather than a stronger one. That also
 makes the round trip compose: `Imei.fromComponents(tac: imei.tac, …)` type-checks, because the
 getter hands back what the factory takes. Rationale:
@@ -238,8 +240,8 @@ getter hands back what the factory takes. Rationale:
    **A `Digits` reads as `Digits(978)` when interpolated**, not `978`, since it hand-writes
 `toString`. Interpolating one is silent (no diagnostic), so reach for `.asString` in any rendered
 output.
-5. **Value equality.** Extension types inherit it from the representation for free (see below);
-   classes hand-write `==` + `hashCode` over their parts. No `Equatable` dependency.
+5. **Value equality.** Extension types inherit it from the representation for free (see below),
+   where classes hand-write `==` + `hashCode` over their parts. No `Equatable` dependency.
 6. **A canonical string form.** `.value` for extension types (the representation), a named getter
    (`.iso6709`, `.formatted`) for classes.
 7. **A failure vocabulary**, in the sector's `failures/` directory: one type per value type,
@@ -269,14 +271,14 @@ value, a `case` pattern. Named constants are the only fix, which is why `Month` 
 to `december`. They are also permanent public API, so:
 
 > A type declares constants when consumers need to name an instance at compile time. A value
-> qualifies two ways: it is a member of a **closed domain** the type enumerates, all or none, or
+> qualifies 2 ways: it is a member of a **closed domain** the type enumerates, all or none, or
 > it is a **landmark** the type or its standard already names. Everything else goes through
 > `tryFrom`.
 
 - **Closed domain: all or none, and only where the whole domain is small enough to read.** `Month`
-  names twelve or it names none. A partial set ("the handy ones") is worse than none, because the
+  names 12 or it names none. A partial set ("the handy ones") is worse than none, because the
   gap is invisible at the call site. `Uint2` and `Uint4` enumerate their 4 and 16. `Uint8` upward
-  do not, since 256 names nobody types is noise, so they name their two ends instead.
+  do not, since 256 names nobody types is noise, so they name their 2 ends instead.
 - **Name it what the domain calls it.** A month is called January, so `Month.january`. A digit is
   called `3`, so `Digit.d3`, the prefix there only because an identifier cannot start with a digit.
   A numeral suffix also carries its own value, so a `n0` holding `1` cannot happen.
@@ -289,8 +291,8 @@ to `december`. They are also permanent public API, so:
   `Uint8List`-backed and that has no const constructor, so it gets none.
 - Each constant carries a `///` line, and the type's dartdoc points at the set as `Month`'s does.
 
-**Why:** the demand is real (five public members across three packages hand back a `Digit`, so
-callers compare it against literals), and so is the creep. The two clauses are what keep out a
+**Why:** the demand is real (5 public members across 3 packages hand back a `Digit`, so
+callers compare it against literals), and so is the creep. The 2 clauses are what keep out a
 65,536-member `Uint16` and `AsciiLetter.a` through `.z`.
 
 **Constraint types are not value types either.** The rule that separates them is about standards,
@@ -301,7 +303,7 @@ not numbers:
 `Date` keeps `parse` because ISO 8601 defines `YYYY-MM-DD`. A constrained primitive has no such
 standard, so a parse door would invent one, whether the constraint is a range (`Uint`, `Port`) or a
 unit (`Percentage`, which bounds nothing but finiteness). They declare `tryFrom` and neither parse
-door. Nothing enforces that structurally; the category is a convention this file records. One
+door. Nothing enforces that structurally, so the category is a convention this file records. One
 invariant each leaves nothing a failure could say that `null` doesn't, so they carry none. A type
 still files by domain: `Port` sits in `network/`, not `quantities/`. Rationale:
 [rationale][apx-constraint-types].
@@ -314,13 +316,13 @@ extension-type equality is representation equality, this is what makes `Iban.try
 
 **Extension-type facts you must design around** (verified against the analyzer, not assumed):
 
-- You **cannot** redeclare `toString`, `==`, or `hashCode` on an extension type; they always
+- You **cannot** redeclare `toString`, `==`, or `hashCode` on an extension type. They always
   delegate to the representation. For a `String`-backed type this is a feature: `print(iban)`
-  shows the IBAN, and equality is canonical-string equality. Do not fight it; do not try to
+  shows the IBAN, and equality is canonical-string equality. Do not fight it, and do not try to
   make an extension type print `Iban(...)`. Where you genuinely need the member the delegation
   denies you, that is the signal to reach for a class, per the carve-out above.
 - An `implements` clause only accepts **supertypes of the representation**. `implements Comparable<String>`
-  is legal for a `String`-backed type; `implements Comparable<Iban>` is not. If you need ordering,
+  is legal for a `String`-backed type, `implements Comparable<Iban>` is not. If you need ordering,
   expose a plain `int compareTo(T other)` method rather than the `Comparable` interface.
 - At runtime the instance **is** the representation (`iban is String` is true). There is no
   runtime type discrimination between an `Iban` and a plain `String`. This is why serialization
@@ -356,7 +358,7 @@ Uri.parse('https://example.com/path?q=1')
 
 Default to `List.unmodifiable(…)` (and `Set`/`Map` equivalents) for exposing an immutable
 collection, e.g. an embedded ISO table or a type's set of known values. The constructor copies
-(snapshot semantics); the `…View` only wraps, so anyone still holding the underlying list can
+(snapshot semantics). The `…View` only wraps, so anyone still holding the underlying list can
 mutate it and the view silently follows. Reach for `UnmodifiableListView` only when you
 specifically want a read-through view of private mutable state.
 
@@ -390,7 +392,7 @@ Where the collection is *returned* and callers should not mutate it at all, pref
 
 An embedded table whose order is never consulted and whose rows are unique is a `Set`, not a
 `List`, even when the access pattern is a predicate scan rather than `contains` (so the `Set` buys
-nothing at lookup). The type states the two facts, and a `const` `Set` turns a duplicated row into
+nothing at lookup). The type states the 2 facts, and a `const` `Set` turns a duplicated row into
 `equal_elements_in_const_set` at compile time, where a `List` would quietly scan it twice. Records
 are legal elements: they carry structural equality without overriding `==`, so the const-set
 restriction doesn't apply. `Isbn._booklandPrefixes` and `PaymentCardNumber._schemeRanges` are both
@@ -430,7 +432,7 @@ case and stays: there the collection *is* the result.
 When the code *maps around data* (find one, select many, transform, reduce), prefer a functional
 pipeline (`firstWhereOrNull`, `where`, `map`, `fold`, `any` / `every`, several from
 [`package:collection`](https://pub.dev/packages/collection)) over a hand-written `for` loop. The
-pipeline reads as the data's journey, top to bottom; the loop hides it in accumulate-and-return
+pipeline reads as the data's journey, top to bottom, where the loop hides it in accumulate-and-return
 bookkeeping.
 
 ```dart
@@ -444,12 +446,12 @@ for (final code in IsoCode.values) {
 return null;
 ```
 
-This complements, rather than contradicts, the two neighbouring rules: build a *literal*
+This complements, rather than contradicts, the 2 neighbouring rules: build a *literal*
 collection with a collection-`for` (not `map(…).toList()`), and do *side effects* with a plain
 `for` loop (never `forEach` with a closure, `avoid_function_literals_in_foreach_calls`). The
 pipeline is for the lookup / transform case, where it makes the types' path clearest.
 
-**Generate by index; reduce lazily.** Two shapes of this rule are worth naming, because the
+**Generate by index, reduce lazily.** 2 shapes of this rule are worth naming, because the
 imperative version is the tempting default. For a value *derived by index*, reach for
 `Iterable.generate(count, (i) => …)` over a `for (var i = …; i++)` loop with a mutable cursor. For a
 *transform reduced to one result*, let `.map(…)` feed the reducer (`.join()`, `.fold(…)`, `.any(…)`)
@@ -458,7 +460,7 @@ allocated, there is no cursor or accumulator to track, and each element reads as
 its input.
 
 ```dart
-// Prefer (lazy, no intermediate list; each group is a pure function of its index):
+// Prefer (lazy, no intermediate list, each group a pure function of its index):
 String _grouped(Uint8List bytes) => Iterable.generate(
   _groupByteBoundaries.length - 1,
   (group) => hexDigits(
@@ -519,8 +521,8 @@ only to be taken apart again, and `getRange` keeps each group lazy.
 ### `part` / `part of` only when structurally needed
 
 Legitimate uses: sealed-class cases across files (Dart requires the same library for sealed
-subtypes), code-generation outputs (`*.g.dart`). Avoid it for general organisation; imports are
-explicit, and parts leak `_private` symbols across files. Each value type is one file under
+subtypes), code-generation outputs (`*.g.dart`). Avoid it for general organisation, since imports
+are explicit, and parts leak `_private` symbols across files. Each value type is one file under
 `lib/src/`, with its failure vocabulary in a sibling `failures/` file, and neither needs `part`: a
 sealed hierarchy kept whole in one file already shares a library. Where a failure looks like it
 needs `part` to reach its value type's privates, move the shared piece to `shared/` instead.
@@ -528,12 +530,12 @@ needs `part` to reach its value type's privates, move the shared piece to `share
 <a id="idioms-dot-shorthands"></a>
 ### Static dot shorthands (Dart 3.10+, so stable at the floor)
 
-Where the context type is known, drop the leading type name; the analyzer resolves the member
+Where the context type is known, drop the leading type name. The analyzer resolves the member
 from the parameter, return, or variable type. This covers enum values in patterns and argument
 slots, and named constructors / static factories in a return or context slot.
 
 ```dart
-// enum value in a switch arm — context type is the wrapped engine's error enum (Iban._failureFor):
+// enum value in a switch arm: the context type is the engine's error enum (Iban._failureFor):
 return switch (validationResult.error) {
   .emptyInput || .tooShort => const IbanTooShort(),
   .invalidCharacters => const IbanInvalidCharacters(),
@@ -547,9 +549,31 @@ CardScheme get cardScheme => cardSchemes.singleOrNull ?? .unknown;
 
 Skip it where the context type isn't obvious without re-reading, or where it hurts readability.
 When a prefix disappears from a file entirely, drop it from any `show` clauses too. Note this is
-stable at the floor; primary (declaring) constructors are a separate feature, stable since 3.13 but
+stable at the floor. Primary (declaring) constructors are a separate feature, stable since 3.13 but
 still not used, because `public_member_api_docs` cannot be satisfied on one (see
 [rationale][apx-sdk-floor]).
+
+---
+
+<a id="prose"></a>
+## Prose & voice
+
+**Read <https://noslopgrenade.com/> before writing any prose here.** Open it, don't cite it from
+memory. It is short and it carries the examples and the intent behind every line below.
+
+Covers every surface a person reads: dartdoc, comments, READMEs, APPENDIX entries, commit messages,
+PR and issue bodies.
+
+- Keep it trimmed and compacted to reduce noise. Brief, concise, succinct. No over-explaining.
+- Comment at the call site, rather than a preamble wall-of-text.
+- No need to document what can easily be gleaned from the sites. Also reduces drift risk.
+- Use the Markdown features that improve readability: subsection layout, tables, (un)ordered lists,
+  show-hide sections.
+- Prefer not using technical buzz-words, use ELI18 level instead.
+- No AI-tell-tale signs like em-dashes, `;` and others.
+- Numbers as numerals, not words: `1`, `2`, `1st`, `2nd`. "one" stays where it means single or
+  sole, and "first" where it means earliest rather than a position.
+- Keep the tone informal and light. Give it a natural flow.
 
 ---
 
@@ -560,11 +584,11 @@ Public symbols carry `///` dartdoc that explains *why* and *what guarantee*, not
 *what*: the type already says that. `public_member_api_docs` is on (see
 [hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)). For every type, document its
 normalisation and **link** the standard it enforces (with the clause or edition where it helps),
-preferring a freely-readable URL (an RFC); where the standard is paywalled (ISO), link a reliable
+preferring a freely-readable URL (an RFC). Where the standard is paywalled (ISO), link a reliable
 free reference. The link lives in the dartdoc, which renders on pub.dev and travels with the type,
 not a central table.
 
-**Aim for one or two lines.** A guideline, not a cap: an explanation that earns its length keeps it,
+**Aim for one or 2 lines.** A guideline, not a cap: an explanation that earns its length keeps it,
 and a decision a reader would otherwise question is worth the sentence. What doesn't earn it is
 restating the signature, or rationale that belongs in [`APPENDIX.md`](./APPENDIX.md) behind a
 one-line pointer. Surplus lines are noise the next reader pays for and they bury the comment that
@@ -577,7 +601,7 @@ bank-specific part. Skip the gloss where the term is already plain (`domain`, `c
 ### `@docImport` for dartdoc-only references
 
 When a file needs a symbol only for `[Name]` references in dartdoc, use Dart's dartdoc-only
-directive rather than a real `import`; a regular import declares a runtime dependency and makes
+directive rather than a real `import`, because a regular import declares a runtime dependency and makes
 the import graph lie.
 
 ```dart
@@ -592,11 +616,11 @@ library;
 
 `dart analyze` does not run these, but the project treats them as non-negotiable:
 
-- **`no-empty-block`** — every block must contain code or a `// TODO(handle): …` explaining the
+- **`no-empty-block`:** every block must contain code or a `// TODO(handle): …` explaining the
   gap. Empty `catch` clauses are excused.
-- **`newline-before-return`** — separate a block-final `return` from a preceding non-return
+- **`newline-before-return`:** separate a block-final `return` from a preceding non-return
   statement with one blank line. Inline guards (`if (cond) return null;`) do not need it.
-- **`prefer-commenting-analyzer-ignores`** — every `// ignore:` needs an adjacent `//`
+- **`prefer-commenting-analyzer-ignores`:** every `// ignore:` needs an adjacent `//`
   explanation (dartdoc `///` does not count).
 
 ---
@@ -605,7 +629,7 @@ library;
 ## Test style
 
 - **`package:test` with `package:checks`.** Assertions use `checks` (`check(x).equals(…)`,
-  `.isNull()`, `.throws<…>()`), matching every suite in the package; not `package:matcher`'s
+  `.isNull()`, `.throws<…>()`), matching every suite in the package. Not `package:matcher`'s
   `expect`.
 - **Behavioural framing comes from a local helper, not a framework.**
   [`test/support/bdd.dart`](./packages/minted/test/support/bdd.dart) is a small Gherkin vocabulary over
@@ -627,13 +651,13 @@ library;
   unchanged: standardised types include the official valid vectors plus corrupted variants that
   must be rejected.
 - **Test what we built, not the dependencies.** Assume the wrapped validators (`email_validator`,
-  `iban_validator`, `phone_numbers_parser`) validate correctly; that's their job. Spend the tests on
-  our seams: normalisation, assembly, check-digit *generation*, the failure model (the exception's
+  `iban_validator`, `phone_numbers_parser`) validate correctly, which is their job. Spend the tests
+  on our seams: normalisation, assembly, check-digit *generation*, the failure model (the exception's
   message *and* `source`), and edge cases. Cover failure paths and messages, not just happy-path
   acceptance: a positive-only suite once hid that every parse error read `Invalid String`
   (extension-type erasure of `'$T'`).
 - **`conformance_test.dart` stays structural.** It enforces the contract via the analyzer AST, not
-  behaviour, so it stays plain `group` / `test`; don't wrap it in the behavioural helper.
+  behaviour, so it stays plain `group` / `test`. Don't wrap it in the behavioural helper.
 
 ---
 
@@ -641,10 +665,10 @@ library;
 ## Documentation conventions (Markdown)
 
 - **APPENDIX.md is the source of truth for rationale.** Hard rules, pitfalls, and workflow stay
-  in `.ai/AGENTS.md` and `.ai/CLAUDE.md`; the "why we do it this way" essays live in
+  in `.ai/AGENTS.md` and `.ai/CLAUDE.md`, and the "why we do it this way" essays live in
   [`APPENDIX.md`](./APPENDIX.md).
 - **A decision files with its type.** The root [`APPENDIX.md`](./APPENDIX.md) keeps only what spans
-  the family; everything about one type goes in its package's own `APPENDIX.md`, which ships in that
+  the family. Everything about one type goes in its package's own `APPENDIX.md`, which ships in that
   tarball. Same split for READMEs: core's covers the family, a type's belongs to its sibling.
 - **Cross-file links go reference-style, and a published file links absolutely.** `[label]: url`
   definitions at the foot, `[text][label]` inline, so no URL sets the line width. A package file
@@ -664,14 +688,13 @@ library;
   the existing anchor, or `rg` the repo and update every caller in the same change.
 - **Bare `dart` in command examples, never `fvm dart`.** FVM is a local implementation detail
   (`.fvmrc` pins the SDK). Docs stay tool-agnostic so external contributors aren't forced into
-  FVM; the release tool resolves FVM-vs-PATH itself.
-- **Trim prose to the load-bearing sentence.** The code-comment bar applies to README, APPENDIX and
-  this file too: say the thing, then stop. No restating a point in three phrasings, no caveats
-  nobody asked for. An APPENDIX entry earns more room than a comment, not a licence to ramble.
+  FVM, and the release tool resolves FVM-vs-PATH itself.
+- **Trim prose to the load-bearing sentence.** [Prose & voice](#prose) governs here too. An
+  APPENDIX entry earns more room than a comment, not a licence to ramble.
 - **Never restate a value a source file owns.** Point at the file instead: "the `sdk:` constraint in
-  `pubspec.yaml`", not "`^3.13.0`"; "the channel `.fvmrc` names", not "stable". A copied literal
+  `pubspec.yaml`", not "`^3.13.0`", and "the channel `.fvmrc` names", not "stable". A copied literal
   drifts silently the moment the source moves, which is how APPENDIX came to claim `^3.12.0` after
-  the floor had already gone up. Prose owns the *reason* for a value; the file owns the value.
+  the floor had already gone up. Prose owns the *reason* for a value, and the file owns the value.
   Facts about a release ("the `new` shorthand needs ≥ 3.13") are not pins and stay, since Dart's
   history doesn't move.
 - **British spelling in prose and identifiers** (`normalise`, `canonicalise`, `behaviour`), with
@@ -683,7 +706,7 @@ library;
 <a id="shell-scripts"></a>
 ## Shell in workflows
 
-The repo holds no `.sh` files; the release flow is [`tool/release.dart`](./tool/README.md). The
+The repo holds no `.sh` files, the release flow being [`tool/release.dart`](./tool/README.md). The
 only shell left is `run:` blocks under `.github/workflows/`.
 
 - **`actionlint` is the lint contract** for those blocks, and it shellchecks each one, which is why
@@ -693,7 +716,7 @@ only shell left is `run:` blocks under `.github/workflows/`.
   set (actionlint, rumdl, ryl) and the image tag from one manifest,
   [`.github/lint-checks.json`](.github/lint-checks.json), so neither can drift from the other.
 - **Prefer `# shellcheck disable=SC<code>` + a one-line "why" over refactoring for simple cases.**
-  Refactor when the warning points at a real bug; reach for the directive when the code is correct
+  Refactor when the warning points at a real bug, and reach for the directive when the code is correct
   and ShellCheck is just over-conservative. Always pair the directive with a comment.
 
 [apx-behavioural-tests-helper]: ./APPENDIX.md#behavioural-tests-helper

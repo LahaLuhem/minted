@@ -1,6 +1,6 @@
 import 'package:minted/internal.dart';
 
-/// A proportion in hundredths, where `15` is fifteen percent.
+/// A proportion in hundredths, where `15` is 15 percent.
 ///
 /// `15` or `0.15` for the same proportion is plausible either way and checkable at no call site, so
 /// [tryFrom] takes the percent and [tryFromFraction] the fraction.
@@ -9,30 +9,28 @@ import 'package:minted/internal.dart';
 /// > **Deliberately unbounded.** 250% growth and -12% churn are real values, so the only invariant
 /// > is finiteness. Why: `APPENDIX.md#percentage-constraint-type`.
 ///
-/// Does not implement `double`, unlike its neighbours: [value] is the percent, so
-/// `percentage * 200` computes 3000 while reading as fifteen percent of 200. [of] means it.
-///
-/// [value] is the percent. The string form is `value.toString()`.
+/// Does not implement `double`, unlike its neighbours: [value] is the percent, so `percentage * 200`
+/// computes 3000 while reading as 15 percent of 200. [of] means it.
 ///
 /// {@example /example/minted_constraints_example.dart#percentage}
 extension type const Percentage._(double value) {
-  /// The [Percentage] of [percent] hundredths (`15` is fifteen percent), or `null` unless finite.
+  /// The [Percentage] of [percent] hundredths (`15` is 15 percent), or `null` unless finite.
   static Percentage? tryFrom(num percent) =>
       percent.isFinite ? ._(positiveZeroed(percent.toDouble())) : null;
 
-  /// The [Percentage] equal to [fraction] of the whole (`0.15` is fifteen percent), or `null`
-  /// unless finite.
+  /// The [Percentage] equal to [fraction] of the whole (`0.15` is 15 percent), or `null` unless
+  /// finite.
   static Percentage? tryFromFraction(num fraction) =>
       fraction.isFinite ? tryFrom(_hundredfold(fraction.toDouble())) : null;
 
-  /// This percentage as a fraction of the whole: `0.15` for fifteen percent.
+  /// This percentage as a fraction of the whole: `0.15` for 15 percent.
   double get fraction => value / _percentPerWhole;
 
-  /// This percentage of [quantity]: fifteen percent `.of(200)` is `30`.
+  /// This percentage of [quantity]: 15 percent `.of(200)` is `30`.
   double of(num quantity) => quantity * value / _percentPerWhole;
 
-  // A decimal shift, not a multiply: `0.29 * 100` is 28.999999999999996. The non-finite guard runs
-  // first, because a NaN has no exponent to bump. Why: `APPENDIX.md#percentage-constraint-type`.
+  // A decimal shift, not a multiply: `0.29 * 100` is 28.999999999999996. The non-finite guard runs first,
+  // because a NaN has no exponent to bump. Why: `APPENDIX.md#percentage-constraint-type`.
   static double _hundredfold(double fraction) {
     final [mantissa, exponent] = fraction.toStringAsExponential().split('e');
 

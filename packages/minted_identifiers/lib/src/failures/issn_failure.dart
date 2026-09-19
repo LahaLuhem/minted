@@ -4,10 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why an [Issn] refused its input. Sealed, not an enum, because [IssnWrongLength] reports a value
-/// read from the input.
-///
-/// Three variants: ISO 3297 gives an ISSN a charset, one length, and a check character.
+/// Why an [Issn] refused its input. Sealed rather than an enum, because [IssnWrongLength] carries a
+/// number off the input.
 @immutable
 sealed class IssnFailure implements MintedFailure {
   const new();
@@ -16,9 +14,9 @@ sealed class IssnFailure implements MintedFailure {
   String get typeName => 'Issn';
 }
 
-/// Not eight characters once the hyphen and any spaces are stripped, so this is not an ISSN.
+/// Not 8 characters once the hyphen and any spaces come off.
 final class IssnWrongLength extends IssnFailure {
-  /// How many characters were left once separators were stripped.
+  /// How many characters were left after separators came off.
   final int actualLength;
 
   /// Creates the failure.
@@ -37,8 +35,8 @@ final class IssnWrongLength extends IssnFailure {
   String toString() => 'IssnWrongLength($actualLength)';
 }
 
-/// Something outside `0`-`9` survived normalisation (the hyphen and spaces are stripped first). `X`
-/// counts only as the final character, where it stands for the value ten.
+/// Something outside `0`-`9` got through. `X` counts only as the last character, where it stands for
+/// 10.
 final class IssnInvalidCharacters extends IssnFailure {
   /// Creates the failure.
   const new();
@@ -56,7 +54,7 @@ final class IssnInvalidCharacters extends IssnFailure {
   String toString() => 'IssnInvalidCharacters()';
 }
 
-/// The check character disagrees with the rest of the number: a character is mistyped or transposed.
+/// The check character doesn't match the rest. A character is mistyped or swapped.
 final class IssnChecksumFailed extends IssnFailure {
   /// Creates the failure.
   const new();

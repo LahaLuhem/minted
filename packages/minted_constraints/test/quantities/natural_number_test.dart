@@ -5,7 +5,7 @@ import '../support/bdd.dart';
 
 void main() {
   feature('NaturalNumber', () {
-    // The expected `.value` doubles as the outcome; null means the input was rejected.
+    // The expected `.value` doubles as the outcome. Null means the input was rejected.
     scenarioOutline<({int input, int? value})>(
       'NaturalNumber.tryFrom accepts one and up, and rejects zero and below',
       examples: {

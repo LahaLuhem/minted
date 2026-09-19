@@ -15,7 +15,7 @@ enum BumpType {
 
   /// The version this bump produces from [current].
   ///
-  /// Pre-release and build metadata are dropped, matching cider, so the two can cross-check.
+  /// Pre-release and build metadata are dropped, matching cider, so the 2 can cross-check.
   String applyTo(String current) {
     if (!semverPattern.hasMatch(current)) {
       throw ArgumentError.value(current, 'current', 'not a SemVer version');

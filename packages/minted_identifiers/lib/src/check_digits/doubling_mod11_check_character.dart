@@ -6,12 +6,10 @@ const _checkOffset = 12; // one more than the modulus, so a zero remainder yield
 const _tenValue = 10;
 const _tenGlyph = 'X'; // ten has to fit in one character
 
-/// The ISO 7064 MOD 11-2 check character for [bodyDigits], assumed already separator-free. `0`-`9`,
-/// or `X` where the value is ten.
+/// The ISO 7064 MOD 11-2 check character for [bodyDigits], `0`-`9` or `X` for 10. Assumed separator-free.
 ///
-/// Not interchangeable with `mod11_check_character.dart` despite the shared modulus and `X`: this
-/// doubles a running total where that one weights by position, and they agree on nothing.
-/// Why: `APPENDIX.md#isni-value-type`.
+/// Not the same thing as `mod11_check_character.dart`, despite the shared modulus and `X`. They agree
+/// on nothing. Why: `APPENDIX.md#isni-value-type`.
 String doublingMod11CheckCharacter(String bodyDigits) {
   final total = bodyDigits.codeUnits.fold(
     0,

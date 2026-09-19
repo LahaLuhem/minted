@@ -4,8 +4,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [Uuid] refused its input. Sealed, not an enum, because [UuidWrongByteCount] reports a
-/// count known only per call.
+/// Why a [Uuid] refused its input. Sealed rather than an enum, because [UuidWrongByteCount] carries
+/// a count known only per call.
 @immutable
 sealed class UuidFailure implements MintedFailure {
   const new();
@@ -14,7 +14,7 @@ sealed class UuidFailure implements MintedFailure {
   String get typeName => 'Uuid';
 }
 
-/// The text is not the canonical `8-4-4-4-12` hex form, wrapped or otherwise.
+/// The text isn't `8-4-4-4-12` hex, wrapped or not.
 final class UuidMalformed extends UuidFailure {
   /// Creates the failure.
   const new();
@@ -32,13 +32,13 @@ final class UuidMalformed extends UuidFailure {
   String toString() => 'UuidMalformed()';
 }
 
-/// [Uuid.fromBytes] got other than 16 bytes. Every 16-byte sequence is a valid UUID, so length is
-/// all it can reject.
+/// [Uuid.fromBytes] got something other than 16 bytes. Every 16-byte sequence is a valid UUID, so length
+/// is all it can turn down.
 final class UuidWrongByteCount extends UuidFailure {
   /// The byte count a UUID always has, `16`.
   final int expected;
 
-  /// How many bytes were supplied.
+  /// How many bytes turned up.
   final int actual;
 
   /// Creates the failure.
