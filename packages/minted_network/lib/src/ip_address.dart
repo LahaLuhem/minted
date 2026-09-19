@@ -116,6 +116,50 @@ enum IpVersion {
   v6,
 }
 
+//==================================== CIDR NETWORK ADDRESSES ====================================//
+// A const `Cidr` needs a const [IpAddress], and only this library can mint one. Top-level rather than
+// members of [IpAddress] because nobody wants `10.0.0.0` on its own, so the barrel hides them: add a
+// name here and its `hide` entry together, or it lands in the public API.
+
+/// The network address of `10.0.0.0/8`.
+const private10Network = IpAddress._('10.0.0.0');
+
+/// The network address of `172.16.0.0/12`.
+const private172Network = IpAddress._('172.16.0.0');
+
+/// The network address of `192.168.0.0/16`.
+const private192Network = IpAddress._('192.168.0.0');
+
+/// The network address of `fc00::/7`.
+const uniqueLocalV6Network = IpAddress._('fc00::');
+
+/// The network address of `100.64.0.0/10`.
+const sharedAddressNetwork = IpAddress._('100.64.0.0');
+
+/// The network address of `169.254.0.0/16`.
+const linkLocalV4Network = IpAddress._('169.254.0.0');
+
+/// The network address of `fe80::/10`.
+const linkLocalV6Network = IpAddress._('fe80::');
+
+/// The network address of `224.0.0.0/4`.
+const multicastV4Network = IpAddress._('224.0.0.0');
+
+/// The network address of `ff00::/8`.
+const multicastV6Network = IpAddress._('ff00::');
+
+/// The network address of `192.0.2.0/24`.
+const docV4_1Network = IpAddress._('192.0.2.0');
+
+/// The network address of `198.51.100.0/24`.
+const docV4_2Network = IpAddress._('198.51.100.0');
+
+/// The network address of `203.0.113.0/24`.
+const docV4_3Network = IpAddress._('203.0.113.0');
+
+/// The network address of `2001:db8::/32`.
+const docV6Network = IpAddress._('2001:db8::');
+
 // minted owns the grammar because the engine's part gates are `int.tryParse`, which lets signs and
 // whitespace through. Why: `APPENDIX.md#ip-address-value-type`.
 IpAddressFailure? _failureFor(String normalisedInput) => normalisedInput.contains(_hextetSeparator)
