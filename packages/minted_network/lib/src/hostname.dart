@@ -78,4 +78,29 @@ extension type const Hostname._(String value) {
       label.isEmpty || label.startsWith(hyphen) || label.endsWith(hyphen);
 
   static final _allowed = RegExp('[0-9a-z.-]');
+
+  ///////////////////////////// RFC 2606 — Reserved Top Level DNS Names /////////////////////////////
+
+  static const localhost = Hostname._('localhost');
+  static const test = Hostname._('test');
+  static const invalid = Hostname._('invalid');
+  static const example = Hostname._('example');
+
+  /////////////////////////// RFC 2606 — Reserved 2nd-Level Domain Names ///////////////////////////
+  static const exampleCom = Hostname._('example.com');
+  static const exampleNet = Hostname._('example.net');
+  static const exampleOrg = Hostname._('example.org');
+
+  ////////////////////// RFC 6761 — Special-Use Domain Names (seeded registry) //////////////////////
+  /// mDNS / link-local
+  static const local = Hostname._('local');
+  // ICANN private-use TLD (not RFC 6761)
+  static const internal = Hostname._('internal');
+
+  /////////////////////////// Widely adopted conventions (no single RFC) ///////////////////////////
+  static const localhostLocaldomain = Hostname._('localhost.localdomain');
+  static const localdomain = Hostname._('localdomain');
+  static const lan = Hostname._('lan');
+  static const home = Hostname._('home');
+  static const corp = Hostname._('corp');
 }
