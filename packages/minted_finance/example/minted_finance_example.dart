@@ -24,12 +24,12 @@ void main() {
 
   // A class, not an extension type, so its rendered form masks the number. Printing can't leak.
   // #region card
-  final card = PaymentCardNumber.tryParse('4111 1111 1111 1111')!;
-  print(card); // PaymentCardNumber(••••1111)
-  print(card.masked); // ••••1111
+  final card = PaymentCardNumber.tryParse('4242 4242 4242 4242')!;
+  print(card); // PaymentCardNumber(••••4242)
+  print(card.masked); // ••••4242
   print(card.cardScheme); // CardScheme.visa  (read off the prefix, never validated)
   print(PaymentCardNumber.cardSchemesOf('4')); // {CardScheme.visa}  (answers while you type)
-  print(PaymentCardNumber.tryParse('4111111111111112')); // null (fails the Luhn check)
+  print(PaymentCardNumber.tryParse('4242424242424243')); // null (fails the Luhn check)
   // #endregion
 
   // Runs Luhn over the number with its letters expanded to 2 digits each, so a letter in the NSIN
