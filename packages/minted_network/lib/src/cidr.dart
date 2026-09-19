@@ -86,53 +86,104 @@ final class Cidr {
   @override
   String toString() => 'Cidr(network: ${network.value}, prefixLength: $prefixLength)';
 
-  // Split out so parse reads as its 2 stages: the address, then everything the address decides.
-  static ParseOutcome<CidrFailure, Cidr> _withPrefix(IpAddress network, String prefixText) {
-    if (!digitsOnly.hasMatch(prefixText)) return const ParseFailure(CidrMalformed());
+  // A block, not an address: what [IpAddress] used to carry until a `/` turned out not to parse there.
+  //======================================== PRIVATE USE =========================================//
 
-    final maxPrefixLength = _maxPrefixLengthFor(network.version);
-    final prefixLength = int.parse(prefixText);
-    if (prefixLength > maxPrefixLength) {
-      return ParseFailure(
-        CidrPrefixLengthOutOfRange(maxPrefixLength: maxPrefixLength, actual: prefixLength),
-      );
-    }
+  /// `10.0.0.0/8`, the largest RFC 1918 block.
+  static const private10 = Cidr._(private10Network, 8);
 
-    final masked = _masked(network, prefixLength);
+  /// `172.16.0.0/12`, the middle RFC 1918 block.
+  static const private172 = Cidr._(private172Network, 12);
 
-    return masked != network
-        ? ParseFailure(CidrHostBitsSet('${masked.value}$_prefixSeparator$prefixLength'))
-        : ParseSuccess(Cidr._(network, prefixLength));
-  }
+  /// `192.168.0.0/16`, the RFC 1918 block home routers hand out of.
+  static const private192 = Cidr._(private192Network, 16);
 
-  // As lastAddress: the octets come from a parsed address, so the count is already right.
-  static IpAddress _masked(IpAddress address, int prefixLength) {
-    final octets = address.octets;
+  /// `fc00::/7`, unique local addresses, which is v6's answer to RFC 1918. RFC 4193.
+  static const uniqueLocalV6 = Cidr._(uniqueLocalV6Network, 7);
 
-    return IpAddress.fromOctets(
-      Uint8List.fromList([
-        for (var index = 0; index < octets.length; index++)
-          octets[index] & _octetMask(index, prefixLength),
-      ]),
-    ).getOrThrow();
-  }
+  //==================================== SHARED ADDRESS SPACE ====================================//
 
-  // The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max rather
-  // than clamp, which is declared on num and would widen the shift operand.
-  static int _octetMask(int index, int prefixLength) {
-    final coveredBits = min(max(prefixLength - index * bitsPerOctet, 0), bitsPerOctet);
+  /// `100.64.0.0/10`, for carrier-grade NAT. RFC 6598 keeps this separate from RFC 1918 because it
+  /// sits on the provider's side, so a subscriber can still use `10.0.0.0/8` behind it.
+  static const sharedAddress = Cidr._(sharedAddressNetwork, 10);
 
-    return _allOctetBits << (bitsPerOctet - coveredBits) & _allOctetBits;
-  }
+  //========================================= LINK-LOCAL =========================================//
 
-  static int _maxPrefixLengthFor(IpVersion version) => switch (version) {
-    .v4 => _maxV4PrefixLength,
-    .v6 => _maxV6PrefixLength,
-  };
+  /// `169.254.0.0/16`, self-assigned when DHCP does not answer. RFC 3927.
+  static const linkLocalV4 = Cidr._(linkLocalV4Network, 16);
 
-  static const _prefixSeparator = '/';
-  static const _partCount = 2;
-  static const _allOctetBits = 0xff;
-  static const _maxV4PrefixLength = 32;
-  static const _maxV6PrefixLength = 128;
+  /// `fe80::/10`, which every v6 interface has one of whether or not it is configured. RFC 4291.
+  static const linkLocalV6 = Cidr._(linkLocalV6Network, 10);
+
+  //========================================= MULTICAST ==========================================//
+
+  /// `224.0.0.0/4`, the old class D. RFC 5771.
+  static const multicastV4 = Cidr._(multicastV4Network, 4);
+
+  /// `ff00::/8`. v6 has no broadcast, so this covers what broadcast used to do. RFC 4291.
+  static const multicastV6 = Cidr._(multicastV6Network, 8);
+
+  //======================================= DOCUMENTATION ========================================//
+
+  /// `192.0.2.0/24`, which RFC 5737 calls TEST-NET-1.
+  static const docV4_1 = Cidr._(docV4_1Network, 24);
+
+  /// `198.51.100.0/24`, TEST-NET-2.
+  static const docV4_2 = Cidr._(docV4_2Network, 24);
+
+  /// `203.0.113.0/24`, TEST-NET-3.
+  static const docV4_3 = Cidr._(docV4_3Network, 24);
+
+  /// `2001:db8::/32`, the v6 documentation block. RFC 3849.
+  static const docV6 = Cidr._(docV6Network, 32);
 }
+
+// Split out so parse reads as its 2 stages: the address, then everything the address decides.
+ParseOutcome<CidrFailure, Cidr> _withPrefix(IpAddress network, String prefixText) {
+  if (!digitsOnly.hasMatch(prefixText)) return const ParseFailure(CidrMalformed());
+
+  final maxPrefixLength = _maxPrefixLengthFor(network.version);
+  final prefixLength = int.parse(prefixText);
+  if (prefixLength > maxPrefixLength) {
+    return ParseFailure(
+      CidrPrefixLengthOutOfRange(maxPrefixLength: maxPrefixLength, actual: prefixLength),
+    );
+  }
+
+  final masked = _masked(network, prefixLength);
+
+  return masked != network
+      ? ParseFailure(CidrHostBitsSet('${masked.value}$_prefixSeparator$prefixLength'))
+      : ParseSuccess(Cidr._(network, prefixLength));
+}
+
+// As lastAddress: the octets come from a parsed address, so the count is already right.
+IpAddress _masked(IpAddress address, int prefixLength) {
+  final octets = address.octets;
+
+  return IpAddress.fromOctets(
+    Uint8List.fromList([
+      for (var index = 0; index < octets.length; index++)
+        octets[index] & _octetMask(index, prefixLength),
+    ]),
+  ).getOrThrow();
+}
+
+// The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max rather
+// than clamp, which is declared on num and would widen the shift operand.
+int _octetMask(int index, int prefixLength) {
+  final coveredBits = min(max(prefixLength - index * bitsPerOctet, 0), bitsPerOctet);
+
+  return _allOctetBits << (bitsPerOctet - coveredBits) & _allOctetBits;
+}
+
+int _maxPrefixLengthFor(IpVersion version) => switch (version) {
+  .v4 => _maxV4PrefixLength,
+  .v6 => _maxV6PrefixLength,
+};
+
+const _prefixSeparator = '/';
+const _partCount = 2;
+const _allOctetBits = 0xff;
+const _maxV4PrefixLength = 32;
+const _maxV6PrefixLength = 128;

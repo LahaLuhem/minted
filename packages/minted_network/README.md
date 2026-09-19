@@ -103,14 +103,19 @@ Port.https.range;                   // PortRange.system
 Hostname.exampleCom.fqdn;           // 'example.com.'
 IpAddress.loopbackV6.isLoopback;    // true
 MacAddress.broadcast.isBroadcast;   // true
+Cidr.private10.contains(address);   // masks bits, so 100.0.0.1 is not in 10.0.0.0/8
 ```
 
-| Type         | What it names                                                                      |
-|--------------|------------------------------------------------------------------------------------|
-| `Port`       | the wildcard, the services IANA registers, and a handful of dev-server habits      |
-| `Hostname`   | RFC 2606's reserved names, whole, plus mDNS `local` and the usual private suffixes |
-| `IpAddress`  | single addresses only: the 2 unspecified, the 2 loopbacks, limited broadcast       |
+| Type         | What it names                                                                          |
+|--------------|----------------------------------------------------------------------------------------|
+| `Port`       | the wildcard, the services IANA registers, and a handful of dev-server habits          |
+| `Hostname`   | RFC 2606's reserved names, whole, plus mDNS `local` and the usual private suffixes     |
+| `IpAddress`  | single addresses only: the 2 unspecified, the 2 loopbacks, limited broadcast           |
+| `Cidr`       | the blocks: RFC 1918 and unique-local, CGN, link-local, multicast, the documentation 4 |
 | `MacAddress` | the null and broadcast sentinels, IANA's `00-00-5E` blocks, the 802.1D group addresses |
+
+A range lives on `Cidr`, never on `IpAddress`: `10.0.0.0/8` is not an address and `IpAddress.parse`
+refuses it.
 
 > **Some of these are habit, not standard.** `Port.django` is 8000 because Django's dev server picks
 > it, and IANA has 8000 registered as `irdmi`. Each one says so in its own doc comment. Treat a match

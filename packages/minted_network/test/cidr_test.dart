@@ -4,6 +4,25 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
+// A const context, so the file failing to build is the assertion: these must stay `static const`.
+// Every declared constant belongs here. A List, not a Set: Cidr overrides `==`, which a const Set
+// refuses, so the duplicate check the other types get is not available here.
+const namedBlocks = <Cidr>[
+  .private10,
+  .private172,
+  .private192,
+  .uniqueLocalV6,
+  .sharedAddress,
+  .linkLocalV4,
+  .linkLocalV6,
+  .multicastV4,
+  .multicastV6,
+  .docV4_1,
+  .docV4_2,
+  .docV4_3,
+  .docV6,
+];
+
 void main() {
   feature('Cidr', () {
     // The canonical form doubles as the expected outcome. Null means rejected. Blocks come from the
@@ -197,6 +216,26 @@ void main() {
           .isA<CidrHostBitsSet>();
       check(Cidr.from(network: network, prefixLength: 33).reasonOrNull)
           .isA<CidrPrefixLengthOutOfRange>();
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final block in namedBlocks) {
+        check(
+          Cidr.tryParse(block.asString)?.asString,
+          because: 'named constant $block',
+        ).equals(block.asString);
+      }
+    });
+
+    // The host bits a Cidr refuses on the way in have to be clear on a constant too, and a constant
+    // is the one path that never went through parse.
+    scenario('no named constant carries host bits below its prefix', () {
+      for (final block in namedBlocks) {
+        check(
+          Cidr.from(network: block.network, prefixLength: block.prefixLength).reasonOrNull,
+          because: 'named constant $block',
+        ).isNull();
+      }
     });
 
     scenario('equal blocks are equal by value and hash, and differ by either part', () {
