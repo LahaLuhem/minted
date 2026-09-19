@@ -74,6 +74,17 @@ Isni.tryParse('0000-0002-1825-0097')!.isInOrcidBlock;   // true
 The runnable version is the
 [example](https://github.com/LahaLuhem/minted/blob/main/packages/minted_identifiers/example/minted_identifiers_example.dart).
 
+## Named constants
+
+```dart
+Uuid.nil.value;                      // '00000000-0000-0000-0000-000000000000'
+Gtin.restrictedCirculation.gtin13;   // '2000000000008'
+```
+
+`Uuid.nil` and `Uuid.max` are the 2 special-case UUIDs RFC 9562 defines. `Gtin.restrictedCirculation`
+sits in GS1's `20`-`29` range, which stays inside one company rather than going into global
+circulation, so unlike an example lifted from a barcode tutorial it names no real product.
+
 ## One shape, every type
 
 - `Type.tryParse(input)` hands back the value, or `null` when the input isn't valid
