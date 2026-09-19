@@ -26,11 +26,14 @@ extension type const Port._(int value) implements Uint16 {
   static const _systemCeiling = 1023;
   static const _userCeiling = 49151;
 
+  // Grouped by who named them, not by band, since `range` reads the band back anyway.
+  //========================================== RESERVED ==========================================//
+
   /// Port `0`, which asks the OS to pick a free port on `bind`.
   static const wildcard = Port._(0);
 
-  // Grouped by who named them, not by band: `range` reads the band back anyway. These first ones
-  // are IANA's service registry, under the same name.
+  //====================================== IANA-REGISTERED =======================================//
+  // The service registry carries each of these under the same name.
 
   /// FTP's data channel. RFC 959.
   static const ftpData = Port._(20);
@@ -80,8 +83,9 @@ extension type const Port._(int value) implements Uint16 {
   /// MongoDB, registered by its own authors.
   static const mongodb = Port._(27017);
 
-  // Our names, not IANA's: each of these is registered to some other service. Widespread, not
-  // standard, so treat a match as a hint rather than proof of what is listening.
+  //======================================== CONVENTIONAL ========================================//
+  // Our names, not IANA's: each of these is registered to some other service. Widespread, not standard,
+  // so treat a match as a hint rather than proof of what is listening.
 
   /// The Node dev-server habit, out of create-react-app and Express. IANA has 3000 as `hbci`.
   static const nodeDev = Port._(3000);

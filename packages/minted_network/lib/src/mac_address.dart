@@ -93,7 +93,7 @@ extension type const MacAddress._(String value) {
   bool _firstOctetHas(int bitMask) =>
       int.parse(value.substring(0, hexDigitsPerByte), radix: hexRadix) & bitMask != 0;
 
-  // IEEE Std 802.3 sentinels.
+  //========================================= SENTINELS ==========================================//
 
   /// Names no interface. IEEE Std 802.3 calls it the null address.
   static const allZeros = MacAddress._('00:00:00:00:00:00');
@@ -101,8 +101,9 @@ extension type const MacAddress._(String value) {
   /// Every station on the link, which [isBroadcast] tests for.
   static const broadcast = MacAddress._('ff:ff:ff:ff:ff:ff');
 
-  // The IANA OUI, 00-00-5E and its 01-00-5E multicast twin, which RFC 9542 §2.1 splits into blocks
-  // of 256. Each name is a block's first address, so it is a landmark rather than a membership test.
+  //====================================== IANA OUI BLOCKS =======================================//
+  // 00-00-5E and its 01-00-5E multicast twin, which RFC 9542 §2.1 splits into blocks of 256. Each
+  // name is a block's first address, so it is a landmark rather than a membership test.
 
   /// Reserved, handed out only on IESG ratification.
   static const ianaReserved = MacAddress._('00:00:5e:00:00:00');
@@ -116,27 +117,28 @@ extension type const MacAddress._(String value) {
   /// Multicast documentation.
   static const ianaDocMulticast = MacAddress._('01:00:5e:90:10:00');
 
-  // IEEE Std 802.1D / 802.1Q group addresses, which bridges consume rather than forward.
+  //=================================== BRIDGE GROUP ADDRESSES ===================================//
+  // IEEE Std 802.1D does not relay a frame addressed in this range, so a bridge consumes it.
 
-  /// Spanning Tree BPDUs, and the nearest customer bridge.
+  /// The bridge group address, and the nearest customer bridge.
   static const stpBridgeGroup = MacAddress._('01:80:c2:00:00:00');
 
-  /// MAC-specific control, so PAUSE frames.
+  /// IEEE MAC-specific control protocols.
   static const macControlGroup = MacAddress._('01:80:c2:00:00:01');
 
-  /// Slow Protocols: LACP, link OAM.
+  /// The IEEE 802.3 slow protocols address.
   static const slowProtocols = MacAddress._('01:80:c2:00:00:02');
 
-  /// The nearest non-TPMR bridge, which 802.1X PAE and 802.1AE address.
+  /// The nearest non-TPMR bridge, which is also the 802.1X PAE address.
   static const nearestNonTpmr = MacAddress._('01:80:c2:00:00:03');
 
   /// The provider bridge group.
   static const providerBridge = MacAddress._('01:80:c2:00:00:08');
 
-  /// MVRP, the provider bridge flavour.
+  /// The provider bridge MVRP address.
   static const providerMvrp = MacAddress._('01:80:c2:00:00:0d');
 
-  /// The nearest bridge, which LLDP and 802.1AS address.
+  /// The nearest bridge, and the individual LAN scope group address.
   static const nearestBridge = MacAddress._('01:80:c2:00:00:0e');
 }
 

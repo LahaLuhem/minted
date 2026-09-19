@@ -79,7 +79,8 @@ extension type const Hostname._(String value) {
 
   static final _allowed = RegExp('[0-9a-z.-]');
 
-  // RFC 2606 reserves these, and both of its sets are here whole.
+  //===================================== RFC 2606 RESERVED ======================================//
+  // Both of its sets, whole: 4 top-level names in §2 and 3 second-level ones in §3.
 
   /// The loopback name, which resolves without asking a nameserver.
   static const localhost = Hostname._('localhost');
@@ -102,12 +103,15 @@ extension type const Hostname._(String value) {
   /// `example.org`, reserved for documentation.
   static const exampleOrg = Hostname._('example.org');
 
+  //======================================== SPECIAL-USE =========================================//
+
   /// Multicast DNS, so a name resolved by shouting on the local link. RFC 6762.
   static const local = Hostname._('local');
 
   /// Private-use TLD, reserved by ICANN in 2024 rather than by an RFC.
   static const internal = Hostname._('internal');
 
+  //======================================== CONVENTIONAL ========================================//
   // Habits, not standards. Nothing reserves these, so treat a match as a hint, never as proof.
 
   /// The `/etc/hosts` loopback line most Linux distributions ship.
