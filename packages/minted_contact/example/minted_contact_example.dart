@@ -12,6 +12,10 @@ void main() {
   print(email.mailtoUri); // mailto:Jane.Doe@example.com
 
   print(Email.tryParse('not-an-email')); // null
+
+  // A named constant is const, so it reaches where `Email.tryParse(...)!` cannot.
+  const escalation = <Email>[.abuse, .security];
+  print(escalation.map((mailbox) => mailbox.localPart)); // (abuse, security)
   // #endregion
 
   // Normalises to E.164. National-format input needs a region hint, international input doesn't.
@@ -20,5 +24,7 @@ void main() {
   print(phone.value); // +33655570576
   print(phone.type); // PhoneNumberType.mobile
   print(phone.telUri); // tel:+33655570576
+
+  print(PhoneNumber.exampleGb.formatNational()); // 20 7946 0148  (RFC 6116's own example number)
   // #endregion
 }

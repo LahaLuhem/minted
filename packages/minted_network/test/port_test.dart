@@ -4,8 +4,6 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
-// A const context, so the file failing to build is the assertion: these must stay `static const`.
-// Every declared constant belongs here. A const Set, so a duplicate is a compile error.
 const namedPorts = <Port>{
   .wildcard,
   .ftpData,

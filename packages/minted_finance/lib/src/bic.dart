@@ -8,6 +8,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'failures/bic_failure.dart';
 import 'standards/iso_country_code.dart';
 
+part 'helpers/bic_helpers.dart';
+
 /// A BIC, better known as a SWIFT code. Standard: [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)
 /// .
 ///
@@ -80,35 +82,11 @@ extension type const Bic._(String value) {
   /// no bound on [locationCode], and the registration authority uses neither freedom.
   bool get isSwiftRegistrable => _swiftRegistrationForm.hasMatch(value);
 
-  // The 8-character form addresses the primary office, which is what XXX spells at 11.
-  static String _withPrimaryOffice(String compactInput) =>
-      compactInput.length != _bic8Length ? compactInput : '$compactInput$_primaryOfficeBranch';
+  // Habits, not standards: ISO 9362 names no code, and `BANK` is no institution.
 
-  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
-  // thing gets named.
-  static BicFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length != _bic8Length && compactInput.length != _bic11Length =>
-      BicWrongLength(compactInput.length),
-    _ when !_alphanumeric.hasMatch(compactInput) => const BicInvalidCharacters(),
-    // Digits landing in the country slot reach here too: they name no country either.
-    _ when !isIsoCountryCode(_countryCodeOf(compactInput)) => BicUnknownCountry(
-      _countryCodeOf(compactInput),
-    ),
-    _ => null,
-  };
+  /// A German example code.
+  static const exampleDe = Bic._('BANKDEFFXXX');
 
-  static String _countryCodeOf(String compactInput) =>
-      compactInput.substring(_countryCodeStart, _locationCodeStart);
-
-  static final _alphanumeric = RegExp(r'^[A-Z0-9]+$');
-  // The pre-2014 shape ISO 20022 retired and SWIFT still registers by, over the folded 11.
-  static final _swiftRegistrationForm = RegExp(r'^[A-Z]{6}[A-Z2-9][A-NP-Z0-9][A-Z0-9]{3}$');
-
-  static const _bic8Length = 8;
-  static const _bic11Length = 11;
-  static const _countryCodeStart = 4;
-  static const _locationCodeStart = 6;
-  // The branch code is exactly what the short form leaves off, so it starts where that form ends.
-  static const _branchCodeStart = _bic8Length;
-  static const _primaryOfficeBranch = 'XXX';
+  /// A Belgian one, for an example needing both ends of a payment.
+  static const exampleBe = Bic._('BANKBEBBXXX');
 }

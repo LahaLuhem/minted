@@ -11,6 +11,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/iban_check_digits.dart';
 import 'failures/iban_failure.dart';
 
+part 'helpers/iban_helpers.dart';
+
 /// An IBAN (International Bank Account Number).
 /// Standard: [ISO 13616](https://en.wikipedia.org/wiki/International_Bank_Account_Number).
 ///
@@ -69,30 +71,6 @@ extension type const Iban._(String value) {
         value.substring(group * _groupSize, math.min((group + 1) * _groupSize, value.length)),
   ).join(' ');
 
-  // The one gate parse and fromComponents both go through, so a diagnosis and an acceptance can't disagree.
-  static IbanFailure? _failureFor(String normalised) {
-    final validationResult = IbanValidator.validate(normalised);
-    if (validationResult.isValid) return null;
-
-    return switch (validationResult.error) {
-      .emptyInput || .tooShort => const IbanTooShort(),
-      .invalidCharacters => const IbanInvalidCharacters(),
-      .unknownCountry => IbanUnknownCountry(normalised.substring(0, _checkDigitsStart)),
-      // countryInfo is populated whenever the country is known, which invalidLength implies.
-      .invalidLength => IbanInvalidLength(
-        expected: validationResult.countryInfo!.ibanLength,
-        actual: normalised.length,
-      ),
-      .checksumFailed => const IbanChecksumFailed(),
-      // countryMismatch needs the countryCca2 argument we never pass, and an invalid result always
-      // carries an error. Reaching either means the engine changed shape, so no test reaches here.
-      // coverage:ignore-start
-      .countryMismatch || null => throw StateError('unreachable: no IBAN error'),
-      // coverage:ignore-end
-    };
-  }
-
-  static const _checkDigitsStart = 2;
-  static const _bbanStart = 4;
-  static const _groupSize = 4;
+  /// `GB82 WEST 1234 5698 7654 32`, the usual worked example. Its `WEST` names no real bank.
+  static const example = Iban._('GB82WEST12345698765432');
 }

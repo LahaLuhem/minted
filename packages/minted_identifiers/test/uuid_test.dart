@@ -6,8 +6,6 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 
 import '../../../test/support/bdd.dart';
 
-// A const context, so the file failing to build is the assertion: the sentinels must stay `static const`
-// rather than becoming getters. A const Set, so a duplicate is a compile error too.
 const sentinels = <Uuid>{.nil, .max};
 
 void main() {

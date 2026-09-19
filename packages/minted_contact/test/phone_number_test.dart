@@ -5,6 +5,8 @@ import 'package:minted_contact/minted_contact.dart';
 
 import '../../../test/support/bdd.dart';
 
+const namedNumbers = <PhoneNumber>{.exampleUs, .exampleGb};
+
 void main() {
   feature('PhoneNumber', () {
     // A String canonical means "accepted and normalised to this E.164". Null means "rejected", and
@@ -53,7 +55,7 @@ void main() {
     });
 
     scenario('a phone number builds a tel: URI', () {
-      check(PhoneNumber.tryParse('+33 655 5705 76')!.telUri.toString()).equals('tel:+33655570576');
+      check(PhoneNumber.exampleUs.telUri.toString()).equals('tel:+12015550123');
     });
 
     // Only unknownCountryCallingCode comes from the engine: notFound is the one code phone_numbers_parser
@@ -153,6 +155,15 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(PhoneNumberFailure.invalid);
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final number in namedNumbers) {
+        check(
+          PhoneNumber.tryParse(number.value)?.value,
+          because: 'named constant $number',
+        ).equals(number.value);
+      }
     });
   });
 }

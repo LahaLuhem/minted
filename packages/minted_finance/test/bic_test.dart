@@ -5,6 +5,8 @@ import 'package:minted_finance/minted_finance.dart';
 
 import '../../../test/support/bdd.dart';
 
+const namedBics = <Bic>{.exampleDe, .exampleBe};
+
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
 
@@ -219,6 +221,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const BicUnknownCountry('ZZ'));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final bic in namedBics) {
+        check(Bic.tryParse(bic.value)?.value, because: 'named constant $bic').equals(bic.value);
+      }
     });
   });
 }

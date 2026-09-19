@@ -4,9 +4,7 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
-// A const context, so the file failing to build is the assertion: these must stay `static const`.
-// Every declared constant belongs here. A List, not a Set: Cidr overrides `==`, which a const Set
-// refuses, so the duplicate check the other types get is not available here.
+// A List where the other types use a Set: Cidr overrides `==`, which a const Set refuses.
 const namedBlocks = <Cidr>[
   .private10,
   .private172,

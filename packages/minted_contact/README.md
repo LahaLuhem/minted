@@ -62,6 +62,44 @@ The runnable version is the
 `Email.domainAsHostname` is why this package carries
 [`minted_network`](https://pub.dev/packages/minted_network) too.
 
+## Named constants
+
+`Email` names the mailboxes [RFC 2142](https://www.rfc-editor.org/rfc/rfc2142) defines, each at
+`example.com`, which [RFC 2606 §3](https://www.rfc-editor.org/rfc/rfc2606#section-3) reserves for
+documentation. So they work in a const context, where a `tryParse(...)!` can't go, and a fixture in
+your docs never reaches a real inbox.
+
+```dart
+const escalation = <Email>[.abuse, .security, .noc];   // const, which tryParse(…)! can never be
+
+Email.postmaster.value;    // 'postmaster@example.com'
+Email.support.localPart;   // 'support'
+Email.noReply.mailtoUri;   // mailto:no-reply@example.com
+```
+
+| Group              | What it names                                       |
+|--------------------|-----------------------------------------------------|
+| service support    | §5's mailbox per protocol, both synonyms included   |
+| network operations | §4's `abuse`, `noc` and `security`                  |
+| business           | §3's `info`, `marketing`, `sales` and `support`     |
+| conventional       | the bounce and no-reply senders, `admin` and `root` |
+
+Only `postmaster` is mandatory anywhere:
+[RFC 5321 §4.5.1](https://www.rfc-editor.org/rfc/rfc5321#section-4.5.1) makes every SMTP server
+accept it.
+
+> **The last group is habit, not standard.** No RFC names `admin`, `root` or `no-reply`. Each one
+> says so in its own doc comment. Treat a match as a hint, never as proof of what's behind the
+> mailbox.
+
+`PhoneNumber` names 2, the numbers RFC 3966 and RFC 6116 use as their own examples. Both sit inside
+a range a regulator keeps for fiction, so neither one rings a real phone.
+
+```dart
+PhoneNumber.exampleUs.telUri;             // tel:+12015550123
+PhoneNumber.exampleGb.formatNational();   // '20 7946 0148'
+```
+
 ## One shape, every type
 
 - `Type.tryParse(input)` hands back the value, or `null` when the input isn't valid
