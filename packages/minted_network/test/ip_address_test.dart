@@ -6,6 +6,16 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
+// A const context, so the file failing to build is the assertion: these must stay `static const`.
+// Every declared constant belongs here. A const Set, so a duplicate is a compile error.
+const namedAddresses = <IpAddress>{
+  .unspecifiedV4,
+  .loopbackV4,
+  .unspecifiedV6,
+  .loopbackV6,
+  .limitedBroadcast,
+};
+
 void main() {
   feature('IpAddress', () {
     // The canonical form doubles as the expected outcome. Null means rejected. Addresses come from the
@@ -127,10 +137,19 @@ void main() {
       check(IpAddress.fromOctets(Uint8List(16)).getOrThrow().value).equals('::');
     });
 
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final address in namedAddresses) {
+        check(
+          IpAddress.tryParse(address.value)?.value,
+          because: 'named constant $address',
+        ).equals(address.value);
+      }
+    });
+
     scenario('isLoopback covers 127.0.0.0/8 and ::1, and nothing else', () {
-      check(IpAddress.tryParse('127.0.0.1')!.isLoopback).isTrue();
+      check(IpAddress.loopbackV4.isLoopback).isTrue();
       check(IpAddress.tryParse('127.255.255.254')!.isLoopback).isTrue();
-      check(IpAddress.tryParse('::1')!.isLoopback).isTrue();
+      check(IpAddress.loopbackV6.isLoopback).isTrue();
       check(IpAddress.tryParse('128.0.0.1')!.isLoopback).isFalse();
       check(IpAddress.tryParse('2001:db8::1')!.isLoopback).isFalse();
     });

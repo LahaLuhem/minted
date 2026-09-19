@@ -6,8 +6,23 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
-// A const context, so the file failing to build is the assertion: it must stay `static const`.
-const allOnes = <MacAddress>[.broadcast];
+// A const context, so the file failing to build is the assertion: these must stay `static const`.
+// Every declared constant belongs here. A const Set, so a duplicate is a compile error.
+const namedMacs = <MacAddress>{
+  .allZeros,
+  .broadcast,
+  .ianaReserved,
+  .vrrp,
+  .ianaDocumentation,
+  .ianaDocMulticast,
+  .stpBridgeGroup,
+  .macControlGroup,
+  .slowProtocols,
+  .nearestNonTpmr,
+  .providerBridge,
+  .providerMvrp,
+  .nearestBridge,
+};
 
 void main() {
   feature('MacAddress', () {
@@ -159,28 +174,35 @@ void main() {
     );
 
     scenario('the addresses every network carries classify as their standards describe', () {
-      // ISO 9542, RFC 2464 and IEEE 802.1D respectively. Only the IPv6 one reads as locally administered:
-      // no IEEE assignment backs `33:33`, where the other 2 sit under real OUIs.
+      // Only the IPv6 one reads as locally administered: no IEEE assignment backs `33:33`, where
+      // the other 2 sit under real OUIs.
       final isoEndSystem = MacAddress.tryParse('09:00:2b:00:00:04')!;
       final ipv6Multicast = MacAddress.tryParse('33:33:00:00:00:01')!;
-      final spanningTree = MacAddress.tryParse('01:80:c2:00:00:00')!;
 
       check(isoEndSystem.isMulticast).isTrue();
       check(isoEndSystem.isLocallyAdministered).isFalse();
       check(ipv6Multicast.isMulticast).isTrue();
       check(ipv6Multicast.isLocallyAdministered).isTrue();
-      check(spanningTree.isMulticast).isTrue();
-      check(spanningTree.isLocallyAdministered).isFalse();
+      check(MacAddress.stpBridgeGroup.isMulticast).isTrue();
+      check(MacAddress.stpBridgeGroup.isLocallyAdministered).isFalse();
     });
 
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final macAddress in namedMacs) {
+        check(
+          MacAddress.tryParse(macAddress.value)?.value,
+          because: 'named constant $macAddress',
+        ).equals(macAddress.value);
+      }
+    });
+
+    // Through the door rather than off the constant, since isBroadcast is defined as equality to it.
     scenario('only the 48-bit all-ones address is the broadcast address', () {
       check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff')!.isBroadcast).isTrue();
       // Nominally local multicast, like the broadcast address, but a different destination.
       check(MacAddress.tryParse('33:33:00:00:00:01')!.isBroadcast).isFalse();
       check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff:ff:ff')!.isBroadcast).isFalse();
-      check(MacAddress.tryParse('00:00:5e:00:53:00')!.isBroadcast).isFalse();
-      check(MacAddress.broadcast).equals(MacAddress.tryParse('ff:ff:ff:ff:ff:ff')!);
-      check(allOnes.single.isBroadcast).isTrue();
+      check(MacAddress.ianaDocumentation.isBroadcast).isFalse();
     });
 
     scenario('equal addresses are equal, whichever notation they are built from', () {
@@ -194,7 +216,7 @@ void main() {
     scenario(
       'a 48- and a 64-bit address are never equal, since neither is mapped to the other',
       () {
-        final fortyEightBit = MacAddress.tryParse('00:00:5e:00:53:00')!;
+        const fortyEightBit = MacAddress.ianaDocumentation;
         final sixtyFourBit = MacAddress.tryParse('00:00:5e:10:00:00:00:00')!;
 
         check(fortyEightBit == sixtyFourBit).isFalse();
@@ -213,8 +235,7 @@ void main() {
     scenario('fromOctets reports a failure unless there are six or eight octets', () {
       check(MacAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
       check(MacAddress.fromOctets(Uint8List(7)).isFailure).isTrue();
-      check(MacAddress.fromOctets(Uint8List(6)).getOrThrow())
-          .equals(MacAddress.tryParse('00:00:00:00:00:00')!);
+      check(MacAddress.fromOctets(Uint8List(6)).getOrThrow()).equals(MacAddress.allZeros);
       check(MacAddress.fromOctets(Uint8List(8)).getOrThrow().octetCount).equals(8);
     });
 
@@ -239,7 +260,7 @@ void main() {
     });
 
     scenario('compareTo orders lexicographically by canonical form', () {
-      final earlier = MacAddress.tryParse('00:00:5e:00:53:00')!;
+      const earlier = MacAddress.ianaDocumentation;
       final later = MacAddress.tryParse('00:00:5e:00:53:01')!;
 
       check(earlier.compareTo(later)).isLessThan(0);

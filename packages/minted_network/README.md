@@ -82,14 +82,39 @@ mac.isLocallyAdministered;    // false   (the U/L bit)
 MacAddress.tryParse('0000.5e00.5300') == mac;   // true: Cisco's dot-quad is the same address
 
 // Port: exactly a Uint16's range, so that type owns the bound. The RFC 6335 band reads back:
-final port = Port.tryFrom(8080)!;
-port.range;                   // PortRange.user
-Port.tryFrom(0)!.isWildcard;  // true: bind(0) asks the OS for a free port
+Port.httpAlt.range;           // PortRange.user
+Port.wildcard.isWildcard;     // true: bind(0) asks the OS for a free port
 Port.tryFrom(65536);          // null, one past the 16-bit ceiling
 ```
 
 The runnable version is the
 [example](https://github.com/LahaLuhem/minted/blob/main/packages/minted_network/example/minted_network_example.dart).
+
+## Named constants
+
+Every type names the values its standard already names, as `static const`. Two things you get from
+that: no `tryFrom(...)!` for a value you knew was good while typing it, and a value that works in a
+const context, where a `!` can never go.
+
+```dart
+const allowed = <Port>[.https, .httpAlt];   // const, which Port.tryFrom(443)! can never be
+
+Port.https.range;                   // PortRange.system
+Hostname.exampleCom.fqdn;           // 'example.com.'
+IpAddress.loopbackV6.isLoopback;    // true
+MacAddress.broadcast.isBroadcast;   // true
+```
+
+| Type         | What it names                                                                      |
+|--------------|------------------------------------------------------------------------------------|
+| `Port`       | the wildcard, the services IANA registers, and a handful of dev-server habits      |
+| `Hostname`   | RFC 2606's reserved names, whole, plus mDNS `local` and the usual private suffixes |
+| `IpAddress`  | single addresses only: the 2 unspecified, the 2 loopbacks, limited broadcast       |
+| `MacAddress` | the null and broadcast sentinels, IANA's `00-00-5E` blocks, the 802.1D group addresses |
+
+> **Some of these are habit, not standard.** `Port.django` is 8000 because Django's dev server picks
+> it, and IANA has 8000 registered as `irdmi`. Each one says so in its own doc comment. Treat a match
+> as a hint, never as proof of what's on the other end.
 
 ## One shape, every type
 

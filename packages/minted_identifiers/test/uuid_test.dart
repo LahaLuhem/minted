@@ -7,8 +7,8 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 
 // A const context, so the file failing to build is the assertion: the sentinels must stay `static const`
-// rather than becoming getters.
-const sentinels = <Uuid>[.nil, .max];
+// rather than becoming getters. A const Set, so a duplicate is a compile error too.
+const sentinels = <Uuid>{.nil, .max};
 
 void main() {
   feature('Uuid', () {
@@ -147,6 +147,17 @@ void main() {
       },
     );
 
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final sentinel in sentinels) {
+        check(
+          Uuid.tryParse(sentinel.value)?.value,
+          because: 'named constant $sentinel',
+        ).equals(sentinel.value);
+      }
+    });
+
+    // Through the door rather than off the constants, since isNil and isMax are defined as equality
+    // to them.
     scenario('the Nil and Max sentinels are recognised', () {
       final nil = Uuid.tryParse('00000000-0000-0000-0000-000000000000')!;
       final max = Uuid.tryParse('ffffffff-ffff-ffff-ffff-ffffffffffff')!;
@@ -158,12 +169,6 @@ void main() {
       check(max.isNil).isFalse();
       check(ordinary.isNil).isFalse();
       check(ordinary.isMax).isFalse();
-    });
-
-    scenario('the sentinel constants are the values parsing those spellings gives', () {
-      check(Uuid.nil).equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
-      check(Uuid.max).equals(Uuid.tryParse('ffffffff-ffff-ffff-ffff-ffffffffffff')!);
-      check(sentinels.map((sentinel) => sentinel.isNil).toList()).deepEquals([true, false]);
     });
 
     scenario('equal UUIDs are equal, whichever spelling they are built from', () {

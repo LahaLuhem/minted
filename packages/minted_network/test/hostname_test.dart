@@ -4,6 +4,25 @@ import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
 
+// A const context, so the file failing to build is the assertion: these must stay `static const`.
+// Every declared constant belongs here. A const Set, so a duplicate is a compile error.
+const namedHostnames = <Hostname>{
+  .localhost,
+  .test,
+  .invalid,
+  .example,
+  .exampleCom,
+  .exampleNet,
+  .exampleOrg,
+  .local,
+  .internal,
+  .localhostLocaldomain,
+  .localdomain,
+  .lan,
+  .home,
+  .corp,
+};
+
 void main() {
   feature('Hostname', () {
     final maxLabel = 'a' * 63;
@@ -120,14 +139,23 @@ void main() {
       check(Hostname.tryParse('  WWW.EXAMPLE.COM.  ')!).equals(canonical);
     });
 
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final hostname in namedHostnames) {
+        check(
+          Hostname.tryParse(hostname.value)?.value,
+          because: 'named constant $hostname',
+        ).equals(hostname.value);
+      }
+    });
+
     scenario('labels reads the name apart, most specific first', () {
       check(Hostname.tryParse('www.example.com')!.labels).deepEquals(['www', 'example', 'com']);
-      check(Hostname.tryParse('localhost')!.labels).deepEquals(['localhost']);
+      check(Hostname.localhost.labels).deepEquals(['localhost']);
     });
 
     scenario('fqdn rebuilds the trailing-dot spelling parse dropped', () {
       check(Hostname.tryParse('www.example.com.')!.fqdn).equals('www.example.com.');
-      check(Hostname.tryParse('localhost')!.fqdn).equals('localhost.');
+      check(Hostname.localhost.fqdn).equals('localhost.');
     });
 
     scenario('fromLabels round-trips through labels and reports parts that do not form one', () {
