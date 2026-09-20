@@ -8,6 +8,7 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'failures/bic_failure.dart';
 import 'standards/iso_country_code.dart';
 
+part 'constants/bic_constants.dart';
 part 'helpers/bic_helpers.dart';
 
 /// A BIC, better known as a SWIFT code. Standard: [ISO 9362](https://en.wikipedia.org/wiki/ISO_9362)
@@ -19,6 +20,8 @@ part 'helpers/bic_helpers.dart';
 /// There's no checksum, so any well-formed code gets in, held by an institution or not. ISO 9362 also
 /// allows an [institutionCode] and [locationCode] wider than SWIFT itself issues, and [isSwiftRegistrable]
 /// reports that narrower shape rather than refusing what the standard allows.
+///
+/// Named values: [BicConstants].
 ///
 /// {@example /example/minted_finance_example.dart#bic}
 extension type const Bic._(String value) {
@@ -83,10 +86,4 @@ extension type const Bic._(String value) {
   bool get isSwiftRegistrable => _swiftRegistrationForm.hasMatch(value);
 
   // Habits, not standards: ISO 9362 names no code, and `BANK` is no institution.
-
-  /// A German example code.
-  static const exampleDe = Bic._('BANKDEFFXXX');
-
-  /// A Belgian one, for an example needing both ends of a payment.
-  static const exampleBe = Bic._('BANKBEBBXXX');
 }

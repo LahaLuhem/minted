@@ -17,7 +17,7 @@ Uint asUint(Uint value) => value;
 void main() {
   feature('the transparent representation', () {
     scenario('a constrained number reads as the number it constrains', () {
-      const digit = Digit.d7;
+      const digit = DigitConstants.d7;
       final port = Uint16.tryFrom(8080)!;
 
       check(asInt(digit)).equals(7);
@@ -30,7 +30,7 @@ void main() {
 
     // NaturalNumber narrows Uint, which narrows int, so it reaches both without a hop through value.
     scenario('a natural number reads as the Uint it narrows, and as the int under that', () {
-      const natural = NaturalNumber.one;
+      const natural = NaturalNumberConstants.one;
 
       check(asUint(natural).value).equals(1);
       check(asInt(natural)).equals(1);

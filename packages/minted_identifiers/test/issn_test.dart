@@ -6,7 +6,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
-const namedIssns = <Issn>{.unavailable};
+const namedIssns = <Issn>{IssnConstants.unavailable};
 
 void main() {
   feature('Issn', () {

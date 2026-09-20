@@ -8,6 +8,7 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/mod11_check_character.dart';
 import 'failures/issn_failure.dart';
 
+part 'constants/issn_constants.dart';
 part 'helpers/issn_helpers.dart';
 
 /// An ISSN (International Standard Serial Number): names a serial title, not one issue of it. Standard:
@@ -19,6 +20,8 @@ part 'helpers/issn_helpers.dart';
 ///
 /// No ISSN-L, the linking ISSN that ties a title's print and online numbers together. It needs the ISSN
 /// Register.
+///
+/// Named values: [IssnConstants].
 ///
 /// {@example /example/minted_identifiers_example.dart#issn}
 extension type const Issn._(String value) {
@@ -48,7 +51,4 @@ extension type const Issn._(String value) {
 
   /// The last character. A `String`, not a `Digit`, because ISO 3297 spells 10 as `X`.
   String get checkCharacter => value.substring(_checkCharacterIndex);
-
-  /// The all-zero ISSN that stands in for a record with none. No standard names it.
-  static const unavailable = Issn._('0000-0000');
 }

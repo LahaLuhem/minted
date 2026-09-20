@@ -10,6 +10,7 @@ import 'check_digits/mod11_check_character.dart';
 import 'failures/isbn_failure.dart';
 import 'standards/isbn_prefixes.dart';
 
+part 'constants/isbn_constants.dart';
 part 'helpers/isbn_helpers.dart';
 
 /// An ISBN (International Standard Book Number).
@@ -20,6 +21,8 @@ part 'helpers/isbn_helpers.dart';
 ///
 /// No hyphens in [value]: the group boundaries come from ISBN International's range table, not from
 /// the digits.
+///
+/// Named values: [IsbnConstants].
 ///
 /// {@example /example/minted_identifiers_example.dart#isbn}
 extension type const Isbn._(String value) {
@@ -66,7 +69,4 @@ extension type const Isbn._(String value) {
 
     return '$bodyText${mod11CheckCharacter(bodyText)}';
   }
-
-  /// The all-zero ISBN that stands in for a record with none. No standard names it.
-  static const unavailable = Isbn._('9780000000002');
 }

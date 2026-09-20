@@ -5,7 +5,7 @@ import 'package:minted_finance/minted_finance.dart';
 
 import '../../../test/support/bdd.dart';
 
-const namedBics = <Bic>{.exampleDe, .exampleBe};
+const namedBics = <Bic>{BicConstants.exampleDe, BicConstants.exampleBe};
 
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;

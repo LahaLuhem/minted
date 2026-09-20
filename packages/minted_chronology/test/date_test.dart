@@ -5,7 +5,12 @@ import 'package:minted_chronology/minted_chronology.dart';
 import '../../../test/support/bdd.dart';
 
 // A List, not a Set: Date overrides `==`, which a const Set refuses.
-const namedDates = <Date>[.min, .max, .unixEpoch, .gregorianStart];
+const namedDates = <Date>[
+  DateConstants.min,
+  DateConstants.max,
+  DateConstants.unixEpoch,
+  DateConstants.gregorianStart,
+];
 
 void main() {
   feature('Date', () {
@@ -274,7 +279,7 @@ void main() {
     });
 
     scenario('the month getter is a Month that knows its length', () {
-      check(Date.of(2026, 7, 7).getOrThrow().month).equals(Month.july);
+      check(Date.of(2026, 7, 7).getOrThrow().month).equals(MonthConstants.july);
       check(Date.of(2024, 2, 29).getOrThrow().month.daysIn(2024)).equals(29);
     });
     scenario('every named constant parses back to itself, unchanged', () {
@@ -287,9 +292,9 @@ void main() {
     });
 
     scenario('no date exists on either side of the bounds', () {
-      check(Date.min.trySubtractDays(1)).isNull();
-      check(Date.max.tryAddDays(1)).isNull();
-      check(Date.min.isBefore(Date.max)).isTrue();
+      check(DateConstants.min.trySubtractDays(1)).isNull();
+      check(DateConstants.max.tryAddDays(1)).isNull();
+      check(DateConstants.min.isBefore(DateConstants.max)).isTrue();
     });
   });
 }

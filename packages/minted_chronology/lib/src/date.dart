@@ -6,6 +6,7 @@ import 'month.dart';
 import 'normalisation/iso_date_format.dart';
 import 'weekday.dart';
 
+part 'constants/date_constants.dart';
 part 'helpers/date_helpers.dart';
 
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.
@@ -19,6 +20,8 @@ part 'helpers/date_helpers.dart';
 /// [iso8601] is the canonical form.
 ///
 /// Ordering is chronological, on [compareTo], [isBefore], [isAfter] and `<` / `<=` / `>` / `>=`.
+///
+/// Named values: [DateConstants].
 ///
 /// {@example /example/minted_chronology_example.dart#date}
 @immutable
@@ -138,17 +141,4 @@ final class const Date._(
   // UTC midnight, used for day arithmetic: a UTC day is always 24 hours, so tryAddDays and differenceInDays
   // can't be skewed by a daylight-saving transition the way a local day can.
   DateTime get _utcMidnight => DateTime.utc(year, month.value, day);
-
-  /// The earliest date, since [year] is held in `0000`-`9999`.
-  static const min = Date._(_minYear, Month.january, 1);
-
-  /// The latest, for the same reason.
-  static const max = Date._(_maxYear, Month.december, 31);
-
-  /// POSIX's Epoch, where a Unix timestamp counts from.
-  static const unixEpoch = Date._(1970, Month.january, 1);
-
-  /// The first day the Gregorian calendar ran. Nothing here treats it specially: the calendar is proleptic,
-  /// so the 10 days it skipped parse like any other.
-  static const gregorianStart = Date._(1582, Month.october, 15);
 }

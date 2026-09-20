@@ -76,19 +76,22 @@ The runnable version is the
 
 ## Named constants
 
+A type's named values live in a companion `<Type>Constants` namespace, so the type itself stays its
+parsing API. They're `const`, so they reach where a `tryParse(...)!` can't.
+
 ```dart
-Uuid.nil.value;                      // '00000000-0000-0000-0000-000000000000'
-Gtin.restrictedCirculation.gtin13;   // '2000000000008'
-Imei.unavailable.formatted;          // '00-000000-000000-0'
-Isbn.unavailable.isbn10;             // '0000000000'
-Isni.example.isInOrcidBlock;         // true
-Issn.unavailable.compact;            // '00000000'
+UuidConstants.nil.value;                      // '00000000-0000-0000-0000-000000000000'
+GtinConstants.restrictedCirculation.gtin13;   // '2000000000008'
+ImeiConstants.unavailable.formatted;          // '00-000000-000000-0'
+IsbnConstants.unavailable.isbn10;             // '0000000000'
+IsniConstants.example.isInOrcidBlock;         // true
+IssnConstants.unavailable.compact;            // '00000000'
 ```
 
-`Uuid` names RFC 9562's 2 special cases and the 4 namespaces it registers for version 3 and 5.
-`Gtin.restrictedCirculation` and the IMEI pair sit in ranges their standards keep out of
-circulation. `Isni.example` is ORCID's own example record, for a professor who never existed. The 2
-`unavailable` values are habits no standard names.
+`UuidConstants` names RFC 9562's 2 special cases and the 4 namespaces it registers for version 3
+and 5. `GtinConstants.restrictedCirculation` and the IMEI pair sit in ranges their standards keep
+out of circulation. `IsniConstants.example` is ORCID's own example record, for a professor who
+never existed. The 2 `unavailable` values are habits no standard names.
 
 ## One shape, every type
 

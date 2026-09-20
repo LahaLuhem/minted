@@ -59,15 +59,15 @@ void main() {
       check(Longitude.tryFrom(-0.0)!.value.isNegative).isFalse();
     });
     scenario('the named bounds are the last degrees that parse', () {
-      check(Latitude.tryFrom(Latitude.min)).isNotNull();
-      check(Latitude.tryFrom(Latitude.max)).isNotNull();
-      check(Latitude.tryFrom(Latitude.min - 1)).isNull();
-      check(Latitude.tryFrom(Latitude.max + 1)).isNull();
+      check(Latitude.tryFrom(LatitudeConstants.min)).isNotNull();
+      check(Latitude.tryFrom(LatitudeConstants.max)).isNotNull();
+      check(Latitude.tryFrom(LatitudeConstants.min - 1)).isNull();
+      check(Latitude.tryFrom(LatitudeConstants.max + 1)).isNull();
 
-      check(Longitude.tryFrom(Longitude.min)).isNotNull();
-      check(Longitude.tryFrom(Longitude.max)).isNotNull();
-      check(Longitude.tryFrom(Longitude.min - 1)).isNull();
-      check(Longitude.tryFrom(Longitude.max + 1)).isNull();
+      check(Longitude.tryFrom(LongitudeConstants.min)).isNotNull();
+      check(Longitude.tryFrom(LongitudeConstants.max)).isNotNull();
+      check(Longitude.tryFrom(LongitudeConstants.min - 1)).isNull();
+      check(Longitude.tryFrom(LongitudeConstants.max + 1)).isNull();
     });
   });
 }

@@ -6,7 +6,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
-const namedGtins = <Gtin>{.restrictedCirculation};
+const namedGtins = <Gtin>{GtinConstants.restrictedCirculation};
 
 void main() {
   feature('Gtin', () {
@@ -108,8 +108,8 @@ void main() {
     );
 
     scenario('a GTIN exposes its check digit', () {
-      check(Gtin.tryParse('4006381333931')!.checkDigit).equals(Digit.d1);
-      check(Gtin.tryParse('96385074')!.checkDigit).equals(Digit.d4);
+      check(Gtin.tryParse('4006381333931')!.checkDigit).equals(DigitConstants.d1);
+      check(Gtin.tryParse('96385074')!.checkDigit).equals(DigitConstants.d4);
     });
 
     scenarioOutline<({String input, GtinFailure failure})>(

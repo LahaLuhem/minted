@@ -7,6 +7,7 @@ import 'latitude.dart';
 import 'longitude.dart';
 import 'standards/coordinate_bounds.dart';
 
+part 'constants/geo_bounds_constants.dart';
 part 'helpers/geo_bounds_helpers.dart';
 
 /// A bounding box: the rectangle between a west, south, east and north edge, which may cross the antimeridian.
@@ -21,6 +22,8 @@ part 'helpers/geo_bounds_helpers.dart';
 /// or zero-height box is legal, and holds its own edge.
 ///
 /// Parsing trims and drops one surrounding pair of brackets.
+///
+/// Named values: [GeoBoundsConstants].
 ///
 /// {@example /example/minted_geography_example.dart#bounds}
 @immutable
@@ -136,12 +139,4 @@ final class const GeoBounds._({
   bool _spansLongitude(double longitude) => crossesAntimeridian
       ? longitude >= west || longitude <= east
       : longitude >= west && longitude <= east;
-
-  /// The maximum box, every degree of both axes.
-  static const wholeWorld = GeoBounds._(
-    west: Longitude.min,
-    south: Latitude.min,
-    east: Longitude.max,
-    north: Latitude.max,
-  );
 }

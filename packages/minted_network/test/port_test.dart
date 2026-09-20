@@ -5,28 +5,28 @@ import 'package:minted_network/minted_network.dart';
 import '../../../test/support/bdd.dart';
 
 const namedPorts = <Port>{
-  .wildcard,
-  .ftpData,
-  .ftp,
-  .ssh,
-  .telnet,
-  .smtp,
-  .dns,
-  .http,
-  .pop3,
-  .ntp,
-  .imap,
-  .https,
-  .mysql,
-  .postgresql,
-  .redis,
-  .httpAlt,
-  .mongodb,
-  .nodeDev,
-  .flask,
-  .django,
-  .httpsAlt,
-  .phpFpm,
+  PortConstants.wildcard,
+  PortConstants.ftpData,
+  PortConstants.ftp,
+  PortConstants.ssh,
+  PortConstants.telnet,
+  PortConstants.smtp,
+  PortConstants.dns,
+  PortConstants.http,
+  PortConstants.pop3,
+  PortConstants.ntp,
+  PortConstants.imap,
+  PortConstants.https,
+  PortConstants.mysql,
+  PortConstants.postgresql,
+  PortConstants.redis,
+  PortConstants.httpAlt,
+  PortConstants.mongodb,
+  PortConstants.nodeDev,
+  PortConstants.flask,
+  PortConstants.django,
+  PortConstants.httpsAlt,
+  PortConstants.phpFpm,
 };
 
 void main() {
@@ -79,9 +79,9 @@ void main() {
     // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a runtime
     // test cannot express, and neither can the const-ness this assignment needs.
     scenario('a Port goes where a Uint16 is wanted', () {
-      const Uint16 widened = Port.https;
+      const Uint16 widened = PortConstants.https;
 
-      check(widened).equals(Uint16.tryFrom(Port.https.value)!);
+      check(widened).equals(Uint16.tryFrom(PortConstants.https.value)!);
     });
 
     scenario('a Port renders as its bare number', () {

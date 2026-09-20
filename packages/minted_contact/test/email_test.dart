@@ -6,25 +6,25 @@ import 'package:minted_network/minted_network.dart';
 import '../../../test/support/bdd.dart';
 
 const namedEmails = <Email>{
-  .postmaster,
-  .hostmaster,
-  .usenet,
-  .news,
-  .webmaster,
-  .www,
-  .uucp,
-  .ftp,
-  .abuse,
-  .noc,
-  .security,
-  .info,
-  .marketing,
-  .sales,
-  .support,
-  .mailerDaemon,
-  .noReply,
-  .admin,
-  .root,
+  EmailConstants.postmaster,
+  EmailConstants.hostmaster,
+  EmailConstants.usenet,
+  EmailConstants.news,
+  EmailConstants.webmaster,
+  EmailConstants.www,
+  EmailConstants.uucp,
+  EmailConstants.ftp,
+  EmailConstants.abuse,
+  EmailConstants.noc,
+  EmailConstants.security,
+  EmailConstants.info,
+  EmailConstants.marketing,
+  EmailConstants.sales,
+  EmailConstants.support,
+  EmailConstants.mailerDaemon,
+  EmailConstants.noReply,
+  EmailConstants.admin,
+  EmailConstants.root,
 };
 
 void main() {
@@ -79,7 +79,7 @@ void main() {
     });
 
     scenario('an email builds a mailto: URI', () {
-      check(Email.postmaster.mailtoUri.toString()).equals('mailto:postmaster@example.com');
+      check(EmailConstants.postmaster.mailtoUri.toString()).equals('mailto:postmaster@example.com');
     });
 
     scenario('every door reports the one failure the engine can distinguish', () {
@@ -161,7 +161,7 @@ void main() {
         check(
           email.domainAsHostname().getOrNull(),
           because: 'named constant $email',
-        ).equals(Hostname.exampleCom);
+        ).equals(HostnameConstants.exampleCom);
       }
     });
   });

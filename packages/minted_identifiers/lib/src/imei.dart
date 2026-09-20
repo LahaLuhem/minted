@@ -7,6 +7,7 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/imei_failure.dart';
 
+part 'constants/imei_constants.dart';
 part 'helpers/imei_helpers.dart';
 
 /// An IMEI (International Mobile Equipment Identity): names one piece of mobile kit, not its subscriber.
@@ -17,6 +18,8 @@ part 'helpers/imei_helpers.dart';
 ///
 /// Shown in full, never masked. An IMEI isn't a credential. Why that differs from a card number:
 /// `APPENDIX.md#imei-value-type`.
+///
+/// Named values: [ImeiConstants].
 ///
 /// {@example /example/minted_identifiers_example.dart#imei}
 extension type const Imei._(String value) {
@@ -62,10 +65,4 @@ extension type const Imei._(String value) {
       '-${serialNumber.asString}-${checkDigit.value}';
 
   // GSMA TS.06 §9 keeps the `00` prefix for test equipment, which cannot be supplied to the market.
-
-  /// All zeros, what an emulator or a modem with no IMEI reports.
-  static const unavailable = Imei._('000000000000000');
-
-  /// A test IMEI in the shape §9.1 gives: `00`, then `44` for TÜV SÜD, a maker code and a serial.
-  static const test = Imei._('004400000000008');
 }

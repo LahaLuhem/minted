@@ -7,11 +7,11 @@ import 'package:minted_network/minted_network.dart';
 import '../../../test/support/bdd.dart';
 
 const namedAddresses = <IpAddress>{
-  .unspecifiedV4,
-  .loopbackV4,
-  .unspecifiedV6,
-  .loopbackV6,
-  .limitedBroadcast,
+  IpAddressConstants.unspecifiedV4,
+  IpAddressConstants.loopbackV4,
+  IpAddressConstants.unspecifiedV6,
+  IpAddressConstants.loopbackV6,
+  IpAddressConstants.limitedBroadcast,
 };
 
 void main() {
@@ -159,9 +159,9 @@ void main() {
     });
 
     scenario('isLoopback covers 127.0.0.0/8 and ::1, and nothing else', () {
-      check(IpAddress.loopbackV4.isLoopback).isTrue();
+      check(IpAddressConstants.loopbackV4.isLoopback).isTrue();
       check(IpAddress.tryParse('127.255.255.254')!.isLoopback).isTrue();
-      check(IpAddress.loopbackV6.isLoopback).isTrue();
+      check(IpAddressConstants.loopbackV6.isLoopback).isTrue();
       check(IpAddress.tryParse('128.0.0.1')!.isLoopback).isFalse();
       check(IpAddress.tryParse('2001:db8::1')!.isLoopback).isFalse();
     });

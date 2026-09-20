@@ -6,7 +6,14 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 
 import '../../../test/support/bdd.dart';
 
-const namedUuids = <Uuid>{.nil, .max, .namespaceDns, .namespaceUrl, .namespaceOid, .namespaceX500};
+const namedUuids = <Uuid>{
+  UuidConstants.nil,
+  UuidConstants.max,
+  UuidConstants.namespaceDns,
+  UuidConstants.namespaceUrl,
+  UuidConstants.namespaceOid,
+  UuidConstants.namespaceX500,
+};
 
 void main() {
   feature('Uuid', () {
@@ -239,10 +246,10 @@ void main() {
     // else. That tail carries the version and variant nibbles too.
     scenario('every registered namespace freezes the tail the RFC fixes', () {
       const namespaces = [
-        Uuid.namespaceDns,
-        Uuid.namespaceUrl,
-        Uuid.namespaceOid,
-        Uuid.namespaceX500,
+        UuidConstants.namespaceDns,
+        UuidConstants.namespaceUrl,
+        UuidConstants.namespaceOid,
+        UuidConstants.namespaceX500,
       ];
 
       for (final namespace in namespaces) {

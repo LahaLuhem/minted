@@ -91,15 +91,18 @@ The runnable version is the
 
 ## Named constants
 
+A type's named values live in a companion `<Type>Constants` namespace, so the type itself stays its
+parsing API. They're `const`, so they reach where a `tryParse(...)!` can't.
+
 ```dart
-GeoBounds.wholeWorld.bbox;   // '-180.0,-90.0,180.0,90.0'
-Latitude.max;                // 90.0, the last degree that parses
-Geohash.first.value;         // '0', which every geohash sorts at or after
+GeoBoundsConstants.wholeWorld.bbox;   // '-180.0,-90.0,180.0,90.0'
+LatitudeConstants.max;                // 90.0, the last degree that parses
+GeohashConstants.first.value;         // '0', which every geohash sorts at or after
 ```
 
-`Latitude` and `Longitude` name the bounds they're defined by, and `GeoBounds.wholeWorld` is the box
-built from all 4. `Geohash.first` is the floor of the sort order. There's no ceiling to name, since
-any geohash takes another `z`.
+`LatitudeConstants` and `LongitudeConstants` name the bounds their types are defined by, and
+`GeoBoundsConstants.wholeWorld` is the box built from all 4. `GeohashConstants.first` is the floor
+of the sort order. There's no ceiling to name, since any geohash takes another `z`.
 
 ## One shape, every type
 

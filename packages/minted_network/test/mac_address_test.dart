@@ -7,19 +7,19 @@ import 'package:minted_network/minted_network.dart';
 import '../../../test/support/bdd.dart';
 
 const namedMacs = <MacAddress>{
-  .allZeros,
-  .broadcast,
-  .ianaReserved,
-  .vrrp,
-  .ianaDocumentation,
-  .ianaDocMulticast,
-  .stpBridgeGroup,
-  .macControlGroup,
-  .slowProtocols,
-  .nearestNonTpmr,
-  .providerBridge,
-  .providerMvrp,
-  .nearestBridge,
+  MacAddressConstants.allZeros,
+  MacAddressConstants.broadcast,
+  MacAddressConstants.ianaReserved,
+  MacAddressConstants.vrrp,
+  MacAddressConstants.ianaDocumentation,
+  MacAddressConstants.ianaDocMulticast,
+  MacAddressConstants.stpBridgeGroup,
+  MacAddressConstants.macControlGroup,
+  MacAddressConstants.slowProtocols,
+  MacAddressConstants.nearestNonTpmr,
+  MacAddressConstants.providerBridge,
+  MacAddressConstants.providerMvrp,
+  MacAddressConstants.nearestBridge,
 };
 
 void main() {
@@ -181,8 +181,8 @@ void main() {
       check(isoEndSystem.isLocallyAdministered).isFalse();
       check(ipv6Multicast.isMulticast).isTrue();
       check(ipv6Multicast.isLocallyAdministered).isTrue();
-      check(MacAddress.stpBridgeGroup.isMulticast).isTrue();
-      check(MacAddress.stpBridgeGroup.isLocallyAdministered).isFalse();
+      check(MacAddressConstants.stpBridgeGroup.isMulticast).isTrue();
+      check(MacAddressConstants.stpBridgeGroup.isLocallyAdministered).isFalse();
     });
 
     scenario('every named constant parses back to itself, unchanged', () {
@@ -200,7 +200,7 @@ void main() {
       // Nominally local multicast, like the broadcast address, but a different destination.
       check(MacAddress.tryParse('33:33:00:00:00:01')!.isBroadcast).isFalse();
       check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff:ff:ff')!.isBroadcast).isFalse();
-      check(MacAddress.ianaDocumentation.isBroadcast).isFalse();
+      check(MacAddressConstants.ianaDocumentation.isBroadcast).isFalse();
     });
 
     scenario('equal addresses are equal, whichever notation they are built from', () {
@@ -214,7 +214,7 @@ void main() {
     scenario(
       'a 48- and a 64-bit address are never equal, since neither is mapped to the other',
       () {
-        const fortyEightBit = MacAddress.ianaDocumentation;
+        const fortyEightBit = MacAddressConstants.ianaDocumentation;
         final sixtyFourBit = MacAddress.tryParse('00:00:5e:10:00:00:00:00')!;
 
         check(fortyEightBit == sixtyFourBit).isFalse();
@@ -233,7 +233,7 @@ void main() {
     scenario('fromOctets reports a failure unless there are six or eight octets', () {
       check(MacAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
       check(MacAddress.fromOctets(Uint8List(7)).isFailure).isTrue();
-      check(MacAddress.fromOctets(Uint8List(6)).getOrThrow()).equals(MacAddress.allZeros);
+      check(MacAddress.fromOctets(Uint8List(6)).getOrThrow()).equals(MacAddressConstants.allZeros);
       check(MacAddress.fromOctets(Uint8List(8)).getOrThrow().octetCount).equals(8);
     });
 
@@ -258,7 +258,7 @@ void main() {
     });
 
     scenario('compareTo orders lexicographically by canonical form', () {
-      const earlier = MacAddress.ianaDocumentation;
+      const earlier = MacAddressConstants.ianaDocumentation;
       final later = MacAddress.tryParse('00:00:5e:00:53:01')!;
 
       check(earlier.compareTo(later)).isLessThan(0);

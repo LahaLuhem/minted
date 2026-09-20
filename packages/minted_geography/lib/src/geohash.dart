@@ -6,6 +6,7 @@ import 'geo_bounds.dart';
 import 'geo_coordinate.dart';
 import 'standards/coordinate_bounds.dart';
 
+part 'constants/geohash_constants.dart';
 part 'helpers/geohash_helpers.dart';
 
 /// A geohash: a base32 string naming a rectangular cell of the Earth's surface, where each further character
@@ -19,6 +20,8 @@ part 'helpers/geohash_helpers.dart';
 ///
 /// Sorting comes out spatial for free, the alphabet being ASCII-ascending, which is what makes a prefix
 /// range query work.
+///
+/// Named values: [GeohashConstants].
 ///
 /// {@example /example/minted_geography_example.dart#geohash}
 extension type const Geohash._(String value) {
@@ -99,8 +102,4 @@ extension type const Geohash._(String value) {
       longitude: (cell.west + cell.east) / 2,
     )!;
   }
-
-  /// The first cell in sort order: every geohash sorts at or after this. There is no last one, since
-  /// any geohash takes another `z`.
-  static const first = Geohash._('0');
 }

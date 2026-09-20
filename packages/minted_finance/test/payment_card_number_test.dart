@@ -8,13 +8,13 @@ import '../../../test/support/digits.dart';
 
 // Keyed by scheme, so the pairing each constant claims is the thing under test.
 const namedCards = <CardScheme, PaymentCardNumber>{
-  .visa: .testVisa,
-  .mastercard: .testMastercard,
-  .americanExpress: .testAmericanExpress,
-  .discover: .testDiscover,
-  .dinersClub: .testDinersClub,
-  .jcb: .testJcb,
-  .unionPay: .testUnionPay,
+  .visa: PaymentCardNumberConstants.testVisa,
+  .mastercard: PaymentCardNumberConstants.testMastercard,
+  .americanExpress: PaymentCardNumberConstants.testAmericanExpress,
+  .discover: PaymentCardNumberConstants.testDiscover,
+  .dinersClub: PaymentCardNumberConstants.testDinersClub,
+  .jcb: PaymentCardNumberConstants.testJcb,
+  .unionPay: PaymentCardNumberConstants.testUnionPay,
 };
 
 void main() {
@@ -100,7 +100,8 @@ void main() {
     );
 
     scenario('the grouped and compact spellings of one card are equal', () {
-      check(PaymentCardNumber.tryParse('4242 4242 4242 4242')!).equals(PaymentCardNumber.testVisa);
+      check(PaymentCardNumber.tryParse('4242 4242 4242 4242')!)
+          .equals(PaymentCardNumberConstants.testVisa);
       check({
         PaymentCardNumber.tryParse('4242424242424242')!,
         PaymentCardNumber.tryParse('4242-4242-4242-4242')!,
@@ -109,7 +110,7 @@ void main() {
     });
 
     scenario('a sixteen-digit number exposes each of its parts', () {
-      const parsedNumber = PaymentCardNumber.testVisa;
+      const parsedNumber = PaymentCardNumberConstants.testVisa;
 
       check(parsedNumber.majorIndustryIdentifier.value).equals(4);
       check(parsedNumber.iin6).equals('424242');
@@ -139,7 +140,7 @@ void main() {
     );
 
     scenario('the rendered form masks everything but the last four digits', () {
-      const parsedNumber = PaymentCardNumber.testVisa;
+      const parsedNumber = PaymentCardNumberConstants.testVisa;
 
       check(parsedNumber.masked).equals('••••4242');
       // Interpolation and print() both route through toString, so neither can leak the number.

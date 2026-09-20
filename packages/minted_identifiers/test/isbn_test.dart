@@ -6,7 +6,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
-const namedIsbns = <Isbn>{.unavailable};
+const namedIsbns = <Isbn>{IsbnConstants.unavailable};
 
 void main() {
   feature('Isbn', () {
@@ -67,7 +67,7 @@ void main() {
 
       check(parsedIsbn.prefix.asString).equals('978');
       check(parsedIsbn.body.asString).equals('030640615');
-      check(parsedIsbn.checkDigit).equals(Digit.d7);
+      check(parsedIsbn.checkDigit).equals(DigitConstants.d7);
       // The parts feed straight back in, which is what the Digits typing buys.
       check(Isbn.fromComponents(prefix: parsedIsbn.prefix, body: parsedIsbn.body).getOrThrow())
           .equals(parsedIsbn);

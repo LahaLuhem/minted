@@ -74,13 +74,15 @@ The runnable version is the
 
 ## Named constants
 
-The values documentation reaches for, as `const`, so they go where a `tryParse(...)!` can't.
+A type's named values live in a companion `<Type>Constants` namespace, so the type itself stays its
+parsing API. These are the values documentation reaches for, as
+`const`, so they go where a `tryParse(...)!` can't.
 
 ```dart
-Iban.example.formatted;                 // 'GB82 WEST 1234 5698 7654 32'
-Bic.exampleDe.bic8.value;               // 'BANKDEFF'
-Isin.example.value;                     // 'US0000000002'
-PaymentCardNumber.testVisa.cardScheme;  // CardScheme.visa
+IbanConstants.example.formatted;                 // 'GB82 WEST 1234 5698 7654 32'
+BicConstants.exampleDe.bic8.value;               // 'BANKDEFF'
+IsinConstants.example.value;                     // 'US0000000002'
+PaymentCardNumberConstants.testVisa.cardScheme;  // CardScheme.visa
 ```
 
 > **Habits, not standards.** Nothing here is reserved for documentation. `WEST` and `BANK` name no
