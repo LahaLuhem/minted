@@ -70,10 +70,12 @@ The runnable version is the
 Date.unixEpoch.weekday;        // Weekday.thursday
 Date.max.tryAddDays(1);        // null, nothing sits after it
 Month.february.daysIn(2024);   // 29
+Iso8601Duration.zero.iso8601;  // 'PT0S'
 ```
 
 `Date` names its 2 bounds, POSIX's Epoch, and the first day the Gregorian calendar ran. `Month`
-names all 12.
+names all 12. `Iso8601Duration` names the zero that ISO 8601 makes you write as `PT0S`, since a
+duration needs at least 1 component.
 
 ## One shape, every type
 

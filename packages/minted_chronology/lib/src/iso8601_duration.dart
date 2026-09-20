@@ -7,6 +7,8 @@ import 'date.dart';
 import 'failures/iso8601_duration_failure.dart';
 import 'month.dart';
 
+part 'helpers/iso8601_duration_helpers.dart';
+
 /// An ISO 8601 duration: `P3Y6M4DT12H30M5S`, or the week form `P2W`.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 ///
@@ -226,33 +228,29 @@ final class Iso8601Duration {
       fraction == null &&
       Iso8601DurationComponent.values.every((component) => _valueOf(component) == 0);
 
-  static bool _hasFraction(String value) => value.contains('.');
+  /// The zero duration. ISO 8601 needs at least 1 component, so it is written `PT0S` rather than
+  /// bare `P`.
+  static const zero = Iso8601Duration._(
+    years: 0,
+    months: 0,
+    weeks: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    fraction: null,
+  );
 
-  static int _daysInYear(int year) =>
-      Date.of(year + 1).getOrThrow().differenceInDays(Date.of(year).getOrThrow());
-
-  static String _designatorOf(Iso8601DurationComponent component) => switch (component) {
-    .years => 'Y',
-    .months => 'M',
-    .weeks => 'W',
-    .days => 'D',
-    .hours => 'H',
-    .minutes => 'M',
-    .seconds => 'S',
-  };
-
-  static const _monthsPerYear = 12;
-  static const _daysPerWeek = 7;
-
-  /// Where the time half starts in [Iso8601DurationComponent]'s declaration order.
-  static final _firstTimeComponent = Iso8601DurationComponent.hours.index;
-
-  // Permissive about emptiness on purpose: `P` and `PT` match with no groups, so `parse` can name the
-  // rule they broke rather than calling them malformed.
-  static final _grammar = RegExp(
-    r'^P(?:(\d+(?:\.\d+)?)Y)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)W)?'
-    r'(?:(\d+(?:\.\d+)?)D)?'
-    r'(?:(T)(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$',
+  /// The duration ISO 8601 write-ups walk through, carrying every component at once.
+  static const example = Iso8601Duration._(
+    years: 3,
+    months: 6,
+    weeks: 0,
+    days: 4,
+    hours: 12,
+    minutes: 30,
+    seconds: 5,
+    fraction: null,
   );
 }
 

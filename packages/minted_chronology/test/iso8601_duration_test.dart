@@ -3,6 +3,9 @@ import 'package:minted_chronology/minted_chronology.dart';
 
 import '../../../test/support/bdd.dart';
 
+// A List, not a Set: Iso8601Duration overrides `==`, which a const Set refuses.
+const namedDurations = <Iso8601Duration>[.zero, .example];
+
 void main() {
   feature('Iso8601Duration', () {
     // The canonical form doubles as the outcome. Null means the input was rejected.
@@ -153,6 +156,21 @@ void main() {
 
     scenario('toString wraps the canonical form', () {
       check(Iso8601Duration.tryParse('P1,5D')!.toString()).equals('Iso8601Duration(P1.5D)');
+    });
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final duration in namedDurations) {
+        check(
+          Iso8601Duration.tryParse(duration.iso8601),
+          because: 'named constant $duration',
+        ).equals(duration);
+      }
+    });
+
+    // The zero is the one value every empty spelling collapses to, which is what makes it nameable.
+    scenario('every way of writing nothing lands on the zero', () {
+      for (final spelling in ['PT0S', 'P0D', 'P0Y0M0D', 'PT0H0M0S']) {
+        check(Iso8601Duration.tryParse(spelling), because: spelling).equals(Iso8601Duration.zero);
+      }
     });
   });
 }
