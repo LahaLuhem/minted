@@ -134,4 +134,3 @@ final class PaymentCardNumber {
   /// UnionPay.
   static const testUnionPay = PaymentCardNumber._('6200000000000005');
 }
-

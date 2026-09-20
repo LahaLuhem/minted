@@ -6,6 +6,8 @@ import 'month.dart';
 import 'normalisation/iso_date_format.dart';
 import 'weekday.dart';
 
+part 'helpers/date_helpers.dart';
+
 /// A calendar date: a year, month, and day, with no time-of-day and no time zone.
 ///
 /// The date-only value [DateTime] doesn't give you. Held in a [DateTime], a birthday drags along a time
@@ -139,42 +141,16 @@ final class Date implements Comparable<Date> {
   // can't be skewed by a daylight-saving transition the way a local day can.
   DateTime get _utcMidnight => DateTime.utc(year, month.value, day);
 
-  // The parts of an ISO 8601 YYYY-MM-DD string, or null when the input isn't that shape.
-  static ({int year, int month, int day})? _partsOf(String input) {
-    final iso8601Match = _iso8601.firstMatch(input);
+  /// The earliest date, since [year] is held in `0000`-`9999`.
+  static const min = Date._(_minYear, Month.january, 1);
 
-    return iso8601Match == null
-        ? null
-        : (
-            year: int.parse(iso8601Match.group(1)!),
-            month: int.parse(iso8601Match.group(2)!),
-            day: int.parse(iso8601Match.group(3)!),
-          );
-  }
+  /// The latest, for the same reason.
+  static const max = Date._(_maxYear, Month.december, 31);
 
-  // The one gate parse, the factory and fromDateTime all go through.
-  static Date? _tryFromParts(int year, int month, int day) {
-    final parsedMonth = Month.tryFrom(month);
-    if (parsedMonth == null) return null;
+  /// POSIX's Epoch, where a Unix timestamp counts from.
+  static const unixEpoch = Date._(1970, Month.january, 1);
 
-    final wellFormed = year >= 0 && year <= _maxYear && day >= 1 && day <= parsedMonth.daysIn(year);
-
-    return !wellFormed ? null : Date._(year, parsedMonth, day);
-  }
-
-  // Which part of the given date is out of range. Reached only after _tryFromParts returns null, so
-  // exactly one of these conditions holds.
-  static DateComponentFailure _partsFailure(int year, int month, int day) {
-    if (year < 0 || year > _maxYear) return DateYearOutOfRange(year);
-
-    final parsedMonth = Month.tryFrom(month);
-
-    return parsedMonth == null
-        ? DateMonthOutOfRange(month)
-        : DateDayOutOfRange(year: year, month: month, day: day, maxDay: parsedMonth.daysIn(year));
-  }
-
-  static final _iso8601 = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
-
-  static const _maxYear = 9999;
+  /// The first day the Gregorian calendar ran. Nothing here treats it specially: the calendar is proleptic,
+  /// so the 10 days it skipped parse like any other.
+  static const gregorianStart = Date._(1582, Month.october, 15);
 }

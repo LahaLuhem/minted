@@ -64,6 +64,17 @@ Iso8601Duration.tryParse('P1Y2W');                  // null: the week form never
 The runnable version is the
 [example](https://github.com/LahaLuhem/minted/blob/main/packages/minted_chronology/example/minted_chronology_example.dart).
 
+## Named constants
+
+```dart
+Date.unixEpoch.weekday;        // Weekday.thursday
+Date.max.tryAddDays(1);        // null, nothing sits after it
+Month.february.daysIn(2024);   // 29
+```
+
+`Date` names its 2 bounds, POSIX's Epoch, and the first day the Gregorian calendar ran. `Month`
+names all 12.
+
 ## One shape, every type
 
 - `Type.tryParse(input)` hands back the value, or `null` when the input isn't valid
