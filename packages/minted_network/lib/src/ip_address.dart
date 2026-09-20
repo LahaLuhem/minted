@@ -1,14 +1,19 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:ipaddr/ipaddr.dart';
+import 'package:meta/meta.dart';
 import 'package:minted/internal.dart';
 import 'package:minted/minted.dart';
 import 'package:minted_constraints/minted_constraints.dart';
 
 import 'encoding/octet_bits.dart';
+import 'failures/cidr_failure.dart';
 import 'failures/ip_address_failure.dart';
 
+part 'cidr.dart';
+part 'helpers/cidr_helpers.dart';
 part 'helpers/ip_address_helpers.dart';
 
 /// An IP address, v4 or v6, in canonical text form: `192.0.2.1`, `2001:db8::1`.

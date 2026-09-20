@@ -9,6 +9,8 @@ import '../../../test/support/bdd.dart';
 Geohash _geohash({required GeoCoordinate coordinate, required int precision}) =>
     Geohash.from(coordinate: coordinate, precision: NaturalNumber.tryFrom(precision)!);
 
+const namedGeohashes = <Geohash>{.first};
+
 void main() {
   final eiffelTower = GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!;
 
@@ -165,6 +167,32 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const GeohashInvalidCharacter('a'));
+    });
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final geohash in namedGeohashes) {
+        check(
+          Geohash.tryParse(geohash.value)?.value,
+          because: 'named constant $geohash',
+        ).equals(geohash.value);
+      }
+    });
+
+    // Longitude -180 folds to +180 on a coordinate, so the western edge is approached, never hit.
+    // Precision 1 is what catches a first cell that is merely low rather than lowest.
+    scenario('no geohash anywhere on Earth sorts before the first cell', () {
+      for (final latitude in [-90, -45, 0, 45, 90]) {
+        for (final longitude in [-179.9, -90, 0, 90, 180]) {
+          for (final precision in [1, 4, 8]) {
+            final corner = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
+            final geohash = _geohash(coordinate: corner, precision: precision);
+
+            check(
+              geohash.value.compareTo(Geohash.first.value),
+              because: '$corner gives $geohash',
+            ).isGreaterOrEqual(0);
+          }
+        }
+      }
     });
   });
 }
