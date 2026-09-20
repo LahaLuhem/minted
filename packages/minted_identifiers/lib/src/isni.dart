@@ -8,6 +8,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/doubling_mod11_check_character.dart';
 import 'failures/isni_failure.dart';
 
+part 'helpers/isni_helpers.dart';
+
 /// An ISNI (International Standard Name Identifier): names a public identity, so a person, a pen name,
 /// or an organisation. Standard: [ISO 27729](https://www.isni.org/).
 ///
@@ -56,25 +58,6 @@ extension type const Isni._(String value) {
   bool get isInOrcidBlock =>
       value.compareTo(_orcidBlockStart) >= 0 && value.compareTo(_orcidBlockEnd) <= 0;
 
-  // The one gate parse and fromBody both go through. Widest check first, so the earliest wrong thing
-  // gets named.
-  static IsniFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length != _length => IsniWrongLength(compactInput.length),
-    _ when !_isniForm.hasMatch(compactInput) => const IsniInvalidCharacters(),
-    _ when !_checksumHolds(compactInput) => const IsniChecksumFailed(),
-    _ => null,
-  };
-
-  static bool _checksumHolds(String compactInput) => compactInput.endsWith(
-    doublingMod11CheckCharacter(compactInput.substring(0, _checkCharacterIndex)),
-  );
-
-  static final _isniForm = RegExp(r'^\d{15}[\dX]$');
-
-  static const _length = 16;
-  static const _groupSize = 4;
-  static const _checkCharacterIndex = 15;
-  // ORCID's block as published: 0000-0001-5000-0000 through 0000-0003-5000-0001.
-  static const _orcidBlockStart = '0000000150000000';
-  static const _orcidBlockEnd = '0000000350000001';
+  /// ORCID's own example record, belonging to a professor Brown University invented in 1929.
+  static const example = Isni._('0000000218250097');
 }
