@@ -1,4 +1,4 @@
-part of '../cidr.dart';
+part of '../ip_address.dart';
 
 // Split out so parse reads as its 2 stages: the address, then everything the address decides.
 ParseOutcome<CidrFailure, Cidr> _withPrefix(IpAddress network, String prefixText) {
@@ -26,14 +26,14 @@ IpAddress _masked(IpAddress address, int prefixLength) {
   return IpAddress.fromOctets(
     Uint8List.fromList([
       for (var index = 0; index < octets.length; index++)
-        octets[index] & _octetMask(index, prefixLength),
+        octets[index] & _octetMaskAt(index, prefixLength),
     ]),
   ).getOrThrow();
 }
 
 // The prefix eats whole octets until it runs out, then covers the top bits of one more. min/max rather
 // than clamp, which is declared on num and would widen the shift operand.
-int _octetMask(int index, int prefixLength) {
+int _octetMaskAt(int index, int prefixLength) {
   final coveredBits = min(max(prefixLength - index * bitsPerOctet, 0), bitsPerOctet);
 
   return _allOctetBits << (bitsPerOctet - coveredBits) & _allOctetBits;

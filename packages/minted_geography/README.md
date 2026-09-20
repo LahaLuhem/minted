@@ -94,10 +94,12 @@ The runnable version is the
 ```dart
 GeoBounds.wholeWorld.bbox;   // '-180.0,-90.0,180.0,90.0'
 Latitude.max;                // 90.0, the last degree that parses
+Geohash.first.value;         // '0', which every geohash sorts at or after
 ```
 
 `Latitude` and `Longitude` name the bounds they're defined by, and `GeoBounds.wholeWorld` is the box
-built from all 4.
+built from all 4. `Geohash.first` is the floor of the sort order. There's no ceiling to name, since
+any geohash takes another `z`.
 
 ## One shape, every type
 
