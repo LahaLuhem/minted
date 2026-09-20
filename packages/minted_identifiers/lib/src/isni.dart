@@ -8,6 +8,7 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/doubling_mod11_check_character.dart';
 import 'failures/isni_failure.dart';
 
+part 'constants/isni_constants.dart';
 part 'helpers/isni_helpers.dart';
 
 /// An ISNI (International Standard Name Identifier): names a public identity, so a person, a pen name,
@@ -18,6 +19,8 @@ part 'helpers/isni_helpers.dart';
 ///
 /// An ORCID iD is an ISNI out of ORCID's block, so it parses here and [isInOrcidBlock] says so. Why
 /// there's no separate `Orcid`: `APPENDIX.md#isni-value-type`.
+///
+/// Named values: [IsniConstants].
 ///
 /// {@example /example/minted_identifiers_example.dart#isni}
 extension type const Isni._(String value) {
@@ -57,7 +60,4 @@ extension type const Isni._(String value) {
   // strings sort the same way the numbers do.
   bool get isInOrcidBlock =>
       value.compareTo(_orcidBlockStart) >= 0 && value.compareTo(_orcidBlockEnd) <= 0;
-
-  /// ORCID's own example record, belonging to a professor Brown University invented in 1929.
-  static const example = Isni._('0000000218250097');
 }

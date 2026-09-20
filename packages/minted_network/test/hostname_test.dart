@@ -5,20 +5,20 @@ import 'package:minted_network/minted_network.dart';
 import '../../../test/support/bdd.dart';
 
 const namedHostnames = <Hostname>{
-  .localhost,
-  .test,
-  .invalid,
-  .example,
-  .exampleCom,
-  .exampleNet,
-  .exampleOrg,
-  .local,
-  .internal,
-  .localhostLocaldomain,
-  .localdomain,
-  .lan,
-  .home,
-  .corp,
+  HostnameConstants.localhost,
+  HostnameConstants.test,
+  HostnameConstants.invalid,
+  HostnameConstants.example,
+  HostnameConstants.exampleCom,
+  HostnameConstants.exampleNet,
+  HostnameConstants.exampleOrg,
+  HostnameConstants.local,
+  HostnameConstants.internal,
+  HostnameConstants.localhostLocaldomain,
+  HostnameConstants.localdomain,
+  HostnameConstants.lan,
+  HostnameConstants.home,
+  HostnameConstants.corp,
 };
 
 void main() {
@@ -148,12 +148,12 @@ void main() {
 
     scenario('labels reads the name apart, most specific first', () {
       check(Hostname.tryParse('www.example.com')!.labels).deepEquals(['www', 'example', 'com']);
-      check(Hostname.localhost.labels).deepEquals(['localhost']);
+      check(HostnameConstants.localhost.labels).deepEquals(['localhost']);
     });
 
     scenario('fqdn rebuilds the trailing-dot spelling parse dropped', () {
       check(Hostname.tryParse('www.example.com.')!.fqdn).equals('www.example.com.');
-      check(Hostname.localhost.fqdn).equals('localhost.');
+      check(HostnameConstants.localhost.fqdn).equals('localhost.');
     });
 
     scenario('fromLabels round-trips through labels and reports parts that do not form one', () {

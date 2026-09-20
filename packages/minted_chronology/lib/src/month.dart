@@ -5,11 +5,15 @@ import 'package:minted/minted.dart';
 
 import 'failures/month_failure.dart';
 
+part 'constants/month_constants.dart';
+
 /// A month of the year, `1` (January) to `12` (December).
 ///
 /// A month is one of 12, not any `int`, so this makes "a real month" a fact of the type rather than
 /// something every caller re-checks. It also carries the calendar knowledge hanging off a month: [daysIn]
 /// gives the length in a given year, February included.
+///
+/// Named values: [MonthConstants].
 extension type const Month._(int value) {
   /// Parses [input] as a month number, `'7'` or `'07'`, or `null` unless it names one in `1`-`12`.
   static Month? tryParse(String input) => parse(input).getOrNull();
@@ -23,48 +27,15 @@ extension type const Month._(int value) {
 
   /// The [Month] with number [value], or `null` unless it's in `1`-`12`.
   static Month? tryFrom(int value) =>
-      value >= january.value && value <= december.value ? ._(value) : null;
+      value >= MonthConstants.january.value && value <= MonthConstants.december.value
+      ? ._(value)
+      : null;
 
   /// How many days this month has in [year], `28`-`31`. February gets `29` in a leap year, by the proleptic
   /// Gregorian rule: divisible by 4, bar centuries not divisible by 400.
-  int daysIn(int year) =>
-      value == february.value && _isLeapYear(year) ? _daysInLeapFebruary : _lengths[value - 1];
-
-  /// January, month `1`.
-  static const january = Month._(1);
-
-  /// February, month `2`.
-  static const february = Month._(2);
-
-  /// March, month `3`.
-  static const march = Month._(3);
-
-  /// April, month `4`.
-  static const april = Month._(4);
-
-  /// May, month `5`.
-  static const may = Month._(5);
-
-  /// June, month `6`.
-  static const june = Month._(6);
-
-  /// July, month `7`.
-  static const july = Month._(7);
-
-  /// August, month `8`.
-  static const august = Month._(8);
-
-  /// September, month `9`.
-  static const september = Month._(9);
-
-  /// October, month `10`.
-  static const october = Month._(10);
-
-  /// November, month `11`.
-  static const november = Month._(11);
-
-  /// December, month `12`.
-  static const december = Month._(12);
+  int daysIn(int year) => value == MonthConstants.february.value && _isLeapYear(year)
+      ? _daysInLeapFebruary
+      : _lengths[value - 1];
 
   static bool _isLeapYear(int year) =>
       year % _leapDivisor == 0 && (year % _centuryDivisor != 0 || year % _leapCenturyDivisor == 0);

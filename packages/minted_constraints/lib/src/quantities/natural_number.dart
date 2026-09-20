@@ -1,5 +1,7 @@
 import 'uint.dart';
 
+part '../constants/natural_number_constants.dart';
+
 /// An integer strictly greater than zero: `1` or more.
 ///
 /// Where zero is a legal answer, reach for [Uint]. There is no upper bound.
@@ -12,11 +14,10 @@ import 'uint.dart';
 /// > counts `0` among the naturals, school arithmetic starts at `1`. This type takes the second
 /// > reading.
 ///
+/// Named values: [NaturalNumberConstants].
+///
 /// {@example /example/minted_constraints_example.dart#quantities}
 extension type const NaturalNumber._(int value) implements Uint {
   /// The [NaturalNumber] with numeric [value], or `null` unless it's `1` or more.
-  static NaturalNumber? tryFrom(int value) => value < one ? null : ._(value);
-
-  /// The smallest natural number: `1`.
-  static const one = NaturalNumber._(1);
+  static NaturalNumber? tryFrom(int value) => value < NaturalNumberConstants.one ? null : ._(value);
 }

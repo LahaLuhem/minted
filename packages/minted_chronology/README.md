@@ -66,16 +66,19 @@ The runnable version is the
 
 ## Named constants
 
+A type's named values live in a companion `<Type>Constants` namespace, so the type itself stays its
+parsing API. They're `const`, so they reach where a `tryParse(...)!` can't.
+
 ```dart
-Date.unixEpoch.weekday;        // Weekday.thursday
-Date.max.tryAddDays(1);        // null, nothing sits after it
-Month.february.daysIn(2024);   // 29
-Iso8601Duration.zero.iso8601;  // 'PT0S'
+DateConstants.unixEpoch.weekday;        // Weekday.thursday
+DateConstants.max.tryAddDays(1);        // null, nothing sits after it
+MonthConstants.february.daysIn(2024);   // 29
+Iso8601DurationConstants.zero.iso8601;  // 'PT0S'
 ```
 
-`Date` names its 2 bounds, POSIX's Epoch, and the first day the Gregorian calendar ran. `Month`
-names all 12. `Iso8601Duration` names the zero that ISO 8601 makes you write as `PT0S`, since a
-duration needs at least 1 component.
+`DateConstants` names the 2 bounds, POSIX's Epoch, and the first day the Gregorian calendar ran.
+`MonthConstants` names all 12. `Iso8601DurationConstants` names the zero that ISO 8601 makes you
+write as `PT0S`, since a duration needs at least 1 component.
 
 ## One shape, every type
 

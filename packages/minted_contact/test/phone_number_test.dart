@@ -5,7 +5,7 @@ import 'package:minted_contact/minted_contact.dart';
 
 import '../../../test/support/bdd.dart';
 
-const namedNumbers = <PhoneNumber>{.exampleUs, .exampleGb};
+const namedNumbers = <PhoneNumber>{PhoneNumberConstants.exampleUs, PhoneNumberConstants.exampleGb};
 
 void main() {
   feature('PhoneNumber', () {
@@ -46,7 +46,7 @@ void main() {
 
       check(parsedPhone.countryCode).equals('33');
       check(parsedPhone.nationalNumber.length).equals(9);
-      check(parsedPhone.nationalNumber.first).equals(Digit.d6);
+      check(parsedPhone.nationalNumber.first).equals(DigitConstants.d6);
       check(parsedPhone.nationalNumber.asString).equals('655570576');
     });
 
@@ -55,7 +55,7 @@ void main() {
     });
 
     scenario('a phone number builds a tel: URI', () {
-      check(PhoneNumber.exampleUs.telUri.toString()).equals('tel:+12015550123');
+      check(PhoneNumberConstants.exampleUs.telUri.toString()).equals('tel:+12015550123');
     });
 
     // Only unknownCountryCallingCode comes from the engine: notFound is the one code phone_numbers_parser

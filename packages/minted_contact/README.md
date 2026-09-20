@@ -64,17 +64,19 @@ The runnable version is the
 
 ## Named constants
 
-`Email` names the RFC 2142 mailboxes, each at `example.com`, which
-[RFC 2606 §3](https://www.rfc-editor.org/rfc/rfc2606#section-3) reserves for documentation.
-`PhoneNumber` names the 2 numbers RFC 3966 and RFC 6116 use as their own examples, both inside a
-range a regulator keeps for fiction.
+A type's named values live in a companion `<Type>Constants` namespace, so the type itself stays its
+parsing API. `EmailConstants` names the RFC 2142 mailboxes, each at
+`example.com`, which [RFC 2606 §3](https://www.rfc-editor.org/rfc/rfc2606#section-3) reserves for
+documentation. `PhoneNumberConstants` names the 2 numbers RFC 3966 and RFC 6116 use as their own
+examples, both inside a range a regulator keeps for fiction.
 
 ```dart
-const escalation = <Email>[.abuse, .security, .noc];   // const, which tryParse(…)! can never be
+// const, which tryParse(…)! can never be
+const escalation = <Email>[EmailConstants.abuse, EmailConstants.security, EmailConstants.noc];
 
-Email.postmaster.value;                   // 'postmaster@example.com'
-Email.noReply.mailtoUri;                  // mailto:no-reply@example.com
-PhoneNumber.exampleGb.formatNational();   // '20 7946 0148'
+EmailConstants.postmaster.value;                   // 'postmaster@example.com'
+EmailConstants.noReply.mailtoUri;                  // mailto:no-reply@example.com
+PhoneNumberConstants.exampleGb.formatNational();   // '20 7946 0148'
 ```
 
 > **Some are habit, not standard.** No RFC names `admin`, `root` or `no-reply`. Treat a match as a

@@ -7,6 +7,7 @@ import 'date.dart';
 import 'failures/iso8601_duration_failure.dart';
 import 'month.dart';
 
+part 'constants/iso8601_duration_constants.dart';
 part 'helpers/iso8601_duration_helpers.dart';
 
 /// An ISO 8601 duration: `P3Y6M4DT12H30M5S`, or the week form `P2W`.
@@ -25,6 +26,8 @@ part 'helpers/iso8601_duration_helpers.dart';
 ///
 /// Parsing turns a decimal comma into a point and collapses zero components, so `P1Y0M` and `P1Y` are
 /// one value. [iso8601] is the canonical form.
+///
+/// Named values: [Iso8601DurationConstants].
 ///
 /// {@example /example/minted_chronology_example.dart#iso8601Duration}
 @immutable
@@ -216,31 +219,6 @@ final class const Iso8601Duration._({
   bool get _isZero =>
       fraction == null &&
       Iso8601DurationComponent.values.every((component) => _valueOf(component) == 0);
-
-  /// The zero duration. ISO 8601 needs at least 1 component, so it is written `PT0S` rather than
-  /// bare `P`.
-  static const zero = Iso8601Duration._(
-    years: 0,
-    months: 0,
-    weeks: 0,
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    fraction: null,
-  );
-
-  /// The duration ISO 8601 write-ups walk through, carrying every component at once.
-  static const example = Iso8601Duration._(
-    years: 3,
-    months: 6,
-    weeks: 0,
-    days: 4,
-    hours: 12,
-    minutes: 30,
-    seconds: 5,
-    fraction: null,
-  );
 }
 
 /// Which component of an [Iso8601Duration] carries its fractional part.

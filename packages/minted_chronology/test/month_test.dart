@@ -32,13 +32,25 @@ void main() {
     scenarioOutline<({Month month, int year, int days})>(
       'Month.daysIn gives the length of the month in a given year',
       examples: {
-        'January has 31': (month: Month.january, year: 2026, days: 31),
-        'April has 30': (month: Month.april, year: 2026, days: 30),
-        'December has 31': (month: Month.december, year: 2026, days: 31),
-        'February in a common year has 28': (month: Month.february, year: 2023, days: 28),
-        'February in a year divisible by 4 has 29': (month: Month.february, year: 2024, days: 29),
-        'February in a year divisible by 100 has 28': (month: Month.february, year: 1900, days: 28),
-        'February in a year divisible by 400 has 29': (month: Month.february, year: 2000, days: 29),
+        'January has 31': (month: MonthConstants.january, year: 2026, days: 31),
+        'April has 30': (month: MonthConstants.april, year: 2026, days: 30),
+        'December has 31': (month: MonthConstants.december, year: 2026, days: 31),
+        'February in a common year has 28': (month: MonthConstants.february, year: 2023, days: 28),
+        'February in a year divisible by 4 has 29': (
+          month: MonthConstants.february,
+          year: 2024,
+          days: 29,
+        ),
+        'February in a year divisible by 100 has 28': (
+          month: MonthConstants.february,
+          year: 1900,
+          days: 28,
+        ),
+        'February in a year divisible by 400 has 29': (
+          month: MonthConstants.february,
+          year: 2000,
+          days: 29,
+        ),
       },
       outline: (example) {
         check(example.month.daysIn(example.year)).equals(example.days);
@@ -55,25 +67,25 @@ void main() {
     });
 
     scenario('the named constants carry their month number', () {
-      check(Month.january.value).equals(1);
-      check(Month.july.value).equals(7);
-      check(Month.december.value).equals(12);
+      check(MonthConstants.january.value).equals(1);
+      check(MonthConstants.july.value).equals(7);
+      check(MonthConstants.december.value).equals(12);
     });
 
     scenario('equal months are equal, whichever way they are built', () {
-      check(Month.tryFrom(7)).equals(Month.july);
-      check(Month.tryParse('07')).equals(Month.july);
-      check(Month.july == Month.august).isFalse();
+      check(Month.tryFrom(7)).equals(MonthConstants.july);
+      check(Month.tryParse('07')).equals(MonthConstants.july);
+      check(MonthConstants.july == MonthConstants.august).isFalse();
     });
 
     scenario('parse reports the failure rather than throwing', () {
       check(Month.parse('13')).equals(const ParseFailure(MonthFailure.notAMonth));
-      check(Month.parse('07')).equals(const ParseSuccess(Month.july));
+      check(Month.parse('07')).equals(const ParseSuccess(MonthConstants.july));
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
       check(Month.tryParse('13')).isNull();
-      check(Month.tryParse('7')).equals(Month.july);
+      check(Month.tryParse('7')).equals(MonthConstants.july);
     });
 
     scenario('tryFrom rejects an out-of-range number', () {

@@ -5,6 +5,7 @@ import 'package:minted/minted.dart';
 
 import 'failures/uuid_failure.dart';
 
+part 'constants/uuid_constants.dart';
 part 'helpers/uuid_helpers.dart';
 
 /// A UUID: 128 bits as `8-4-4-4-12` hex, like `f81d4fae-7dec-11d0-a765-00a0c91e6bf6`.
@@ -15,6 +16,8 @@ part 'helpers/uuid_helpers.dart';
 ///
 /// Parsing trims spaces, lower-cases the hex, and drops a `urn:uuid:` prefix or `{…}` wrapper, so all
 /// those spellings compare equal.
+///
+/// Named values: [UuidConstants].
 ///
 /// {@example /example/minted_identifiers_example.dart#uuid}
 extension type const Uuid._(String value) {
@@ -60,32 +63,11 @@ extension type const Uuid._(String value) {
     };
   }
 
-  /// Whether this is [nil].
-  bool get isNil => value == nil.value;
+  /// Whether this is [UuidConstants.nil].
+  bool get isNil => value == UuidConstants.nil.value;
 
-  /// Whether this is [max].
-  bool get isMax => value == max.value;
-
-  /// All zeros, RFC 9562's "no UUID here".
-  static const nil = Uuid._('00000000-0000-0000-0000-000000000000');
-
-  /// All ones, RFC 9562's top of a UUID range.
-  static const max = Uuid._('ffffffff-ffff-ffff-ffff-ffffffffffff');
-
-  // The namespaces RFC 9562 §6.6 registers for version 3 and 5. IANA takes more on request, so
-  // these are the 4 registered rather than every one there can be.
-
-  /// The DNS namespace, for hashing a domain name into a version 3 or 5 UUID.
-  static const namespaceDns = Uuid._('6ba7b810-9dad-11d1-80b4-00c04fd430c8');
-
-  /// The URL namespace.
-  static const namespaceUrl = Uuid._('6ba7b811-9dad-11d1-80b4-00c04fd430c8');
-
-  /// The ISO OID namespace.
-  static const namespaceOid = Uuid._('6ba7b812-9dad-11d1-80b4-00c04fd430c8');
-
-  /// The X.500 distinguished name namespace.
-  static const namespaceX500 = Uuid._('6ba7b814-9dad-11d1-80b4-00c04fd430c8');
+  /// Whether this is [UuidConstants.max].
+  bool get isMax => value == UuidConstants.max.value;
 
   /// The `urn:uuid:<value>` form.
   String get urn => '$_urnPrefix$value';
@@ -101,7 +83,7 @@ extension type const Uuid._(String value) {
 /// Which layout family a [Uuid] belongs to. See [RFC 9562 §4.1](https://www.rfc-editor.org/rfc/rfc9562#section-4.1)
 /// .
 enum UuidVariant() {
-  /// Bits `0xxx`, kept for NCS. [Uuid.nil] lands here.
+  /// Bits `0xxx`, kept for NCS. [UuidConstants.nil] lands here.
   ncs,
 
   /// Bits `10xx`. What essentially every UUID in the wild is.
@@ -110,6 +92,6 @@ enum UuidVariant() {
   /// Bits `110x`, kept for Microsoft.
   microsoft,
 
-  /// Bits `111x`, reserved. [Uuid.max] lands here.
+  /// Bits `111x`, reserved. [UuidConstants.max] lands here.
   future,
 }

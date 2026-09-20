@@ -11,6 +11,7 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/iban_check_digits.dart';
 import 'failures/iban_failure.dart';
 
+part 'constants/iban_constants.dart';
 part 'helpers/iban_helpers.dart';
 
 /// An IBAN (International Bank Account Number).
@@ -19,6 +20,8 @@ part 'helpers/iban_helpers.dart';
 /// Parsing strips whitespace and upper-cases, so [value] is the compact electronic form and [formatted]
 /// rebuilds the grouped paper one. Country coverage tracks `iban_validator`, and the README carries
 /// the caveat.
+///
+/// Named values: [IbanConstants].
 ///
 /// {@example /example/minted_finance_example.dart#iban}
 extension type const Iban._(String value) {
@@ -70,7 +73,4 @@ extension type const Iban._(String value) {
     (group) =>
         value.substring(group * _groupSize, math.min((group + 1) * _groupSize, value.length)),
   ).join(' ');
-
-  /// `GB82 WEST 1234 5698 7654 32`, the usual worked example. Its `WEST` names no real bank.
-  static const example = Iban._('GB82WEST12345698765432');
 }

@@ -6,12 +6,16 @@ import 'package:phone_numbers_parser/phone_numbers_parser.dart' as phone_numbers
 
 import 'failures/phone_number_failure.dart';
 
+part 'constants/phone_number_constants.dart';
+
 /// A phone number, stored in canonical E.164 form by `phone_numbers_parser`.
 /// Standard: [E.164](https://en.wikipedia.org/wiki/E.164).
 ///
 /// Parsing resolves to E.164 (`+`, country calling code, national number), so [value] is comparable
 /// and storable. National-format input needs a [tryParse] `region` hint, ISO 3166-1 alpha-2 like `'GB'`.
 /// Already-international input parses without one.
+///
+/// Named values: [PhoneNumberConstants].
 ///
 /// {@example /example/minted_contact_example.dart#phone}
 extension type const PhoneNumber._(String value) {
@@ -91,10 +95,4 @@ extension type const PhoneNumber._(String value) {
   //==================================== RFC EXAMPLE NUMBERS =====================================//
   // The numbers the specs themselves use, each inside a range its regulator keeps for fiction, so
   // neither one rings a real phone.
-
-  /// `+1 201 555 0123`, RFC 3966 §6's example, inside the `555-0100`-`0199` block NANPA reserves.
-  static const exampleUs = PhoneNumber._('+12015550123');
-
-  /// `+44 20 7946 0148`, RFC 6116 §3.2's example, inside Ofcom's `020 7946` range for drama.
-  static const exampleGb = PhoneNumber._('+442079460148');
 }

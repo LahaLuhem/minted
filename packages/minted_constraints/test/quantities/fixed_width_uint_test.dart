@@ -11,17 +11,17 @@ import '../../../../test/support/bdd.dart';
 // A const list, so the file failing to build is the assertion: the named ends must stay `static const`
 // rather than drifting back to getters.
 const ends = <int>[
-  Uint2.u0,
-  Uint2.max,
-  Uint4.u0,
-  Uint4.max,
-  Uint8.zero,
-  Uint8.max,
-  Uint16.zero,
-  Uint16.max,
-  Uint32.zero,
-  Uint32.max,
-  Uint.zero,
+  Uint2Constants.u0,
+  Uint2Constants.max,
+  Uint4Constants.u0,
+  Uint4Constants.max,
+  Uint8Constants.zero,
+  Uint8Constants.max,
+  Uint16Constants.zero,
+  Uint16Constants.max,
+  Uint32Constants.zero,
+  Uint32Constants.max,
+  UintConstants.zero,
 ];
 
 void main() {

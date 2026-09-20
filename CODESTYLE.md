@@ -265,8 +265,8 @@ either. Rationale:
 **Named constants are an optional addition to that surface, and the bar is high.** Dart has no
 fallible const constructor, so a private `._` leaves `tryFrom(...)!` as the only way to name a
 known-good value, and that is unusable in a const context: a const collection, a default parameter
-value, a `case` pattern. Named constants are the only fix, which is why `Month` declares `january`
-to `december`. They are also permanent public API, so:
+value, a `case` pattern. Named constants are the only fix, which is why `MonthConstants` declares
+`january` to `december`. They are also permanent public API, so:
 
 > A type declares constants when consumers need to name an instance at compile time. A value
 > qualifies 2 ways: it is a member of a **closed domain** the type enumerates, all or none, or
@@ -277,17 +277,24 @@ to `december`. They are also permanent public API, so:
   names 12 or it names none. A partial set ("the handy ones") is worse than none, because the
   gap is invisible at the call site. `Uint2` and `Uint4` enumerate their 4 and 16. `Uint8` upward
   do not, since 256 names nobody types is noise, so they name their 2 ends instead.
-- **Name it what the domain calls it.** A month is called January, so `Month.january`. A digit is
-  called `3`, so `Digit.d3`, the prefix there only because an identifier cannot start with a digit.
-  A numeral suffix also carries its own value, so a `n0` holding `1` cannot happen.
+- **Name it what the domain calls it.** A month is called January, so `MonthConstants.january`. A
+  digit is called `3`, so `DigitConstants.d3`, the prefix there only because an identifier cannot
+  start with a digit. A numeral suffix also carries its own value, so a `n0` holding `1` cannot
+  happen.
 - **Landmark: already named, not merely useful.** A bound the type is defined by, or a value its
   standard gives a term. The mechanical test is an existing `bool get isX` with no writing half
   (`Probability.isImpossible`, `Uuid.isNil`, `MacAddress.isBroadcast`, `Port.isWildcard`).
+- **They live in a companion `<Type>Constants` namespace, not on the type**, an `abstract final
+  class` in `lib/src/constants/`, `part of` its type's file so it can reach `._`. Flat, they bury
+  the parsing API in autocomplete. A container *object* cannot replace it, because reading a field
+  off a const one is not a constant expression. Nor can the plural, since `Digits` and `Letters`
+  are already sequence types.
 - **`static const`, never a getter.** `static Digit get zero => const ._(0)` makes the *object*
   const and the *member* not, so it fails in every const context the rule exists to serve.
 - **A class-backed type plays only if its representation is const-constructible.** `Digits` is
   `Uint8List`-backed and that has no const constructor, so it gets none.
-- Each constant carries a `///` line, and the type's dartdoc points at the set as `Month`'s does.
+- Each constant carries a `///` line, and the type's dartdoc points at its namespace as `Month`'s
+  does.
 
 **Why:** the demand is real (public members across several packages hand back a `Digit`, so
 callers compare it against literals), and so is the creep. The two clauses are what keep out a

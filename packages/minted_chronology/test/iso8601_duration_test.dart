@@ -4,7 +4,10 @@ import 'package:minted_chronology/minted_chronology.dart';
 import '../../../test/support/bdd.dart';
 
 // A List, not a Set: Iso8601Duration overrides `==`, which a const Set refuses.
-const namedDurations = <Iso8601Duration>[.zero, .example];
+const namedDurations = <Iso8601Duration>[
+  Iso8601DurationConstants.zero,
+  Iso8601DurationConstants.example,
+];
 
 void main() {
   feature('Iso8601Duration', () {
@@ -169,7 +172,10 @@ void main() {
     // The zero is the one value every empty spelling collapses to, which is what makes it nameable.
     scenario('every way of writing nothing lands on the zero', () {
       for (final spelling in ['PT0S', 'P0D', 'P0Y0M0D', 'PT0H0M0S']) {
-        check(Iso8601Duration.tryParse(spelling), because: spelling).equals(Iso8601Duration.zero);
+        check(
+          Iso8601Duration.tryParse(spelling),
+          because: spelling,
+        ).equals(Iso8601DurationConstants.zero);
       }
     });
   });

@@ -5,7 +5,7 @@ import 'package:minted_geography/minted_geography.dart';
 import '../../../test/support/bdd.dart';
 
 // A List, not a Set: GeoBounds overrides `==`, which a const Set refuses.
-const namedBounds = <GeoBounds>[.wholeWorld];
+const namedBounds = <GeoBounds>[GeoBoundsConstants.wholeWorld];
 
 void main() {
   feature('GeoBounds', () {
@@ -281,11 +281,11 @@ void main() {
     });
 
     scenario('the whole world holds every corner of the coordinate space', () {
-      for (final latitude in [Latitude.min, Latitude.max]) {
-        for (final longitude in [Longitude.min, Longitude.max]) {
+      for (final latitude in [LatitudeConstants.min, LatitudeConstants.max]) {
+        for (final longitude in [LongitudeConstants.min, LongitudeConstants.max]) {
           final corner = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
 
-          check(GeoBounds.wholeWorld.contains(corner), because: '$corner').isTrue();
+          check(GeoBoundsConstants.wholeWorld.contains(corner), because: '$corner').isTrue();
         }
       }
     });

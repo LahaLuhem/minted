@@ -8,6 +8,7 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/gs1_check_digit.dart';
 import 'failures/gtin_failure.dart';
 
+part 'constants/gtin_constants.dart';
 part 'helpers/gtin_helpers.dart';
 
 /// A GTIN (Global Trade Item Number): the number inside an EAN-8, UPC-A, EAN-13 or ITF-14 barcode. Standard:
@@ -17,6 +18,8 @@ part 'helpers/gtin_helpers.dart';
 /// equal. [shortestForm], [gtin13], [gtin12] and [gtin8] spell it back shorter.
 ///
 /// No company-prefix split: that boundary lives in GS1's registry, not in the digits.
+///
+/// Named values: [GtinConstants].
 ///
 /// {@example /example/minted_identifiers_example.dart#gtin}
 extension type const Gtin._(String value) {
@@ -60,7 +63,4 @@ extension type const Gtin._(String value) {
   String? _atLength(int length) => value.substring(0, _length14 - length).contains(_nonZeroDigit)
       ? null
       : value.substring(_length14 - length);
-
-  /// A restricted circulation number. GS1 keeps `20`-`29` company-internal, so it names no product.
-  static const restrictedCirculation = Gtin._('02000000000008');
 }

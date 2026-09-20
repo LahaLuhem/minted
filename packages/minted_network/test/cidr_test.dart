@@ -6,20 +6,20 @@ import '../../../test/support/bdd.dart';
 
 // A List where the other types use a Set: Cidr overrides `==`, which a const Set refuses.
 const namedBlocks = <Cidr>[
-  .private10,
-  .private172,
-  .private192,
-  .uniqueLocalV6,
-  .sharedAddress,
-  .linkLocalV4,
-  .linkLocalV6,
-  .multicastV4,
-  .multicastV6,
-  .docV4_1,
-  .docV4_2,
-  .docV4_3,
-  .docV6,
-  .v4MappedV6,
+  CidrConstants.private10,
+  CidrConstants.private172,
+  CidrConstants.private192,
+  CidrConstants.uniqueLocalV6,
+  CidrConstants.sharedAddress,
+  CidrConstants.linkLocalV4,
+  CidrConstants.linkLocalV6,
+  CidrConstants.multicastV4,
+  CidrConstants.multicastV6,
+  CidrConstants.docV4_1,
+  CidrConstants.docV4_2,
+  CidrConstants.docV4_3,
+  CidrConstants.docV6,
+  CidrConstants.v4MappedV6,
 ];
 
 void main() {

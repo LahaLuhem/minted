@@ -6,7 +6,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
-const namedIsnis = <Isni>{.example};
+const namedIsnis = <Isni>{IsniConstants.example};
 
 void main() {
   feature('Isni', () {

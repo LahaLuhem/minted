@@ -5,13 +5,13 @@ import '../../../../test/support/bdd.dart';
 
 // Each of these 3 is a const context, so the file failing to build is the assertion: a getter could
 // not stand in any of them.
-const firstThree = <Digit>[.d0, .d1, .d2];
+const firstThree = <Digit>[DigitConstants.d0, DigitConstants.d1, DigitConstants.d2];
 
-Digit startingAt([Digit start = Digit.d0]) => start;
+Digit startingAt([Digit start = DigitConstants.d0]) => start;
 
 String nameOf(Digit digit) => switch (digit) {
-  .d0 => 'zero',
-  .d9 => 'nine',
+  DigitConstants.d0 => 'zero',
+  DigitConstants.d9 => 'nine',
   _ => 'neither end',
 };
 
@@ -33,7 +33,7 @@ void main() {
     );
 
     scenario('a Digit renders as its bare character', () {
-      check(Digit.d7.toString()).equals('7');
+      check(DigitConstants.d7.toString()).equals('7');
     });
 
     scenario('equal digits are equal, and differing ones are not', () {
@@ -42,16 +42,16 @@ void main() {
     });
 
     scenario('the named constants carry their digit, whichever way one is built', () {
-      check(Digit.d0.value).equals(0);
-      check(Digit.d9.value).equals(9);
-      check(Digit.tryFrom(7)).equals(Digit.d7);
+      check(DigitConstants.d0.value).equals(0);
+      check(DigitConstants.d9.value).equals(9);
+      check(Digit.tryFrom(7)).equals(DigitConstants.d7);
     });
 
     scenario('the constants reach const lists, default arguments and case patterns', () {
       check(firstThree.map((digit) => digit.value)).deepEquals([0, 1, 2]);
-      check(startingAt()).equals(Digit.d0);
-      check(nameOf(Digit.d9)).equals('nine');
-      check(nameOf(Digit.d5)).equals('neither end');
+      check(startingAt()).equals(DigitConstants.d0);
+      check(nameOf(DigitConstants.d9)).equals('nine');
+      check(nameOf(DigitConstants.d5)).equals('neither end');
     });
   });
 }

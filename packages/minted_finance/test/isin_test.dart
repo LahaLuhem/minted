@@ -5,7 +5,7 @@ import 'package:minted_finance/minted_finance.dart';
 
 import '../../../test/support/bdd.dart';
 
-const namedIsins = <Isin>{.example, .exampleInternational};
+const namedIsins = <Isin>{IsinConstants.example, IsinConstants.exampleInternational};
 
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;

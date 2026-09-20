@@ -5,7 +5,7 @@ import 'package:minted_finance/minted_finance.dart';
 
 import '../../../test/support/bdd.dart';
 
-const namedIbans = <Iban>{.example};
+const namedIbans = <Iban>{IbanConstants.example};
 
 /// Constraint types offer only `tryFrom`, so the tables stay readable behind these.
 AsciiLetters _letters(String value) => AsciiLetters.tryFrom(value)!;
@@ -55,13 +55,14 @@ void main() {
     });
 
     scenario('an IBAN exposes its country code, check digits, and BBAN', () {
-      check(Iban.example.countryCode.value).equals('GB');
-      check(Iban.example.checkDigits).equals((first: Digit.d8, second: Digit.d2));
-      check(Iban.example.bban.value).equals('WEST12345698765432');
+      check(IbanConstants.example.countryCode.value).equals('GB');
+      check(IbanConstants.example.checkDigits)
+          .equals((first: DigitConstants.d8, second: DigitConstants.d2));
+      check(IbanConstants.example.bban.value).equals('WEST12345698765432');
     });
 
     scenario('an IBAN rebuilds the grouped paper form', () {
-      check(Iban.example.formatted).equals('GB82 WEST 1234 5698 7654 32');
+      check(IbanConstants.example.formatted).equals('GB82 WEST 1234 5698 7654 32');
     });
 
     scenarioOutline<({String input, IbanFailure failure})>(

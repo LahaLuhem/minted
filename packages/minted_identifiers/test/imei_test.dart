@@ -6,7 +6,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
-const namedImeis = <Imei>{.unavailable, .test};
+const namedImeis = <Imei>{ImeiConstants.unavailable, ImeiConstants.test};
 
 void main() {
   feature('Imei', () {
@@ -54,7 +54,7 @@ void main() {
       check(parsedImei.tac.asString).equals('35209900');
       check(parsedImei.reportingBodyIdentifier.asString).equals('35');
       check(parsedImei.serialNumber.asString).equals('176148');
-      check(parsedImei.checkDigit).equals(Digit.d1);
+      check(parsedImei.checkDigit).equals(DigitConstants.d1);
       // The parts feed straight back in, which is what the Digits typing buys.
       check(
         Imei.fromComponents(

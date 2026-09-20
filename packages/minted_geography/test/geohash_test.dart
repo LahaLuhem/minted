@@ -9,7 +9,7 @@ import '../../../test/support/bdd.dart';
 Geohash _geohash({required GeoCoordinate coordinate, required int precision}) =>
     Geohash.from(coordinate: coordinate, precision: NaturalNumber.tryFrom(precision)!);
 
-const namedGeohashes = <Geohash>{.first};
+const namedGeohashes = <Geohash>{GeohashConstants.first};
 
 void main() {
   final eiffelTower = GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295)!;
@@ -187,7 +187,7 @@ void main() {
             final geohash = _geohash(coordinate: corner, precision: precision);
 
             check(
-              geohash.value.compareTo(Geohash.first.value),
+              geohash.value.compareTo(GeohashConstants.first.value),
               because: '$corner gives $geohash',
             ).isGreaterOrEqual(0);
           }

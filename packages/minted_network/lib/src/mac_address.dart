@@ -8,6 +8,7 @@ import 'package:minted/minted.dart';
 
 import 'failures/mac_address_failure.dart';
 
+part 'constants/mac_address_constants.dart';
 part 'helpers/mac_address_helpers.dart';
 
 /// A MAC address: the 48- or 64-bit address identifying an IEEE 802 network interface, e.g. `00:00:5e:00:53:00`.
@@ -24,6 +25,8 @@ part 'helpers/mac_address_helpers.dart';
 /// Parsing trims, lower-cases the hex and rewrites the separator to a colon, so the colon, hyphen, Cisco
 /// dot-quad (`0000.5e00.5300`) and bare-hex spellings all compare equal. [ieee802] and [bareHex] render
 /// 2 of them back. Dot-quad is input-only.
+///
+/// Named values: [MacAddressConstants].
 ///
 /// {@example /example/minted_network_example.dart#mac}
 extension type const MacAddress._(String value) {
@@ -73,8 +76,9 @@ extension type const MacAddress._(String value) {
   /// (universal/local) bit. [prefix24] identifies nobody for one.
   bool get isLocallyAdministered => _firstOctetHas(_universalLocalBit);
 
-  /// Whether this is [broadcast]. False for the 64-bit all-ones value, which is no such destination.
-  bool get isBroadcast => value == broadcast.value;
+  /// Whether this is [MacAddressConstants.broadcast]. False for the 64-bit all-ones value, which is no such
+  /// destination.
+  bool get isBroadcast => value == MacAddressConstants.broadcast.value;
 
   /// The IEEE Std 802 hexadecimal representation, `00-00-5E-00-53-00`: hyphen-separated and upper-case,
   /// as the standard writes it and Windows displays it.
@@ -94,52 +98,4 @@ extension type const MacAddress._(String value) {
   // least significant bit of an octet on the wire first, so nothing needs reversing.
   bool _firstOctetHas(int bitMask) =>
       int.parse(value.substring(0, hexDigitsPerByte), radix: hexRadix) & bitMask != 0;
-
-  //========================================= SENTINELS ==========================================//
-
-  /// Names no interface. IEEE Std 802.3 calls it the null address.
-  static const allZeros = MacAddress._('00:00:00:00:00:00');
-
-  /// Every station on the link, which [isBroadcast] tests for.
-  static const broadcast = MacAddress._('ff:ff:ff:ff:ff:ff');
-
-  //====================================== IANA OUI BLOCKS =======================================//
-  // 00-00-5E and its 01-00-5E multicast twin, which RFC 9542 §2.1 splits into blocks of 256. Each
-  // name is a block's first address, so it is a landmark rather than a membership test.
-
-  /// Reserved, handed out only on IESG ratification.
-  static const ianaReserved = MacAddress._('00:00:5e:00:00:00');
-
-  /// The virtual router address, last octet the VRID. RFC 5798 §7.3, IPv4 flavour.
-  static const vrrp = MacAddress._('00:00:5e:00:01:00');
-
-  /// Unicast documentation.
-  static const ianaDocumentation = MacAddress._('00:00:5e:00:53:00');
-
-  /// Multicast documentation.
-  static const ianaDocMulticast = MacAddress._('01:00:5e:90:10:00');
-
-  //=================================== BRIDGE GROUP ADDRESSES ===================================//
-  // IEEE Std 802.1D does not relay a frame addressed in this range, so a bridge consumes it.
-
-  /// The bridge group address, and the nearest customer bridge.
-  static const stpBridgeGroup = MacAddress._('01:80:c2:00:00:00');
-
-  /// IEEE MAC-specific control protocols.
-  static const macControlGroup = MacAddress._('01:80:c2:00:00:01');
-
-  /// The IEEE 802.3 slow protocols address.
-  static const slowProtocols = MacAddress._('01:80:c2:00:00:02');
-
-  /// The nearest non-TPMR bridge, which is also the 802.1X PAE address.
-  static const nearestNonTpmr = MacAddress._('01:80:c2:00:00:03');
-
-  /// The provider bridge group.
-  static const providerBridge = MacAddress._('01:80:c2:00:00:08');
-
-  /// The provider bridge MVRP address.
-  static const providerMvrp = MacAddress._('01:80:c2:00:00:0d');
-
-  /// The nearest bridge, and the individual LAN scope group address.
-  static const nearestBridge = MacAddress._('01:80:c2:00:00:0e');
 }

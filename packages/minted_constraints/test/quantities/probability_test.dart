@@ -47,8 +47,8 @@ void main() {
     // The guarantee is the range, not involution: a 3rd of ordinary values fail to round-trip, because
     // 1 - (1 - x) is not x in IEEE. Asserted rather than hidden.
     scenario('complement stays in range, and only round-trips where doubles allow it', () {
-      check(Probability.certain.complement.isImpossible).isTrue();
-      check(Probability.impossible.complement.isCertain).isTrue();
+      check(ProbabilityConstants.certain.complement.isImpossible).isTrue();
+      check(ProbabilityConstants.impossible.complement.isCertain).isTrue();
       check(Probability.tryFrom(0.25)!.complement.complement).equals(Probability.tryFrom(0.25)!);
       check(Probability.tryFrom(0.3)!.complement.complement.value).equals(0.30000000000000004);
     });

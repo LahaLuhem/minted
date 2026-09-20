@@ -1,18 +1,17 @@
 /// @docImport 'uint.dart';
 library;
 
+part '../constants/uint16_constants.dart';
+
 /// An unsigned 16-bit integer: `0` to `65535`.
 ///
 /// Bounded at both ends, unlike [Uint]. Out of range is refused, never truncated.
 ///
-/// [zero] and [max] name the ends.
+/// [Uint16Constants.zero] and [Uint16Constants.max] name the ends.
+///
+/// Named values: [Uint16Constants].
 extension type const Uint16._(int value) implements int {
   /// The [Uint16] with numeric [value], or `null` unless it's in `0`-`65535`.
-  static Uint16? tryFrom(int value) => value < zero || value > max ? null : ._(value);
-
-  /// The lowest value: `0`.
-  static const zero = Uint16._(0);
-
-  /// The highest value: `65535`.
-  static const max = Uint16._(65535);
+  static Uint16? tryFrom(int value) =>
+      value < Uint16Constants.zero || value > Uint16Constants.max ? null : ._(value);
 }

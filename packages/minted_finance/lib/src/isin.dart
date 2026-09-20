@@ -9,6 +9,7 @@ import 'encoding/alphanumeric_values.dart';
 import 'failures/isin_failure.dart';
 import 'standards/iso_country_code.dart';
 
+part 'constants/isin_constants.dart';
 part 'helpers/isin_helpers.dart';
 
 /// An ISIN (International Securities Identification Number).
@@ -22,6 +23,8 @@ part 'helpers/isin_helpers.dart';
 ///
 /// [prefix] need not name a country: `XS` is Euroclear and Clearstream, `EU` is supranational, and both
 /// are as valid as `GB`. [hasCountryPrefix] reports the narrower fact.
+///
+/// Named values: [IsinConstants].
 ///
 /// {@example /example/minted_finance_example.dart#isin}
 extension type const Isin._(String value) {
@@ -67,10 +70,4 @@ extension type const Isin._(String value) {
   Digit get checkDigit => .tryFrom(decimalValue(value.codeUnitAt(_checkDigitIndex)))!;
 
   // ISO 6166 defines no test ISIN, so an all-zero NSIN is the nearest thing.
-
-  /// A US example.
-  static const example = Isin._('US0000000002');
-
-  /// An international one, under the Euroclear and Clearstream prefix rather than a country.
-  static const exampleInternational = Isin._('XS0000000009');
 }

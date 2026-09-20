@@ -2,6 +2,8 @@ import 'package:minted/internal.dart';
 
 import 'percentage.dart';
 
+part '../constants/probability_constants.dart';
+
 /// A probability: `0` to `1` inclusive, where `0.15` is a 15 percent chance.
 ///
 /// The range states the convention, so unlike [Percentage] there is no unit to get wrong and one door
@@ -11,6 +13,8 @@ import 'percentage.dart';
 /// > **Both ends are included.** An impossible event has probability `0` and a certain one `1`, and
 /// > an empirical `0/n` lands on the first legitimately. [isImpossible] and [isCertain] report them
 /// > rather than the range refusing them. Why: `APPENDIX.md#probability-constraint-type`.
+///
+/// Named values: [ProbabilityConstants].
 ///
 /// {@example /example/minted_constraints_example.dart#probability}
 extension type const Probability._(double value) implements double {
@@ -36,15 +40,6 @@ extension type const Probability._(double value) implements double {
 
   /// Whether the event must happen: exactly `1`.
   bool get isCertain => value == _certain;
-
-  /// The event cannot happen: exactly `0`.
-  static const impossible = Probability._(_impossible);
-
-  /// An even chance, the coin toss: exactly `0.5`.
-  static const evenChance = Probability._(0.5);
-
-  /// The event must happen: exactly `1`.
-  static const certain = Probability._(_certain);
 
   static const double _impossible = 0;
   static const double _certain = 1;

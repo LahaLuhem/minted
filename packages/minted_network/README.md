@@ -82,9 +82,9 @@ mac.isLocallyAdministered;    // false   (the U/L bit)
 MacAddress.tryParse('0000.5e00.5300') == mac;   // true: Cisco's dot-quad is the same address
 
 // Port: exactly a Uint16's range, so that type owns the bound. The RFC 6335 band reads back:
-Port.httpAlt.range;           // PortRange.user
-Port.wildcard.isWildcard;     // true: bind(0) asks the OS for a free port
-Port.tryFrom(65536);          // null, one past the 16-bit ceiling
+PortConstants.httpAlt.range;         // PortRange.user
+PortConstants.wildcard.isWildcard;   // true: bind(0) asks the OS for a free port
+Port.tryFrom(65536);                 // null, one past the 16-bit ceiling
 ```
 
 The runnable version is the
@@ -92,34 +92,34 @@ The runnable version is the
 
 ## Named constants
 
-Every type names the values its standard already names, as `static const`. Two things you get from
-that: no `tryFrom(...)!` for a value you knew was good while typing it, and a value that works in a
-const context, where a `!` can never go.
+A type's named values live in a companion `<Type>Constants` namespace, so the type itself stays its
+parsing API. They're `const`, so they reach where a `tryFrom(...)!` can't.
 
 ```dart
-const allowed = <Port>[.https, .httpAlt];   // const, which Port.tryFrom(443)! can never be
+// const, which Port.tryFrom(443)! can never be
+const allowed = <Port>[PortConstants.https, PortConstants.httpAlt];
 
-Port.https.range;                   // PortRange.system
-Hostname.exampleCom.fqdn;           // 'example.com.'
-IpAddress.loopbackV6.isLoopback;    // true
-MacAddress.broadcast.isBroadcast;   // true
-Cidr.private10.contains(address);   // masks bits, so 100.0.0.1 is not in 10.0.0.0/8
+PortConstants.https.range;                   // PortRange.system
+HostnameConstants.exampleCom.fqdn;           // 'example.com.'
+IpAddressConstants.loopbackV6.isLoopback;    // true
+MacAddressConstants.broadcast.isBroadcast;   // true
+CidrConstants.private10.contains(address);   // masks bits, so 100.0.0.1 is not in 10.0.0.0/8
 ```
 
-| Type         | What it names                                                                          |
-|--------------|----------------------------------------------------------------------------------------|
-| `Port`       | the wildcard, the services IANA registers, and a handful of dev-server habits          |
-| `Hostname`   | RFC 2606's reserved names, whole, plus mDNS `local` and the usual private suffixes     |
-| `IpAddress`  | single addresses only: the 2 unspecified, the 2 loopbacks, limited broadcast           |
-| `Cidr`       | the blocks: RFC 1918 and unique-local, CGN, link-local, multicast, docs, v4-mapped     |
-| `MacAddress` | the null and broadcast sentinels, IANA's `00-00-5E` blocks, the 802.1D group addresses |
+| Namespace             | What it names                                                                          |
+|-----------------------|----------------------------------------------------------------------------------------|
+| `PortConstants`       | the wildcard, the services IANA registers, and a handful of dev-server habits          |
+| `HostnameConstants`   | RFC 2606's reserved names, whole, plus mDNS `local` and the usual private suffixes     |
+| `IpAddressConstants`  | single addresses only: the 2 unspecified, the 2 loopbacks, limited broadcast           |
+| `CidrConstants`       | the blocks: RFC 1918 and unique-local, CGN, link-local, multicast, docs, v4-mapped     |
+| `MacAddressConstants` | the null and broadcast sentinels, IANA's `00-00-5E` blocks, the 802.1D group addresses |
 
-A range lives on `Cidr`, never on `IpAddress`: `10.0.0.0/8` is not an address and `IpAddress.parse`
-refuses it.
+A range lives in `CidrConstants`, never in `IpAddressConstants`: `10.0.0.0/8` is not an address,
+and `IpAddress.parse` refuses it.
 
-> **Some of these are habit, not standard.** `Port.django` is 8000 because Django's dev server picks
-> it, and IANA has 8000 registered as `irdmi`. Each one says so in its own doc comment. Treat a match
-> as a hint, never as proof of what's on the other end.
+> **Some of these are habit, not standard.** `PortConstants.django` is 8000 because Django's dev
+> server picks it, and IANA has 8000 registered as `irdmi`. Each one says so in its own doc comment.
+> Treat a match as a hint, never as proof of what's on the other end.
 
 ## One shape, every type
 
