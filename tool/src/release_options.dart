@@ -4,33 +4,22 @@ import 'release_abort.dart';
 import 'versioning/bump_type.dart';
 
 /// What the caller asked for, before anything is read from disk.
-class ReleaseOptions {
-  const new({
-    this.bump,
-    this.package,
-    this.tagMessage,
-    this.repoRoot,
-    this.skipConfirmation = false,
-    this.dryRun = false,
-    this.helpRequested = false,
-  });
-
+class const ReleaseOptions({
   /// Which part of the version to move, or null to ask.
-  final BumpType? bump;
+  final BumpType? bump,
 
   /// Which member to release, or null to ask.
-  final String? package;
+  final String? package,
 
   /// Message for an annotated tag. Without one the tag is lightweight.
-  final String? tagMessage;
+  final String? tagMessage,
 
   /// Checkout to release from. Null means this script's own repo.
-  final String? repoRoot;
-
-  final bool skipConfirmation;
-  final bool dryRun;
-  final bool helpRequested;
-
+  final String? repoRoot,
+  final bool skipConfirmation = false,
+  final bool dryRun = false,
+  final bool helpRequested = false,
+}) {
   /// Parses [arguments], or aborts with a usage error.
   factory parse(List<String> arguments) {
     final ArgResults parsed;

@@ -14,12 +14,10 @@ typedef LintCheck = ({String name, String cmd});
 /// The checkout the release runs against, and every read it needs from disk.
 ///
 /// Arguments and return values are repo-relative, since they end up in git arguments and messages.
-class Repo {
-  const new(this.root);
-
+class const Repo(
   /// Absolute path to the workspace root.
-  final String root;
-
+  final String root,
+) {
   /// Shared with repo.yml, so both gates run the identical check set.
   static const lintManifestPath = '.github/lint-checks.json';
 

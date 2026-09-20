@@ -100,7 +100,7 @@ extension type const Uuid._(String value) {
 
 /// Which layout family a [Uuid] belongs to. See [RFC 9562 §4.1](https://www.rfc-editor.org/rfc/rfc9562#section-4.1)
 /// .
-enum UuidVariant {
+enum UuidVariant() {
   /// Bits `0xxx`, kept for NCS. [Uuid.nil] lands here.
   ncs,
 

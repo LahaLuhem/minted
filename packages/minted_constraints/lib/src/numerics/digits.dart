@@ -16,11 +16,7 @@ import 'digit.dart';
 /// Backed by a private `Uint8List`, one byte per digit, so a denser packing can swap in behind this
 /// interface. Equality is by value.
 @immutable
-final class Digits extends Iterable<Digit> {
-  final Uint8List _bytes;
-
-  const new _(this._bytes);
-
+final class const Digits._(final Uint8List _bytes) extends Iterable<Digit> {
   /// The sequence of the given [values], or `null` unless every one is in `0`-`9`.
   // Asks [Digit] what a digit is rather than re-deciding: one range, one place.
   static Digits? tryFrom(List<int> values) => values.any((value) => Digit.tryFrom(value) == null)

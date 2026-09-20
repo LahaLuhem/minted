@@ -8,10 +8,8 @@ import 'release_ui.dart';
 /// Prompts and prints through terminice, so the picker filters and the slow gates spin.
 ///
 /// Only the interaction changes: every decision still reaches the flow through [ReleaseUi].
-class TerminiceReleaseUi implements ReleaseUi {
-  new({Terminice? client}) : _client = client ?? terminice;
-
-  final Terminice _client;
+class TerminiceReleaseUi({Terminice? client}) implements ReleaseUi {
+  final Terminice _client = client ?? terminice;
 
   @override
   void log(String message) => _client.detail(message);

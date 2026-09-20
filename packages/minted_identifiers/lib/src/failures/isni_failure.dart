@@ -7,20 +7,18 @@ import 'package:minted/minted.dart';
 /// Why an [Isni] refused its input. Sealed rather than an enum, because [IsniWrongLength] carries a
 /// number off the input.
 @immutable
-sealed class IsniFailure implements MintedFailure {
-  const new();
-
+sealed class const IsniFailure() implements MintedFailure {
   @override
   String get typeName => 'Isni';
 }
 
 /// Not 16 characters once separators come off.
-final class IsniWrongLength extends IsniFailure {
+final class const IsniWrongLength(
   /// How many characters were left after separators came off.
-  final int actualLength;
-
+  final int actualLength,
+) extends IsniFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected 16 characters, got $actualLength';
@@ -37,9 +35,9 @@ final class IsniWrongLength extends IsniFailure {
 
 /// Something outside `0`-`9` got through. `X` counts only as the last character, where it stands for
 /// 10.
-final class IsniInvalidCharacters extends IsniFailure {
+final class const IsniInvalidCharacters() extends IsniFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside 0-9 (X only as the check character)';
@@ -55,9 +53,9 @@ final class IsniInvalidCharacters extends IsniFailure {
 }
 
 /// The check character doesn't match the rest. A character is mistyped or swapped.
-final class IsniChecksumFailed extends IsniFailure {
+final class const IsniChecksumFailed() extends IsniFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'failed the ISO 7064 MOD 11-2 check';

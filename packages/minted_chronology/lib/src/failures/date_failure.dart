@@ -9,9 +9,7 @@ import '../normalisation/iso_date_format.dart';
 /// Why a [Date] refused its input. Sealed rather than an enum, because the variants hand the offending
 /// number back.
 @immutable
-sealed class DateFailure implements MintedFailure {
-  const new();
-
+sealed class const DateFailure() implements MintedFailure {
   @override
   String get typeName => 'Date';
 }
@@ -19,14 +17,12 @@ sealed class DateFailure implements MintedFailure {
 /// Why one of a date's parts was refused: the subset [Date.of] can report, where the shape isn't in
 /// question. Lets a caller assembling from parts switch without an arm for [DateNotIso8601].
 @immutable
-sealed class DateComponentFailure extends DateFailure {
-  const new();
-}
+sealed class const DateComponentFailure() extends DateFailure;
 
 /// The text isn't the ISO 8601 `YYYY-MM-DD` shape.
-final class DateNotIso8601 extends DateFailure {
+final class const DateNotIso8601() extends DateFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not an ISO 8601 YYYY-MM-DD calendar date';
@@ -42,12 +38,12 @@ final class DateNotIso8601 extends DateFailure {
 }
 
 /// The year falls outside `0000`-`9999`, the range a [Date] can hold.
-final class DateYearOutOfRange extends DateComponentFailure {
+final class const DateYearOutOfRange(
   /// The offending year.
-  final int year;
-
+  final int year,
+) extends DateComponentFailure {
   /// Creates the failure.
-  const new(this.year);
+  this;
 
   @override
   String get message => 'year $year is outside 0000-9999';
@@ -63,12 +59,12 @@ final class DateYearOutOfRange extends DateComponentFailure {
 }
 
 /// The month falls outside `1`-`12`.
-final class DateMonthOutOfRange extends DateComponentFailure {
+final class const DateMonthOutOfRange(
   /// The offending month number.
-  final int month;
-
+  final int month,
+) extends DateComponentFailure {
   /// Creates the failure.
-  const new(this.month);
+  this;
 
   @override
   String get message => 'month $month is outside 1-12';
@@ -85,21 +81,21 @@ final class DateMonthOutOfRange extends DateComponentFailure {
 
 /// The day falls outside `1`-[maxDay]. Leap-year aware, so 29 February is out of range in a common year
 /// and in range in a leap one.
-final class DateDayOutOfRange extends DateComponentFailure {
+final class const DateDayOutOfRange({
   /// The year the day was given for.
-  final int year;
+  required final int year,
 
   /// The month number the day was given for.
-  final int month;
+  required final int month,
 
   /// The offending day.
-  final int day;
+  required final int day,
 
   /// The last day of [month] in [year], leap-year aware.
-  final int maxDay;
-
+  required final int maxDay,
+}) extends DateComponentFailure {
   /// Creates the failure.
-  const new({required this.year, required this.month, required this.day, required this.maxDay});
+  this;
 
   @override
   String get message => 'day $day is outside 1-$maxDay for ${isoYearMonth(year, month)}';

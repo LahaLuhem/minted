@@ -7,20 +7,18 @@ import 'package:minted/minted.dart';
 /// Why a [Gtin] refused its input. Sealed rather than an enum, because [GtinWrongLength] carries a number
 /// off the input.
 @immutable
-sealed class GtinFailure implements MintedFailure {
-  const new();
-
+sealed class const GtinFailure() implements MintedFailure {
   @override
   String get typeName => 'Gtin';
 }
 
 /// The digit count is none of GS1's 4 lengths.
-final class GtinWrongLength extends GtinFailure {
+final class const GtinWrongLength(
   /// How many digits were left after separators came off.
-  final int actualLength;
-
+  final int actualLength,
+) extends GtinFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected 8, 12, 13 or 14 digits, got $actualLength';
@@ -36,9 +34,9 @@ final class GtinWrongLength extends GtinFailure {
 }
 
 /// Something outside `0`-`9` got through. Spaces and hyphens come off first.
-final class GtinInvalidCharacters extends GtinFailure {
+final class const GtinInvalidCharacters() extends GtinFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside 0-9';
@@ -54,9 +52,9 @@ final class GtinInvalidCharacters extends GtinFailure {
 }
 
 /// The check digit doesn't match the rest. A digit is mistyped or swapped.
-final class GtinChecksumFailed extends GtinFailure {
+final class const GtinChecksumFailed() extends GtinFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'failed the GS1 mod-10 check';

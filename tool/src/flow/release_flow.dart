@@ -26,14 +26,12 @@ typedef ReleasePlan = ({
 ///
 /// Order is the contract: gates run cheapest-first, and the execute phase advances one [Rollback] as
 /// it goes.
-class ReleaseFlow {
-  new({required this.repo, required this.runner, required this.ui, required this.options});
-
-  final Repo repo;
-  final ProcessRunner runner;
-  final ReleaseUi ui;
-  final ReleaseOptions options;
-
+class ReleaseFlow({
+  required final Repo repo,
+  required final ProcessRunner runner,
+  required final ReleaseUi ui,
+  required final ReleaseOptions options,
+}) {
   late final String _dart;
 
   Future<void> run() async {

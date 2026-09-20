@@ -104,7 +104,7 @@ extension type const Port._(int value) implements Uint16 {
 }
 
 /// Which RFC 6335 range a [Port] falls in.
-enum PortRange {
+enum PortRange() {
   /// System (well-known) ports, `0`-`1023`. Assignment needs IANA review.
   system,
 

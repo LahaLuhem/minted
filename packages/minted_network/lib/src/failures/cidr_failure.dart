@@ -10,17 +10,15 @@ import 'ip_address_failure.dart';
 /// Why a [Cidr] refused its input. Sealed rather than an enum, because 3 variants carry what failed,
 /// one of them another type's failure.
 @immutable
-sealed class CidrFailure implements MintedFailure {
-  const new();
-
+sealed class const CidrFailure() implements MintedFailure {
   @override
   String get typeName => 'Cidr';
 }
 
 /// The text isn't an address followed by `/` and a decimal prefix length.
-final class CidrMalformed extends CidrFailure {
+final class const CidrMalformed() extends CidrFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not an address followed by / and a prefix length';
@@ -39,12 +37,12 @@ final class CidrMalformed extends CidrFailure {
 ///
 /// Nested rather than flattened so the diagnosis survives: a caller learns the address had a leading
 /// zero, not just that something about it was wrong.
-final class CidrInvalidAddress extends CidrFailure {
+final class const CidrInvalidAddress(
   /// Why the address itself would not parse.
-  final IpAddressFailure reason;
-
+  final IpAddressFailure reason,
+) extends CidrFailure {
   /// Creates the failure.
-  const new(this.reason);
+  this;
 
   @override
   String get message => 'the network address is invalid: ${reason.message}';
@@ -60,15 +58,15 @@ final class CidrInvalidAddress extends CidrFailure {
 }
 
 /// The prefix length is a number, but not one this family has bits for.
-final class CidrPrefixLengthOutOfRange extends CidrFailure {
+final class const CidrPrefixLengthOutOfRange({
   /// The widest prefix the address family allows: 32 for v4, 128 for v6.
-  final int maxPrefixLength;
+  required final int maxPrefixLength,
 
   /// The prefix length supplied.
-  final int actual;
-
+  required final int actual,
+}) extends CidrFailure {
   /// Creates the failure.
-  const new({required this.maxPrefixLength, required this.actual});
+  this;
 
   @override
   String get message => 'expected a prefix length of 0 to $maxPrefixLength, got $actual';
@@ -89,12 +87,12 @@ final class CidrPrefixLengthOutOfRange extends CidrFailure {
 
 /// Bits are set below the prefix, so this names a host rather than a network. [networkAddress] is the
 /// block the caller most likely meant.
-final class CidrHostBitsSet extends CidrFailure {
+final class const CidrHostBitsSet(
   /// The input with its host bits cleared, offered as the likely intent.
-  final String networkAddress;
-
+  final String networkAddress,
+) extends CidrFailure {
   /// Creates the failure.
-  const new(this.networkAddress);
+  this;
 
   @override
   String get message => 'has host bits set below the prefix. The network is "$networkAddress"';

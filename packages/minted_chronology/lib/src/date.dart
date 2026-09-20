@@ -22,18 +22,16 @@ part 'helpers/date_helpers.dart';
 ///
 /// {@example /example/minted_chronology_example.dart#date}
 @immutable
-final class Date implements Comparable<Date> {
+final class const Date._(
   /// The year, `0000`-`9999`.
-  final int year;
+  final int year,
 
   /// The month of the year.
-  final Month month;
+  final Month month,
 
   /// The day of the month, `1` to the last day of [month] (leap-year aware).
-  final int day;
-
-  const new _(this.year, this.month, this.day);
-
+  final int day,
+) implements Comparable<Date> {
   /// The [Date] for [year], [month] and [day], reporting which part is out of range on an impossible
   /// date.
   ///

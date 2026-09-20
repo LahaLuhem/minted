@@ -11,7 +11,10 @@ import 'package:collection/collection.dart';
 /// Ordering runs Monday to Sunday, the ISO week. That's a convention rather than arithmetic, since weeks
 /// starting Sunday or Saturday order the same days differently. [next], [plusDays] and [daysUntil] are
 /// cyclic and assume no week start.
-enum Weekday implements Comparable<Weekday> {
+enum Weekday(
+  /// The ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
+  final int value,
+) implements Comparable<Weekday> {
   /// Monday, ISO day `1`.
   monday(1),
 
@@ -32,11 +35,6 @@ enum Weekday implements Comparable<Weekday> {
 
   /// Sunday, ISO day `7`.
   sunday(7);
-
-  new(this.value);
-
-  /// The ISO 8601 day number, `1` (Monday) to `7` (Sunday), matching [DateTime.weekday].
-  final int value;
 
   /// The [Weekday] with ISO day number [value], or `null` unless it's in `1`-`7`.
   static Weekday? tryFrom(int value) => values.firstWhereOrNull((day) => day.value == value);

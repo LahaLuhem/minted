@@ -3,7 +3,7 @@ import 'package:collection/collection.dart';
 import '../parsing/pubspec_fields.dart';
 
 /// Which part of a SemVer version a release moves.
-enum BumpType {
+enum BumpType() {
   major,
   minor,
   patch;

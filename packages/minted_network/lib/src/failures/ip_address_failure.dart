@@ -7,17 +7,15 @@ import 'package:minted/minted.dart';
 /// Why an [IpAddress] refused its input. Sealed rather than an enum, because 3 variants echo the
 /// part of the input that failed.
 @immutable
-sealed class IpAddressFailure implements MintedFailure {
-  const new();
-
+sealed class const IpAddressFailure() implements MintedFailure {
   @override
   String get typeName => 'IpAddress';
 }
 
 /// The text is neither a dotted quad nor an RFC 4291 IPv6 address.
-final class IpAddressMalformed extends IpAddressFailure {
+final class const IpAddressMalformed() extends IpAddressFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not a dotted-quad or IPv6 address';
@@ -36,12 +34,12 @@ final class IpAddressMalformed extends IpAddressFailure {
 ///
 /// `inet_aton` reads `010` as octal 8 where most parsers read decimal 10, so taking it lets one component
 /// filter an address that another then connects to. Why: `APPENDIX.md#ip-address-value-type`.
-final class IpAddressLeadingZero extends IpAddressFailure {
+final class const IpAddressLeadingZero(
   /// The offending part, as written.
-  final String part;
-
+  final String part,
+) extends IpAddressFailure {
   /// Creates the failure.
-  const new(this.part);
+  this;
 
   @override
   String get message => '"$part" has a leading zero, which is ambiguous between decimal and octal';
@@ -58,12 +56,12 @@ final class IpAddressLeadingZero extends IpAddressFailure {
 
 /// [part] is a well-formed number that doesn't fit its field: an octet past 255, or a hextet past 4
 /// digits.
-final class IpAddressPartOutOfRange extends IpAddressFailure {
+final class const IpAddressPartOutOfRange(
   /// The offending part, as written.
-  final String part;
-
+  final String part,
+) extends IpAddressFailure {
   /// Creates the failure.
-  const new(this.part);
+  this;
 
   @override
   String get message => '"$part" is outside the range its field allows';
@@ -79,12 +77,12 @@ final class IpAddressPartOutOfRange extends IpAddressFailure {
 }
 
 /// [IpAddress.fromOctets] got neither the 4 octets of IPv4 nor the 16 of IPv6.
-final class IpAddressWrongOctetCount extends IpAddressFailure {
+final class const IpAddressWrongOctetCount(
   /// How many octets were supplied.
-  final int actual;
-
+  final int actual,
+) extends IpAddressFailure {
   /// Creates the failure.
-  const new(this.actual);
+  this;
 
   @override
   String get message => 'expected 4 or 16 octets, got $actual';

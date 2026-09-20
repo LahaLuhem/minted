@@ -7,20 +7,18 @@ import 'package:minted/minted.dart';
 /// Why an [Imei] refused its input. Sealed rather than an enum, because [ImeiWrongLength] carries a
 /// number off the input.
 @immutable
-sealed class ImeiFailure implements MintedFailure {
-  const new();
-
+sealed class const ImeiFailure() implements MintedFailure {
   @override
   String get typeName => 'Imei';
 }
 
 /// Not 15 digits. 16 gets called out as the IMEISV it is.
-final class ImeiWrongLength extends ImeiFailure {
+final class const ImeiWrongLength(
   /// How many digits were left after separators came off.
-  final int actualLength;
-
+  final int actualLength,
+) extends ImeiFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => actualLength == _imeisvLength
@@ -42,9 +40,9 @@ final class ImeiWrongLength extends ImeiFailure {
 }
 
 /// Something outside `0`-`9` got through. Spaces and hyphens come off first.
-final class ImeiInvalidCharacters extends ImeiFailure {
+final class const ImeiInvalidCharacters() extends ImeiFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside 0-9';
@@ -60,9 +58,9 @@ final class ImeiInvalidCharacters extends ImeiFailure {
 }
 
 /// The check digit doesn't match the rest. A digit is mistyped or swapped.
-final class ImeiChecksumFailed extends ImeiFailure {
+final class const ImeiChecksumFailed() extends ImeiFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'failed the Luhn check';
