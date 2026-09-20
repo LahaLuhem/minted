@@ -85,9 +85,10 @@ Isni.example.isInOrcidBlock;         // true
 Issn.unavailable.compact;            // '00000000'
 ```
 
-`Uuid.nil` and `Uuid.max` are RFC 9562's 2 special cases. `Gtin.restrictedCirculation` and the IMEI
-pair sit in ranges their standards keep out of circulation. `Isni.example` is ORCID's own example
-record, for a professor who never existed. The 2 `unavailable` values are habits no standard names.
+`Uuid` names RFC 9562's 2 special cases and the 4 namespaces it registers for version 3 and 5.
+`Gtin.restrictedCirculation` and the IMEI pair sit in ranges their standards keep out of
+circulation. `Isni.example` is ORCID's own example record, for a professor who never existed. The 2
+`unavailable` values are habits no standard names.
 
 ## One shape, every type
 

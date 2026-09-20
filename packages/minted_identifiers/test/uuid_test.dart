@@ -6,7 +6,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 
 import '../../../test/support/bdd.dart';
 
-const sentinels = <Uuid>{.nil, .max};
+const namedUuids = <Uuid>{.nil, .max, .namespaceDns, .namespaceUrl, .namespaceOid, .namespaceX500};
 
 void main() {
   feature('Uuid', () {
@@ -146,11 +146,8 @@ void main() {
     );
 
     scenario('every named constant parses back to itself, unchanged', () {
-      for (final sentinel in sentinels) {
-        check(
-          Uuid.tryParse(sentinel.value)?.value,
-          because: 'named constant $sentinel',
-        ).equals(sentinel.value);
+      for (final uuid in namedUuids) {
+        check(Uuid.tryParse(uuid.value)?.value, because: 'named constant $uuid').equals(uuid.value);
       }
     });
 
@@ -236,6 +233,28 @@ void main() {
       // Extension types erase to String at runtime, so a `<T>`-derived name would read "String".
       check(Uuid.parse('nope').reasonOrNull?.typeName).equals('Uuid');
       check(Uuid.fromBytes(Uint8List(15)).reasonOrNull?.typeName).equals('Uuid');
+    });
+
+    // RFC 9562 §6.6 freezes everything after time_low, so the 4 differ in 1 hex digit and nothing
+    // else. That tail carries the version and variant nibbles too.
+    scenario('every registered namespace freezes the tail the RFC fixes', () {
+      const namespaces = [
+        Uuid.namespaceDns,
+        Uuid.namespaceUrl,
+        Uuid.namespaceOid,
+        Uuid.namespaceX500,
+      ];
+
+      for (final namespace in namespaces) {
+        check(
+          namespace.value,
+          because: 'namespace $namespace',
+        ).endsWith('-9dad-11d1-80b4-00c04fd430c8');
+        check(namespace.version, because: 'namespace $namespace').equals(1);
+        check(namespace.variant, because: 'namespace $namespace').equals(UuidVariant.rfc9562);
+      }
+
+      check(namespaces.toSet()).length.equals(namespaces.length);
     });
   });
 }
