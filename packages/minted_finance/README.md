@@ -84,8 +84,7 @@ PaymentCardNumber.testVisa.cardScheme;  // CardScheme.visa
 ```
 
 > **Habits, not standards.** Nothing here is reserved for documentation. `WEST` and `BANK` name no
-> real institution, an all-zero NSIN is the nearest an ISIN gets to naming nothing, and the PANs are
-> the ones every processor publishes for testing.
+> real institution, and the PANs are the ones every processor publishes for testing.
 
 ## One shape, every type
 

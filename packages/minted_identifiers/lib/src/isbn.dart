@@ -10,6 +10,8 @@ import 'check_digits/mod11_check_character.dart';
 import 'failures/isbn_failure.dart';
 import 'standards/isbn_prefixes.dart';
 
+part 'helpers/isbn_helpers.dart';
+
 /// An ISBN (International Standard Book Number).
 /// Standard: [ISO 2108](https://www.isbn-international.org/content/what-isbn).
 ///
@@ -65,51 +67,6 @@ extension type const Isbn._(String value) {
     return '$bodyText${mod11CheckCharacter(bodyText)}';
   }
 
-  static String _withCheckDigit(String twelveDigits) =>
-      '$twelveDigits${gs1CheckDigit(twelveDigits)}';
-
-  // 13 digits already stays put. Otherwise prefix 978 and redo the check digit, since the 2
-  // generations use different maths.
-  static String _toIsbn13(String compactInput) => compactInput.length == _length13
-      ? compactInput
-      : _withCheckDigit('$bookland978${compactInput.substring(0, _isbn10BodyLength)}');
-
-  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
-  // thing gets named.
-  static IsbnFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length != _length10 && compactInput.length != _length13 => IsbnWrongLength(
-      compactInput.length,
-    ),
-    _ when !_charsetHolds(compactInput) => const IsbnInvalidCharacters(),
-    _ when compactInput.length == _length13 && !_prefixHolds(compactInput) => IsbnInvalidPrefix(
-      _offendingPrefix(compactInput),
-    ),
-    _ when !_checksumHolds(compactInput) => const IsbnChecksumFailed(),
-    _ => null,
-  };
-
-  // Only reached once the length is 10 or 13. X is legal only as the 10-digit check.
-  static bool _charsetHolds(String compactInput) => compactInput.length == _length10
-      ? _tenDigitForm.hasMatch(compactInput)
-      : _thirteenDigitForm.hasMatch(compactInput);
-
-  static bool _prefixHolds(String compactInput) =>
-      booklandPrefixes.contains(compactInput.substring(0, _prefixLength)) &&
-      !compactInput.startsWith(ismnRange);
-
-  static String _offendingPrefix(String compactInput) =>
-      compactInput.startsWith(ismnRange) ? ismnRange : compactInput.substring(0, _prefixLength);
-
-  static bool _checksumHolds(String compactInput) => compactInput.length == _length13
-      ? compactInput.endsWith(gs1CheckDigit(compactInput.substring(0, _checkDigitIndex)))
-      : compactInput.endsWith(mod11CheckCharacter(compactInput.substring(0, _isbn10BodyLength)));
-
-  static final _tenDigitForm = RegExp(r'^\d{9}[\dX]$');
-  static final _thirteenDigitForm = RegExp(r'^\d{13}$');
-
-  static const _length10 = 10;
-  static const _length13 = 13;
-  static const _prefixLength = 3;
-  static const _checkDigitIndex = 12;
-  static const _isbn10BodyLength = 9;
+  /// The all-zero ISBN that stands in for a record with none. No standard names it.
+  static const unavailable = Isbn._('9780000000002');
 }

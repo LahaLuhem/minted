@@ -7,6 +7,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 
 import 'failures/imei_failure.dart';
 
+part 'helpers/imei_helpers.dart';
+
 /// An IMEI (International Mobile Equipment Identity): names one piece of mobile kit, not its subscriber.
 /// Standard: [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm).
 ///
@@ -59,24 +61,11 @@ extension type const Imei._(String value) {
       '${value.substring(_reportingBodyLength, _tacLength)}'
       '-${serialNumber.asString}-${checkDigit.value}';
 
-  static String _withCheckDigit(String bodyDigits) => '$bodyDigits${luhnCheckDigit(bodyDigits)}';
+  // GSMA TS.06 §9 keeps the `00` prefix for test equipment, which cannot be supplied to the market.
 
-  // The one gate parse and fromComponents both go through. Widest check first, so the earliest wrong
-  // thing gets named.
-  static ImeiFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length != _length => ImeiWrongLength(compactInput.length),
-    _ when !digitsOnly.hasMatch(compactInput) => const ImeiInvalidCharacters(),
-    _ when !_checksumHolds(compactInput) => const ImeiChecksumFailed(),
-    _ => null,
-  };
+  /// All zeros, what an emulator or a modem with no IMEI reports.
+  static const unavailable = Imei._('000000000000000');
 
-  static bool _checksumHolds(String compactInput) =>
-      compactInput.endsWith(luhnCheckDigit(compactInput.substring(0, _checkDigitIndex)));
-
-  static const _length = 15;
-  // The 2004 revision folded the Final Assembly Code into the TAC, so there's nothing left to expose
-  // between the TAC and the serial.
-  static const _tacLength = 8;
-  static const _reportingBodyLength = 2;
-  static const _checkDigitIndex = 14;
+  /// A test IMEI in the shape §9.1 gives: `00`, then `44` for TÜV SÜD, a maker code and a serial.
+  static const test = Imei._('004400000000008');
 }
