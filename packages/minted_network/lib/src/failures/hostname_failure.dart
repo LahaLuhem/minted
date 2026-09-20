@@ -10,6 +10,9 @@ import 'package:minted/minted.dart';
 /// Twice the usual 3, because RFC 1123 stacks that many independent rules.
 @immutable
 sealed class const HostnameFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Hostname';
 }

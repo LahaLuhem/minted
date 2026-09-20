@@ -10,6 +10,9 @@ import 'package:minted/minted.dart';
 /// 5, because ISO 13616 is a registry plus a checksum, and each has its own remedy.
 @immutable
 sealed class const IbanFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Iban';
 }

@@ -9,6 +9,9 @@ import 'minted_format_error.dart';
 /// [ParseSuccess] and [ParseFailure] is exhaustive and the compiler catches a missed arm.
 @immutable
 sealed class const ParseOutcome<F extends MintedFailure, T>() {
+  /// Subclasses only: the type is sealed.
+  this;
+
   /// Whether this holds a parsed value.
   bool get isSuccess => this is ParseSuccess<F, T>;
 

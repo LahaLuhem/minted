@@ -10,6 +10,9 @@ import '../normalisation/iso_date_format.dart';
 /// number back.
 @immutable
 sealed class const DateFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Date';
 }
@@ -17,7 +20,10 @@ sealed class const DateFailure() implements MintedFailure {
 /// Why one of a date's parts was refused: the subset [Date.of] can report, where the shape isn't in
 /// question. Lets a caller assembling from parts switch without an arm for [DateNotIso8601].
 @immutable
-sealed class const DateComponentFailure() extends DateFailure;
+sealed class const DateComponentFailure() extends DateFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+}
 
 /// The text isn't the ISO 8601 `YYYY-MM-DD` shape.
 final class const DateNotIso8601() extends DateFailure {

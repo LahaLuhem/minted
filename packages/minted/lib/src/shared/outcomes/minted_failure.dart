@@ -7,6 +7,9 @@ library;
 /// can tell apart. Switch on that for user-facing text. This supertype is the generic handle, for code
 /// spanning value types.
 abstract interface class MintedFailure() {
+  /// Unused: this type is implemented, never constructed.
+  this;
+
   /// The value type that refused the input, like `'Iban'`.
   // A string, not a <T>, because extension types erase to their representation at runtime.
   String get typeName;
