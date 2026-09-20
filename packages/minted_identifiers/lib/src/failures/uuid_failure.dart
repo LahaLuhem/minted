@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// a count known only per call.
 @immutable
 sealed class const UuidFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Uuid';
 }

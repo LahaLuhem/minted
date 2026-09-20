@@ -11,6 +11,9 @@ import 'ip_address_failure.dart';
 /// one of them another type's failure.
 @immutable
 sealed class const CidrFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Cidr';
 }

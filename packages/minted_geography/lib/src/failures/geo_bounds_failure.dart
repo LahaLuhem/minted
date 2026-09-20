@@ -10,6 +10,9 @@ import 'geo_coordinate_failure.dart';
 /// failed, one of them a corner's own failure.
 @immutable
 sealed class const GeoBoundsFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'GeoBounds';
 }

@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// offender back.
 @immutable
 sealed class const GeohashFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Geohash';
 }

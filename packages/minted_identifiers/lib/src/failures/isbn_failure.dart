@@ -10,6 +10,9 @@ import '../standards/isbn_prefixes.dart';
 /// carry values off the input.
 @immutable
 sealed class const IsbnFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Isbn';
 }

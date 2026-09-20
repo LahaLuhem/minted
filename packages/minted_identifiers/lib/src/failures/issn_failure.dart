@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// number off the input.
 @immutable
 sealed class const IssnFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Issn';
 }

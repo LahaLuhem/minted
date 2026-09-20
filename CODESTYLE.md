@@ -176,12 +176,7 @@ worth naming**. Rationale:
 
   ```dart
   @immutable
-  final class GeoCoordinate {
-    final double latitude;
-    final double longitude;
-
-    const GeoCoordinate._(this.latitude, this.longitude);
-
+  final class const GeoCoordinate._(final double latitude, final double longitude) {
     static GeoCoordinate? tryParse(String input) => parse(input).getOrNull();
     static ParseOutcome<GeoCoordinateFailure, GeoCoordinate> parse(String input) { /* ISO 6709 */ }
 

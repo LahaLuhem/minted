@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// part of the input that failed.
 @immutable
 sealed class const IpAddressFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'IpAddress';
 }

@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// the part that broke.
 @immutable
 sealed class const Iso8601DurationFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Iso8601Duration';
 }

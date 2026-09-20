@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// carries a value off the input.
 @immutable
 sealed class const PaymentCardNumberFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'PaymentCardNumber';
 }

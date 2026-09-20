@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// the offending number back.
 @immutable
 sealed class const GeoCoordinateFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'GeoCoordinate';
 }

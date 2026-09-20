@@ -11,6 +11,9 @@ import 'package:minted/minted.dart';
 /// One fewer than [Hostname] needs: RFC 2181 drops the hyphen-edge and all-numeric-label rules.
 @immutable
 sealed class const DnsNameFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'DnsName';
 }

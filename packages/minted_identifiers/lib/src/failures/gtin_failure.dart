@@ -8,6 +8,9 @@ import 'package:minted/minted.dart';
 /// off the input.
 @immutable
 sealed class const GtinFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Gtin';
 }

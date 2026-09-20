@@ -10,6 +10,9 @@ import 'package:minted/minted.dart';
 /// 2 fewer than IBAN needs: ISO 9362 has no checksum and no per-country length.
 @immutable
 sealed class const BicFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'Bic';
 }

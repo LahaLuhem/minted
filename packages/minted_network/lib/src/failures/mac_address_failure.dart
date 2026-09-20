@@ -11,6 +11,9 @@ import 'package:minted/minted.dart';
 /// address, so nothing else can fail.
 @immutable
 sealed class const MacAddressFailure() implements MintedFailure {
+  /// Subclasses only: the type is sealed.
+  this;
+
   @override
   String get typeName => 'MacAddress';
 }
