@@ -6,6 +6,8 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
+const namedIsnis = <Isni>{.example};
+
 void main() {
   feature('Isni', () {
     // The compact 16-character form doubles as the expected outcome: a String means "accepted and
@@ -190,6 +192,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsniWrongLength(15));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final isni in namedIsnis) {
+        check(Isni.tryParse(isni.value)?.value, because: 'named constant $isni').equals(isni.value);
+      }
     });
   });
 }
