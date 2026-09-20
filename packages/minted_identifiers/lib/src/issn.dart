@@ -8,6 +8,8 @@ import 'package:minted_constraints/minted_constraints.dart';
 import 'check_digits/mod11_check_character.dart';
 import 'failures/issn_failure.dart';
 
+part 'helpers/issn_helpers.dart';
+
 /// An ISSN (International Standard Serial Number): names a serial title, not one issue of it. Standard:
 /// [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/).
 ///
@@ -47,25 +49,6 @@ extension type const Issn._(String value) {
   /// The last character. A `String`, not a `Digit`, because ISO 3297 spells 10 as `X`.
   String get checkCharacter => value.substring(_checkCharacterIndex);
 
-  static String _hyphenated(String compactInput) =>
-      '${compactInput.substring(0, _groupSize)}$hyphen${compactInput.substring(_groupSize)}';
-
-  // The one gate parse and fromBody both go through. Widest check first, so the earliest wrong thing
-  // gets named.
-  static IssnFailure? _failureFor(String compactInput) => switch (compactInput) {
-    _ when compactInput.length != _length => IssnWrongLength(compactInput.length),
-    _ when !_issnForm.hasMatch(compactInput) => const IssnInvalidCharacters(),
-    _ when !_checksumHolds(compactInput) => const IssnChecksumFailed(),
-    _ => null,
-  };
-
-  static bool _checksumHolds(String compactInput) =>
-      compactInput.endsWith(mod11CheckCharacter(compactInput.substring(0, _bodyLength)));
-
-  static final _issnForm = RegExp(r'^\d{7}[\dX]$');
-
-  static const _length = 8;
-  static const _bodyLength = 7;
-  static const _groupSize = 4;
-  static const _checkCharacterIndex = 8; // past the hyphen, so one further than in the compact form
+  /// The all-zero ISSN that stands in for a record with none. No standard names it.
+  static const unavailable = Issn._('0000-0000');
 }
