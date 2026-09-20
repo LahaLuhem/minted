@@ -7,11 +7,13 @@ import 'latitude.dart';
 import 'longitude.dart';
 import 'standards/coordinate_bounds.dart';
 
+part 'helpers/geo_bounds_helpers.dart';
+
 /// A bounding box: the rectangle between a west, south, east and north edge, which may cross the antimeridian.
 /// Standard: [RFC 7946 §5](https://www.rfc-editor.org/rfc/rfc7946#section-5), GeoJSON's `bbox`, whose
 /// §5.2 spells the crossing case rather than leaving it to convention.
 ///
-/// `west > east` isn't a bug to refuse, it's how §5.2 writes a box across the antimeridian, so `170,-45,-170,-35`
+/// `west > east` isn't a bug to refuse, it's how §5.2 writes a box across the antimeridian, so `177,-20,-178,-16`
 /// is Fiji. [crossesAntimeridian] reports it and [contains] honours it.
 ///
 /// The edges are a [Longitude] and a [Latitude] pair rather than 2 [GeoCoordinate] corners, so [from]
@@ -135,25 +137,11 @@ final class const GeoBounds._({
       ? longitude >= west || longitude <= east
       : longitude >= west && longitude <= east;
 
-  // The 4 numbers in [input], or null when it holds anything else.
-  static ({double west, double south, double east, double north})? _numbersOf(String input) {
-    final trimmedInput = input.trim();
-    final unwrapped = _bracketed.firstMatch(trimmedInput)?.group(1) ?? trimmedInput;
-
-    return switch (unwrapped.split(_separator).map(double.tryParse).toList()) {
-      [final west?, final south?, final east?, final north?] => (
-        west: west,
-        south: south,
-        east: east,
-        north: north,
-      ),
-      _ => null,
-    };
-  }
-
-  // One surrounding pair, so a bbox pasted out of GeoJSON parses. dotAll for a pretty-printed array,
-  // whose newlines double.tryParse then trims.
-  static final _bracketed = RegExp(r'^\[(.*)\]$', dotAll: true);
-
-  static const _separator = ',';
+  /// The maximum box, every degree of both axes.
+  static const wholeWorld = GeoBounds._(
+    west: Longitude.min,
+    south: Latitude.min,
+    east: Longitude.max,
+    north: Latitude.max,
+  );
 }

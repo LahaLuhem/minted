@@ -18,4 +18,10 @@ extension type const Longitude._(double value) implements double {
   /// being written as a positive test.
   static Longitude? tryFrom(num degrees) =>
       !isWithinBound(degrees, maxLongitude) ? null : ._(positiveZeroed(degrees.toDouble()));
+
+  /// The western bound, kept distinct from [max] as the class dartdoc explains.
+  static const min = Longitude._(-maxLongitude);
+
+  /// The eastern bound.
+  static const max = Longitude._(maxLongitude);
 }
