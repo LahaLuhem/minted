@@ -9,17 +9,15 @@ import 'package:minted/minted.dart';
 ///
 /// Twice the usual 3, because RFC 1123 stacks that many independent rules.
 @immutable
-sealed class HostnameFailure implements MintedFailure {
-  const new();
-
+sealed class const HostnameFailure() implements MintedFailure {
   @override
   String get typeName => 'Hostname';
 }
 
 /// Something outside ASCII got through, so this may be an internationalised name.
-final class HostnameNotAscii extends HostnameFailure {
+final class const HostnameNotAscii() extends HostnameFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains non-ASCII, so punycode it to an A-label first';
@@ -35,12 +33,12 @@ final class HostnameNotAscii extends HostnameFailure {
 }
 
 /// [character] is ASCII but outside the letters, digits and hyphen RFC 1123 allows.
-final class HostnameInvalidCharacter extends HostnameFailure {
+final class const HostnameInvalidCharacter(
   /// The first offending character.
-  final String character;
-
+  final String character,
+) extends HostnameFailure {
   /// Creates the failure.
-  const new(this.character);
+  this;
 
   // An underscore is the one that's valid somewhere else, so it gets named rather than lumped in.
   @override
@@ -60,12 +58,12 @@ final class HostnameInvalidCharacter extends HostnameFailure {
 }
 
 /// [label] is empty, or opens or closes with a hyphen, which RFC 1123 keeps for the interior.
-final class HostnameLabelMalformed extends HostnameFailure {
+final class const HostnameLabelMalformed(
   /// The offending label, empty when 2 dots met.
-  final String label;
-
+  final String label,
+) extends HostnameFailure {
   /// Creates the failure.
-  const new(this.label);
+  this;
 
   @override
   String get message => label.isEmpty
@@ -83,12 +81,12 @@ final class HostnameLabelMalformed extends HostnameFailure {
 }
 
 /// A label ran past the 63 octets RFC 1035 allows one.
-final class HostnameLabelTooLong extends HostnameFailure {
+final class const HostnameLabelTooLong(
   /// How long the offending label was.
-  final int actualLength;
-
+  final int actualLength,
+) extends HostnameFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected at most 63 characters per label, got $actualLength';
@@ -105,12 +103,12 @@ final class HostnameLabelTooLong extends HostnameFailure {
 }
 
 /// The whole name ran past 253 characters, RFC 1035's 255-octet wire limit in presentation form.
-final class HostnameTooLong extends HostnameFailure {
+final class const HostnameTooLong(
   /// How long the name was once normalised.
-  final int actualLength;
-
+  final int actualLength,
+) extends HostnameFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected at most 253 characters, got $actualLength';
@@ -126,9 +124,9 @@ final class HostnameTooLong extends HostnameFailure {
 }
 
 /// The last label is all digits, which RFC 1123 says a host name never is. That's an address.
-final class HostnameNumericTld extends HostnameFailure {
+final class const HostnameNumericTld() extends HostnameFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'ends in an all-numeric label, so this is an address, not a hostname';

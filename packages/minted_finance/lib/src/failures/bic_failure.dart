@@ -9,20 +9,18 @@ import 'package:minted/minted.dart';
 ///
 /// 2 fewer than IBAN needs: ISO 9362 has no checksum and no per-country length.
 @immutable
-sealed class BicFailure implements MintedFailure {
-  const new();
-
+sealed class const BicFailure() implements MintedFailure {
   @override
   String get typeName => 'Bic';
 }
 
 /// Neither 8 nor 11 characters, so it's a BIC of neither length.
-final class BicWrongLength extends BicFailure {
+final class const BicWrongLength(
   /// How many characters were left after whitespace came off.
-  final int actualLength;
-
+  final int actualLength,
+) extends BicFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected 8 or 11 characters, got $actualLength';
@@ -38,9 +36,9 @@ final class BicWrongLength extends BicFailure {
 }
 
 /// Something outside `A`-`Z` and `0`-`9` got through. Whitespace comes off first.
-final class BicInvalidCharacters extends BicFailure {
+final class const BicInvalidCharacters() extends BicFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside A-Z and 0-9';
@@ -57,12 +55,12 @@ final class BicInvalidCharacters extends BicFailure {
 
 /// [countryCode] is no ISO 3166-1 alpha-2 code, so positions 5 and 6 are mistyped. Digits landing there
 /// arrive here too, naming no country either.
-final class BicUnknownCountry extends BicFailure {
+final class const BicUnknownCountry(
   /// The unrecognised 5th and 6th characters.
-  final String countryCode;
-
+  final String countryCode,
+) extends BicFailure {
   /// Creates the failure.
-  const new(this.countryCode);
+  this;
 
   @override
   String get message => '"$countryCode" is not a recognised country code';

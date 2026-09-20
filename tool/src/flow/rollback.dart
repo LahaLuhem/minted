@@ -5,29 +5,21 @@ import '../io/release_ui.dart';
 ///
 /// Once only because [RollbackPhase.commitLanded] drops a commit, and both the interrupt handler and
 /// the enclosing `finally` call [run].
-class Rollback {
-  new({
-    required this._runner,
-    required this._ui,
-    required this.repoRoot,
-    required this.packageDir,
-    this.repairedPubspecs = const [],
-  });
-
-  final ProcessRunner _runner;
-  final ReleaseUi _ui;
+class Rollback({
+  required final ProcessRunner _runner,
+  required final ReleaseUi _ui,
 
   /// Absolute path to the checkout being released. git has to run here, not wherever the process happened
   /// to start, or the undo lands in the wrong repo.
-  final String repoRoot;
+  required final String repoRoot,
 
   /// Directory of the member being released, relative to [repoRoot].
-  final String packageDir;
+  required final String packageDir,
 
   /// Other members' pubspecs the release rewrote, relative to [repoRoot]. Restored alongside the released
   /// member's own files: a half-repaired tree does not resolve.
-  final List<String> repairedPubspecs;
-
+  final List<String> repairedPubspecs = const [],
+}) {
   /// Updated as the release advances, and read only when something goes wrong.
   RollbackPhase phase = .none;
 
@@ -64,7 +56,7 @@ class Rollback {
 }
 
 /// How far a release got, which decides what undoing it means.
-enum RollbackPhase {
+enum RollbackPhase() {
   /// Before the bump, or past the dry-run, where cleanup could drop real work if the push was the step
   /// that failed.
   none,

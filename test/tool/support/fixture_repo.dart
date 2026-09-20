@@ -3,8 +3,8 @@ import 'dart:io';
 import '../../../tool/src/io/repo.dart';
 
 /// A throwaway workspace on disk, holding only the files the release flow reads: no lib, no git.
-class FixtureRepo {
-  new() : _root = Directory.systemTemp.createTempSync('minted_release_');
+class FixtureRepo() {
+  this : _root = Directory.systemTemp.createTempSync('minted_release_');
 
   final Directory _root;
 

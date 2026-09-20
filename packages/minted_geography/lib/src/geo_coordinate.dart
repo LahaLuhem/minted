@@ -28,16 +28,14 @@ import 'standards/coordinate_bounds.dart';
 ///
 /// {@example /example/minted_geography_example.dart#geo}
 @immutable
-final class GeoCoordinate {
+final class const GeoCoordinate._(
   /// The latitude in decimal degrees, negative south of the equator. A `double`, so arithmetic and formatting
   /// need no unwrapping.
-  final Latitude latitude;
+  final Latitude latitude,
 
   /// The longitude in decimal degrees, negative west of the prime meridian.
-  final Longitude longitude;
-
-  const new _(this.latitude, this.longitude);
-
+  final Longitude longitude,
+) {
   // The only door that constructs, so every instance normalises alike. A negative zero prints as "-0.0000"
   // here, and the snap runs inside the clearing, because a tiny negative degree rounds to -0.0. Neither
   // step can push a bounded degree past its bound, hence the asserted rewrap.

@@ -22,13 +22,11 @@ part 'helpers/payment_card_number_helpers.dart';
 ///
 /// {@example /example/minted_finance_example.dart#card}
 @immutable
-final class PaymentCardNumber {
+final class const PaymentCardNumber._(
   /// The primary account number, digits only. The one member that reveals the card, so reach for [masked]
   /// anywhere the result might be logged.
-  final String value;
-
-  const new _(this.value);
-
+  final String value,
+) {
   /// Builds a [PaymentCardNumber] from an [iin] and [accountIdentifier], working the Luhn check digit
   /// out.
   static ParseOutcome<PaymentCardNumberFailure, PaymentCardNumber> fromComponents({

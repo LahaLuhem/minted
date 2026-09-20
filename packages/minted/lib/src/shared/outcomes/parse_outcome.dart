@@ -8,9 +8,7 @@ import 'minted_format_error.dart';
 /// Lossless, unlike a nullable return, and reachable without `try`/`catch`. Sealed, so a `switch` over
 /// [ParseSuccess] and [ParseFailure] is exhaustive and the compiler catches a missed arm.
 @immutable
-sealed class ParseOutcome<F extends MintedFailure, T> {
-  const new();
-
+sealed class const ParseOutcome<F extends MintedFailure, T>() {
   /// Whether this holds a parsed value.
   bool get isSuccess => this is ParseSuccess<F, T>;
 
@@ -67,13 +65,13 @@ sealed class ParseOutcome<F extends MintedFailure, T> {
 }
 
 /// A parse that produced [value].
-final class ParseSuccess<F extends MintedFailure, T> extends ParseOutcome<F, T> {
+final class const ParseSuccess<F extends MintedFailure, T>(
   /// The parsed value.
-  final T value;
-
+  final T value,
+) extends ParseOutcome<F, T> {
   /// Wraps an already-parsed [value]. Public because there's no invariant to protect: you can only pass
   /// a [T], which only parsing produces.
-  const new(this.value);
+  this;
 
   @override
   bool operator ==(Object other) => other is ParseSuccess<F, T> && other.value == value;
@@ -86,12 +84,12 @@ final class ParseSuccess<F extends MintedFailure, T> extends ParseOutcome<F, T> 
 }
 
 /// A parse that failed, for the [reason] given.
-final class ParseFailure<F extends MintedFailure, T> extends ParseOutcome<F, T> {
+final class const ParseFailure<F extends MintedFailure, T>(
   /// Why the parse failed, in the offending type's own vocabulary.
-  final F reason;
-
+  final F reason,
+) extends ParseOutcome<F, T> {
   /// Wraps the [reason] a parse failed. Public so tests and callers can build the arm they expect.
-  const new(this.reason);
+  this;
 
   @override
   bool operator ==(Object other) => other is ParseFailure<F, T> && other.reason == reason;

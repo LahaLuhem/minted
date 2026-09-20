@@ -6,7 +6,7 @@
 part of '../ip_address.dart';
 
 /// Which family an [IpAddress] belongs to.
-enum IpVersion {
+enum IpVersion() {
   /// A 32-bit IPv4 address, written as a dotted quad.
   v4,
 

@@ -28,43 +28,32 @@ part 'helpers/iso8601_duration_helpers.dart';
 ///
 /// {@example /example/minted_chronology_example.dart#iso8601Duration}
 @immutable
-final class Iso8601Duration {
+final class const Iso8601Duration._({
   /// Whole years.
-  final int years;
+  required final int years,
 
   /// Whole months.
-  final int months;
+  required final int months,
 
   /// Whole weeks. Non-zero only in the week form, where every other component is zero.
-  final int weeks;
+  required final int weeks,
 
   /// Whole days.
-  final int days;
+  required final int days,
 
   /// Whole hours.
-  final int hours;
+  required final int hours,
 
   /// Whole minutes.
-  final int minutes;
+  required final int minutes,
 
   /// Whole seconds.
-  final int seconds;
+  required final int seconds,
 
   /// The fractional part and the component carrying it, or `null` when the duration is whole. Always
   /// the smallest component present, ISO 8601 allowing a fraction nowhere else.
-  final ({Iso8601DurationComponent component, double value})? fraction;
-
-  const new _({
-    required this.years,
-    required this.months,
-    required this.weeks,
-    required this.days,
-    required this.hours,
-    required this.minutes,
-    required this.seconds,
-    required this.fraction,
-  });
-
+  required final ({Iso8601DurationComponent component, double value})? fraction,
+}) {
   /// Parses [input], or `null` if it isn't an ISO 8601 duration.
   static Iso8601Duration? tryParse(String input) => parse(input).getOrNull();
 
@@ -255,7 +244,7 @@ final class Iso8601Duration {
 }
 
 /// Which component of an [Iso8601Duration] carries its fractional part.
-enum Iso8601DurationComponent {
+enum Iso8601DurationComponent() {
   /// Years, designator `Y`.
   years,
 

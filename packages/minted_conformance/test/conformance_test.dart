@@ -99,18 +99,12 @@ const _parseDoors = {'parse', 'tryParse'};
 final _errorThrow = RegExp(r'\b\w*Error\b');
 
 /// A type discovered in a source file, and what the 3 rules need to know about it.
-class _ValueType {
-  new(
-    this.name, {
-    required this.isExtensionType,
-    required this.isEnum,
-    required this.representationIsValue,
-  });
-
-  final String name;
-  final bool isExtensionType;
-  final bool isEnum;
-  final bool representationIsValue;
+class _ValueType(
+  final String name, {
+  required final bool isExtensionType,
+  required final bool isEnum,
+  required final bool representationIsValue,
+}) {
   final Set<String> staticMethods = {};
 
   /// The source of every `throw` not naming an `Error`, so a failure can quote what it found.
@@ -119,7 +113,7 @@ class _ValueType {
 
 /// Collects the types declared in one compilation unit, using only AST primitives stable across analyzer
 /// versions.
-class _TypeCollector extends RecursiveAstVisitor<void> {
+class _TypeCollector() extends RecursiveAstVisitor<void> {
   final List<_ValueType> types = [];
   _ValueType? _current;
 

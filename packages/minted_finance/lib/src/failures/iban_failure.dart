@@ -9,17 +9,15 @@ import 'package:minted/minted.dart';
 ///
 /// 5, because ISO 13616 is a registry plus a checksum, and each has its own remedy.
 @immutable
-sealed class IbanFailure implements MintedFailure {
-  const new();
-
+sealed class const IbanFailure() implements MintedFailure {
   @override
   String get typeName => 'Iban';
 }
 
 /// Under 4 characters, empty included, so the country and check digits aren't there yet.
-final class IbanTooShort extends IbanFailure {
+final class const IbanTooShort() extends IbanFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'too short to identify a country';
@@ -35,9 +33,9 @@ final class IbanTooShort extends IbanFailure {
 }
 
 /// Something outside `A`-`Z` and `0`-`9` got through. Whitespace comes off first.
-final class IbanInvalidCharacters extends IbanFailure {
+final class const IbanInvalidCharacters() extends IbanFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside A-Z and 0-9';
@@ -53,12 +51,12 @@ final class IbanInvalidCharacters extends IbanFailure {
 }
 
 /// [countryCode] isn't in the IBAN registry, so this is unsupported rather than mistyped.
-final class IbanUnknownCountry extends IbanFailure {
+final class const IbanUnknownCountry(
   /// The unrecognised leading 2 characters.
-  final String countryCode;
-
+  final String countryCode,
+) extends IbanFailure {
   /// Creates the failure.
-  const new(this.countryCode);
+  this;
 
   @override
   String get message => '"$countryCode" is not a recognised country code';
@@ -74,15 +72,15 @@ final class IbanUnknownCountry extends IbanFailure {
 }
 
 /// The country is known and fixes the length at [expected], but the input is [actual] long.
-final class IbanInvalidLength extends IbanFailure {
+final class const IbanInvalidLength({
   /// The length the registry fixes for this country.
-  final int expected;
+  required final int expected,
 
   /// The length actually supplied.
-  final int actual;
-
+  required final int actual,
+}) extends IbanFailure {
   /// Creates the failure.
-  const new({required this.expected, required this.actual});
+  this;
 
   @override
   String get message => 'expected $expected characters for this country, got $actual';
@@ -99,9 +97,9 @@ final class IbanInvalidLength extends IbanFailure {
 }
 
 /// The mod-97 check digits don't match the rest. A character is mistyped.
-final class IbanChecksumFailed extends IbanFailure {
+final class const IbanChecksumFailed() extends IbanFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'failed the mod-97 check';

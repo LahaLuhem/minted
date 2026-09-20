@@ -48,7 +48,7 @@ const _maskGlyphs = '••••';
 ///
 /// Reported, never validated. ISO/IEC 7812 doesn't assign these ranges, the registry drifts, and some
 /// ranges are contested, so this sits outside the parse guarantee.
-enum CardScheme {
+enum CardScheme() {
   /// Visa: `4`.
   visa,
 

@@ -7,20 +7,18 @@ import 'package:minted/minted.dart';
 /// Why an [Isin] refused its input. Sealed rather than an enum, because [IsinWrongLength] and [IsinInvalidPrefix]
 /// carry values off the input.
 @immutable
-sealed class IsinFailure implements MintedFailure {
-  const new();
-
+sealed class const IsinFailure() implements MintedFailure {
   @override
   String get typeName => 'Isin';
 }
 
 /// Not 12 characters once whitespace comes off.
-final class IsinWrongLength extends IsinFailure {
+final class const IsinWrongLength(
   /// How many characters were left after whitespace came off.
-  final int actualLength;
-
+  final int actualLength,
+) extends IsinFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected 12 characters, got $actualLength';
@@ -36,9 +34,9 @@ final class IsinWrongLength extends IsinFailure {
 }
 
 /// Something outside `A`-`Z` and `0`-`9` got through.
-final class IsinInvalidCharacters extends IsinFailure {
+final class const IsinInvalidCharacters() extends IsinFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside A-Z and 0-9';
@@ -55,12 +53,12 @@ final class IsinInvalidCharacters extends IsinFailure {
 
 /// The leading 2 characters aren't both letters. ISO 6166 wants letters whether or not they name a
 /// country: `XS` is Euroclear and Clearstream, and as valid as `GB`.
-final class IsinInvalidPrefix extends IsinFailure {
+final class const IsinInvalidPrefix(
   /// The 2 leading characters, as given.
-  final String prefix;
-
+  final String prefix,
+) extends IsinFailure {
   /// Creates the failure.
-  const new(this.prefix);
+  this;
 
   @override
   String get message => '"$prefix" is not two letters';
@@ -76,9 +74,9 @@ final class IsinInvalidPrefix extends IsinFailure {
 }
 
 /// The check digit doesn't match the rest. A character is mistyped or swapped.
-final class IsinChecksumFailed extends IsinFailure {
+final class const IsinChecksumFailed() extends IsinFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'failed the Luhn check';

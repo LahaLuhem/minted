@@ -10,17 +10,15 @@ import 'package:minted/minted.dart';
 /// 2, one per remedy: fix the notation, or fix the width. IEEE 802 has no checksum and no reserved
 /// address, so nothing else can fail.
 @immutable
-sealed class MacAddressFailure implements MintedFailure {
-  const new();
-
+sealed class const MacAddressFailure() implements MintedFailure {
   @override
   String get typeName => 'MacAddress';
 }
 
 /// The text is none of the 4 accepted notations, or mixes 2 of them.
-final class MacAddressMalformed extends MacAddressFailure {
+final class const MacAddressMalformed() extends MacAddressFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not a colon, hyphen, dot-quad or bare-hex MAC address';
@@ -37,12 +35,12 @@ final class MacAddressMalformed extends MacAddressFailure {
 
 /// The notation was recognised but held neither 6 octets (48-bit) nor 8 (64-bit). Also what
 /// [MacAddress.fromOctets] turns down.
-final class MacAddressWrongOctetCount extends MacAddressFailure {
+final class const MacAddressWrongOctetCount(
   /// How many octets were supplied.
-  final int actual;
-
+  final int actual,
+) extends MacAddressFailure {
   /// Creates the failure.
-  const new(this.actual);
+  this;
 
   @override
   String get message => 'expected 6 or 8 octets, got $actual';

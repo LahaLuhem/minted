@@ -10,17 +10,15 @@ import 'package:minted/minted.dart';
 ///
 /// One fewer than [Hostname] needs: RFC 2181 drops the hyphen-edge and all-numeric-label rules.
 @immutable
-sealed class DnsNameFailure implements MintedFailure {
-  const new();
-
+sealed class const DnsNameFailure() implements MintedFailure {
   @override
   String get typeName => 'DnsName';
 }
 
 /// Something outside ASCII got through, so this may be an internationalised name.
-final class DnsNameNotAscii extends DnsNameFailure {
+final class const DnsNameNotAscii() extends DnsNameFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains non-ASCII, so punycode it to an A-label first';
@@ -36,12 +34,12 @@ final class DnsNameNotAscii extends DnsNameFailure {
 }
 
 /// [character] is ASCII but outside the letters, digits, hyphen and underscore this type takes.
-final class DnsNameInvalidCharacter extends DnsNameFailure {
+final class const DnsNameInvalidCharacter(
   /// The first offending character.
-  final String character;
-
+  final String character,
+) extends DnsNameFailure {
   /// Creates the failure.
-  const new(this.character);
+  this;
 
   @override
   String get message => '"$character" is not a letter, digit, hyphen or underscore';
@@ -59,9 +57,9 @@ final class DnsNameInvalidCharacter extends DnsNameFailure {
 
 /// A label was empty, so 2 dots met or one sat at an edge. RFC 2181's one-octet minimum is the only
 /// shape rule left once the hyphen-edge rule goes.
-final class DnsNameLabelEmpty extends DnsNameFailure {
+final class const DnsNameLabelEmpty() extends DnsNameFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'has an empty label, so two dots met or one sits at an edge';
@@ -77,12 +75,12 @@ final class DnsNameLabelEmpty extends DnsNameFailure {
 }
 
 /// A label ran past the 63 octets RFC 2181 §11 allows one.
-final class DnsNameLabelTooLong extends DnsNameFailure {
+final class const DnsNameLabelTooLong(
   /// How long the offending label was.
-  final int actualLength;
-
+  final int actualLength,
+) extends DnsNameFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected at most 63 characters per label, got $actualLength';
@@ -99,12 +97,12 @@ final class DnsNameLabelTooLong extends DnsNameFailure {
 }
 
 /// The whole name ran past 253 characters, RFC 1035's 255-octet wire limit in presentation form.
-final class DnsNameTooLong extends DnsNameFailure {
+final class const DnsNameTooLong(
   /// How long the name was once normalised.
-  final int actualLength;
-
+  final int actualLength,
+) extends DnsNameFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected at most 253 characters, got $actualLength';

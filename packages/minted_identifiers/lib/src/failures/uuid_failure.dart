@@ -7,17 +7,15 @@ import 'package:minted/minted.dart';
 /// Why a [Uuid] refused its input. Sealed rather than an enum, because [UuidWrongByteCount] carries
 /// a count known only per call.
 @immutable
-sealed class UuidFailure implements MintedFailure {
-  const new();
-
+sealed class const UuidFailure() implements MintedFailure {
   @override
   String get typeName => 'Uuid';
 }
 
 /// The text isn't `8-4-4-4-12` hex, wrapped or not.
-final class UuidMalformed extends UuidFailure {
+final class const UuidMalformed() extends UuidFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not a well-formed UUID (expected 8-4-4-4-12 hex)';
@@ -34,15 +32,15 @@ final class UuidMalformed extends UuidFailure {
 
 /// [Uuid.fromBytes] got something other than 16 bytes. Every 16-byte sequence is a valid UUID, so length
 /// is all it can turn down.
-final class UuidWrongByteCount extends UuidFailure {
+final class const UuidWrongByteCount({
   /// The byte count a UUID always has, `16`.
-  final int expected;
+  required final int expected,
 
   /// How many bytes turned up.
-  final int actual;
-
+  required final int actual,
+}) extends UuidFailure {
   /// Creates the failure.
-  const new({required this.expected, required this.actual});
+  this;
 
   @override
   String get message => 'expected $expected bytes, got $actual';

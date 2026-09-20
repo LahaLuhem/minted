@@ -22,22 +22,20 @@ import 'standards/coordinate_bounds.dart';
 ///
 /// {@example /example/minted_geography_example.dart#bounds}
 @immutable
-final class GeoBounds {
+final class const GeoBounds._({
   /// The western edge, above [east] exactly when the box crosses the antimeridian. A `double`, so arithmetic
   /// and formatting need no unwrapping.
-  final Longitude west;
+  required final Longitude west,
 
   /// The southern edge. Never above [north].
-  final Latitude south;
+  required final Latitude south,
 
   /// The eastern edge.
-  final Longitude east;
+  required final Longitude east,
 
   /// The northern edge.
-  final Latitude north;
-
-  const new _({required this.west, required this.south, required this.east, required this.north});
-
+  required final Latitude north,
+}) {
   /// The box with these 4 edges, reporting [GeoBoundsSouthAboveNorth] when the latitudes are the
   /// wrong way round. The only failure left, since the edges carry their own ranges and west past east
   /// is the crossing rather than a mistake.

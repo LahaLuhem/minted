@@ -7,18 +7,16 @@ import 'package:minted/minted.dart';
 /// Why a [GeoCoordinate] refused its input. Sealed rather than an enum, because the range variants hand
 /// the offending number back.
 @immutable
-sealed class GeoCoordinateFailure implements MintedFailure {
-  const new();
-
+sealed class const GeoCoordinateFailure() implements MintedFailure {
   @override
   String get typeName => 'GeoCoordinate';
 }
 
 /// The text isn't the ISO 6709 shape: a signed, fixed-width latitude and longitude closed by `/`. Minutes
 /// or seconds reaching `60` land here too, being grammar rather than a separate range.
-final class GeoCoordinateNotIso6709 extends GeoCoordinateFailure {
+final class const GeoCoordinateNotIso6709() extends GeoCoordinateFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not an ISO 6709 coordinate string';
@@ -34,12 +32,12 @@ final class GeoCoordinateNotIso6709 extends GeoCoordinateFailure {
 }
 
 /// The latitude falls outside `-90` to `90`.
-final class GeoCoordinateLatitudeOutOfRange extends GeoCoordinateFailure {
+final class const GeoCoordinateLatitudeOutOfRange(
   /// The offending latitude, in decimal degrees.
-  final double latitude;
-
+  final double latitude,
+) extends GeoCoordinateFailure {
   /// Creates the failure.
-  const new(this.latitude);
+  this;
 
   @override
   String get message => 'latitude $latitude is outside -90 to 90';
@@ -56,12 +54,12 @@ final class GeoCoordinateLatitudeOutOfRange extends GeoCoordinateFailure {
 }
 
 /// The longitude falls outside `-180` to `180`.
-final class GeoCoordinateLongitudeOutOfRange extends GeoCoordinateFailure {
+final class const GeoCoordinateLongitudeOutOfRange(
   /// The offending longitude, in decimal degrees.
-  final double longitude;
-
+  final double longitude,
+) extends GeoCoordinateFailure {
   /// Creates the failure.
-  const new(this.longitude);
+  this;
 
   @override
   String get message => 'longitude $longitude is outside -180 to 180';

@@ -3,7 +3,7 @@ import '../versioning/bump_type.dart';
 /// Everything the release flow needs from a person or says to one.
 ///
 /// One seam, so the flow knows nothing about terminice and a test can answer every prompt.
-abstract interface class ReleaseUi {
+abstract interface class ReleaseUi() {
   /// A progress line.
   void log(String message);
 

@@ -2,23 +2,20 @@ import '../../../tool/src/io/release_ui.dart';
 import '../../../tool/src/versioning/bump_type.dart';
 
 /// A [ReleaseUi] that answers prompts from fields and keeps everything it printed.
-class FakeReleaseUi implements ReleaseUi {
-  new({this.isInteractive = false, this.packageChoice, this.bumpChoice, this.confirmation = true});
-
-  /// Everything printed, in order, prefixes and all.
-  final List<String> printed = [];
-
-  @override
-  final bool isInteractive;
+class FakeReleaseUi({
+  @override final bool isInteractive = false,
 
   /// What [choosePackage] answers. Null stands for "no choice was made".
-  final String? packageChoice;
+  final String? packageChoice,
 
   /// What [chooseBump] answers. Null stands for "no choice was made".
-  final BumpType? bumpChoice;
+  final BumpType? bumpChoice,
 
   /// What [confirmRelease] answers.
-  final bool confirmation;
+  final bool confirmation = true,
+}) implements ReleaseUi {
+  /// Everything printed, in order, prefixes and all.
+  final List<String> printed = [];
 
   /// Whether anything printed contains [fragment].
   bool said(String fragment) => printed.any((line) => line.contains(fragment));

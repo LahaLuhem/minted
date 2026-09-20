@@ -26,15 +26,13 @@ part 'helpers/cidr_helpers.dart';
 ///
 /// {@example /example/minted_network_example.dart#cidr}
 @immutable
-final class Cidr {
+final class const Cidr._(
   /// The network address, every bit below [prefixLength] clear.
-  final IpAddress network;
+  final IpAddress network,
 
   /// How many leading bits the prefix covers: `0` to `32` for v4, `0` to `128` for v6.
-  final int prefixLength;
-
-  const new _(this.network, this.prefixLength);
-
+  final int prefixLength,
+) {
   /// The block at [network] covering [prefixLength] bits, reporting the [CidrFailure] when the prefix
   /// does not fit the family or [network] has bits set below it.
   static ParseOutcome<CidrFailure, Cidr> from({

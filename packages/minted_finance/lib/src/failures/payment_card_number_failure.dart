@@ -7,20 +7,18 @@ import 'package:minted/minted.dart';
 /// Why a [PaymentCardNumber] refused its input. Sealed rather than an enum, because [PaymentCardNumberWrongLength]
 /// carries a value off the input.
 @immutable
-sealed class PaymentCardNumberFailure implements MintedFailure {
-  const new();
-
+sealed class const PaymentCardNumberFailure() implements MintedFailure {
   @override
   String get typeName => 'PaymentCardNumber';
 }
 
 /// Outside the 8-to-19-digit window ISO/IEC 7812 allows a primary account number.
-final class PaymentCardNumberWrongLength extends PaymentCardNumberFailure {
+final class const PaymentCardNumberWrongLength(
   /// How many characters were left after separators came off.
-  final int actualLength;
-
+  final int actualLength,
+) extends PaymentCardNumberFailure {
   /// Creates the failure.
-  const new(this.actualLength);
+  this;
 
   @override
   String get message => 'expected 8 to 19 digits, got $actualLength';
@@ -37,9 +35,9 @@ final class PaymentCardNumberWrongLength extends PaymentCardNumberFailure {
 }
 
 /// Something outside `0`-`9` got through. Spaces and hyphens come off first.
-final class PaymentCardNumberInvalidCharacters extends PaymentCardNumberFailure {
+final class const PaymentCardNumberInvalidCharacters() extends PaymentCardNumberFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'contains characters outside 0-9';
@@ -55,9 +53,9 @@ final class PaymentCardNumberInvalidCharacters extends PaymentCardNumberFailure 
 }
 
 /// The last digit doesn't match the rest. A digit is mistyped or swapped.
-final class PaymentCardNumberChecksumFailed extends PaymentCardNumberFailure {
+final class const PaymentCardNumberChecksumFailed() extends PaymentCardNumberFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'failed the Luhn check';

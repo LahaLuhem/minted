@@ -7,17 +7,15 @@ import 'package:minted/minted.dart';
 /// Why an [Iso8601Duration] refused its input. Sealed rather than an enum, because 3 variants carry
 /// the part that broke.
 @immutable
-sealed class Iso8601DurationFailure implements MintedFailure {
-  const new();
-
+sealed class const Iso8601DurationFailure() implements MintedFailure {
   @override
   String get typeName => 'Iso8601Duration';
 }
 
 /// The text isn't a `P`-prefixed duration at all.
-final class Iso8601DurationMalformed extends Iso8601DurationFailure {
+final class const Iso8601DurationMalformed() extends Iso8601DurationFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'not an ISO 8601 duration (expected PnYnMnDTnHnMnS or PnW)';
@@ -34,9 +32,9 @@ final class Iso8601DurationMalformed extends Iso8601DurationFailure {
 
 /// `P` or `PT` with nothing after it. ISO 8601 wants at least one component, so a zero duration is written
 /// `PT0S` rather than `P`.
-final class Iso8601DurationEmpty extends Iso8601DurationFailure {
+final class const Iso8601DurationEmpty() extends Iso8601DurationFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'has no components. A zero duration is "PT0S", not "P"';
@@ -53,12 +51,12 @@ final class Iso8601DurationEmpty extends Iso8601DurationFailure {
 
 /// Weeks turned up beside another component. ISO 8601 makes `PnW` an alternative to `PnYnMnDTnHnMnS`,
 /// not a component of it, so the 2 never mix.
-final class Iso8601DurationWeeksNotAlone extends Iso8601DurationFailure {
+final class const Iso8601DurationWeeksNotAlone(
   /// The component found alongside the weeks, as its ISO designator: `Y`, `M`, `D`, `H` or `S`.
-  final String designator;
-
+  final String designator,
+) extends Iso8601DurationFailure {
   /// Creates the failure.
-  const new(this.designator);
+  this;
 
   @override
   String get message => 'the week form PnW cannot carry a "$designator" component too';
@@ -76,9 +74,9 @@ final class Iso8601DurationWeeksNotAlone extends Iso8601DurationFailure {
 
 /// A `T` with no time component after it, as in `P1DT`. The designator exists to separate months from
 /// minutes, so it means nothing on its own.
-final class Iso8601DurationDanglingTimeDesignator extends Iso8601DurationFailure {
+final class const Iso8601DurationDanglingTimeDesignator() extends Iso8601DurationFailure {
   /// Creates the failure.
-  const new();
+  this;
 
   @override
   String get message => 'has a T with no time component after it';
@@ -95,12 +93,12 @@ final class Iso8601DurationDanglingTimeDesignator extends Iso8601DurationFailure
 
 /// A fraction sat above the smallest component present. ISO 8601 allows one only on the lowest-order
 /// component, so `P0.5Y1M` is refused where `P1Y0.5M` isn't.
-final class Iso8601DurationFractionNotSmallest extends Iso8601DurationFailure {
+final class const Iso8601DurationFractionNotSmallest(
   /// The designator carrying the fraction.
-  final String designator;
-
+  final String designator,
+) extends Iso8601DurationFailure {
   /// Creates the failure.
-  const new(this.designator);
+  this;
 
   @override
   String get message =>
