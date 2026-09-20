@@ -6,6 +6,8 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
+const namedImeis = <Imei>{.unavailable, .test};
+
 void main() {
   feature('Imei', () {
     // The compact 15-digit form doubles as the expected outcome: a String means "accepted and normalised
@@ -174,6 +176,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const ImeiWrongLength(13));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final imei in namedImeis) {
+        check(Imei.tryParse(imei.value)?.value, because: 'named constant $imei').equals(imei.value);
+      }
     });
   });
 }

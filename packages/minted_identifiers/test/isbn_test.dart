@@ -6,6 +6,8 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
+const namedIsbns = <Isbn>{.unavailable};
+
 void main() {
   feature('Isbn', () {
     // The canonical 13-digit form doubles as the expected outcome: a String means "accepted and
@@ -205,6 +207,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IsbnWrongLength(12));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final isbn in namedIsbns) {
+        check(Isbn.tryParse(isbn.value)?.value, because: 'named constant $isbn').equals(isbn.value);
+      }
     });
   });
 }

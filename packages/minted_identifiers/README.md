@@ -25,13 +25,13 @@ another domain's engine.
 
 ## What's in the box
 
-| Type   | What it guarantees                                                                 | Standard                                                                 |
-|--------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `Uuid` | a well-formed UUID. Version and variant read back, Nil/Max recognised              | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)                       |
-| `Isbn` | prefix and check digit. Both generations folded to ISBN-13                         | [ISO 2108](https://www.isbn-international.org/content/what-isbn)         |
-| `Imei` | 15 digits and the Luhn check. TAC and serial read back                        | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
-| `Issn` | 8 characters and the mod-11 check. Kept in printed `NNNN-NNNC` form            | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
-| `Isni` | 16 characters and the ISO 7064 MOD 11-2 check. Says if it is also an ORCID iD | [ISO 27729](https://www.isni.org/)                                       |
+| Type   | What it guarantees                                                              | Standard                                                                 |
+|--------|---------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `Uuid` | a well-formed UUID. Version and variant read back, Nil/Max recognised           | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)                       |
+| `Isbn` | prefix and check digit. Both generations folded to ISBN-13                      | [ISO 2108](https://www.isbn-international.org/content/what-isbn)         |
+| `Imei` | 15 digits and the Luhn check. TAC and serial read back                          | [3GPP TS 23.003](https://www.3gpp.org/DynaReport/23003.htm)              |
+| `Issn` | 8 characters and the mod-11 check. Kept in printed `NNNN-NNNC` form             | [ISO 3297](https://www.issn.org/understanding-the-issn/what-is-an-issn/) |
+| `Isni` | 16 characters and the ISO 7064 MOD 11-2 check. Says if it is also an ORCID iD   | [ISO 27729](https://www.isni.org/)                                       |
 | `Gtin` | digits, one of the 4 GS1 lengths, and the mod-10 check digit. Folded to GTIN-14 | [GS1 GTIN](https://www.gs1.org/standards/id-keys/gtin)                   |
 
 Each one folds its spellings into a single canonical value, so 2 ways of writing one identifier
@@ -79,11 +79,13 @@ The runnable version is the
 ```dart
 Uuid.nil.value;                      // '00000000-0000-0000-0000-000000000000'
 Gtin.restrictedCirculation.gtin13;   // '2000000000008'
+Imei.unavailable.formatted;          // '00-000000-000000-0'
+Isbn.unavailable.isbn10;             // '0000000000'
 ```
 
-`Uuid.nil` and `Uuid.max` are the 2 special-case UUIDs RFC 9562 defines. `Gtin.restrictedCirculation`
-sits in GS1's `20`-`29` range, which stays inside one company rather than going into global
-circulation, so unlike an example lifted from a barcode tutorial it names no real product.
+`Uuid.nil` and `Uuid.max` are RFC 9562's 2 special cases. `Gtin.restrictedCirculation` and the IMEI
+pair sit in ranges their standards keep out of circulation. `Isbn.unavailable` is a habit with no
+standard behind it.
 
 ## One shape, every type
 
