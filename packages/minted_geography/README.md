@@ -89,6 +89,16 @@ GeoBounds.tryParse('[-180, -90, 180, 90]')?.bbox;   // '-180.0,-90.0,180.0,90.0'
 The runnable version is the
 [example](https://github.com/LahaLuhem/minted/blob/main/packages/minted_geography/example/minted_geography_example.dart).
 
+## Named constants
+
+```dart
+GeoBounds.wholeWorld.bbox;   // '-180.0,-90.0,180.0,90.0'
+Latitude.max;                // 90.0, the last degree that parses
+```
+
+`Latitude` and `Longitude` name the bounds they're defined by, and `GeoBounds.wholeWorld` is the box
+built from all 4.
+
 ## One shape, every type
 
 - `GeoCoordinate.tryParse(input)` hands back the value, or `null` when the input isn't valid

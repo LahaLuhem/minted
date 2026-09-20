@@ -15,4 +15,10 @@ extension type const Latitude._(double value) implements double {
   /// written as a positive test.
   static Latitude? tryFrom(num degrees) =>
       !isWithinBound(degrees, maxLatitude) ? null : ._(positiveZeroed(degrees.toDouble()));
+
+  /// The southern bound, at the pole.
+  static const min = Latitude._(-maxLatitude);
+
+  /// The northern bound.
+  static const max = Latitude._(maxLatitude);
 }
