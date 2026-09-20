@@ -82,11 +82,12 @@ Gtin.restrictedCirculation.gtin13;   // '2000000000008'
 Imei.unavailable.formatted;          // '00-000000-000000-0'
 Isbn.unavailable.isbn10;             // '0000000000'
 Isni.example.isInOrcidBlock;         // true
+Issn.unavailable.compact;            // '00000000'
 ```
 
 `Uuid.nil` and `Uuid.max` are RFC 9562's 2 special cases. `Gtin.restrictedCirculation` and the IMEI
-pair sit in ranges their standards keep out of circulation. `Isbn.unavailable` is a habit with no
-standard behind it, and `Isni.example` is ORCID's own example record, for a professor who never existed.
+pair sit in ranges their standards keep out of circulation. `Isni.example` is ORCID's own example
+record, for a professor who never existed. The 2 `unavailable` values are habits no standard names.
 
 ## One shape, every type
 

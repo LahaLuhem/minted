@@ -6,6 +6,8 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import '../../../test/support/bdd.dart';
 import '../../../test/support/digits.dart';
 
+const namedIssns = <Issn>{.unavailable};
+
 void main() {
   feature('Issn', () {
     // The hyphenated form doubles as the expected outcome: a String means "accepted and normalised to
@@ -158,6 +160,12 @@ void main() {
           .throws<MintedFormatError>()
           .has((error) => error.failure, 'failure')
           .equals(const IssnWrongLength(6));
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final issn in namedIssns) {
+        check(Issn.tryParse(issn.value)?.value, because: 'named constant $issn').equals(issn.value);
+      }
     });
   });
 }
