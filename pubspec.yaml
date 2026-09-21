@@ -21,8 +21,8 @@ dev_dependencies:
   args: ^2.7.0
   checks: ^0.3.2
   collection: ^1.19.1
-  dependency_validator: ^5.0.6
-  melos: ^8.7.0
+  dependency_validator: ^5.1.0
+  melos: ^8.8.0
   # test/support/digits.dart builds Digits fixtures for the sibling suites.
   minted_constraints: ^1.1.0
   terminice: ^1.3.1
