@@ -15,19 +15,19 @@ part of '../date.dart';
 
 // The one gate parse, the factory and fromDateTime all go through.
 Date? _tryFromParts(int year, int month, int day) {
+  final parsedYear = Year.tryFrom(year);
   final parsedMonth = Month.tryFrom(month);
-  if (parsedMonth == null) return null;
+  final parsedDay = DayOfMonth.tryFrom(day);
 
-  final wellFormed =
-      year >= _minYear && year <= _maxYear && day >= 1 && day <= parsedMonth.daysIn(year);
-
-  return !wellFormed ? null : Date._(year, parsedMonth, day);
+  return parsedYear == null || parsedMonth == null || parsedDay == null
+      ? null
+      : Date.from(parsedYear, parsedMonth, parsedDay).getOrNull();
 }
 
 // Which part of the given date is out of range. Reached only after _tryFromParts returns null, so
 // exactly one of these conditions holds.
 DateComponentFailure _partsFailure(int year, int month, int day) {
-  if (year < _minYear || year > _maxYear) return DateYearOutOfRange(year);
+  if (Year.tryFrom(year) == null) return DateYearOutOfRange(year);
 
   final parsedMonth = Month.tryFrom(month);
 
@@ -37,6 +37,3 @@ DateComponentFailure _partsFailure(int year, int month, int day) {
 }
 
 final _iso8601 = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
-
-const _minYear = 0;
-const _maxYear = 9999;

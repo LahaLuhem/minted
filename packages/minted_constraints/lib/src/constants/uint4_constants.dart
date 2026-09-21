@@ -1,6 +1,6 @@
 part of '../quantities/uint4.dart';
 
-/// Every [Uint4], 16 being small enough to name all of, plus the top one again as `max`.
+/// Every [Uint4], plus the top one again as `max`.
 abstract final class Uint4Constants() {
   /// Unused: the class is a namespace, never an instance.
   this;

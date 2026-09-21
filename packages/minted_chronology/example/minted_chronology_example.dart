@@ -13,6 +13,13 @@ void main() {
   print(date.tryAddDays(30)); // Date(2026-08-06)  (null past the 0000-9999 bound)
   print(date.isBefore(Date.of(2027).getOrThrow())); // true
   print(Date.tryParse('2026-13-01')); // null (no 13th month)
+  // The modelled door: only the day can still be wrong, since a month's length needs the other 2.
+  final year = Year.tryFrom(2026)!;
+  print(
+    Date.from(year, MonthConstants.july, DayOfMonthConstants.d7),
+  ); // ParseSuccess(Date(2026-07-07))
+  print(Date.from(year, MonthConstants.april, DayOfMonthConstants.d31).reasonOrNull?.message);
+  // day 31 is outside 1-30 for 2026-04
   // #endregion
 
   // Holds components, because a month has no length until anchored to a date.

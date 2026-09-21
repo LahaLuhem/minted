@@ -52,6 +52,75 @@ void main() {
       check(Date.of(2026, 7).getOrThrow().iso8601).equals('2026-07-01');
     });
 
+    scenario('Date.from takes parts already in range, defaulting month and day to 1', () {
+      final year = Year.tryFrom(2026)!;
+
+      check(Date.from(year, MonthConstants.july, DayOfMonthConstants.d7).getOrThrow().iso8601)
+          .equals('2026-07-07');
+      check(Date.from(year).getOrThrow().iso8601).equals('2026-01-01');
+      check(Date.from(year, MonthConstants.july).getOrThrow().iso8601).equals('2026-07-01');
+    });
+
+    // The one thing 3 in-range parts can still get wrong between them, which is why Date.from stays
+    // fallible however much of it is modelled.
+    scenarioOutline<({int year, Month month, DayOfMonth day, int? maxDay})>(
+      'Date.from refuses a day past the end of that month in that year',
+      examples: {
+        'the 31st of a 30-day month': (
+          year: 2026,
+          month: MonthConstants.april,
+          day: DayOfMonthConstants.d31,
+          maxDay: 30,
+        ),
+        'the 29th of a common February': (
+          year: 2026,
+          month: MonthConstants.february,
+          day: DayOfMonthConstants.d29,
+          maxDay: 28,
+        ),
+        'the 29th of a leap February': (
+          year: 2024,
+          month: MonthConstants.february,
+          day: DayOfMonthConstants.d29,
+          maxDay: null,
+        ),
+        'the 31st of a 31-day month': (
+          year: 2026,
+          month: MonthConstants.july,
+          day: DayOfMonthConstants.d31,
+          maxDay: null,
+        ),
+      },
+      outline: (example) {
+        final outcome = Date.from(Year.tryFrom(example.year)!, example.month, example.day);
+
+        check(outcome.reasonOrNull?.maxDay).equals(example.maxDay);
+      },
+    );
+
+    // The signature is the documentation: the other 2 parts cannot be wrong once they are modelled,
+    // so widening Date.from back to DateComponentFailure fails here.
+    scenario('Date.from reports the day and nothing else', () {
+      final outOfRange = Date.from(
+        Year.tryFrom(2026)!,
+        MonthConstants.april,
+        DayOfMonthConstants.d31,
+      );
+
+      check(outOfRange).isA<ParseOutcome<DateDayOutOfRange, Date>>();
+      check(outOfRange.reasonOrNull).isA<DateDayOutOfRange>();
+    });
+
+    scenario('Date.from and Date.of build the same date from the same parts', () {
+      check(
+        Date.from(
+          Year.tryFrom(2024)!,
+          MonthConstants.february,
+          DayOfMonthConstants.d29,
+        ).getOrThrow(),
+      ).equals(Date.of(2024, 2, 29).getOrThrow());
+    });
+
     scenario('the factory accepts a genuine leap day', () {
       check(Date.of(2024, 2, 29).getOrThrow().iso8601).equals('2024-02-29');
     });

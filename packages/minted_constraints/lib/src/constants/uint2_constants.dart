@@ -1,6 +1,6 @@
 part of '../quantities/uint2.dart';
 
-/// Every [Uint2], 4 being small enough to name all of, plus the top one again as `max`.
+/// Every [Uint2], plus the top one again as `max`.
 abstract final class Uint2Constants() {
   /// Unused: the class is a namespace, never an instance.
   this;
