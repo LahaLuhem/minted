@@ -92,7 +92,7 @@ void main() {
         ),
       },
       outline: (example) {
-        final outcome = Date.from(Year.tryFrom(example.year)!, example.month, example.day);
+        final outcome = Date.from(.tryFrom(example.year)!, example.month, example.day);
 
         check(outcome.reasonOrNull?.maxDay).equals(example.maxDay);
       },
@@ -101,11 +101,7 @@ void main() {
     // The signature is the documentation: the other 2 parts cannot be wrong once they are modelled,
     // so widening Date.from back to DateComponentFailure fails here.
     scenario('Date.from reports the day and nothing else', () {
-      final outOfRange = Date.from(
-        Year.tryFrom(2026)!,
-        MonthConstants.april,
-        DayOfMonthConstants.d31,
-      );
+      final outOfRange = Date.from(.tryFrom(2026)!, MonthConstants.april, DayOfMonthConstants.d31);
 
       check(outOfRange).isA<ParseOutcome<DateDayOutOfRange, Date>>();
       check(outOfRange.reasonOrNull).isA<DateDayOutOfRange>();
@@ -113,11 +109,7 @@ void main() {
 
     scenario('Date.from and Date.of build the same date from the same parts', () {
       check(
-        Date.from(
-          Year.tryFrom(2024)!,
-          MonthConstants.february,
-          DayOfMonthConstants.d29,
-        ).getOrThrow(),
+        Date.from(.tryFrom(2024)!, MonthConstants.february, DayOfMonthConstants.d29).getOrThrow(),
       ).equals(Date.of(2024, 2, 29).getOrThrow());
     });
 
