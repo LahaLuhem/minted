@@ -1,4 +1,7 @@
 ## [Unreleased]
+### Added
+- Constants move to per-type namespaces, and Date gets modelled parts
+
 ### Changed
 - Rename the network invalid-character failures
 - Give the value types named constants, under a stated rule
