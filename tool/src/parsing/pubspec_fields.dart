@@ -57,36 +57,36 @@ String constraintOf(String dependencyLine) {
   return separator < 0 ? dependencyLine : dependencyLine.substring(separator + 2);
 }
 
-/// A member whose constraint on the package being released cannot accept its next version, and the line
-/// that repairs it.
-typedef BlockingConstraint = ({String member, String dir, String declared, String repaired});
+/// A member whose constraint on the package being released has a lower bound below its next version,
+/// and the line that repairs it.
+typedef LaggingConstraint = ({String member, String dir, String declared, String repaired});
 
 /// One member's directory and pubspec text.
 typedef MemberSource = ({String dir, String pubspec});
 
-/// Members whose declared constraint on [releasedName] names an older major than [nextMajor].
+/// Members whose declared lower bound on [releasedName] sits below [next].
 ///
 /// The mirror of [staleConstraints]: that guards what the released package declares on its siblings,
-/// this guards what they declare on it. Without it a major lands, every dependent's caret excludes it,
-/// and `dart pub get` stops resolving the workspace.
+/// this guards what they declare on it.
 ///
-/// Majors only, a caret already admitting any higher minor inside its own. A hand-written range that
-/// blocks one is left to `pub publish --dry-run`, as before.
-Set<BlockingConstraint> blockingConstraints({
+/// Every release, not only a major. A caret admits any higher version in its own major, so a lagging
+/// bound resolves fine until the dependent uses something the bound never promised. The cost is a
+/// stricter floor: a dependent can now refuse a sibling it would have worked with.
+Set<LaggingConstraint> laggingConstraints({
   required String releasedName,
-  required int nextMajor,
+  required String next,
   required Map<String, MemberSource> members,
 }) => Set.unmodifiable(
   members.entries
       .where((member) => member.key != releasedName)
-      .map((member) => _blockingConstraintOn(releasedName, nextMajor, member.key, member.value))
+      .map((member) => _laggingConstraintOn(releasedName, next, member.key, member.value))
       .nonNulls,
 );
 
-/// What [source] declares on [releasedName], when that cannot accept [nextMajor].
-BlockingConstraint? _blockingConstraintOn(
+/// What [source] declares on [releasedName], when its lower bound is below [next].
+LaggingConstraint? _laggingConstraintOn(
   String releasedName,
-  int nextMajor,
+  String next,
   String member,
   MemberSource source,
 ) {
@@ -94,15 +94,34 @@ BlockingConstraint? _blockingConstraintOn(
   if (declared == null) return null;
 
   final constraint = constraintOf(declared);
-  final declaredMajor = _firstInteger(constraint);
-  if (declaredMajor == null || declaredMajor >= nextMajor) return null;
+  if (_versionParts(constraint).isEmpty || _compareVersions(constraint, next) >= 0) return null;
 
   return (
     member: member,
     dir: source.dir,
     declared: declared,
-    repaired: declared.replaceFirst(constraint, '^$nextMajor.0.0'),
+    repaired: declared.replaceFirst(constraint, '^$next'),
   );
+}
+
+/// The leading `major.minor.patch` of [text], which for a constraint is its lower bound: the first
+/// version in `^X.Y.Z` and in `>=X.Y.Z <W.0.0` alike.
+List<int> _versionParts(String text) =>
+    _integer.allMatches(text).take(3).map((match) => int.parse(match[0]!)).toList();
+
+/// Orders 2 version-bearing strings by their leading numbers, a missing part reading as `0`.
+int _compareVersions(String left, String right) {
+  final leftParts = _versionParts(left);
+  final rightParts = _versionParts(right);
+
+  for (var index = 0; index < 3; index++) {
+    final order = (leftParts.elementAtOrNull(index) ?? 0).compareTo(
+      rightParts.elementAtOrNull(index) ?? 0,
+    );
+    if (order != 0) return order;
+  }
+
+  return 0;
 }
 
 /// A sibling constraint whose lower bound is older than the major this tree builds against.

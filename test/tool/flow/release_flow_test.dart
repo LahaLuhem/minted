@@ -211,7 +211,8 @@ void main() {
       check(runner.ran('git add packages/core/pubspec.yaml')).isTrue();
     });
 
-    test('a minor bump repairs nothing, the caret already admitting it', () async {
+    // The caret already admitted it, so the repair buys an honest floor rather than resolvability.
+    test('a minor bump raises a dependent bound inside the same major', () async {
       fixture
         ..addMember(name: 'core', version: '1.5.0')
         ..addMember(name: 'companion', version: '1.0.0', dependencies: {'core': '^1.0.0'});
@@ -223,7 +224,22 @@ void main() {
       );
 
       check(abort).isNull();
-      check(fixture.repo.readFile('packages/companion/pubspec.yaml')).contains('core: ^1.0.0');
+      check(fixture.repo.readFile('packages/companion/pubspec.yaml')).contains('core: ^1.6.0');
+    });
+
+    test('a bound already at the new version is left alone', () async {
+      fixture
+        ..addMember(name: 'core', version: '1.5.0')
+        ..addMember(name: 'companion', version: '1.0.0', dependencies: {'core': '^1.6.0'});
+
+      final abort = await runFlow(
+        runner: FakeProcessRunner(onCapture: _healthy(bumpedTo: '1.6.0')),
+        ui: FakeReleaseUi(),
+        options: const ReleaseOptions(bump: .minor, package: 'core', skipConfirmation: true),
+      );
+
+      check(abort).isNull();
+      check(fixture.repo.readFile('packages/companion/pubspec.yaml')).contains('core: ^1.6.0');
     });
   });
 

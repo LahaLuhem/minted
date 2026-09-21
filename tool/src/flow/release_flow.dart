@@ -19,7 +19,7 @@ typedef ReleasePlan = ({
   BumpType bump,
   ({String current, String next}) version,
   String tag,
-  List<BlockingConstraint> repairs,
+  List<LaggingConstraint> repairs,
 });
 
 /// Cuts a versioned release of one workspace member.
@@ -94,30 +94,27 @@ class ReleaseFlow({
     return (selected: selected, bump: bump, version: version, tag: tag, repairs: repairs);
   }
 
-  /// What [blockingConstraints] finds for [next], sorted so the plan reads the same way twice.
+  /// What [laggingConstraints] finds for [next], sorted so the plan reads the same way twice.
   ///
   /// Found here and applied in [_execute], so the plan names every file the release touches.
-  List<BlockingConstraint> _dependentRepairs(PendingPackage selected, String next) {
+  List<LaggingConstraint> _dependentRepairs(PendingPackage selected, String next) {
     ui.step('Preflight: dependent constraints');
 
-    final nextMajor = versionMajor(next);
-    if (nextMajor == null) throw ReleaseAbort("Could not read a major version from '$next'.");
-
-    final blocking = blockingConstraints(
+    final lagging = laggingConstraints(
       releasedName: selected.name,
-      nextMajor: nextMajor,
+      next: next,
       members: repo.memberSources(),
     ).sortedBy((constraint) => constraint.member);
 
-    if (blocking.isEmpty) ui.log('Nothing declares an older major on ${selected.name}.');
-    for (final constraint in blocking) {
+    if (lagging.isEmpty) ui.log('Every dependent already names ${selected.name} $next.');
+    for (final constraint in lagging) {
       ui.log(
         '${constraint.dir}/pubspec.yaml: '
         '${constraint.declared.trim()}  ->  ${constraint.repaired.trim()}',
       );
     }
 
-    return blocking;
+    return lagging;
   }
 
   // ── Resolution ────────────────────────────────────────────────────────────
@@ -361,7 +358,7 @@ class ReleaseFlow({
   /// Rewrites each dependent's constraint in place, so the tree still resolves once [next] lands.
   ///
   /// A line replacement, not a YAML round trip: these files stay byte-identical but for the one constraint.
-  void _applyRepairs(List<BlockingConstraint> repairs, String next) {
+  void _applyRepairs(List<LaggingConstraint> repairs, String next) {
     if (repairs.isEmpty) return;
 
     ui.step('repair ${repairs.length} dependent constraint(s) for $next');
@@ -393,7 +390,7 @@ class ReleaseFlow({
     required BumpType bump,
     required ({String current, String next}) version,
     required String tag,
-    required List<BlockingConstraint> repairs,
+    required List<LaggingConstraint> repairs,
   }) {
     final tagKind = options.tagMessage == null
         ? '(lightweight; pass -m "MSG" to annotate)'
@@ -443,7 +440,7 @@ publish.yml routes on the '${selected.name}' half of the tag and publishes ${ver
     required BumpType bump,
     required String next,
     required String tag,
-    required List<BlockingConstraint> repairs,
+    required List<LaggingConstraint> repairs,
   }) async {
     final repairedPubspecs = repairs
         .map((repair) => '${repair.dir}/pubspec.yaml')

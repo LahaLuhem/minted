@@ -121,6 +121,36 @@ fails loudly instead of shipping a wrong constraint that pub.dev can never take 
 3. **Publish each sibling** by hand, per *First publish* above, then configure its tag pattern.
    `minted_contact` depends on `minted_network`, so publish network first. The rest are independent.
 
+## Sibling bounds
+
+When you release a package, every sibling that depends on it gets its lower bound raised to the new
+version, in the same commit. `minted_contact: minted ^3.1.0` becomes `^3.1.1` when core goes to
+3.1.1.
+
+Two reasons it does this on every release and not only on a major:
+
+| | What happens without it |
+|---|---|
+| **Major** | The dependent's caret excludes the new version outright, and `dart pub get` stops resolving the workspace. Loud. |
+| **Minor or patch** | Everything resolves, and stays resolving, right up until the dependent uses something its bound never promised. Then someone else's build breaks, not yours. |
+
+The second one is why the bound is worth keeping honest. A lower bound is a promise about the
+oldest version you were actually built against, and yours drifts one release at a time.
+
+It does cost you something. A dependent now refuses a sibling it would in fact have worked with, so
+anyone pinned to the older version has to move before they can take the update.
+
+<details>
+<summary>What it does not cover</summary>
+
+The repair runs downstream only, on packages that depend on the one being released. The released
+package's own bounds on its siblings are left alone, so if a sibling shipped while you were not
+looking, catch up with `dart pub upgrade --tighten` before the next release.
+
+Upper bounds are never touched. Whatever the constraint was, the repair writes a plain caret.
+
+</details>
+
 ## What's pipeline-owned vs. hand-editable
 
 The member's `CHANGELOG.md` and the `version:` field in its `pubspec.yaml` are
@@ -171,9 +201,8 @@ The tool refuses to proceed unless every check passes:
 - `dart format` and `dart analyze` clean, run repo-wide from the root. `dart test` green,
   run inside the member.
 - The target tag does not already exist locally or on the remote.
-- No other member declares a constraint the release's new version would fall outside. A major
-  otherwise leaves every dependent's caret excluding it, which stops `dart pub get` resolving the
-  workspace. Those lines are rewritten in the same commit, and the plan names each one first.
+- No other member's lower bound on the release sits below its new version. Those lines are rewritten
+  in the same commit, and the plan names each one first. See [Sibling bounds](#sibling-bounds).
 
 `dart pub publish --dry-run` is *not* in preflight. It cross-checks 3 things
 that must be satisfied simultaneously:

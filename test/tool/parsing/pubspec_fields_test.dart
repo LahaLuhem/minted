@@ -74,12 +74,12 @@ dependencies:
     });
   });
 
-  group('blockingConstraints', () {
-    // The case the guard exists for: a dependent's caret cannot admit the major about to land.
+  group('laggingConstraints', () {
+    // The case the guard has always covered: a dependent's caret cannot admit the major about to land.
     test('flags a caret that excludes the next major, and repairs it', () {
-      final blocking = blockingConstraints(
+      final lagging = laggingConstraints(
         releasedName: 'minted_geography',
-        nextMajor: 2,
+        next: '2.0.0',
         members: {
           'minted_conformance': (
             dir: 'packages/minted_conformance',
@@ -88,17 +88,17 @@ dependencies:
         },
       );
 
-      check(blocking).length.equals(1);
-      check(blocking.single.member).equals('minted_conformance');
-      check(blocking.single.dir).equals('packages/minted_conformance');
-      check(blocking.single.repaired).equals('  minted_geography: ^2.0.0');
+      check(lagging).length.equals(1);
+      check(lagging.single.member).equals('minted_conformance');
+      check(lagging.single.dir).equals('packages/minted_conformance');
+      check(lagging.single.repaired).equals('  minted_geography: ^2.0.0');
     });
 
-    // A minor never blocks: a caret already admits every higher minor inside its own major.
-    test('accepts a caret inside the major that is landing', () {
-      final blocking = blockingConstraints(
+    // The reason the guard widened past majors: the caret resolves either way, so nothing fails yet.
+    test('flags a bound behind a patch inside the same minor', () {
+      final lagging = laggingConstraints(
         releasedName: 'minted',
-        nextMajor: 3,
+        next: '3.1.1',
         members: {
           'minted_constraints': (
             dir: 'packages/minted_constraints',
@@ -107,13 +107,90 @@ dependencies:
         },
       );
 
-      check(blocking).isEmpty();
+      check(lagging.single.repaired).equals('  minted: ^3.1.1');
+    });
+
+    test('flags a bound behind a minor inside the same major', () {
+      final lagging = laggingConstraints(
+        releasedName: 'minted_constraints',
+        next: '1.2.0',
+        members: {
+          'minted_finance': (
+            dir: 'packages/minted_finance',
+            pubspec: 'name: minted_finance\ndependencies:\n  minted_constraints: ^1.1.0\n',
+          ),
+        },
+      );
+
+      check(lagging.single.repaired).equals('  minted_constraints: ^1.2.0');
+    });
+
+    test('accepts a bound already at the version landing', () {
+      final lagging = laggingConstraints(
+        releasedName: 'minted',
+        next: '3.1.1',
+        members: {
+          'minted_constraints': (
+            dir: 'packages/minted_constraints',
+            pubspec: 'name: minted_constraints\ndependencies:\n  minted: ^3.1.1\n',
+          ),
+        },
+      );
+
+      check(lagging).isEmpty();
+    });
+
+    // Ordered on the numbers, so 10 sorts above 9 rather than below it the way text would.
+    test('accepts a bound above the version landing', () {
+      final lagging = laggingConstraints(
+        releasedName: 'minted',
+        next: '3.9.0',
+        members: {
+          'minted_constraints': (
+            dir: 'packages/minted_constraints',
+            pubspec: 'name: minted_constraints\ndependencies:\n  minted: ^3.10.0\n',
+          ),
+        },
+      );
+
+      check(lagging).isEmpty();
+    });
+
+    // The lower bound is what counts, and the repair normalises the whole constraint to a caret.
+    test('reads the lower bound out of a hand-written range', () {
+      final lagging = laggingConstraints(
+        releasedName: 'minted',
+        next: '3.1.1',
+        members: {
+          'minted_contact': (
+            dir: 'packages/minted_contact',
+            pubspec: "name: minted_contact\ndependencies:\n  minted: '>=3.1.0 <4.0.0'\n",
+          ),
+        },
+      );
+
+      check(lagging.single.repaired).equals('  minted: ^3.1.1');
+    });
+
+    test('ignores a dependency declared without a version', () {
+      final lagging = laggingConstraints(
+        releasedName: 'minted',
+        next: '3.1.1',
+        members: {
+          'minted_contact': (
+            dir: 'packages/minted_contact',
+            pubspec: 'name: minted_contact\ndependencies:\n  minted: any\n',
+          ),
+        },
+      );
+
+      check(lagging).isEmpty();
     });
 
     test('ignores a member that does not depend on the one being released', () {
-      final blocking = blockingConstraints(
+      final lagging = laggingConstraints(
         releasedName: 'minted_geography',
-        nextMajor: 2,
+        next: '2.0.0',
         members: {
           'minted_finance': (
             dir: 'packages/minted_finance',
@@ -122,13 +199,13 @@ dependencies:
         },
       );
 
-      check(blocking).isEmpty();
+      check(lagging).isEmpty();
     });
 
     test('never reports the package being released against itself', () {
-      final blocking = blockingConstraints(
+      final lagging = laggingConstraints(
         releasedName: 'minted_geography',
-        nextMajor: 2,
+        next: '2.0.0',
         members: {
           'minted_geography': (
             dir: 'packages/minted_geography',
@@ -137,7 +214,7 @@ dependencies:
         },
       );
 
-      check(blocking).isEmpty();
+      check(lagging).isEmpty();
     });
   });
 
