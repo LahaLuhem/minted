@@ -76,7 +76,7 @@ void main() {
     // The type bounds what some month could hold, never what one does, and that gap is Date's to close.
     scenario('a day no month of that year reaches still parses here', () {
       check(DayOfMonth.tryFrom(31)).isNotNull();
-      check(Date.from(Year.tryFrom(2026)!, MonthConstants.april, .tryFrom(31)!).isFailure).isTrue();
+      check(Date.from(.tryFrom(2026)!, MonthConstants.april, .tryFrom(31)!).isFailure).isTrue();
     });
   });
 }

@@ -1,4 +1,5 @@
-/// @docImport '../cidr.dart';
+// Not '../cidr.dart': it is a part, and doc-importing a part crashes the analyzer.
+// https://github.com/dart-lang/sdk/issues/56013#issuecomment-5757258757
 /// @docImport '../ip_address.dart';
 library;
 
