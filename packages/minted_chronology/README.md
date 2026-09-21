@@ -26,13 +26,18 @@ another domain's engine.
 | Type              | What it guarantees                                                       | Standard                                           |
 |-------------------|--------------------------------------------------------------------------|----------------------------------------------------|
 | `Date`            | a real calendar date: no time, no zone. Impossible dates rejected        | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `Year`            | a year inside `0000`-`9999`, the window a `Date` renders as `YYYY`       | building block                                     |
 | `Month`           | a real month `1`-`12` that knows its own length (leap-aware)             | building block                                     |
-| `Weekday`         | one of 7 named days, ISO-numbered `1` (Monday) to `7` (Sunday)       | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
+| `DayOfMonth`      | a day number `1`-`31`: what some month could hold, not what one does     | building block                                     |
+| `Weekday`         | one of 7 named days, ISO-numbered `1` (Monday) to `7` (Sunday)           | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 | `Iso8601Duration` | a duration with months and years, which `dart:core` Duration cannot hold | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) |
 
 `Date` is the type `DateTime` isn't: no clock, no zone, and an impossible date is refused rather
 than rolled over. `Weekday` is an enum a `Date` hands back, so a `switch` over one needs no default
 arm.
+
+`Year`, `Month` and `DayOfMonth` are the parts a `Date` is made of, each holding its own range.
+Between them they still can't rule out 31 April, which is what `Date.from` refuses.
 
 ## A quick taste
 
@@ -87,7 +92,8 @@ write as `PT0S`, since a duration needs at least 1 component.
   `MonthFailure`, `Iso8601DurationFailure`) you can `switch` on, or read as a form-field message via
   `.reasonOrNull`. No door throws
 - value equality, a canonical `.iso8601`, chronological ordering (`<`, `isBefore`, `compareTo`), and
-  `Date.of` / `Date.fromDateTime` for parts you already hold
+  `Date.from` / `Date.of` / `Date.fromDateTime` for parts you already hold. `from` takes the modelled
+  parts and can only refuse the day, `of` takes plain `int`s and reports whichever one is wrong
 - `Weekday` is a classification rather than a parsed value, so it takes `tryFrom(isoDayNumber)`
   instead of a parse door
 

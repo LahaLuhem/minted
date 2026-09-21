@@ -1,6 +1,6 @@
 part of '../latitude.dart';
 
-/// The [Latitude] bounds, the 2 degrees the type is defined by.
+/// The [Latitude] bounds.
 abstract final class LatitudeConstants() {
   /// Unused: the class is a namespace, never an instance.
   this;

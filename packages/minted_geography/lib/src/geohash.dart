@@ -25,9 +25,8 @@ part 'helpers/geohash_helpers.dart';
 ///
 /// {@example /example/minted_geography_example.dart#geohash}
 extension type const Geohash._(String value) {
-  /// The geohash of [precision] characters whose cell holds [coordinate]. Can't fail: both parameters
-  /// carry their own invariants, so an absurd [precision] builds an absurd string rather than getting
-  /// refused.
+  /// The geohash of [precision] characters whose cell holds [coordinate]. Can't fail: an absurd
+  /// [precision] builds an absurd string rather than getting refused.
   ///
   /// Lossy by design, and [precision] sizes the loss. A coarse cell is wide, so [centre] won't hand
   /// [coordinate] back.

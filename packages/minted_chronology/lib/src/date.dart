@@ -1,10 +1,12 @@
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
+import 'day_of_month.dart';
 import 'failures/date_failure.dart';
 import 'month.dart';
 import 'normalisation/iso_date_format.dart';
 import 'weekday.dart';
+import 'year.dart';
 
 part 'constants/date_constants.dart';
 part 'helpers/date_helpers.dart';
@@ -15,9 +17,9 @@ part 'helpers/date_helpers.dart';
 /// and a zone it never had, so 2 "equal" dates compare unequal and a day slides across a zone boundary.
 /// Standard: [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).
 ///
-/// [parse] and [Date.of] refuse the impossible dates (month 13, 30 February, 29 February in a common
-/// year) rather than rolling them over the way [DateTime] does. [year] is held in `0000`-`9999`, and
-/// [iso8601] is the canonical form.
+/// [parse], [Date.of] and [Date.from] refuse the impossible dates (month 13, 30 February, 29 February
+/// in a common year) rather than rolling them over the way [DateTime] does. [year] is held in
+/// `0000`-`9999`, and [iso8601] is the canonical form.
 ///
 /// Ordering is chronological, on [compareTo], [isBefore], [isAfter] and `<` / `<=` / `>` / `>=`.
 ///
@@ -26,14 +28,14 @@ part 'helpers/date_helpers.dart';
 /// {@example /example/minted_chronology_example.dart#date}
 @immutable
 final class const Date._(
-  /// The year, `0000`-`9999`.
-  final int year,
+  /// The year.
+  final Year year,
 
   /// The month of the year.
   final Month month,
 
   /// The day of the month, `1` to the last day of [month] (leap-year aware).
-  final int day,
+  final DayOfMonth day,
 ) implements Comparable<Date> {
   /// The [Date] for [year], [month] and [day], reporting which part is out of range on an impossible
   /// date.
@@ -46,6 +48,22 @@ final class const Date._(
     return parsedDate == null
         ? ParseFailure(_partsFailure(year, month, day))
         : ParseSuccess(parsedDate);
+  }
+
+  /// The [Date] for parts already in range, reporting [DateDayOutOfRange] on the one thing they can
+  /// still get wrong between them: a day past the end of that month in that year.
+  ///
+  /// [Date.of] is the same door for raw numbers, and reports the other 2 parts as well.
+  static ParseOutcome<DateDayOutOfRange, Date> from(
+    Year year, [
+    Month month = MonthConstants.january,
+    DayOfMonth day = DayOfMonthConstants.d1,
+  ]) {
+    final maxDay = month.daysIn(year);
+
+    return day > maxDay
+        ? ParseFailure(DateDayOutOfRange(year: year, month: month.value, day: day, maxDay: maxDay))
+        : ParseSuccess(Date._(year, month, day));
   }
 
   /// The calendar date of [dateTime], dropping its time-of-day and time zone. Fails only when its year

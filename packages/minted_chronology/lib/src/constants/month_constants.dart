@@ -3,7 +3,7 @@
 
 part of '../month.dart';
 
-/// Every [Month], 12 being small enough to name all of.
+/// Every [Month].
 abstract final class MonthConstants() {
   /// Unused: the class is a namespace, never an instance.
   this;

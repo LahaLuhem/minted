@@ -30,13 +30,13 @@ type over `DateTime` cannot override `toString`, so it would print `2026-07-07 0
 inherit the rollover. One over a packed `int` has an opaque canonical form and needs arithmetic to
 read a component back.
 
-**`Month` is a type, `day` and `year` are plain `int`.** A month is one of 12 regardless of
-context, so `Month` is a clean building block, and it owns the calendar knowledge that hangs off a
-month (`Month.daysIn(year)` is leap-aware, so `Date` delegates rather than carrying a length table).
-A *day* is only valid relative to a month and a year, so a standalone `Day(1-31)` would be a shape
-check that leaves `Date` doing the real validation, and a type named `Day` that accepts 31 February
-overpromises on its name. `year` would be only a thin bounded `int`. This is the
-[typing-versus-honesty balance][typing-versus-honesty] resolved per field.
+**Every part is a type, and exactly one check survives that.** A month is one of 12 regardless of
+context, so `Month` owns the calendar knowledge hanging off it: `Month.daysIn(year)` is leap-aware,
+and `Date` delegates rather than carrying a length table. `Year` and `DayOfMonth` bound their own
+ranges. What no part can bound is a day against its month, which is the
+[typing-versus-honesty balance][typing-versus-honesty]: the type is `DayOfMonth` rather than a `Day`
+that would overpromise, and `Date.from` still refuses 31 April. That last failure is not removable,
+because a total `from` would have to lie.
 
 **A validating factory, not a raw constructor.** `Date.of(2026, 7, 7)` validates and reports, backed
 by a private `Date._`. A plain `const` constructor cannot promise the guarantee, because its
