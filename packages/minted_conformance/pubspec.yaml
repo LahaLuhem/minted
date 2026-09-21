@@ -19,7 +19,7 @@ dev_dependencies:
   minted_chronology: ^1.1.0
   minted_contact: ^1.1.0
   minted_finance: ^1.1.0
-  minted_geography: ^1.1.1
+  minted_geography: ^1.2.0
   minted_identifiers: ^1.1.0
   minted_network: ^1.1.0
   test: ^1.32.0

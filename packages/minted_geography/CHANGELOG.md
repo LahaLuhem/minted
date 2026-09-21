@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.2.0] - 2026-09-21
 ### Added
 - Constants move to per-type namespaces, and Date gets modelled parts
 
@@ -23,7 +23,7 @@
 ### Added
 - \[#60\] First release, split out of `minted` 2.x: GeoCoordinate
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.1.1...minted_geography-HEAD
+[1.2.0]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.1.1...minted_geography-1.2.0
 [1.1.1]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.1.0...minted_geography-1.1.1
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.0.1...minted_geography-1.1.0
 [1.0.1]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.0.0...minted_geography-1.0.1
