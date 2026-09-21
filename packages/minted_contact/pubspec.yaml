@@ -2,7 +2,7 @@ name: minted_contact
 description: >-
   Well-modelled Dart value types for contact details: Email and PhoneNumber, checked against the
   real standards rather than a regex. Part of the minted family.
-version: 1.0.2
+version: 1.1.0
 homepage: https://github.com/LahaLuhem/minted/tree/main/packages/minted_contact?tab=readme-ov-file
 repository: https://github.com/LahaLuhem/minted/tree/main/packages/minted_contact
 
