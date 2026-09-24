@@ -35,7 +35,7 @@ void main() {
       check(ShortPlusCode.parse('WC2300+G6g').reasonOrNull).isA<PlusCodeMalformed>();
     });
 
-    // The reason this is its own type: one string, two places.
+    // The reason this is its own type: 1 string, 2 places.
     scenario('the same short code recovers to different places near different references', () {
       final short = ShortPlusCode.tryParse('9G8F+6W')!;
       final zurich = GeoCoordinate.tryFrom(latitude: 47.5, longitude: 8.5)!;
@@ -46,8 +46,7 @@ void main() {
       check(short.recoverNear(zurich)).not((it) => it.equals(short.recoverNear(sydney)));
     });
 
-    // Rows from the standard's shortCodeTests.csv, which gives the full code, the reference and the
-    // shortened form together.
+    // Rows from the standard's shortCodeTests.csv.
     scenarioOutline<({String full, String short})>(
       'recovery gives back the full code the standard pairs with that reference',
       examples: {

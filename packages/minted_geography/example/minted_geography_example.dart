@@ -36,7 +36,7 @@ void main() {
   print(GeoBounds.tryParse('[-180, -90, 180, 90]')?.bbox); // -180.0,-90.0,180.0,90.0 (the world)
   // #endregion
 
-  // A code names a cell, and a shortened one names nowhere until you say where you are reading it.
+  // One door per legal digit count, since 2 to 15 has gaps: no odd count below 10.
   // #region pluscode
   final zurich = GeoCoordinate.tryFrom(latitude: 47.36559, longitude: 8.524997)!;
   print(PlusCode.from10(zurich)); // 8FVC9G8F+6X

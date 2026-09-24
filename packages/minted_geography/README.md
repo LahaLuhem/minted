@@ -5,7 +5,7 @@
 
 # minted_geography
 
-Coordinates, geohashes and bounding boxes as well-modelled value types.
+Coordinates, geohashes, Plus Codes and bounding boxes as well-modelled value types.
 
 Part of the [minted](https://github.com/LahaLuhem/minted) family: pure-Dart value types built on
 *parse, don't validate*, so the parser is the only door in and anything that came through it is
@@ -30,17 +30,17 @@ another domain's engine.
 |-----------------|------------------------------------------------------------------------------|--------------------------------------------------------------------|
 | `GeoCoordinate` | a bounded latitude and longitude. All 3 ISO 6709 widths read as degrees      | [ISO 6709](https://en.wikipedia.org/wiki/ISO_6709)                 |
 | `Geohash`       | a base32 cell, not a point. The 4 letters base32 drops are refused           | [CTA-5009-A](https://www.cta.tech/standards/cta-5009-a/)           |
-| `PlusCode`      | a full code, which names a cell on its own                                   | [Open Location Code](https://github.com/google/open-location-code) |
-| `ShortPlusCode` | a shortened code, which names nowhere until you say where you are reading it | [Open Location Code](https://github.com/google/open-location-code) |
+| `PlusCode`      | a cell, not a point. A shortened code is turned away                         | [Open Location Code](https://github.com/google/open-location-code) |
+| `ShortPlusCode` | a real short code, which `recoverNear` turns into a place                    | [Open Location Code](https://github.com/google/open-location-code) |
 | `GeoBounds`     | a box that may cross the antimeridian, which `west <= east` would refuse     | [RFC 7946 §5](https://www.rfc-editor.org/rfc/rfc7946#section-5)    |
 
 A swapped latitude and longitude is a type bug no range check catches, so the pair is named at the
 boundary. It's a surface coordinate: altitude and a CRS identifier are refused rather than silently
 dropped, since their sign, units and datum are all defined by the CRS.
 
-`PlusCode` and `ShortPlusCode` are 2 types for one reason: `9G8F+6W` recovers to Zurich next to
-Zurich and to Sydney next to Sydney, so a short code is not a place until `recoverNear` makes it
-one. That is also why only the full one has `bounds` and `centre`.
+`9G8F+6W` recovers to Zurich next to Zurich and to Sydney next to Sydney, which is why a short code
+is its own type: it isn't a place until `recoverNear` makes it one, so it has no `bounds` and no
+`centre`.
 
 A geohash is a *cell*, not a point, which a `String` cannot say: `bounds` is that cell and `centre`
 one point in it. `toLowerCase()` isn't validation either, the alphabet having dropped `a`, `i`, `l`
@@ -63,7 +63,7 @@ eiffel.latitude;     // 48.8577
 eiffel.iso6709;      // '+48.8577+002.295/'   (canonical form)
 eiffel.sexagesimal;  // '48°51′27.72″N 2°17′42″E'   (display form)
 
-// A Plus Code names a cell too, and the short form needs a reference before it means anything:
+// Plus Code: one door per legal digit count, since 2 to 15 has gaps (no odd count below 10).
 final zurich = GeoCoordinate.tryFrom(latitude: 47.365590, longitude: 8.524997)!;
 PlusCode.from10(zurich);                   // 8FVC9G8F+6X
 PlusCode.tryParse('9G8F+6W');              // null, that one is short

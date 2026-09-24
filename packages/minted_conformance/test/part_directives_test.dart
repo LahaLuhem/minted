@@ -6,29 +6,21 @@ import 'dart:io';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
-/// Refuses any `import`, `export` or `@docImport` pointing at a file that is a `part of` something.
-///
-/// A part is not a library, so the analyzer is meant to report `import_of_non_library`. It crashes
-/// with `Missing library` instead, and names the part rather than the file holding the bad
-/// reference, which makes it slow to find by hand. Reported as
-/// https://github.com/dart-lang/sdk/issues/56013#issuecomment-5757258757. It has bitten twice: once
-/// when `Cidr` became a part of `ip_address.dart`, once when `ShortPlusCode` landed as a part.
-///
-/// Regex rather than the AST, because a doc import lives inside a doc comment and how the analyzer
-/// exposes it moves between versions. The formatter keeps directives on their own lines, so there is
-/// nothing here for a parser to earn.
+import '../../../test/support/workspace.dart';
+
+/// Refuses any `import`, `export` or `@docImport` pointing at a file that is a `part of` something,
+/// which crashes `dart analyze` rather than being reported:
+/// https://github.com/dart-lang/sdk/issues/56013#issuecomment-5757258757
 void main() {
+  // Regex rather than the AST: a doc import lives inside a doc comment, and how the analyzer hands
+  // that over moves between versions.
   final directive = RegExp(
     r'''^(?:///\s*@docImport|import|export)\s+'([^']+)';''',
     multiLine: true,
   );
   final partOf = RegExp(r"""^part\s+of\s+['"]""", multiLine: true);
 
-  final packages = Directory('${_workspaceRoot()}/packages');
-  final sources = packages
-      .listSync()
-      .whereType<Directory>()
-      .map((package) => Directory('${package.path}/lib'))
+  final sources = memberDirectories()
       .where((library) => library.existsSync())
       .expand((library) => library.listSync(recursive: true))
       .whereType<File>()
@@ -53,29 +45,8 @@ void main() {
             '${source.path}: ${match.group(0)}',
     ];
 
-    check(
-      offenders,
-      because:
-          'a part is not a library, so this crashes `dart analyze` with "Missing library" rather '
-          'than reporting it. Point at the file that declares the part instead.',
-    ).isEmpty();
+    check(offenders, because: 'point at the file that declares the part instead').isEmpty();
   });
-}
-
-/// The directory holding `packages/`, found by climbing until the workspace pubspec turns up.
-///
-/// Not `'..'`: that reads the caller's working directory, so running from the repo root sweeps
-/// whatever sits beside the repo.
-String _workspaceRoot() {
-  for (var directory = Directory.current; ; directory = directory.parent) {
-    final pubspec = File('${directory.path}/pubspec.yaml');
-    if (pubspec.existsSync() && pubspec.readAsStringSync().contains('\nworkspace:')) {
-      return directory.path;
-    }
-    if (directory.path == directory.parent.path) {
-      throw StateError('No workspace pubspec above ${Directory.current.path}.');
-    }
-  }
 }
 
 /// Where [target] lands on disk, or null for the SDK and anything outside the workspace.
@@ -85,7 +56,7 @@ Uri? _resolve(String target, File source) {
   if (target.startsWith('package:')) {
     final [package, ...path] = target.replaceFirst('package:', '').split('/');
 
-    return File('${_workspaceRoot()}/packages/$package/lib/${path.join('/')}').absolute.uri
+    return File('${workspaceRoot()}/packages/$package/lib/${path.join('/')}').absolute.uri
         .normalizePath();
   }
 

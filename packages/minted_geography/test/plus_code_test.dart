@@ -5,8 +5,7 @@ import '../../../test/support/bdd.dart';
 
 void main() {
   feature('PlusCode', () {
-    // Every full-code row of the standard's own validityTests.csv, valid and corrupted alike. The
-    // canonical form doubles as the expected outcome, and null means rejected.
+    // Every full-code row of the standard's own validityTests.csv, valid and corrupted alike.
     scenarioOutline<({String input, String? canonical})>(
       'PlusCode.tryParse accepts full codes and rejects the rest',
       examples: {
@@ -43,8 +42,7 @@ void main() {
       },
     );
 
-    // The engine decodes several of these to a real-looking place instead of refusing them, so the
-    // door is the only thing standing between a caller and a wrong answer.
+    // The engine decodes several of these to a real-looking place rather than refusing them.
     scenario('a code the standard refuses never becomes a location', () {
       for (final refused in [
         '8FWC2_45+G6',
