@@ -280,14 +280,36 @@ void main() {
       }
     });
 
-    scenario('the whole world holds every corner of the coordinate space', () {
-      for (final latitude in [LatitudeConstants.min, LatitudeConstants.max]) {
-        for (final longitude in [LongitudeConstants.min, LongitudeConstants.max]) {
-          final corner = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
+    // Only 2 of the 4 are distinct: a west corner folds onto its east twin, -180 not being a
+    // coordinate this package can hold.
+    scenarioOutline<({double latitude, double longitude})>(
+      'the whole world holds every corner of the coordinate space',
+      examples: {
+        'the south-west corner, which folds east': (
+          latitude: LatitudeConstants.min,
+          longitude: LongitudeConstants.min,
+        ),
+        'the south-east corner': (
+          latitude: LatitudeConstants.min,
+          longitude: LongitudeConstants.max,
+        ),
+        'the north-west corner, which folds east': (
+          latitude: LatitudeConstants.max,
+          longitude: LongitudeConstants.min,
+        ),
+        'the north-east corner': (
+          latitude: LatitudeConstants.max,
+          longitude: LongitudeConstants.max,
+        ),
+      },
+      outline: (example) {
+        final corner = GeoCoordinate.tryFrom(
+          latitude: example.latitude,
+          longitude: example.longitude,
+        )!;
 
-          check(GeoBoundsConstants.wholeWorld.contains(corner), because: '$corner').isTrue();
-        }
-      }
-    });
+        check(GeoBoundsConstants.wholeWorld.contains(corner), because: '$corner').isTrue();
+      },
+    );
   });
 }

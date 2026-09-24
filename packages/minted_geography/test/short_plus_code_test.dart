@@ -91,25 +91,28 @@ void main() {
       check(padded.shortenNear(inside)).isNull();
     });
 
-    scenario('recovery holds at the poles, the antimeridian and the origin', () {
-      final short = ShortPlusCode.tryParse('9G8F+6W')!;
-
-      for (final (latitude, longitude) in [
-        (0.0, 0.0),
-        (89.9, 179.9),
-        (-89.9, -179.9),
-        (0.0, 180.0),
-        (90.0, 0.0),
-        (-90.0, -180.0),
-      ]) {
-        final reference = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
-        final recovered = short.recoverNear(reference);
+    scenarioOutline<({double latitude, double longitude})>(
+      'recovery gives back a full code the door accepts',
+      examples: {
+        'the origin': (latitude: 0, longitude: 0),
+        'the far north-east': (latitude: 89.9, longitude: 179.9),
+        'the far south-west': (latitude: -89.9, longitude: -179.9),
+        'on the antimeridian': (latitude: 0, longitude: 180),
+        'the north pole': (latitude: 90, longitude: 0),
+        'the south pole at the antimeridian': (latitude: -90, longitude: -180),
+      },
+      outline: (example) {
+        final reference = GeoCoordinate.tryFrom(
+          latitude: example.latitude,
+          longitude: example.longitude,
+        )!;
+        final recovered = ShortPlusCode.tryParse('9G8F+6W')!.recoverNear(reference);
 
         check(
           PlusCode.tryParse(recovered.value),
-          because: 'recovered near $latitude,$longitude',
+          because: 'recovered near $reference',
         ).equals(recovered);
-      }
-    });
+      },
+    );
   });
 }

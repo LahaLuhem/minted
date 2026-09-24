@@ -249,22 +249,27 @@ void main() {
     });
 
     // A cell is built by halving a range that starts as the whole Earth, so no edge can overshoot.
-    scenario('no cell wraps the antimeridian or leaves the latitude range', () {
-      for (final (latitude, longitude) in [
-        (0.0, 179.9999),
-        (0.0, -179.9999),
-        (0.0, 180.0),
-        (89.9999, 0.0),
-        (-89.9999, 0.0),
-        (90.0, 0.0),
-        (-90.0, -180.0),
-      ]) {
-        final here = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
+    scenarioOutline<({double latitude, double longitude})>(
+      'no cell wraps the antimeridian or leaves the latitude range',
+      examples: {
+        'just west of the antimeridian': (latitude: 0, longitude: 179.9999),
+        'just east of the antimeridian': (latitude: 0, longitude: -179.9999),
+        'on the antimeridian': (latitude: 0, longitude: 180),
+        'just short of the north pole': (latitude: 89.9999, longitude: 0),
+        'just short of the south pole': (latitude: -89.9999, longitude: 0),
+        'the north pole': (latitude: 90, longitude: 0),
+        'the south pole at the antimeridian': (latitude: -90, longitude: -180),
+      },
+      outline: (example) {
+        final here = GeoCoordinate.tryFrom(
+          latitude: example.latitude,
+          longitude: example.longitude,
+        )!;
         final cell = PlusCode.from11(here).bounds;
 
-        check(cell.crossesAntimeridian, because: 'cell at $latitude,$longitude').isFalse();
-        check(cell.contains(here), because: 'cell at $latitude,$longitude').isTrue();
-      }
-    });
+        check(cell.crossesAntimeridian, because: 'cell at $here').isFalse();
+        check(cell.contains(here), because: 'cell at $here').isTrue();
+      },
+    );
   });
 }
