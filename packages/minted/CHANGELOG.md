@@ -1,3 +1,7 @@
+## [Unreleased]
+### Added
+- Plus Codes as 2 types, since a short one names nowhere
+
 ## [3.1.1] - 2026-09-21
 ### Added
 - Constants move to per-type namespaces, and Date gets modelled parts
@@ -80,6 +84,7 @@
 - Digit
 - Digits
 
+[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted-3.1.1...minted-HEAD
 [3.1.1]: https://github.com/LahaLuhem/minted/compare/minted-3.1.0...minted-3.1.1
 [3.1.0]: https://github.com/LahaLuhem/minted/compare/minted-3.0.1...minted-3.1.0
 [3.0.1]: https://github.com/LahaLuhem/minted/compare/minted-3.0.0...minted-3.0.1
