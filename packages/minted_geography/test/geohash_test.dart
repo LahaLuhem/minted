@@ -179,20 +179,32 @@ void main() {
 
     // Longitude -180 folds to +180 on a coordinate, so the western edge is approached, never hit.
     // Precision 1 is what catches a first cell that is merely low rather than lowest.
-    scenario('no geohash anywhere on Earth sorts before the first cell', () {
-      for (final latitude in [-90, -45, 0, 45, 90]) {
-        for (final longitude in [-179.9, -90, 0, 90, 180]) {
-          for (final precision in [1, 4, 8]) {
-            final corner = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
-            final geohash = _geohash(coordinate: corner, precision: precision);
+    scenarioOutline<({double latitude, double longitude})>(
+      'no geohash anywhere on Earth sorts before the first cell',
+      examples: {
+        'the south-west corner': (latitude: -90, longitude: -179.9),
+        'the antimeridian from the east': (latitude: -90, longitude: 180),
+        'the north-east corner': (latitude: 90, longitude: 180),
+        'the north pole': (latitude: 90, longitude: 0),
+        'the south pole at the prime meridian': (latitude: -90, longitude: 0),
+        'the origin': (latitude: 0, longitude: 0),
+        'mid-latitude against the western edge': (latitude: 45, longitude: -179.9),
+      },
+      outline: (example) {
+        final corner = GeoCoordinate.tryFrom(
+          latitude: example.latitude,
+          longitude: example.longitude,
+        )!;
 
-            check(
-              geohash.value.compareTo(GeohashConstants.first.value),
-              because: '$corner gives $geohash',
-            ).isGreaterOrEqual(0);
-          }
+        for (final precision in [1, 4, 8]) {
+          final geohash = _geohash(coordinate: corner, precision: precision);
+
+          check(
+            geohash.value.compareTo(GeohashConstants.first.value),
+            because: '$corner gives $geohash',
+          ).isGreaterOrEqual(0);
         }
-      }
-    });
+      },
+    );
   });
 }

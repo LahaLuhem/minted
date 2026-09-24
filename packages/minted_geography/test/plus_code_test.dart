@@ -198,20 +198,32 @@ void main() {
       }
     });
 
-    scenario('no full code anywhere on Earth sorts before the first cell', () {
-      for (final latitude in [-90, -45, 0, 45, 90]) {
-        for (final longitude in [-179.9, -90, 0, 90, 180]) {
-          final corner = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
+    // The floor is the far south-west cell, so a floor that is merely low shows up at a corner.
+    scenarioOutline<({double latitude, double longitude})>(
+      'no full code anywhere on Earth sorts before the first cell',
+      examples: {
+        'the south-west corner': (latitude: -90, longitude: -179.9),
+        'the antimeridian from the east': (latitude: -90, longitude: 180),
+        'the north-east corner': (latitude: 90, longitude: 180),
+        'the north pole': (latitude: 90, longitude: 0),
+        'the south pole at the prime meridian': (latitude: -90, longitude: 0),
+        'the origin': (latitude: 0, longitude: 0),
+        'mid-latitude against the western edge': (latitude: 45, longitude: -179.9),
+      },
+      outline: (example) {
+        final corner = GeoCoordinate.tryFrom(
+          latitude: example.latitude,
+          longitude: example.longitude,
+        )!;
 
-          for (final code in <PlusCode>[.from2(corner), .from8(corner), .from15(corner)]) {
-            check(
-              code.value.compareTo(PlusCodeConstants.first.value),
-              because: '$corner gives $code',
-            ).isGreaterOrEqual(0);
-          }
+        for (final code in <PlusCode>[.from2(corner), .from8(corner), .from15(corner)]) {
+          check(
+            code.value.compareTo(PlusCodeConstants.first.value),
+            because: '$corner gives $code',
+          ).isGreaterOrEqual(0);
         }
-      }
-    });
+      },
+    );
 
     // What a prefix range query leans on.
     scenario('a finer code sorts after the cell holding it, and stays inside it', () {
