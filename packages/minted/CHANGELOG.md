@@ -1,7 +1,3 @@
-## [Unreleased]
-### Added
-- Plus Codes as 2 types, since a short one names nowhere
-
 ## [3.1.1] - 2026-09-21
 ### Added
 - Constants move to per-type namespaces, and Date gets modelled parts

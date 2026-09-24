@@ -59,8 +59,8 @@ jobs:
         if: steps.sem.outputs.type == 'skip'
         run: echo 'sem-skip applied, no changelog entry.'
 
-      # A PR spanning two packages gets its title logged under each, so titles need to read
-      # sensibly in all of them. A root-only PR touches none and logs nothing.
+      # The family README names every sibling's types, so a docs edit there logged under `minted`.
+      # A PR changing 2 packages still logs under each, so titles need to read sensibly in both.
       - name: Resolve touched packages
         id: touched
         if: steps.sem.outputs.type != 'skip'
@@ -70,9 +70,10 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           dirs="$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate --jq '.[].filename' |
-            awk -F/ '$1 == "packages" && NF > 2 { print $1 "/" $2 }' | sort -u)"
+            awk -F/ '$1 == "packages" && NF > 2 && ($3 == "lib" || $3 == "pubspec.yaml") \
+              { print $1 "/" $2 }' | sort -u)"
           if [ -z "$dirs" ]; then
-            echo "::notice::PR touched no package under packages/; no changelog entry."
+            echo "::notice::No package's lib/ or pubspec.yaml changed, so no changelog entry."
           fi
           # Newline-delimited, so the append step can loop it.
           {
