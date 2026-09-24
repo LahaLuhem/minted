@@ -111,11 +111,13 @@ parsing API. They're `const`, so they reach where a `tryParse(...)!` can't.
 GeoBoundsConstants.wholeWorld.bbox;   // '-180.0,-90.0,180.0,90.0'
 LatitudeConstants.max;                // 90.0, the last degree that parses
 GeohashConstants.first.value;         // '0', which every geohash sorts at or after
+PlusCodeConstants.first.value;        // '22000000+', which every full code sorts at or after
 ```
 
 `LatitudeConstants` and `LongitudeConstants` name the bounds their types are defined by, and
-`GeoBoundsConstants.wholeWorld` is the box built from all 4. `GeohashConstants.first` is the floor
-of the sort order. There's no ceiling to name, since any geohash takes another `z`.
+`GeoBoundsConstants.wholeWorld` is the box built from all 4. The 2 cell types name the floor of
+their sort order and no ceiling, since a geohash always takes another `z` and a Plus Code another
+digit.
 
 ## One shape, every type
 

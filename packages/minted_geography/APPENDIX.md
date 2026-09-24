@@ -161,6 +161,11 @@ own Python too. Worst gap across the file is about 5 micrometres, showing up as 
 rendering `47.365624999999994` rather than `47.365625`. The tests compare edges with a tolerance
 rather than pretending otherwise.
 
+**One named value, the floor of sort order.** The alphabet is ASCII-ascending and `0` padding sorts
+ahead of every digit, so a coarse code lands before the finer codes inside it.
+`PlusCodeConstants.first` is the bottom of that order, and there is no top, validity capping no
+length. Nothing else qualifies: the standard reserves no code and names no value.
+
 **10 doors rather than a length type.** Legal digit counts are 2, 4, 6, 8 and 10 through 15, so
 `from2` to `from15` keeps every one of them total, the way `Geohash.from` is. A `PlusCodeLength` type
 was the alternative and was cut: `Month` and `Digit` earn public API because consumers hold them and
