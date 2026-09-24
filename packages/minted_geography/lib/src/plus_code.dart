@@ -15,14 +15,13 @@ part 'short_plus_code.dart';
 /// `8FVC9G8F+6W`. Standard: [Open Location Code](https://github.com/google/open-location-code),
 /// Apache-2.0.
 ///
-/// Like a [Geohash] it names a *cell*, not a point, and more digits means a smaller cell. Unlike one
-/// it carries a `+` after the 8th digit, and its alphabet drops the letters and digits most easily
-/// misread, so a code rarely spells a word.
+/// Like a [Geohash] it names a *cell*, not a point, and more digits means a smaller cell. See
+/// [bounds] and [centre].
 ///
-/// A shortened code such as `9G8F+6W` is refused here and belongs to [ShortPlusCode], because it
-/// names nowhere until you supply a reference location.
+/// A shortened code such as `9G8F+6W` belongs to [ShortPlusCode]: it names nowhere until you say
+/// where you are reading it.
 ///
-/// Parsing trims and upper-cases, which is the case the standard asks codes to be written in.
+/// Parsing trims and upper-cases, which is the case the standard writes codes in.
 ///
 /// {@example /example/minted_geography_example.dart#pluscode}
 extension type const PlusCode._(String value) {
@@ -71,14 +70,12 @@ extension type const PlusCode._(String value) {
   /// `8FVC0000+` on 4.
   int get digits => _significantDigits(value);
 
-  /// Whether the code was widened with `0`s to reach the separator, which caps it at 8 digits or
-  /// fewer and means [shortenNear] can never drop anything.
-  bool get isPadded => digits < _paddedDigitCount;
+  /// Whether `0`s stand in for missing digits before the separator, as in `8FVC0000+`.
+  bool get isPadded => digits < _digitsBeforeSeparator;
 
   /// The cell itself, as a box. What the code actually names, where [centre] is one point in it.
   ///
-  /// Never crosses the antimeridian and never leaves the latitude range, so the box cannot fail to
-  /// build.
+  /// Never crosses the antimeridian and never leaves the latitude range.
   GeoBounds get bounds {
     final area = olc.PlusCode.unverified(value).decode();
 
@@ -90,8 +87,8 @@ extension type const PlusCode._(String value) {
     )!;
   }
 
-  /// The centre of the cell, which is not the coordinate the code was built from, a coarse cell being
-  /// wide. Re-encoding this at the same digit count does give this code back.
+  /// The centre of the cell, not the coordinate the code was built from: a coarse cell is wide.
+  /// Re-encoding this at the same digit count does give the code back.
   GeoCoordinate get centre {
     final cell = bounds;
 

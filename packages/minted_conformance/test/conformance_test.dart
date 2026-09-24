@@ -9,6 +9,8 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
+import '../../../test/support/workspace.dart';
+
 /// Enforces structurally what the value-type contract cannot state in the type system, over every public
 /// type in every package: each member's `lib/src/`, minus the helper subfolders and the per-category
 /// `failures/` directories. It lives in its own package because it belongs to no single one, and adding
@@ -30,12 +32,8 @@ void main() {
   // in.
   const notTypes = {'shared', 'failures', 'check_digits', 'encoding', 'normalisation', 'standards'};
 
-  // Every package's `lib/src`, since the value types live in sibling packages now. Run from
-  // `packages/minted_conformance`, so the siblings sit one level up.
-  final typeFiles = Directory('..')
-      .listSync()
-      .whereType<Directory>()
-      .map((package) => Directory('${package.path}/lib/src'))
+  // Every package's `lib/src`, since the value types live in sibling packages now.
+  final typeFiles = memberDirectories('/src')
       .where((source) => source.existsSync())
       .expand((source) => source.listSync(recursive: true))
       .whereType<File>()

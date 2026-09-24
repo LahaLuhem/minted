@@ -6,8 +6,8 @@ library;
 import 'package:meta/meta.dart';
 import 'package:minted/minted.dart';
 
-/// Why a [PlusCode] or [ShortPlusCode] refused its input. Sealed rather than an enum, because the 2
-/// wrong-kind variants hand the code back so a caller can route it to the other type.
+/// Why a [PlusCode] or [ShortPlusCode] refused its input. The 2 wrong-kind variants hand the code
+/// back, so a caller can route it to the other type.
 @immutable
 sealed class const PlusCodeFailure() implements MintedFailure {
   /// Subclasses only: the type is sealed.

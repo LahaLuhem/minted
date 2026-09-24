@@ -14,6 +14,7 @@ import 'package:minted_identifiers/minted_identifiers.dart';
 import 'package:minted_network/minted_network.dart';
 
 import '../../../test/support/bdd.dart';
+import '../../../test/support/workspace.dart';
 
 void main() {
   feature('the failure contract', () {
@@ -315,6 +316,21 @@ void main() {
         typeName: 'Geohash',
         message: '"a" is not a geohash character',
       ),
+      'PlusCode: malformed says nothing about which rule broke': (
+        failure: PlusCodeMalformed(),
+        typeName: 'PlusCode',
+        message: 'not a well-formed Plus Code',
+      ),
+      'PlusCode: a short code is pointed at the other type': (
+        failure: PlusCodeNotFull('9G8F+6W'),
+        typeName: 'PlusCode',
+        message: '"9G8F+6W" is a short code, which needs a reference location to recover',
+      ),
+      'PlusCode: a full code is pointed back the other way': (
+        failure: PlusCodeNotShort('8FVC9G8F+6W'),
+        typeName: 'PlusCode',
+        message: '"8FVC9G8F+6W" is a full code, which names a place on its own',
+      ),
       'Hostname: non-ASCII names the remedy rather than the rule': (
         failure: HostnameNotAscii(),
         typeName: 'Hostname',
@@ -598,6 +614,15 @@ void main() {
         'a stray geohash character': (
           failure: GeohashInvalidCharacter('a'),
           rendered: 'GeohashInvalidCharacter(a)',
+        ),
+        'a malformed Plus Code': (failure: PlusCodeMalformed(), rendered: 'PlusCodeMalformed()'),
+        'a short code where a full one was wanted': (
+          failure: PlusCodeNotFull('9G8F+6W'),
+          rendered: 'PlusCodeNotFull(9G8F+6W)',
+        ),
+        'a full code where a short one was wanted': (
+          failure: PlusCodeNotShort('8FVC9G8F+6W'),
+          rendered: 'PlusCodeNotShort(8FVC9G8F+6W)',
         ),
         'a non-ASCII hostname': (failure: HostnameNotAscii(), rendered: 'HostnameNotAscii()'),
         'a stray hostname character': (
@@ -924,6 +949,16 @@ void main() {
           twin: GeohashEmpty(),
           other: GeohashInvalidCharacter('a'),
         ),
+        'the malformed Plus Code variant': (
+          failure: PlusCodeMalformed(),
+          twin: PlusCodeMalformed(),
+          other: PlusCodeNotFull('9G8F+6W'),
+        ),
+        'a wrong-kind Plus Code differs by the code': (
+          failure: PlusCodeNotFull('9G8F+6W'),
+          twin: PlusCodeNotFull('9G8F+6W'),
+          other: PlusCodeNotFull('CJ+2VX'),
+        ),
         'a geohash character differs by the character': (
           failure: GeohashInvalidCharacter('a'),
           twin: GeohashInvalidCharacter('a'),
@@ -1048,7 +1083,9 @@ void main() {
     // The tables above are hand-written, so a new vocabulary is only covered if someone remembers to
     // add it. DnsName's 5 variants went uncovered from 1.1.0 until this check existed.
     scenario('every failure variant declared in the family appears above', () {
-      final suite = File('test/failure_contract_test.dart').readAsStringSync();
+      final suite = File(
+        '${workspaceRoot()}/packages/minted_conformance/test/failure_contract_test.dart',
+      ).readAsStringSync();
       final unnamed = _declaredVariants().where((variant) => !suite.contains(variant));
 
       check(
@@ -1062,10 +1099,7 @@ void main() {
 /// Concrete failure variants across every package: the `final class` arms of a sealed vocabulary, and
 /// whole `enum` vocabularies. The sealed base itself is not a variant.
 Set<String> _declaredVariants() =>
-    Directory('..')
-        .listSync()
-        .whereType<Directory>()
-        .map((package) => Directory('${package.path}/lib/src/failures'))
+    memberDirectories('/src/failures')
         .where((failures) => failures.existsSync())
         .expand((failures) => failures.listSync())
         .whereType<File>()
@@ -1073,4 +1107,5 @@ Set<String> _declaredVariants() =>
         .map((match) => match.group(1)!)
         .toSet();
 
-final _variant = RegExp(r'^(?:final class|enum) (\w+)', multiLine: true);
+// `const` would be captured as the variant on a primary constructor.
+final _variant = RegExp(r'^(?:final class|enum)(?: const)? (\w+)', multiLine: true);

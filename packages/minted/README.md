@@ -63,9 +63,9 @@ Add the packages you want. Each brings `minted` with it, so there's nothing else
 dart pub add minted_constraints  # Digit, Digits, Uint tower, Char, Letter, Ascii*
 dart pub add minted_contact      # Email, PhoneNumber
 dart pub add minted_finance      # Iban, Bic, Isin, PaymentCardNumber
-dart pub add minted_chronology   # Date, Month, Weekday, Iso8601Duration
+dart pub add minted_chronology   # Date, Year, Month, DayOfMonth, Weekday, Iso8601Duration
 dart pub add minted_identifiers  # Uuid, Isbn, Issn, Isni, Imei, Gtin
-dart pub add minted_geography    # GeoCoordinate, Geohash
+dart pub add minted_geography    # GeoCoordinate, GeoBounds, Geohash, PlusCode, ShortPlusCode
 dart pub add minted_network      # IpAddress, Cidr, Hostname, DnsName, MacAddress, Port
 ```
 
@@ -97,7 +97,8 @@ than a second copy here:
 - [`minted_chronology`](https://pub.dev/packages/minted_chronology): calendar dates and durations
 - [`minted_contact`](https://pub.dev/packages/minted_contact): email addresses and phone numbers
 - [`minted_finance`](https://pub.dev/packages/minted_finance): IBANs, BICs, ISINs, card numbers
-- [`minted_geography`](https://pub.dev/packages/minted_geography): coordinates and geohashes
+- [`minted_geography`](https://pub.dev/packages/minted_geography): coordinates, boxes, geohashes
+  and Plus Codes
 - [`minted_identifiers`](https://pub.dev/packages/minted_identifiers): UUIDs, ISBNs, IMEIs, and kin
 - [`minted_network`](https://pub.dev/packages/minted_network): addresses, blocks, host names, ports
 

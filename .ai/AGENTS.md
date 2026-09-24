@@ -69,12 +69,12 @@ minted/                              Workspace root
 ├── .ai/                             This file + CLAUDE.md (symlinked to repo root)
 └── packages/                        One directory per package
     ├── minted/                      Core: outcomes only. Deps: collection, meta
-    ├── minted_chronology/           Date, Month, Weekday, Iso8601Duration
+    ├── minted_chronology/           Date, Year, Month, DayOfMonth, Weekday, Iso8601Duration
     ├── minted_conformance/          Private (publish_to none). The cross-package suites
     ├── minted_constraints/          Digit(s), Uint tower, Percentage, Char, Letter(s) (+ characters)
     ├── minted_contact/              Email, PhoneNumber (+ email_validator, phone_numbers_parser)
     ├── minted_finance/              Iban, Bic, Isin, PaymentCardNumber (+ iban_validator, country_code)
-    ├── minted_geography/            GeoCoordinate, GeoBounds, Geohash, Latitude, Longitude
+    ├── minted_geography/            GeoCoordinate, Lat/Long, GeoBounds, Geohash, PlusCode (+ open_location_code)
     ├── minted_identifiers/          Uuid, Isbn, Issn, Isni, Imei, Gtin
     └── minted_network/              IpAddress, Cidr, Hostname, DnsName, MacAddress, Port (+ ipaddr)
 ```
