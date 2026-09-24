@@ -8,6 +8,7 @@ Design rationale for the types this package ships. Family-wide rationale lives i
 
 - [GeoCoordinate: a bounded pair, not 2 doubles](#geo-coordinate-value-type)
 - [Geohash: a cell, not a point](#geohash-value-type)
+- [Plus Code: 2 types, because a short one names nowhere](#plus-code-value-type)
 - [GeoBounds: a box that may cross the antimeridian](#geo-bounds-value-type)
 
 <!-- TOC end -->
@@ -126,6 +127,50 @@ Pinned by a test, because the fold is right for a coordinate and only surprising
 grid to have a reachable corner.
 
 ---
+
+<a id="plus-code-value-type"></a>
+## Plus Code: 2 types, because a short one names nowhere
+
+**A short code is not a place, so it is not a [PlusCode].** `9G8F+6W` recovers to Zurich next to
+Zurich and to Sydney next to Sydney. Two equal strings, two continents. Sharing one type would mean
+`==` says yes to values that name different spots on the planet, so `ShortPlusCode` is its own type
+and `recoverNear` is the only way across. Same split as `Hostname` and `DnsName`, with a reference
+coordinate as the extra input.
+
+That is also why `ShortPlusCode` has no `bounds` and no `centre`. There is nothing to return.
+
+**The engine is trusted for its maths and its `isValid`, and for nothing else.** `open_location_code`
+ships 4 predicates and 2 of them lie: `isFull` and `isShort` skip the validity check and answer a
+narrower question about shape. Since `decode` guards on `isFull`, an invalid code decodes instead of
+being refused. `8FWC2_45+G6`, underscore and all, comes back as a real spot in Germany.
+
+Measured against Google's own Python implementation over 336k generated codes:
+
+| | Disagreements |
+|---|---|
+| `isValid` | none, in either direction |
+| `isShort` | 52,451, every one on a code `isValid` already rejects |
+| `isFull` | 74,340, same, plus 472 `RangeError`s on non-ASCII input |
+
+So both doors gate on `isValid` first and work out full versus short themselves, from where the
+separator sits. The engine's own predicates are never called.
+
+**Out-of-range input cannot reach the engine, which is the other half of why wrapping is safe.** 46
+of the standard's 302 encoding vectors fail against this package, and all 46 hand it a latitude or
+longitude outside the legal range, which it does not normalise. Every door here takes a
+[GeoCoordinate], so those 46 are unreachable.
+
+**Cell edges land within a micrometre of the standard's vectors, not on them.** `decoding.csv` writes
+its edges to a fixed number of decimals, so exact comparison fails for 227 of its 420 rows here and
+181 in Google's Python. Worst gap across the file is 4.8e-11 degrees, about 5 micrometres. It shows
+up as `bounds.bbox` rendering `47.365624999999994` rather than `47.365625`, which is cosmetic, and
+the tests compare edges with a tolerance rather than pretending otherwise.
+
+**10 doors rather than a length type.** Legal digit counts are 2, 4, 6, 8 and 10 through 15, so
+`from2` to `from15` keeps every one of them total, the way `Geohash.from` is. A `PlusCodeLength` type
+was the alternative and was cut: `Month` and `Digit` earn public API because consumers hold them and
+pass them around, where nobody holds a code length. It would exist only as an argument to one
+function.
 
 <a id="geo-bounds-value-type"></a>
 ## GeoBounds: a box that may cross the antimeridian
