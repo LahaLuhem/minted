@@ -35,4 +35,14 @@ void main() {
   print(fiji.contains(GeoCoordinate.tryFrom(latitude: -40, longitude: 0)!)); // false (the long way)
   print(GeoBounds.tryParse('[-180, -90, 180, 90]')?.bbox); // -180.0,-90.0,180.0,90.0 (the world)
   // #endregion
+
+  // A code names a cell, and a shortened one names nowhere until you say where you are reading it.
+  // #region pluscode
+  final zurich = GeoCoordinate.tryFrom(latitude: 47.36559, longitude: 8.524997)!;
+  print(PlusCode.from10(zurich)); // 8FVC9G8F+6X
+  print(PlusCode.from10(zurich).digits); // 10
+  print(PlusCode.tryParse('9G8F+6W')); // null (a short code, not a place)
+  print(ShortPlusCode.tryParse('9G8F+6W')?.recoverNear(zurich)); // 8FVC9G8F+6W
+  print(PlusCode.tryParse('8FVC0000+')?.isPadded); // true (and so it can never shorten)
+  // #endregion
 }
