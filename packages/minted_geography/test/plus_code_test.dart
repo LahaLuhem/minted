@@ -1,7 +1,14 @@
 import 'package:checks/checks.dart';
+import 'package:minted/minted.dart';
 import 'package:minted_geography/minted_geography.dart';
+import 'package:open_location_code/open_location_code.dart' as olc;
 
 import '../../../test/support/bdd.dart';
+
+const namedPlusCodes = <PlusCode>{PlusCodeConstants.first};
+
+// The prefix a cell's finer codes share, which drops the padding and the now-trailing separator.
+String _cellPrefix(PlusCode code) => code.value.replaceAll(RegExp(r'0*\+$'), '');
 
 void main() {
   feature('PlusCode', () {
@@ -42,7 +49,8 @@ void main() {
       },
     );
 
-    // The engine decodes several of these to a real-looking place rather than refusing them.
+    // Why the type exists: `decode` guards on `isFull`, which says yes to every one of these, so
+    // the door is all that stands between a caller and a wrong location.
     scenario('a code the standard refuses never becomes a location', () {
       for (final refused in [
         '8FWC2_45+G6',
@@ -53,13 +61,24 @@ void main() {
         '84900000+',
         '849VGJQF+VX7QR3U',
       ]) {
-        check(PlusCode.tryParse(refused), because: 'refused by the standard: $refused').isNull();
+        check(
+          olc.PlusCode.unverified(refused).isFull(),
+          because: 'the engine would let $refused through',
+        ).isTrue();
+        check(PlusCode.tryParse(refused), because: 'the door refuses $refused').isNull();
       }
     });
 
     scenario('parse names a short code rather than calling it malformed', () {
       check(PlusCode.parse('WC2345+G6G').reasonOrNull).isA<PlusCodeNotFull>();
       check(PlusCode.parse('8FWC2_45+G6').reasonOrNull).isA<PlusCodeMalformed>();
+    });
+
+    scenario('a caller who asserts the string gets the throw back through getOrThrow', () {
+      check(() => PlusCode.parse('9G8F+6W').getOrThrow())
+          .throws<MintedFormatError>()
+          .has((error) => error.failure, 'failure')
+          .equals(const PlusCodeNotFull('9G8F+6W'));
     });
 
     // One row per legal digit count, lifted from the standard's encoding.csv.
@@ -168,6 +187,53 @@ void main() {
       final code = PlusCode.tryParse('8FVC9G8F+6W')!;
 
       check(PlusCode.from10(code.centre)).equals(code);
+    });
+
+    scenario('every named constant parses back to itself, unchanged', () {
+      for (final code in namedPlusCodes) {
+        check(
+          PlusCode.tryParse(code.value)?.value,
+          because: 'named constant $code',
+        ).equals(code.value);
+      }
+    });
+
+    scenario('no full code anywhere on Earth sorts before the first cell', () {
+      for (final latitude in [-90, -45, 0, 45, 90]) {
+        for (final longitude in [-179.9, -90, 0, 90, 180]) {
+          final corner = GeoCoordinate.tryFrom(latitude: latitude, longitude: longitude)!;
+
+          for (final code in <PlusCode>[.from2(corner), .from8(corner), .from15(corner)]) {
+            check(
+              code.value.compareTo(PlusCodeConstants.first.value),
+              because: '$corner gives $code',
+            ).isGreaterOrEqual(0);
+          }
+        }
+      }
+    });
+
+    // What a prefix range query leans on.
+    scenario('a finer code sorts after the cell holding it, and stays inside it', () {
+      final here = GeoCoordinate.tryFrom(latitude: 47.36559, longitude: 8.524997)!;
+      final ladder = <PlusCode>[
+        .from2(here),
+        .from4(here),
+        .from6(here),
+        .from8(here),
+        .from10(here),
+        .from15(here),
+      ];
+
+      for (var step = 0; step + 1 < ladder.length; step++) {
+        final (coarse, finer) = (ladder[step], ladder[step + 1]);
+
+        check(
+          finer.value.compareTo(coarse.value),
+          because: '$finer against $coarse',
+        ).isGreaterThan(0);
+        check(finer.value, because: '$finer inside $coarse').startsWith(_cellPrefix(coarse));
+      }
     });
 
     // A cell is built by halving a range that starts as the whole Earth, so no edge can overshoot.

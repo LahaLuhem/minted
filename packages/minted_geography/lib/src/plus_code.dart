@@ -8,6 +8,7 @@ import 'failures/plus_code_failure.dart';
 import 'geo_bounds.dart';
 import 'geo_coordinate.dart';
 
+part 'constants/plus_code_constants.dart';
 part 'helpers/plus_code_helpers.dart';
 part 'short_plus_code.dart';
 
@@ -22,6 +23,11 @@ part 'short_plus_code.dart';
 /// where you are reading it.
 ///
 /// Parsing trims and upper-cases, which is the case the standard writes codes in.
+///
+/// Sorting comes out spatial for free: the alphabet is ASCII-ascending and padding sorts ahead of
+/// every digit, which is what makes a prefix range query work.
+///
+/// Named values: [PlusCodeConstants].
 ///
 /// {@example /example/minted_geography_example.dart#pluscode}
 extension type const PlusCode._(String value) {

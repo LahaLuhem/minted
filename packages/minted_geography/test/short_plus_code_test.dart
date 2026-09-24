@@ -1,4 +1,5 @@
 import 'package:checks/checks.dart';
+import 'package:minted/minted.dart';
 import 'package:minted_geography/minted_geography.dart';
 
 import '../../../test/support/bdd.dart';
@@ -33,6 +34,13 @@ void main() {
     scenario('parse names a full code rather than calling it malformed', () {
       check(ShortPlusCode.parse('8FWC2345+G6').reasonOrNull).isA<PlusCodeNotShort>();
       check(ShortPlusCode.parse('WC2300+G6g').reasonOrNull).isA<PlusCodeMalformed>();
+    });
+
+    scenario('a caller who asserts the string gets the throw back through getOrThrow', () {
+      check(() => ShortPlusCode.parse('8FVC9G8F+6W').getOrThrow())
+          .throws<MintedFormatError>()
+          .has((error) => error.failure, 'failure')
+          .equals(const PlusCodeNotShort('8FVC9G8F+6W'));
     });
 
     // The reason this is its own type: 1 string, 2 places.
