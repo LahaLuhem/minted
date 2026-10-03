@@ -64,7 +64,7 @@ melos:
       description: >-
         Cuts a release against a throwaway bare remote, to check the real cider and git calls.
         Needs git, cider and a running Docker daemon. Never touches pub.dev.
-      run: dart test -t integration
+      run: dart test -t integration --run-skipped
 
     coverage:
       description: >-
