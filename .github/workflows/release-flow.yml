@@ -1,0 +1,26 @@
+name: Release flow
+
+# No `paths:` filter: a run it skips never reports, which leaves the required check waiting.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # The repo's own ruleset requires this check by its name.
+  release-flow:
+    name: Release flow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: LahaLuhem/dartender/actions/setup-flutter@main
+      # The flow runs cider by name, which nothing else in CI installs.
+      - run: dart pub global activate cider
+      # dart_test.yaml skips the tag everywhere else.
+      - run: dart test -t integration --run-skipped
