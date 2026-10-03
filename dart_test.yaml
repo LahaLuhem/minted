@@ -1,4 +1,5 @@
 tags:
-  # Needs git, cider and a running Docker daemon, and cuts a release against a throwaway
-  # remote. Excluded from the default run with `-x integration`; see the melos scripts.
+  # Cuts a real release against a throwaway remote. Skipped by default, since dartender's Tests job
+  # runs the root's tests too, without cider.
   integration:
+    skip: Needs git, cider and a running Docker daemon. Run it with -t integration --run-skipped.
