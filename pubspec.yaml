@@ -28,17 +28,13 @@ dev_dependencies:
   terminice: ^1.3.1
   test: ^1.32.0
 
-# dependency_validator 5.0.6 caps analyzer below 14. Drop once its master's wider cap ships.
-dependency_overrides:
-  analyzer: ^14.4.0
-
 # Script runner only. cider and tool/release.dart own versioning and publishing, so `melos version`
-# and `melos publish` stay unused; workspaces do the linking, so `melos bootstrap` does too.
+# and `melos publish` stay unused. Workspaces do the linking, so `melos bootstrap` does too.
 melos:
   scripts:
     analyze:
-      description: Every member in one pass, from the root.
-      run: dart --no-version-check analyze .
+      description: Every member in one pass, from the root, the gate CI applies.
+      run: dart --no-version-check analyze --fatal-infos .
 
     format:
       description: Repo-wide format check, the gate CI applies.
