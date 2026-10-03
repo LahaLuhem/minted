@@ -8,7 +8,7 @@ explicit `<a id="…">` anchors and keep them stable across renames.
 - [Per-package rationale](#per-package-rationale)
 - [`AGENTS.md` and `CLAUDE.md` are symlinks into `.ai/`](#ai-files-symlinked)
 - [Pure-Dart package, no Flutter dependency](#pure-dart-not-flutter)
-- [The format gate runs Flutter's Dart, everything else runs Dart stable](#ci-sdk-toolchain)
+- [CI's Dart can drift from a local FVM install](#ci-sdk-toolchain)
 - [Parse, don't validate](#parse-dont-validate)
 - [Extension type vs immutable class](#extension-type-representation)
 - [Compose from modelled parts, don't re-derive them](#compose-from-modelled-parts)
@@ -67,43 +67,20 @@ downstream users, so each stays as short as the validation honestly requires.
 ---
 
 <a id="ci-sdk-toolchain"></a>
-## The format gate runs Flutter's Dart, everything else runs Dart stable
+## CI's Dart can drift from a local FVM install
 
-**Split along style versus correctness.** `dart format` is the only check whose output must agree
-with the maintainer's machine character for character, so that job takes its Dart from Flutter, the
-channel [`.fvmrc`](./.fvmrc) names. Analyze, test, the dependency validator and the example stay on
-Dart stable through the [`setup-dart` composite](./.github/actions/setup-dart/action.yml).
-
-**What forced it:** Dart stable runs ahead of Flutter's bundled Dart, and the formatter changed
-between them. `sdk: stable` gave CI 3.13.0 against a local 3.12.2, so a green tree met a red gate
-that reformatted 15 files the pull request had never touched. The decisive property is that a
-format failure must be *reproducible*: whatever CI rejects, `dart format .` locally has to be able to
-fix, which neither Dart stable nor a pinned literal promises once it drifts from the machine the code
-is written on.
-
-**Elsewhere the newer SDK is the point.** Those jobs run Dart stable, which is what
-[`pubspec.yaml`](./packages/minted/pubspec.yaml)'s constraint admits and what a downstream Dart-only user is on.
-The known cost is that the analyzer is version-sensitive too, so a Dart-stable-only diagnostic would
-be fixed slightly blind, so explicit rules in [`analysis_options.yaml`](./analysis_options.yaml) stop
-new lints switching themselves on, and if it ever stops being tolerable the format job's recipe moves
-into the composite.
-
-**Installing Flutter contradicts [the section above](#pure-dart-not-flutter) only in appearance:**
-that rule governs the package's dependencies, this is the toolchain. Nothing under `lib/` imports
-Flutter, and the published package stays usable from a plain Dart SDK.
-
-**When the gate goes red, check which Dart CI is carrying.** Both sides name the `stable` channel,
-but a local FVM install is frozen until the next `fvm install` while CI resolves stable at run time,
-so the 2 can still drift. Flutter's release metadata gives the mapping:
+Every CI job takes its Dart from Flutter stable, through dartender. That is the toolchain, not a
+dependency, so [the section above](#pure-dart-not-flutter) still holds. CI resolves stable at run
+time while a local FVM install is frozen until the next `fvm install`, and the formatter and the
+analyzer are both version-sensitive, so a tree that is green locally can meet a red gate. Check
+which Dart CI is carrying with Flutter's release metadata:
 
 ```bash
 curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json \
   | jq -r '.current_release.stable as $h | .releases[] | select(.hash == $h) | .dart_sdk_version'
 ```
 
-Compare that against `dart --version`, and `fvm install stable` closes any gap. Pinning that
-literal on both sides would close it too, at the cost of a coordinated bump every release, and
-pinning CI alone would be worse than the channel, since local would still float.
+Compare that against `dart --version`, and `fvm install stable` closes any gap.
 
 ---
 

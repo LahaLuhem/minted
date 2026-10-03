@@ -18,7 +18,7 @@ class const Repo(
   /// Absolute path to the workspace root.
   final String root,
 ) {
-  /// Shared with repo.yml, so both gates run the identical check set.
+  /// Shared with dartender's lint jobs, so both gates run the identical check set.
   static const lintManifestPath = '.github/lint-checks.json';
 
   /// The branch a release may be cut from.
