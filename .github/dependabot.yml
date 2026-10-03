@@ -1,0 +1,19 @@
+# Written by dartender's scripts/setup/dependabot.sh, whose next run undoes hand edits.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      pub:
+        patterns: ['*']
+        update-types: [minor, patch]
