@@ -46,9 +46,9 @@ and the atomic push, which the unit tests only fake.
 dart run melos run test-release-flow    # needs git, cider and a running Docker daemon
 ```
 
-`integration`-tagged, so the default `dart test` skips it and CI runs it in its own step. Worth the
-setup: it caught the rollback running git in whatever directory the process started in, which every
-unit test passed over.
+`integration`-tagged, so the default `dart test` skips it, and CI runs it in
+[`release-flow.yml`](../.github/workflows/release-flow.yml). Worth the setup: it caught the rollback
+running git in whatever directory the process started in, which every unit test passed over.
 
 ### Which package
 
@@ -104,8 +104,9 @@ Then set that package's tag pattern to `<name>-{{version}}` under
 `pub.dev/packages/<name>/admin`, same publisher as the rest. From its second release on,
 `tool/release.dart` is the only route.
 
-Tag the version you just published anyway, so the history is uniform. `publish.yml` checks pub.dev
-first and exits green when the version is already up, so the tag costs nothing.
+Tag the version you just published anyway, so every version has a tag. The publish run that tag
+starts fails when pub.dev refuses a version it already has, which is harmless, since nothing waits
+on it.
 
 ## Cutover to the split packages (one-time)
 
@@ -177,16 +178,14 @@ and sits outside the pipeline-owned set, so it is hand-editable.
 ## Tag format
 
 `<package>-<MAJOR>.<MINOR>.<PATCH>`, no `v` prefix, e.g. `minted-2.1.0`. Pub names cannot
-contain a hyphen, so [`publish.yml`](../.github/workflows/publish.yml) splits on the first one
-to pick the member, `minted-3.0.0-beta.1` included.
+contain a hyphen, so dartender's publish job, which [`publish.yml`](../.github/workflows/publish.yml)
+calls, splits on the first one to pick the member.
 
 > **Each package needs a matching tag pattern on pub.dev**, set under
-> `pub.dev/packages/<name>/admin` to `<name>-{{version}}`. `minted` predates the workspace and
-> is still `{{version}}`, so **it has to change when this lands**, or the next tag publishes
-> nothing.
+> `pub.dev/packages/<name>/admin` to `<name>-{{version}}`, or its tags publish nothing.
 
-Before publishing, the version half is checked against the member's `pubspec.yaml`, and a
-version already on pub.dev is skipped rather than re-published.
+pub.dev itself checks the version half against the member's `pubspec.yaml`, and refuses a version
+it already has.
 
 ## Preflight
 

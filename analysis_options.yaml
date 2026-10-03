@@ -72,9 +72,8 @@ analyzer:
     use_key_in_widget_constructors: warning
 
     # linter ignores
-    # `todo` is `ignore` (not `info`) so CI's `flutter analyze --fatal-infos` does not fail on TODO
-    # comments - TODOs stay allowed in the code; --fatal-infos still fails on
-    # every other info-level lint.
+    # `todo` is `ignore` (not `info`) so CI's `dart analyze --fatal-infos` doesn't fail on TODO
+    # comments, which stay allowed. --fatal-infos still fails on every other info-level lint.
     todo: ignore
     lines_longer_than_80_chars: ignore
     always_use_package_imports: ignore

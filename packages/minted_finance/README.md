@@ -1,6 +1,6 @@
 [![Pub Version](https://img.shields.io/pub/v/minted_finance.svg)](https://pub.dev/packages/minted_finance)
 [![Pub Points](https://img.shields.io/pub/points/minted_finance?logo=dart)](https://pub.dev/packages/minted_finance/score)
-[![Package checks](https://github.com/LahaLuhem/minted/actions/workflows/package.yml/badge.svg?branch=main)](https://github.com/LahaLuhem/minted/actions/workflows/package.yml)
+[![CI](https://github.com/LahaLuhem/minted/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/LahaLuhem/minted/actions/workflows/ci.yml)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://github.com/LahaLuhem/minted/blob/main/packages/minted_finance/LICENSE)
 
 # minted_finance

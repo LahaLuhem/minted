@@ -315,7 +315,7 @@ class ReleaseFlow({
 
     for (final check in manifest.checks) {
       // Through the image's own shell, so a glob in the manifest expands against the mounted checkout.
-      // That is what repo.yml's matrix does, and the manifest is written for it.
+      // So do dartender's lint jobs, and the manifest is written for that.
       final result = await ui.task(
         'lint: ${check.name}',
         () => runner.run('docker', [

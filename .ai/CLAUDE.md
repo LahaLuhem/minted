@@ -33,8 +33,9 @@ and slow to walk back. An unpublished version stays reserved for 7 days.
 - **Read / Edit / Grep / Glob** over `cat` / `sed` / `grep` / `find`. Always.
 - **Bash** only for things without a dedicated tool: `dart`, `git`. The user's shell aliases
   `dart` to the toolchain serving the `.fvmrc` channel, so invoke plain `dart`.
-- **Lint with `dart --no-version-check analyze .`**, because pedantic mode is the contract. Don't
-  substitute plain `dart analyze` and ignore what it surfaces.
+- **Lint with `dart --no-version-check analyze --fatal-infos .`**, because pedantic mode is the
+  contract, and CI fails on infos too. Don't substitute plain `dart analyze` and ignore what it
+  surfaces.
 - **Agent tool** for wide / open-ended searches or to keep large output out of context.
 
 ## Scope awareness

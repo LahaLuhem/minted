@@ -22,23 +22,22 @@ feature: identical method names and the same failure model across every type.
   Raise the floor only when a new stable language feature is actually consumed. What the floor buys,
   and why primary (declaring) constructors stay unused despite being stable:
   [rationale][apx-sdk-floor], which is also where a bump gets recorded.
-- **`dart test`** for tests, **`dart --no-version-check analyze .`** for pedantic static analysis
-  (pedantic mode is intentional). No Flutter dependency, no platform channels.
-- **CI runs 2 SDKs on purpose.** The `dart format` gate in `repo.yml` takes its Dart from Flutter
-  (the channel `.fvmrc` names) because formatter output is version-sensitive. Every other job uses
-  [`.github/actions/setup-dart`](../.github/actions/setup-dart/action.yml) on Dart stable, which is
-  what downstream Dart-only users have. Route a new job through the composite unless it compares
-  formatter output. Why: [rationale][apx-ci-sdk-toolchain].
+- **`dart test`** for tests, **`dart --no-version-check analyze --fatal-infos .`** for pedantic
+  static analysis (pedantic mode is intentional). No Flutter dependency, no platform channels.
+- **CI is [dartender](https://github.com/LahaLuhem/dartender)'s**, shared with the maintainer's
+  other packages. `.github/workflows/` holds the 4 callers its setup writes, which its next run
+  rewrites, plus `release-flow.yml` for the release tool's integration test. Every job takes its
+  Dart from Flutter stable.
 - **`dependency_validator`** guards each package's dependency set, per package, and is what caught
   core still declaring engines after their types moved out. `dart_dependency_validator.yaml` scopes
   it to the published surface and skips the example.
 - **Container-based linters** (`actionlint` for workflows, `rumdl` for Markdown, `ryl` for YAML)
   run from the [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, not local
-  installs, so Docker is the only requirement. The check set and image
-  tag live in one manifest, [`.github/lint-checks.json`](../.github/lint-checks.json). `repo.yml`
-  fans a CI matrix out over it and `tool/release.dart`'s preflight loops the same file, so the 2
-  can't drift. **Adding a linter is one entry in that manifest**, no workflow or script edit.
-  Per-tool config tuned to the repo lives in `.rumdl.toml` and `.yamllint.yaml`.
+  installs, so Docker is the only requirement. The check set and image tag live in one manifest,
+  [`.github/lint-checks.json`](../.github/lint-checks.json), which dartender's setup writes and
+  both CI and `tool/release.dart`'s preflight read, so the 2 can't drift. A linter only `minted`
+  needs goes in a workflow of its own, since the setup's next run rewrites the manifest. Per-tool
+  config tuned to the repo lives in `.rumdl.toml` and `.yamllint.yaml`.
 - **CHANGELOG and the `version:` field are owned by [`tool/release.dart`](../tool/release.dart)**
   (via `cider`). Do not run `cider` by hand and do not edit `CHANGELOG.md` or `version:` directly.
   The `cider:` block in `pubspec.yaml` is static config (URLs, link templates) and is hand-editable.
@@ -56,7 +55,7 @@ minted/                              Workspace root
 ├── analysis_options.yaml            Strict-mode + opinionated lints. Members inherit by proximity
 ├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
 ├── .rumdl.toml / .yamllint.yaml     Markdown + YAML lint config
-├── .github/                         Workflows + lint-checks.json, the shared lint manifest
+├── .github/                         dartender's callers, release-flow.yml, the lint manifest
 ├── tool/                            release.dart, the release flow, + its README
 │   └── src/                         parsing/ versioning/ io/ flow/, plus options + abort
 ├── test/tool/                       The tooling's suite, mirroring src/; the root's only Dart tests
@@ -251,10 +250,11 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
 
 ## PR conventions
 
-Enforced by [`.github/workflows/pr-conventions.yml`](../.github/workflows/pr-conventions.yml).
+Enforced by dartender's conventions check, through
+[`.github/workflows/conventions.yml`](../.github/workflows/conventions.yml).
 
-- **Branch name:** `<type>/#<issue>-<slug>`, `<type>` one of `feature`, `bugfix`, `chore`,
-  `refactor`, `acceptance-test-issues`, `hotfix`. Example: `feature/#7-add-iban`.
+- **Branch name:** `<type>/#<issue>-<slug>`, `<type>` one of `feature`, `bugfix`, `chore` or
+  `refactor`. Example: `feature/#7-add-iban`.
 - **Exactly one `sem-*` label per PR.** Selects the changelog category for the post-merge
   automation:
 
@@ -268,7 +268,8 @@ Enforced by [`.github/workflows/pr-conventions.yml`](../.github/workflows/pr-con
   | `sem-security`  | `security`   | Security-relevant fix                          |
   | `sem-skip`      | (skip)       | Internal-only change (CI, docs, tests, …)      |
 
-  The PR title becomes the changelog line verbatim, so phrase it as a release-note bullet.
+  The PR title becomes the changelog line verbatim, in every published package the PR changed
+  anything in, so phrase it as a release-note bullet that reads right in each.
 - **PR body must not be empty**, **no merge commits in the PR range** (rebase to integrate `main`),
   **commit subjects ≤ 82 characters**.
 
@@ -326,7 +327,6 @@ rules to keep in working memory:
   "fix" it: the user handles staging and committing. Trust the file contents you wrote, not
   `git status`, as the record of your change.
 
-[apx-ci-sdk-toolchain]: ../APPENDIX.md#ci-sdk-toolchain
 [apx-claim-in-source]: ../packages/minted/APPENDIX.md#claim-in-source
 [apx-constraint-types]: ../packages/minted_constraints/APPENDIX.md#constraint-types
 [apx-constraints-package]: ../packages/minted_constraints/APPENDIX.md#constraints-package
