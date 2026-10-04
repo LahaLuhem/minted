@@ -336,9 +336,9 @@ every sibling, and every sibling already depends on core, so hosting it in `mint
 a dev-dependency arrow back from core to its own dependents. Locally that resolves by path and looks
 fine. On pub.dev it deadlocks the first publish of either side, because core cannot go up until
 `minted_chronology` is up and `minted_chronology` cannot go up until core is. `publish_to: none`
-breaks the cycle, since a package that never reaches pub.dev may depend on anything. The
-[cutover order](./tool/README.md) is the softer version of the same constraint, and the
-sibling-constraint preflight exists because that one already bit.
+breaks the cycle, since a package that never reaches pub.dev may depend on anything. The split's
+one-time cutover order was the softer version of the same constraint, and the release run refuses
+a stale sibling bound because that one already bit.
 
 **Keeping it a workspace member, rather than moving the suites to the workspace root, is a separate
 decision that coverage settles.** `melos exec` visits members only, and `format_coverage

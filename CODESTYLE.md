@@ -734,16 +734,14 @@ Three that bite most often:
 <a id="shell-scripts"></a>
 ## Shell in workflows
 
-The repo holds no `.sh` files, the release flow being [`tool/release.dart`](./tool/README.md). The
-only shell left is `run:` blocks under `.github/workflows/`.
+The repo holds no `.sh` files. The only shell is the `run:` blocks under `.github/workflows/`.
 
 - **`actionlint` is the lint contract** for those blocks, and it shellchecks each one, so the
   manifest needs no ShellCheck entry of its own. It runs from the
   [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, so Docker is the only local
-  requirement. Dartender's lint jobs and the `tool/release.dart` preflight read the check set
-  (actionlint, rumdl, ryl) and the image tag from one manifest,
-  [`.github/lint-checks.json`](.github/lint-checks.json), which dartender's setup writes, so
-  neither can drift from the other.
+  requirement. Dartender's lint jobs read the check set (actionlint, rumdl, ryl) and the image tag
+  from one manifest, [`.github/lint-checks.json`](.github/lint-checks.json), which dartender's
+  setup writes.
 - **Prefer `# shellcheck disable=SC<code>` + a one-line "why" over refactoring for simple cases.**
   Refactor when the warning points at a real bug, and reach for the directive when the code is correct
   and ShellCheck is just over-conservative. Always pair the directive with a comment.

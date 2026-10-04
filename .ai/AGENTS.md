@@ -25,29 +25,29 @@ feature: identical method names and the same failure model across every type.
 - **`dart test`** for tests, **`dart --no-version-check analyze --fatal-infos .`** for pedantic
   static analysis (pedantic mode is intentional). No Flutter dependency, no platform channels.
 - **CI is [dartender](https://github.com/LahaLuhem/dartender)'s**, shared with the maintainer's
-  other packages. `.github/workflows/` holds the 4 callers its setup writes, which its next run
-  rewrites, plus `release-flow.yml` for the release tool's integration test. Every job takes its
-  Dart from Flutter stable.
+  other packages. `.github/workflows/` holds the callers its setup writes, which its next run
+  rewrites. Every job takes its Dart from Flutter stable.
 - **`dependency_validator`** guards each package's dependency set, per package, and is what caught
   core still declaring engines after their types moved out. `dart_dependency_validator.yaml` scopes
   it to the published surface and skips the example.
 - **Container-based linters** (`actionlint` for workflows, `rumdl` for Markdown, `ryl` for YAML)
   run from the [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, not local
   installs, so Docker is the only requirement. The check set and image tag live in one manifest,
-  [`.github/lint-checks.json`](../.github/lint-checks.json), which dartender's setup writes and
-  both CI and `tool/release.dart`'s preflight read, so the 2 can't drift. A linter only `minted`
-  needs goes in a workflow of its own, since the setup's next run rewrites the manifest. Per-tool
-  config tuned to the repo lives in `.rumdl.toml` and `.yamllint.yaml`.
-- **CHANGELOG and the `version:` field are owned by [`tool/release.dart`](../tool/release.dart)**
-  (via `cider`). Do not run `cider` by hand and do not edit `CHANGELOG.md` or `version:` directly.
-  The `cider:` block in `pubspec.yaml` is static config (URLs, link templates) and is hand-editable.
+  [`.github/lint-checks.json`](../.github/lint-checks.json), which dartender's setup writes and CI
+  reads. A linter only `minted` needs goes in a workflow of its own, since the setup's next run
+  rewrites the manifest. Per-tool config tuned to the repo lives in `.rumdl.toml` and
+  `.yamllint.yaml`.
+- **CHANGELOG and the `version:` field are owned by the release run** (via `cider`), which the
+  user starts from the Actions tab, see [Releasing](../README.md#releasing). Do not run `cider` by
+  hand and do not edit `CHANGELOG.md` or `version:` directly. The `cider:` block in `pubspec.yaml`
+  is static config (URLs, link templates) and is hand-editable.
 - **Published to pub.dev.** `.pubignore` controls the tarball, and `.editorconfig` is the source of
   truth for text-file conventions (line width 100, LF, UTF-8).
 
 ## Repo layout
 
 A [pub workspace](https://dart.dev/tools/pub/workspaces): one resolution, one root `pubspec.lock`.
-The root holds docs, CI and the release tool. Each package is a directory under `packages/`.
+The root holds docs and CI. Each package is a directory under `packages/`.
 
 ```text
 minted/                              Workspace root
@@ -55,11 +55,8 @@ minted/                              Workspace root
 ├── analysis_options.yaml            Strict-mode + opinionated lints. Members inherit by proximity
 ├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
 ├── .rumdl.toml / .yamllint.yaml     Markdown + YAML lint config
-├── .github/                         dartender's callers, release-flow.yml, the lint manifest
-├── tool/                            release.dart, the release flow, + its README
-│   └── src/                         parsing/ versioning/ io/ flow/, plus options + abort
-├── test/tool/                       The tooling's suite, mirroring src/; the root's only Dart tests
-│   └── integration/                 `integration`-tagged. A real release against a throwaway remote
+├── .github/                         dartender's callers, the lint manifest
+├── test/support/                    Helpers the members' suites share
 ├── README.md                        Family index. The GitHub landing page
 ├── APPENDIX.md                      Family-wide design rationale (anchor-keyed). Per-type
 │                                    rationale lives in each package's own APPENDIX.md
@@ -112,14 +109,13 @@ packages/minted/                     Core. A sibling has the same shape, minus s
 **Commands run from the root, a member's tests from the member.** One `dart pub get` at the root
 resolves every member, and `dart analyze .` / `dart format .` cover the whole workspace in one pass.
 `dart test` does not: it tests the package it stands in, so a member's suite needs
-`cd packages/minted`. The root has a suite of its own, covering the release tooling under `tool/`
-only. Anything that reads a single pubspec (`cider`, `dart pub publish`, `dependency_validator`)
-needs the member directory too, via `cd` or `dart pub -C packages/minted`.
+`cd packages/minted`. Anything that reads a single pubspec (`cider`, `dart pub publish`,
+`dependency_validator`) needs the member directory too, via `cd` or `dart pub -C packages/minted`.
 
 **Melos wraps that split, so prefer `dart run melos run <script>`.** Each script already knows
 whether it belongs at the root or per-package. They live under the `melos:` key of the root
 `pubspec.yaml`, and `dart run melos run` lists them. Script runner only: versioning and publishing
-stay with cider and `tool/release.dart`.
+stay with the release run.
 
 **A domain is a package.** Its types sit flat in that package's `lib/src/`, its failures in
 `failures/`, its helpers in job-named subfolders. 2 exceptions: core carries `shared/` for what
@@ -199,7 +195,7 @@ build the new type on it.
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
 or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping.
-`dart analyze .` and the release flow treat the whole tree uniformly.
+`dart analyze .` and the release run treat the whole tree uniformly.
 
 ## Hard rules
 
@@ -244,7 +240,7 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    a documented contract (including a normalisation change) is breaking. `cider` enforces the
    version-bump discipline.
 10. **`CHANGELOG.md` is bot-owned. Do not edit any section, including `## Unreleased`.** Release
-   headers are written by [`tool/release.dart`](../tool/release.dart), and the `## Unreleased`
+   headers and Dependabot's lines are written by the release run, and the `## Unreleased`
    buffer is appended to by [`.github/workflows/changelog.yml`](../.github/workflows/changelog.yml) from
    the merged PR title (governed by its `sem-*` label). Same prohibition on the `version:` field.
 

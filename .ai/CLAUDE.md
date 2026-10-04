@@ -41,7 +41,7 @@ and slow to walk back. An unpublished version stays reserved for 7 days.
 ## Scope awareness
 
 Paths below are relative to whichever package under `packages/` you are in. The repo root is the
-workspace: docs, CI config, and the release tool with its own suite.
+workspace: docs and CI config.
 
 - **Public-API edits** (a package's barrel, or anything it re-exports) are pub.dev-visible. Flag
   whether the change is patch, minor or major under semver before it lands. Adding a public
@@ -91,12 +91,13 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 ## Forbidden / confirm-first actions
 
 - **Never** `dart pub publish`. Publishing is effectively one-way (pub.dev reserves the version for
-  7 days after retraction). Releases go through `tool/release.dart`, which the user runs manually.
+  7 days after retraction). Releases go through the **Release** workflow, which the user starts
+  from the Actions tab.
 - **Never** run `cider` commands or manually edit `CHANGELOG.md` (including `## Unreleased`) or the
-  `version:` field. Those belong to `tool/release.dart` and the changelog automation, and a manual
-  edit gets reordered or overwritten. If the user wants a release, suggest
-  `dart run tool/release.dart <bump>` but don't run it: it pushes to `origin/main` and triggers
-  publish. The `cider:` block in `pubspec.yaml` is static config, hand-editable.
+  `version:` field. Those belong to the release run and the changelog automation, and a manual
+  edit gets reordered or overwritten. If the user wants a release, point them at the **Release**
+  workflow but don't start it: it pushes to `main` and triggers publish. The `cider:` block in
+  `pubspec.yaml` is static config, hand-editable.
 - **Never** edit `pubspec.lock` directly (it's `dart pub get`'s output).
 - **Never** delete files under `.fvm/`, `.dart_tool/`, or `pubspec.lock` without approval.
 - **Destructive git** (`reset --hard`, `push --force`, `branch -D`, `clean -fd`) → ask first.
@@ -122,7 +123,7 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
   ```
 
 - `dart pub publish --dry-run` clean if the change is publish-relevant. Do not bump the version or
-  edit the CHANGELOG to make it pass. `tool/release.dart` owns those.
+  edit the CHANGELOG to make it pass. The release run owns those.
 - Public API additions carry `///` dartdoc and are reflected in the README.
 - **A local green is not a CI green.** After a push, read the run: `gh run list --limit 3`, then
   `gh run view --job <id> --log`.
