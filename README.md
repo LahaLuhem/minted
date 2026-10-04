@@ -46,12 +46,31 @@ dart run melos run test  # every member's suite, fanned out
 
 [Melos](https://melos.invertase.dev) saves you remembering which commands are workspace-wide and
 which are per-package: `analyze` and `format` run once at the root, `test` and `coverage` fan out.
-Releases stay with [`tool/release.dart`](./tool/README.md).
 
 Plain commands work too, but mind the split: `analyze` and `format` want the root, while anything
 reading one pubspec (`dart test`, `cider`, `dart pub publish`) wants `packages/minted`.
 
 Contributor docs live at the root because they cover every package: [AGENTS.md](./AGENTS.md) for
 hard rules and repo layout, [CODESTYLE.md](./CODESTYLE.md) for style, and
-[APPENDIX.md](./APPENDIX.md) for why things are the way they are. Releases go through
-[`tool/release.dart`](./tool/README.md).
+[APPENDIX.md](./APPENDIX.md) for why things are the way they are.
+
+### Releasing
+
+A release starts from the Actions tab: **Release**, then the package and the bump. It runs CI first,
+and raises the other packages' bounds on the one going out.
+[dartender's Releasing](https://github.com/LahaLuhem/dartender#releasing) has the rest.
+
+<details>
+<summary>A new package's first version</summary>
+
+pub.dev only sets up automated publishing for a package that's already there, and a release always
+bumps, so the first version goes up by hand:
+
+1. `cd packages/<name> && cider release`, so the CHANGELOG names the version, then commit it. Check
+   the notes read right for a first release, since a PR's label lands in every package it touched.
+2. `dart pub -C packages/<name> publish`.
+3. Set its tag pattern to `<name>-{{version}}` under `pub.dev/packages/<name>/admin`.
+4. Tag that version `<name>-<version>` and push the tag, since the next release counts from it. The
+   publish run it starts fails on a version pub.dev already has, and nothing waits on it.
+
+</details>

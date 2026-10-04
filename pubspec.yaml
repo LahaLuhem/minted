@@ -18,18 +18,14 @@ workspace:
   - packages/minted_network
 
 dev_dependencies:
-  args: ^2.7.0
-  checks: ^0.3.2
-  collection: ^1.19.1
   dependency_validator: ^5.1.0
   melos: ^8.8.0
   # test/support/digits.dart builds Digits fixtures for the sibling suites.
   minted_constraints: ^1.2.0
-  terminice: ^1.3.1
   test: ^1.32.0
 
-# Script runner only. cider and tool/release.dart own versioning and publishing, so `melos version`
-# and `melos publish` stay unused. Workspaces do the linking, so `melos bootstrap` does too.
+# Script runner only. The release run owns versioning and publishing, so `melos version` and
+# `melos publish` stay unused. Workspaces do the linking, so `melos bootstrap` does too.
 melos:
   scripts:
     analyze:
@@ -48,19 +44,8 @@ melos:
       run: dcm analyze .
 
     test:
-      description: Each member's suite, plus the root's own tooling suite.
-      # `exec` visits members only, and the root is not one of them, so the root's tests need the
-      # second line. Same shape as `coverage` below. `-x integration` keeps the release-flow test
-      # out: it wants git, cider and Docker. Run it with `melos run test-release-flow`.
-      run: |
-        dart run melos exec --fail-fast --group-logs --dir-exists=test -- dart test
-        dart test -x integration
-
-    test-release-flow:
-      description: >-
-        Cuts a release against a throwaway bare remote, to check the real cider and git calls.
-        Needs git, cider and a running Docker daemon. Never touches pub.dev.
-      run: dart test -t integration --run-skipped
+      description: Each member's suite.
+      run: dart run melos exec --fail-fast --group-logs --dir-exists=test -- dart test
 
     coverage:
       description: >-
