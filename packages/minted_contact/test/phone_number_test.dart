@@ -58,8 +58,6 @@ void main() {
       check(PhoneNumberConstants.exampleUs.telUri.toString()).equals('tel:+12015550123');
     });
 
-    // Only unknownCountryCallingCode comes from the engine: notFound is the one code phone_numbers_parser
-    // actually throws, and everything else arrives as isValid() == false.
     scenarioOutline<({String input, String? region, PhoneNumberFailure failure})>(
       'parse reports which check the input failed',
       examples: {
@@ -68,10 +66,10 @@ void main() {
           region: 'ZZ',
           failure: PhoneNumberFailure.unknownRegion,
         ),
-        'text with no calling code to find': (
+        'text with no digits at all': (
           input: 'not-a-number',
           region: null,
-          failure: PhoneNumberFailure.unknownCountryCallingCode,
+          failure: PhoneNumberFailure.invalid,
         ),
         'national format with no region to resolve it': (
           input: '0655570576',
@@ -106,7 +104,7 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(PhoneNumber.parse('not-a-number'))
-          .equals(const ParseFailure(PhoneNumberFailure.unknownCountryCallingCode));
+          .equals(const ParseFailure(PhoneNumberFailure.invalid));
       check(PhoneNumber.parse('+33 655 5705 76').isSuccess).isTrue();
     });
 

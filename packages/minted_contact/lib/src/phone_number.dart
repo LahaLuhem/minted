@@ -82,14 +82,10 @@ extension type const PhoneNumber._(String value) {
 
   phone_numbers.PhoneNumber get _parsed => phone_numbers.PhoneNumber.parse(value);
 
-  // notFound is the only code the engine throws here. The rest are metadata misses that resolving the
-  // region against IsoCode.values already rules out, so no test can reach that arm. Enumerated anyway,
-  // so a new engine code breaks the build rather than quietly mapping to `invalid`.
+  // Enumerated, so a new engine code breaks the build rather than quietly mapping to `invalid`.
   static PhoneNumberFailure _failureForCode(phone_numbers.Code code) => switch (code) {
     .notFound => .unknownCountryCallingCode,
-    // coverage:ignore-start
     .invalid || .invalidCountryCallingCode || .invalidIsoCode || .inputIsTooLong => .invalid,
-    // coverage:ignore-end
   };
 
   //==================================== RFC EXAMPLE NUMBERS =====================================//
