@@ -5,6 +5,9 @@ abstract final class EmailConstants() {
   /// Unused: the class is a namespace, never an instance.
   this;
 
+  //====================================== SERVICE SUPPORT =======================================//
+  // RFC 2142 §5: one mailbox per major protocol.
+
   /// `postmaster@example.com`. The one mailbox every SMTP server must accept. RFC 5321 §4.5.1.
   static const postmaster = Email._('postmaster@example.com');
 

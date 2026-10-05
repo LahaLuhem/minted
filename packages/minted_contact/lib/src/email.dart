@@ -59,7 +59,4 @@ extension type const Email._(String value) {
 
   /// A `mailto:` URI addressing this email.
   Uri get mailtoUri => Uri(scheme: 'mailto', path: value);
-
-  //====================================== SERVICE SUPPORT =======================================//
-  // RFC 2142 §5: one mailbox per major protocol.
 }

@@ -1,7 +1,9 @@
 Library-package code style. Project facts (goal, stack, repo layout, hard rules) live in
 [`.ai/AGENTS.md`](./.ai/AGENTS.md). Design rationale lives in [`APPENDIX.md`](./APPENDIX.md).
 
-The lint posture is deliberately strict (see [`analysis_options.yaml`](./analysis_options.yaml)).
+The lint posture is deliberately strict (see
+[dartender's shared lints](https://github.com/LahaLuhem/dartender/blob/main/lints/lib/analysis_options.yaml), which
+[`analysis_options.yaml`](./analysis_options.yaml) includes).
 The house style values explicit types, no ambient mutability, small focused types, and a
 single consistent shape across every value type in every package.
 
@@ -85,7 +87,7 @@ final cc = s.substring(0, 2);
 
 - **Wrap text-file content at 100 columns.** [`.editorconfig`](./.editorconfig) is authoritative,
   and Markdown, Dart, and YAML share the same cap. The formatter's `page_width: 100` in
-  `analysis_options.yaml` matches it, so keep them aligned if either moves.
+  the shared lints matches it, so keep them aligned if either moves.
 - **100 is not a strict width for `//` and `///` prose.** The formatter never reflows a comment, so
   this one is on you: break once the last word over 100 is done, rather than wrapping before it.
   Markdown is capped, not soft: `rumdl` fails the build at 101.
@@ -639,7 +641,7 @@ library;
 
 `dart analyze` does not run these. **`dart run melos run dcm` does**, so it is part of the suite
 rather than something to remember. The rule set is the `dart_code_metrics:` block in
-`analysis_options.yaml`, and `dcm analyze` exits non-zero on a warning, so it gates like the others.
+the shared lints, and `dcm analyze` exits non-zero on a warning, so it gates like the others.
 The CLI is a separate install: <https://dcm.dev/docs/getting-started/>.
 
 Three that bite most often:

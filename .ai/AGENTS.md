@@ -22,8 +22,8 @@ feature: identical method names and the same failure model across every type.
   Raise the floor only when a new stable language feature is actually consumed. What the floor buys,
   and why primary (declaring) constructors stay unused despite being stable:
   [rationale][apx-sdk-floor], which is also where a bump gets recorded.
-- **`dart test`** for tests, **`dart --no-version-check analyze --fatal-infos .`** for pedantic
-  static analysis (pedantic mode is intentional). No Flutter dependency, no platform channels.
+- **`dart test`** for tests, **`dart --no-version-check analyze --fatal-infos --fatal-warnings .`**
+  for pedantic static analysis (pedantic mode is intentional). No Flutter dependency, no platform channels.
 - **CI is [dartender](https://github.com/LahaLuhem/dartender)'s**, shared with the maintainer's
   other packages. `.github/workflows/` holds the callers its setup writes, which its next run
   rewrites. Every job takes its Dart from Flutter stable.
@@ -52,7 +52,7 @@ The root holds docs and CI. Each package is a directory under `packages/`.
 ```text
 minted/                              Workspace root
 ├── pubspec.yaml                     `workspace:` member list. publish_to none, no version
-├── analysis_options.yaml            Strict-mode + opinionated lints. Members inherit by proximity
+├── analysis_options.yaml            Includes dartender's shared lints. Members inherit by proximity
 ├── .fvmrc / .editorconfig           Local SDK channel / text-file formatting
 ├── .rumdl.toml / .yamllint.yaml     Markdown + YAML lint config
 ├── .github/                         dartender's callers, the lint manifest
@@ -226,7 +226,7 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
 4. **Validate the real standard, including check digits** (IBAN mod-97, Luhn, ISBN/EAN/ISSN). A
    regex that only checks the shape is a bug. See
    [`APPENDIX.md#check-digits-not-regex`](../APPENDIX.md#check-digits-not-regex).
-5. **No `print()` in library code.** `avoid_print` is a warning in `analysis_options.yaml`.
+5. **No `print()` in library code.** `avoid_print` is a warning in the shared lints.
 6. **No `dynamic` escape hatches.** `strict-casts`, `strict-inference`, `strict-raw-types` are all
    on. In particular, never `as T` a `tryParse` result to launder nullability.
 7. **Public symbols carry `///` dartdoc** explaining the guarantee and the normalisation, not the
@@ -297,7 +297,7 @@ rules to keep in working memory:
 - **Read <https://noslopgrenade.com/> before writing any prose.** Docs, comments, commit messages,
   PR bodies. Fetch the page, don't cite it from memory: it is the intent behind
   [Prose & voice](../CODESTYLE.md#prose), and skipping it is how the wall of text gets written.
-- **Read `analysis_options.yaml` before writing code.** The lint posture is far stricter than the
+- **Read the shared lints before writing code.** The lint posture is far stricter than the
   Dart default, and code that fails lint won't pass review.
 - **Surface semver implications loudly.** If a change touches anything a package re-exports, call
   out whether it's patch, minor or major before the diff lands.
