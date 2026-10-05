@@ -33,9 +33,9 @@ and slow to walk back. An unpublished version stays reserved for 7 days.
 - **Read / Edit / Grep / Glob** over `cat` / `sed` / `grep` / `find`. Always.
 - **Bash** only for things without a dedicated tool: `dart`, `git`. The user's shell aliases
   `dart` to the toolchain serving the `.fvmrc` channel, so invoke plain `dart`.
-- **Lint with `dart --no-version-check analyze --fatal-infos .`**, because pedantic mode is the
-  contract, and CI fails on infos too. Don't substitute plain `dart analyze` and ignore what it
-  surfaces.
+- **Lint with `dart --no-version-check analyze --fatal-infos --fatal-warnings .`**, because pedantic
+  mode is the contract, and CI fails on infos too. Don't substitute plain `dart analyze` and ignore
+  what it surfaces.
 - **Agent tool** for wide / open-ended searches or to keep large output out of context.
 
 ## Scope awareness
@@ -49,8 +49,8 @@ workspace: docs and CI config.
   guarantee: don't.
 - **`lib/src/` edits** are private, so refactor freely as long as the public re-exports hold.
 - **`test/` edits** are local, no publish impact.
-- **`analysis_options.yaml` edits** affect every file, so surface a lint-posture change loudly and
-  write the reason into `APPENDIX.md`.
+- **`analysis_options.yaml` edits** override dartender's shared lints, which every repo gets, so
+  surface one loudly and write the reason into `APPENDIX.md`.
 - **`pubspec.yaml` dependency edits** land in every downstream user's transitive closure, so treat
   them as public-API-class. Opinionated deps belong in a companion package, not core.
 
@@ -70,8 +70,8 @@ workspace: docs and CI config.
 - The change touches the public API, meaning a package's barrel or anything it re-exports. Even
   adding a type or a method affects semver and downstream users.
 - You're adding or removing a dependency in `pubspec.yaml`.
-- You're changing `analysis_options.yaml`. Lint posture is project-wide, so any toggle wants a
-  written reason in APPENDIX.
+- You're overriding a shared lint in `analysis_options.yaml`. Lint posture is project-wide, so any
+  toggle wants a written reason in APPENDIX.
 
 For a single-file, single-concern change inside `lib/src/`, just do it.
 

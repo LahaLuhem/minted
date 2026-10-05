@@ -18,6 +18,11 @@ workspace:
   - packages/minted_network
 
 dev_dependencies:
+  dartender_lints:
+    git:
+      url: https://github.com/LahaLuhem/dartender.git
+      path: lints
+      ref: main
   dependency_validator: ^5.1.0
   melos: ^8.8.0
   # test/support/digits.dart builds Digits fixtures for the sibling suites.
@@ -30,7 +35,7 @@ melos:
   scripts:
     analyze:
       description: Every member in one pass, from the root, the gate CI applies.
-      run: dart --no-version-check analyze --fatal-infos .
+      run: dart --no-version-check analyze --fatal-infos --fatal-warnings .
 
     format:
       description: Repo-wide format check, the gate CI applies.
@@ -39,7 +44,7 @@ melos:
     dcm:
       description: >-
         The rules `dart analyze` cannot run, from the `dart_code_metrics:` block in
-        analysis_options.yaml. Needs the DCM CLI: https://dcm.dev/docs/getting-started/.
+        the shared lints. Needs the DCM CLI: https://dcm.dev/docs/getting-started/.
       # Exits 2 on a warning by default, so no --fatal-* flag is needed to make it a gate.
       run: dcm analyze .
 
