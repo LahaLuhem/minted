@@ -77,7 +77,7 @@ minted/                              Workspace root
 ```
 
 ```text
-packages/minted/                     Core. A sibling has the same shape, minus shared/
+packages/minted/                     Core. Siblings match, minus shared/ and the validator config
 ├── APPENDIX.md                      This package's own design rationale. Ships in the tarball
 ├── lib/
 │   ├── minted.dart                  Public entry; `export 'src/…'` only
@@ -96,7 +96,7 @@ packages/minted/                     Core. A sibling has the same shape, minus s
 │           └── check_digits/         One file per algorithm, all private
 │               └── luhn_check_digit.dart      ISO/IEC 7812-1 Annex B mod-10: finance + identifiers
 ├── test/                            `dart test` units. Mirrors lib/src/, uses official vectors
-│   └── support/                     bdd.dart et al. Each package carries its own copy
+│   └── support/                     Core's own helpers. The shared ones are in the root test/support/
 ├── example/
 │   └── minted_example.dart          Single-file, pure-Dart, runnable via `dart run`
 ├── pubspec.yaml                     Deps + cider config + topics + `resolution: workspace`

@@ -21,7 +21,7 @@ text, so renames don't break callers.
 - [Idioms](#idioms)
 - [Prose & voice](#prose)
 - [Comments & dartdoc](#dartdoc)
-- [DCM rules (applied by hand)](#dcm-rules)
+- [DCM rules](#dcm-rules)
 - [Test style](#test-style)
 - [Documentation conventions (Markdown)](#documentation-conventions)
 - [Shell](#shell-scripts)
@@ -195,7 +195,7 @@ worth naming**. Rationale:
   ```
 
 This one ships:
-[`lib/src/geography/geo_coordinate.dart`](./packages/minted_geography/lib/src/geo_coordinate.dart)
+[`packages/minted_geography/lib/src/geo_coordinate.dart`](./packages/minted_geography/lib/src/geo_coordinate.dart)
 is the sketch filled in, so keep the 2 in step.
 
 **A second reason to reach for a class, independent of the parts: a delegated `Object` member would
@@ -607,7 +607,7 @@ PR and issue bodies.
 
 Public symbols carry `///` dartdoc that explains *why* and *what guarantee*, not the mechanical
 *what*: the type already says that. `public_member_api_docs` is on (see
-[hard rule 4 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)). For every type, document its
+[hard rule 7 in `.ai/AGENTS.md`](./.ai/AGENTS.md#hard-rules)). For every type, document its
 normalisation and **link** the standard it enforces (with the clause or edition where it helps),
 preferring a freely-readable URL (an RFC). Where the standard is paywalled (ISO), link a reliable
 free reference. The link lives in the dartdoc, which renders on pub.dev and travels with the type,
@@ -663,7 +663,7 @@ Three that bite most often:
   `.isNull()`, `.throws<…>()`), matching every suite in the package. Not `package:matcher`'s
   `expect`.
 - **Behavioural framing comes from a local helper, not a framework.**
-  [`test/support/bdd.dart`](./packages/minted/test/support/bdd.dart) is a small Gherkin vocabulary over
+  [`test/support/bdd.dart`](./test/support/bdd.dart) is a small Gherkin vocabulary over
   `package:test`: `feature` (a `group`), `scenario` (a single test), and `scenarioOutline` (one
   test per example row). Why no BDD framework:
   [rationale][apx-behavioural-tests-helper].

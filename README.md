@@ -50,7 +50,7 @@ which are per-package: `analyze` and `format` run once at the root, `test` and `
 Plain commands work too, but mind the split: `analyze` and `format` want the root, while anything
 reading one pubspec (`dart test`, `cider`, `dart pub publish`) wants `packages/minted`.
 
-Contributor docs live at the root because they cover every package: [AGENTS.md](./AGENTS.md) for
+Contributor docs live at the root because they cover every package: [AGENTS.md](./.ai/AGENTS.md) for
 hard rules and repo layout, [CODESTYLE.md](./CODESTYLE.md) for style, and
 [APPENDIX.md](./APPENDIX.md) for why things are the way they are.
 
