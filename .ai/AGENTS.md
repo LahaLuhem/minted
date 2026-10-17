@@ -37,10 +37,11 @@ feature: identical method names and the same failure model across every type.
   reads. A linter only `minted` needs goes in a workflow of its own, since the setup's next run
   rewrites the manifest. Per-tool config tuned to the repo lives in `.rumdl.toml` and
   `.yamllint.yaml`.
-- **CHANGELOG and the `version:` field are owned by the release run** (via `cider`), which the
-  user starts from the Actions tab, see [Releasing](../README.md#releasing). Do not run `cider` by
-  hand and do not edit `CHANGELOG.md` or `version:` directly. The `cider:` block in `pubspec.yaml`
-  is static config (URLs, link templates) and is hand-editable.
+- **CHANGELOG and the `version:` field aren't edited by hand.** `changelog.yml` writes each
+  merged PR's line into every published package the PR changed. The release run, which the user
+  starts from the Actions tab (see [Releasing](../README.md#releasing)), adds Dependabot's lines,
+  bumps `version:` and dates the section, all through `cider`. Do not run `cider` by hand. The
+  `cider:` block in `pubspec.yaml` is static config (URLs, link templates) and is hand-editable.
 - **Published to pub.dev.** `.pubignore` controls the tarball, and `.editorconfig` is the source of
   truth for text-file conventions (line width 100, LF, UTF-8).
 
@@ -109,8 +110,9 @@ packages/minted/                     Core. A sibling has the same shape, minus s
 **Commands run from the root, a member's tests from the member.** One `dart pub get` at the root
 resolves every member, and `dart analyze .` / `dart format .` cover the whole workspace in one pass.
 `dart test` does not: it tests the package it stands in, so a member's suite needs
-`cd packages/minted`. Anything that reads a single pubspec (`cider`, `dart pub publish`,
-`dependency_validator`) needs the member directory too, via `cd` or `dart pub -C packages/minted`.
+`cd packages/minted`. Anything that reads a single pubspec (`cider`, `dart pub publish`) needs the
+member directory too, via `cd` or `dart pub -C packages/minted`. `dependency_validator` is the
+exception: run from the root, it checks every member with that member's own config.
 
 **Melos wraps that split, so prefer `dart run melos run <script>`.** Each script already knows
 whether it belongs at the root or per-package. They live under the `melos:` key of the root
@@ -195,7 +197,7 @@ build the new type on it.
 
 The example is a single file resolved against the root package: there is no `example/pubspec.yaml`
 or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` scoping.
-`dart analyze .` and the release run treat the whole tree uniformly.
+`dart analyze .` and CI treat the whole tree uniformly.
 
 ## Hard rules
 
@@ -237,8 +239,8 @@ or `example/pubspec.lock`, so nothing Flutter-specific and no `--no-example` sco
    ecosystems (`fpdart`, Hive, Flutter form validators) go in companion packages, never in core.
    See [rationale][apx-packaging-core-and-companions].
 9. **Semver, strictly.** Any change to a public signature, a deletion, or a behavioural change of
-   a documented contract (including a normalisation change) is breaking. `cider` enforces the
-   version-bump discipline.
+   a documented contract (including a normalisation change) is breaking. Nothing checks the bump
+   against the change: whoever starts the Release run picks it.
 10. **`CHANGELOG.md` is bot-owned. Do not edit any section, including `## Unreleased`.** Release
    headers and Dependabot's lines are written by the release run, and the `## Unreleased`
    buffer is appended to by [`.github/workflows/changelog.yml`](../.github/workflows/changelog.yml) from

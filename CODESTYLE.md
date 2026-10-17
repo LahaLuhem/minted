@@ -24,7 +24,7 @@ text, so renames don't break callers.
 - [DCM rules (applied by hand)](#dcm-rules)
 - [Test style](#test-style)
 - [Documentation conventions (Markdown)](#documentation-conventions)
-- [Shell in workflows](#shell-scripts)
+- [Shell](#shell-scripts)
 
 <!-- TOC end -->
 
@@ -642,6 +642,7 @@ library;
 `dart analyze` does not run these. **`dart run melos run dcm` does**, so it is part of the suite
 rather than something to remember. The rule set is the `dart_code_metrics:` block in
 the shared lints, and `dcm analyze` exits non-zero on a warning, so it gates like the others.
+CI runs no DCM, so this local run is the only gate.
 The CLI is a separate install: <https://dcm.dev/docs/getting-started/>.
 
 Three that bite most often:
@@ -718,7 +719,7 @@ Three that bite most often:
   the existing anchor, or `rg` the repo and update every caller in the same change.
 - **Bare `dart` in command examples, never `fvm dart`.** FVM is a local implementation detail
   (`.fvmrc` pins the SDK). Docs stay tool-agnostic so external contributors aren't forced into
-  FVM, and the release tool resolves FVM-vs-PATH itself.
+  FVM.
 - **Trim prose to the load-bearing sentence.** [Prose & voice](#prose) governs here too. An
   APPENDIX entry earns more room than a comment, not a licence to ramble.
 - **Never restate a value a source file owns.** Point at the file instead: "the `sdk:` constraint in
@@ -734,19 +735,10 @@ Three that bite most often:
 ---
 
 <a id="shell-scripts"></a>
-## Shell in workflows
+## Shell
 
-The repo holds no `.sh` files. The only shell is the `run:` blocks under `.github/workflows/`.
-
-- **`actionlint` is the lint contract** for those blocks, and it shellchecks each one, so the
-  manifest needs no ShellCheck entry of its own. It runs from the
-  [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, so Docker is the only local
-  requirement. Dartender's lint jobs read the check set (actionlint, rumdl, ryl) and the image tag
-  from one manifest, [`.github/lint-checks.json`](.github/lint-checks.json), which dartender's
-  setup writes.
-- **Prefer `# shellcheck disable=SC<code>` + a one-line "why" over refactoring for simple cases.**
-  Refactor when the warning points at a real bug, and reach for the directive when the code is correct
-  and ShellCheck is just over-conservative. Always pair the directive with a comment.
+The repo holds no `.sh` files, and its workflows are dartender's callers, with no `run:` blocks.
+The only shell left is the melos scripts in the root `pubspec.yaml`, which no linter reads.
 
 [apx-behavioural-tests-helper]: ./APPENDIX.md#behavioural-tests-helper
 [apx-check-digits-not-regex]: ./APPENDIX.md#check-digits-not-regex
