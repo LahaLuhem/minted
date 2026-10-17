@@ -104,10 +104,11 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 
 ## Definition of done
 
-- `dart run melos run analyze` clean (pedantic mode).
-- `dart run melos run format` clean.
-- `dart run melos run test` green, including the official standard test vectors for any
-  standardised type.
+- Every check `ci / ok` waits on passes on your tree: the `needs:` of the `ok` job in
+  [dartender's `ci.yml`](https://github.com/LahaLuhem/dartender/blob/main/.github/workflows/ci.yml),
+  run with this repo's inputs from [`ci.yml`](../.github/workflows/ci.yml). `dart run melos run`
+  `analyze`, `format` and `test` cover 3 of them locally.
+- Any standardised type is tested against the standard's official test vectors.
 - New / changed types honour the [value-type contract](../CODESTYLE.md#value-type-contract):
   private constructor, `tryParse` + `parse`, `MintedFormatError`, value equality, canonical
   string form, documented normalisation.
@@ -122,8 +123,9 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
   docker run --rm -v "$PWD":/work -w /work ghcr.io/lahaluhem/linterpol:latest sh -c 'actionlint && rumdl check . && ryl .'
   ```
 
-- `dart pub publish --dry-run` clean if the change is publish-relevant. Do not bump the version or
-  edit the CHANGELOG to make it pass. The release run owns those.
+- `dart pub publish --dry-run` clean if the change is publish-relevant, apart from its warning about
+  uncommitted files, which fails it until you commit. Do not bump the version or edit the
+  CHANGELOG to make it pass. The release run owns those.
 - Public API additions carry `///` dartdoc and are reflected in the README.
 - **A local green is not a CI green.** After a push, read the run: `gh run list --limit 3`, then
   `gh run view --job <id> --log`.
