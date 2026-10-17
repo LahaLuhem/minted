@@ -342,8 +342,8 @@ a stale sibling bound because that one already bit.
 
 **Keeping it a workspace member, rather than moving the suites to the workspace root, is a separate
 decision that coverage settles.** `melos exec` visits members only, and `format_coverage
---in=packages` reads only what lands under `packages/`, so a suite at the root would be collected by
-neither. These suites cover 7 other packages' `lib/` while `minted_conformance` owns no `lib` of
+--in=packages` reads only what lands under `packages/`, so `melos run coverage` would miss a suite
+at the root. These suites cover 7 other packages' `lib/` while `minted_conformance` owns no `lib` of
 its own, which makes that scoping the whole of their coverage contribution. The inverse follows too:
 a suite whose coverage nobody attributes has no reason to be a member.
 
