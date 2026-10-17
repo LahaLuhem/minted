@@ -45,9 +45,9 @@ Each ships in its own tarball, so the rationale reaches whoever is reading the t
 ## `AGENTS.md` and `CLAUDE.md` are symlinks into `.ai/`
 
 The canonical files live in [`.ai/`](./.ai/). The repo-root `AGENTS.md` and `CLAUDE.md` are
-symlinks to them. Keeping the sources in `.ai/` groups the agent-facing docs in one place while
-still letting tools that look at the repo root (and humans) find them. `.pubignore` excludes both
-the symlinks and the targets so none of it ships in the published tarball.
+gitignored symlinks to them, which each clone makes for itself. Keeping the sources in `.ai/`
+groups the agent-facing docs in one place while still letting tools that look at the repo root
+(and humans) find them. None of it ships, since pub publishes each package from its own folder.
 
 ---
 
@@ -259,7 +259,7 @@ which is the concrete case the rule exists to avoid.
 ## Behavioural tests: a helper, not a framework
 
 Tests read as behaviour (Given/When/Then, one named case per row), but that framing comes from a
-tiny in-repo helper, not a BDD framework. [`test/support/bdd.dart`](./packages/minted/test/support/bdd.dart) is
+tiny in-repo helper, not a BDD framework. [`test/support/bdd.dart`](./test/support/bdd.dart) is
 about 25 lines of `feature` / `scenario` / `scenarioOutline` over `package:test`, with the
 assertions still written in `package:checks`.
 
@@ -291,7 +291,7 @@ acceptance, rejection, and normalisation into one table. How-to in
 <a id="public-api-via-single-export-file"></a>
 ## Public API funnelled through `lib/minted.dart`
 
-The mechanics are [hard rule 2](./.ai/AGENTS.md#hard-rules). The reason is that one barrel makes the
+The mechanics are [hard rule 3](./.ai/AGENTS.md#hard-rules). The reason is that one barrel makes the
 public surface auditable in a single file, and makes any move inside `lib/src/` a non-breaking
 change. That is what buys the freedom to regroup types into sector directories, or lift a shared
 check-digit algorithm out of one, without a semver event.
@@ -313,9 +313,9 @@ One package therefore cannot hold optional heavy libraries, which is what v3 spl
   `phone_numbers_parser` are in `minted_contact`, `iban_validator` and `country_code` in
   `minted_finance`, `ipaddr` in `minted_network`. The engine is the parser or registry the type
   needs to exist, so it belongs wherever that type does.
-- **Core carries only what every domain speaks**: the outcome vocabulary and the numeric
-  primitives, on `collection` and `meta`. A chronology consumer resolves core, the primitives and
-  chronology, where the single package pulled every engine in the family.
+- **Core carries only what every domain speaks**: the outcome vocabulary, on `collection` and
+  `meta`. The numeric primitives live in `minted_constraints`. A chronology consumer resolves core,
+  the primitives and chronology, where the single package pulled every engine in the family.
 - **Adapters stay separate**, as they always would have: `fpdart`, `hive`, a Flutter form-field
   validator. Each becomes `minted_fpdart` and friends, on core plus its one integration dependency.
 - **Zero-dependency integrations can be opt-in libraries** rather than packages. JSON, where
@@ -326,7 +326,7 @@ All of it lives in one repo, a pub workspace since the run-up to v3. Separate re
 earlier plan. One tree won because a release across 8 repos is worse than a release picker in
 one, and because a type and its tests should move together.
 
-The cost is real and was accepted: 7 publish surfaces, and helpers used by more than one
+The cost is real and was accepted: a publish surface per package, and helpers used by more than one
 package become `package:minted/internal.dart`, which carries no semver promise but cannot break
 within a major.
 

@@ -7,7 +7,8 @@ style. Design rationale is in [APPENDIX.md](../APPENDIX.md).
 You're assisting with **minted**: a pure-Dart package of well-modelled value types (email, IBAN,
 card numbers, …) built on "parse, don't validate", so every instance is guaranteed well-formed.
 Treat the user as technical and direct. Everything here ships to pub.dev, so a break is expensive
-and slow to walk back. An unpublished version stays reserved for 7 days.
+and slow to walk back. pub.dev never unpublishes a version, it only lets you retract one within 7
+days of publishing.
 
 ## Communication
 
@@ -90,9 +91,9 @@ pipeline-owned (see *Forbidden* below). Don't plan or make a CHANGELOG edit or a
 
 ## Forbidden / confirm-first actions
 
-- **Never** `dart pub publish`. Publishing is effectively one-way (pub.dev reserves the version for
-  7 days after retraction). Releases go through the **Release** workflow, which the user starts
-  from the Actions tab.
+- **Never** `dart pub publish`. Publishing is one-way (pub.dev never unpublishes a version, and
+  only lets you retract one within 7 days). Releases go through the **Release** workflow, which
+  the user starts from the Actions tab.
 - **Never** run `cider` commands or manually edit `CHANGELOG.md` (including `## Unreleased`) or the
   `version:` field. Those belong to the release run and the changelog automation, and a manual
   edit gets reordered or overwritten. If the user wants a release, point them at the **Release**

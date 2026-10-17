@@ -12,9 +12,7 @@ exclude = ["CHANGELOG.md", ".github/ISSUE_TEMPLATE/**"]
 # MD033 inline HTML: intentional (<details>, <summary>, <a id> anchors).
 # MD022 blanks-around-headings: clashes with the <a id></a>-before-heading anchors.
 # MD041 first-line-heading: the README opens with a badge block, not an H1.
-# MD057 relative-link-exists: false positives from the .ai/ symlink indirection
-#   (the real files link to root-level docs that resolve via the root symlink).
-disable = ["MD033", "MD022", "MD041", "MD057"]
+disable = ["MD033", "MD022", "MD041"]
 
 [MD013]
 # 100 to match .editorconfig. Code blocks and tables are exempt: fixed-width

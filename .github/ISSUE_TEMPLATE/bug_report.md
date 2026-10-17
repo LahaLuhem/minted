@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Which type**
-e.g. `Iban`, `Email`, `CreditCardNumber`.
+e.g. `Iban`, `Email`, `PaymentCardNumber`.
 
 **What happened**
 A clear and concise description of the bug.
