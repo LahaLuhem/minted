@@ -21,3 +21,4 @@ jobs:
       coveralls: true
       min-coverage: 95
       coverage-excludes: ""
+      ignored-lints: ""
