@@ -364,9 +364,11 @@ nothing on this package's surface, because the value-type API (`parse`, `tryPars
 <a id="sdk-floor"></a>
 ## SDK floor
 
-The floor lives in [`pubspec.yaml`](./packages/minted/pubspec.yaml)'s `sdk:` constraint and tracks what the package
-actually consumes: extension types need ≥ 3.3, static dot shorthands ≥ 3.10, the `new` constructor
-shorthand ≥ 3.13. The cost is reach, since a project on an older SDK can't depend on `minted`.
+The floor lives in [`pubspec.yaml`](./packages/minted/pubspec.yaml)'s `sdk:` constraint and follows
+the newest stable, the one CI checks against, so a bump needs no feature behind it. 3.14 was the
+first to come that way, with Flutter 3.50. Before that it tracked what the package consumed:
+extension types need ≥ 3.3, static dot shorthands ≥ 3.10, the `new` constructor shorthand ≥ 3.13.
+The cost is reach, since a project on an older SDK can't depend on `minted`.
 Acceptable for a fresh package, and because a floor can only be raised without a breaking change,
 starting current avoids churn later. Record any bump here.
 

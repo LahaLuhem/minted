@@ -19,7 +19,7 @@ feature: identical method names and the same failure model across every type.
 ## Stack
 
 - **Dart**, at the `sdk:` constraint every `pubspec.yaml` carries, on the channel `.fvmrc` names.
-  Raise the floor only when a new stable language feature is actually consumed. What the floor buys,
+  The floor follows the newest stable, the one CI checks against. What the floor buys,
   and why primary (declaring) constructors stay unused despite being stable:
   [rationale][apx-sdk-floor], which is also where a bump gets recorded.
 - **`dart test`** for tests, **`dart --no-version-check analyze --fatal-infos --fatal-warnings .`**
