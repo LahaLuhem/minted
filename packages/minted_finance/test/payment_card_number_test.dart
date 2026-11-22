@@ -145,7 +145,7 @@ void main() {
       check(parsedNumber.masked).equals('••••4242');
       // Interpolation and print() both route through toString, so neither can leak the number.
       check('$parsedNumber').equals('PaymentCardNumber(••••4242)');
-      check(parsedNumber.toString()).not((it) => it.contains('4242424242424242'));
+      check(parsedNumber.toString()).not(.it()..contains('4242424242424242'));
     });
 
     // Mod-10 is blind to a 09/90 transposition and to the twin errors 22/55, 33/66 and 44/77: both members
@@ -196,7 +196,7 @@ void main() {
     scenario('parse reports the failure rather than throwing', () {
       check(PaymentCardNumber.parse('4242424242424243'))
           .equals(const ParseFailure(PaymentCardNumberChecksumFailed()));
-      check(PaymentCardNumber.parse('4242424242424242').isSuccess).isTrue();
+      check(PaymentCardNumber.parse('4242424242424242').isSuccess).isTrue;
     });
 
     scenario('fromComponents computes the check digit', () {
@@ -242,7 +242,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const PaymentCardNumberWrongLength(7));
     });
 

@@ -64,8 +64,8 @@ void main() {
         check(
           olc.PlusCode.unverified(refused).isFull(),
           because: 'the engine would let $refused through',
-        ).isTrue();
-        check(PlusCode.tryParse(refused), because: 'the door refuses $refused').isNull();
+        ).isTrue;
+        check(PlusCode.tryParse(refused), because: 'the door refuses $refused').isNull;
       }
     });
 
@@ -77,7 +77,7 @@ void main() {
     scenario('a caller who asserts the string gets the throw back through getOrThrow', () {
       check(() => PlusCode.parse('9G8F+6W').getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const PlusCodeNotFull('9G8F+6W'));
     });
 
@@ -163,8 +163,8 @@ void main() {
       check(PlusCode.tryParse('84000000+')!.digits).equals(2);
       check(PlusCode.tryParse('8FWCX400+')!.digits).equals(6);
       check(PlusCode.tryParse('8FWC2345+')!.digits).equals(8);
-      check(PlusCode.tryParse('84000000+')!.isPadded).isTrue();
-      check(PlusCode.tryParse('8FWC2345+')!.isPadded).isFalse();
+      check(PlusCode.tryParse('84000000+')!.isPadded).isTrue;
+      check(PlusCode.tryParse('8FWC2345+')!.isPadded).isFalse;
     });
 
     // From the standard's decoding.csv, which gives the cell rather than the centre.
@@ -267,8 +267,8 @@ void main() {
         )!;
         final cell = PlusCode.from11(here).bounds;
 
-        check(cell.crossesAntimeridian, because: 'cell at $here').isFalse();
-        check(cell.contains(here), because: 'cell at $here').isTrue();
+        check(cell.crossesAntimeridian, because: 'cell at $here').isFalse;
+        check(cell.contains(here), because: 'cell at $here').isTrue;
       },
     );
   });

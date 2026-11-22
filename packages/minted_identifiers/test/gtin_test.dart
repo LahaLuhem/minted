@@ -154,11 +154,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Gtin.parse('4006381333932')).equals(const ParseFailure(GtinChecksumFailed()));
-      check(Gtin.parse('4006381333931').isSuccess).isTrue();
+      check(Gtin.parse('4006381333931').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Gtin.tryParse('4006381333932')).isNull();
+      check(Gtin.tryParse('4006381333932')).isNull;
       check(Gtin.tryParse('96385074')?.value).equals('00000096385074');
     });
 
@@ -192,7 +192,7 @@ void main() {
     scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
       check(() => Gtin.fromBody(Digits.tryFrom([4, 0, 0, 6, 3, 8, 1, 3, 3])!).getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const GtinWrongLength(10));
     });
 

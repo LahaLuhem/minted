@@ -111,11 +111,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Imei.parse('490154203237510')).equals(const ParseFailure(ImeiChecksumFailed()));
-      check(Imei.parse('490154203237518').isSuccess).isTrue();
+      check(Imei.parse('490154203237518').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Imei.tryParse('490154203237510')).isNull();
+      check(Imei.tryParse('490154203237510')).isNull;
       check(Imei.tryParse('35-209900-176148-1')?.value).equals('352099001761481');
     });
 
@@ -174,7 +174,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const ImeiWrongLength(13));
     });
 

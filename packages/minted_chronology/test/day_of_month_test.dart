@@ -70,13 +70,13 @@ void main() {
 
     scenario('a DayOfMonth is an int, so it reaches arithmetic without unwrapping', () {
       check(DayOfMonthConstants.d31 - DayOfMonthConstants.d1).equals(30);
-      check(DayOfMonthConstants.d15 > DayOfMonthConstants.d1).isTrue();
+      check(DayOfMonthConstants.d15 > DayOfMonthConstants.d1).isTrue;
     });
 
     // The type bounds what some month could hold, never what one does, and that gap is Date's to close.
     scenario('a day no month of that year reaches still parses here', () {
       check(DayOfMonth.tryFrom(31)).isNotNull();
-      check(Date.from(.tryFrom(2026)!, MonthConstants.april, .tryFrom(31)!).isFailure).isTrue();
+      check(Date.from(.tryFrom(2026)!, MonthConstants.april, .tryFrom(31)!).isFailure).isTrue;
     });
   });
 }

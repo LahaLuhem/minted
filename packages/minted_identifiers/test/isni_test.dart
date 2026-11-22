@@ -107,8 +107,8 @@ void main() {
         Digits.tryFrom([0, 0, 0, 0, 0, 0, 0, 1, 4, 9, 9, 9, 9, 9, 9])!,
       ).getOrThrow();
 
-      check(atStart.isInOrcidBlock).isTrue();
-      check(justBelow.isInOrcidBlock).isFalse();
+      check(atStart.isInOrcidBlock).isTrue;
+      check(justBelow.isInOrcidBlock).isFalse;
     });
 
     scenarioOutline<({String input, IsniFailure failure})>(
@@ -148,11 +148,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Isni.parse('0000000121032684')).equals(const ParseFailure(IsniChecksumFailed()));
-      check(Isni.parse('0000000121032683').isSuccess).isTrue();
+      check(Isni.parse('0000000121032683').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Isni.tryParse('0000000121032684')).isNull();
+      check(Isni.tryParse('0000000121032684')).isNull;
       check(Isni.tryParse('0000 0001 2103 2683')?.value).equals('0000000121032683');
     });
 
@@ -190,7 +190,7 @@ void main() {
                     .getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const IsniWrongLength(15));
     });
 

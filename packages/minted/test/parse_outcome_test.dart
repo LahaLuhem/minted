@@ -21,16 +21,16 @@ void main() {
     const ParseOutcome<TestFailure, int> failure = ParseFailure(TestFailure.malformed);
 
     scenario('the two arms report which they are', () {
-      check(success.isSuccess).isTrue();
-      check(success.isFailure).isFalse();
-      check(failure.isFailure).isTrue();
-      check(failure.isSuccess).isFalse();
+      check(success.isSuccess).isTrue;
+      check(success.isFailure).isFalse;
+      check(failure.isFailure).isTrue;
+      check(failure.isSuccess).isFalse;
     });
 
     scenario('getOrNull and reasonOrNull are duals, each null on the other arm', () {
       check(success.getOrNull()).equals(4);
-      check(success.reasonOrNull).isNull();
-      check(failure.getOrNull()).isNull();
+      check(success.reasonOrNull).isNull;
+      check(failure.getOrNull()).isNull;
       check(failure.reasonOrNull).equals(TestFailure.malformed);
     });
 
@@ -55,19 +55,19 @@ void main() {
     scenario('getOrThrow keeps the reason that getOrNull would have discarded', () {
       check(failure.getOrThrow)
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(TestFailure.malformed);
 
       check(failure.getOrThrow)
           .throws<MintedFormatError>()
-          .has((error) => error.message, 'message')
+          .has('message', (error) => error.message)
           .equals('Invalid TestValue: not a well-formed test value');
     });
 
     scenario('getOrThrow raises the typed failure it was holding', () {
       check(failure.getOrThrow)
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(TestFailure.malformed);
     });
 
@@ -101,11 +101,11 @@ void main() {
       check(failure).equals(const ParseFailure<TestFailure, int>(TestFailure.malformed));
       check(failure.hashCode)
           .equals(const ParseFailure<TestFailure, int>(TestFailure.malformed).hashCode);
-      check(success).not((it) => it.equals(const ParseSuccess<TestFailure, int>(5)));
+      check(success).not(.it()..equals(const ParseSuccess<TestFailure, int>(5)));
     });
 
     scenario('a success and a failure are never equal', () {
-      check(success).not((it) => it.equals(failure));
+      check(success).not(.it()..equals(failure));
     });
 
     scenario('both arms render their contents, not Instance of', () {

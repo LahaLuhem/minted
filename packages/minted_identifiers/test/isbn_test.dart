@@ -136,11 +136,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Isbn.parse('9780306406158')).equals(const ParseFailure(IsbnChecksumFailed()));
-      check(Isbn.parse('9780306406157').isSuccess).isTrue();
+      check(Isbn.parse('9780306406157').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Isbn.tryParse('9780306406158')).isNull();
+      check(Isbn.tryParse('9780306406158')).isNull;
       check(Isbn.tryParse('0-306-40615-2')?.value).equals('9780306406157');
     });
 
@@ -205,7 +205,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const IsbnWrongLength(12));
     });
 

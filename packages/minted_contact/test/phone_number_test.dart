@@ -105,11 +105,11 @@ void main() {
     scenario('parse reports the failure rather than throwing', () {
       check(PhoneNumber.parse('not-a-number'))
           .equals(const ParseFailure(PhoneNumberFailure.invalid));
-      check(PhoneNumber.parse('+33 655 5705 76').isSuccess).isTrue();
+      check(PhoneNumber.parse('+33 655 5705 76').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(PhoneNumber.tryParse('not-a-number')).isNull();
+      check(PhoneNumber.tryParse('not-a-number')).isNull;
       check(PhoneNumber.tryParse('+33 655 5705 76')?.value).equals('+33655570576');
     });
 
@@ -151,7 +151,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(PhoneNumberFailure.invalid);
     });
 

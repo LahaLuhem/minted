@@ -20,7 +20,7 @@ void main() {
 
     // The convention is split, so which reading this type takes is the load-bearing fact.
     scenario('zero is the one value the two quantity types disagree on', () {
-      check(NaturalNumber.tryFrom(0)).isNull();
+      check(NaturalNumber.tryFrom(0)).isNull;
       check(Uint.tryFrom(0)?.value).equals(0);
     });
 
@@ -34,7 +34,7 @@ void main() {
 
     scenario('equality is by value', () {
       check(NaturalNumber.tryFrom(7)!).equals(NaturalNumber.tryFrom(7)!);
-      check(NaturalNumber.tryFrom(7)! == NaturalNumber.tryFrom(8)!).isFalse();
+      check(NaturalNumber.tryFrom(7)! == NaturalNumber.tryFrom(8)!).isFalse;
     });
   });
 }

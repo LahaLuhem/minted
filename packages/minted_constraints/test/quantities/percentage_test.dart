@@ -46,7 +46,7 @@ void main() {
 
     scenario('the fraction door beats the multiply it replaces', () {
       check(Percentage.tryFromFraction(0.29)!.value).equals(29);
-      check(0.29 * 100).not((it) => it.equals(29));
+      check(0.29 * 100).not(.it()..equals(29));
     });
 
     scenarioOutline<({num percent, double fraction})>(
@@ -93,7 +93,7 @@ void main() {
 
     scenario('equality is by value', () {
       check(Percentage.tryFrom(15)!).equals(Percentage.tryFromFraction(0.15)!);
-      check(Percentage.tryFrom(15)! == Percentage.tryFrom(15.5)!).isFalse();
+      check(Percentage.tryFrom(15)! == Percentage.tryFrom(15.5)!).isFalse;
     });
   });
 }

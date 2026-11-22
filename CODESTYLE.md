@@ -660,7 +660,7 @@ Three that bite most often:
 ## Test style
 
 - **`package:test` with `package:checks`.** Assertions use `checks` (`check(x).equals(…)`,
-  `.isNull()`, `.throws<…>()`), matching every suite in the package. Not `package:matcher`'s
+  `.isNull`, `.throws<…>()`), matching every suite in the package. Not `package:matcher`'s
   `expect`.
 - **Behavioural framing comes from a local helper, not a framework.**
   [`test/support/bdd.dart`](./test/support/bdd.dart) is a small Gherkin vocabulary over

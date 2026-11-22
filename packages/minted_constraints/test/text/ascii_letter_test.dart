@@ -28,18 +28,18 @@ void main() {
       final Letter asLetter = AsciiLetter.tryFrom('Q')!;
       final Char asChar = AsciiLetter.tryFrom('Q')!;
 
-      check(asAsciiChar.isControl).isFalse();
+      check(asAsciiChar.isControl).isFalse;
       check(asLetter.value).equals('Q');
       check(asChar.value).equals('Q');
     });
 
     scenario('case is kept, not folded, since no standard here says to fold it', () {
-      check(AsciiLetter.tryFrom('Q') == AsciiLetter.tryFrom('q')).isFalse();
+      check(AsciiLetter.tryFrom('Q') == AsciiLetter.tryFrom('q')).isFalse;
     });
 
     // Extension types erase to their representation, so the 2 compare equal at runtime.
     scenario('a letter equals the character spelling it', () {
-      check(AsciiLetter.tryFrom('Q') == AsciiChar.tryFrom('Q')).isTrue();
+      check(AsciiLetter.tryFrom('Q') == AsciiChar.tryFrom('Q')).isTrue;
     });
   });
 }

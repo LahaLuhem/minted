@@ -186,11 +186,11 @@ void main() {
     scenario('parse reports the failure rather than throwing', () {
       check(Hostname.parse('-bad.example'))
           .equals(const ParseFailure(HostnameLabelMalformed('-bad')));
-      check(Hostname.parse('example.com').isSuccess).isTrue();
+      check(Hostname.parse('example.com').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Hostname.tryParse('-bad.example')).isNull();
+      check(Hostname.tryParse('-bad.example')).isNull;
       check(Hostname.tryParse('example.com')?.value).equals('example.com');
     });
 

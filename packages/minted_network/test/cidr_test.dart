@@ -223,8 +223,8 @@ void main() {
       final mapped = IpAddress.tryParse('::ffff:192.0.2.1')!;
 
       check(Cidr.tryParse('::ffff:0:0/96')?.asString).equals('::ffff:0.0.0.0/96');
-      check(Cidr.tryParse('::ffff:0:0/96')!.contains(mapped)).isTrue();
-      check(Cidr.tryParse('2001:db8::/32')!.contains(mapped)).isFalse();
+      check(Cidr.tryParse('::ffff:0:0/96')!.contains(mapped)).isTrue;
+      check(Cidr.tryParse('2001:db8::/32')!.contains(mapped)).isFalse;
       check(Cidr.tryParse('::ffff:0:0/96')!.lastAddress.value).equals('::ffff:255.255.255.255');
     });
 
@@ -244,7 +244,7 @@ void main() {
         check(
           Cidr.from(network: block.network, prefixLength: block.prefixLength).reasonOrNull,
           because: 'named constant $block',
-        ).isNull();
+        ).isNull;
       }
     });
 
@@ -253,8 +253,8 @@ void main() {
 
       check(Cidr.tryParse('192.0.2.0/24')!).equals(block);
       check(Cidr.tryParse('192.0.2.0/24')!.hashCode).equals(block.hashCode);
-      check(Cidr.tryParse('192.0.2.0/25') == block).isFalse();
-      check(Cidr.tryParse('198.51.100.0/24') == block).isFalse();
+      check(Cidr.tryParse('192.0.2.0/25') == block).isFalse;
+      check(Cidr.tryParse('198.51.100.0/24') == block).isFalse;
     });
 
     scenario('toString names both parts, unlike the canonical form', () {
@@ -267,11 +267,11 @@ void main() {
     scenario('parse reports the failure rather than throwing', () {
       check(Cidr.parse('192.168.1.5/24'))
           .equals(const ParseFailure(CidrHostBitsSet('192.168.1.0/24')));
-      check(Cidr.parse('10.0.0.0/8').isSuccess).isTrue();
+      check(Cidr.parse('10.0.0.0/8').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Cidr.tryParse('192.168.1.5/24')).isNull();
+      check(Cidr.tryParse('192.168.1.5/24')).isNull;
       check(Cidr.tryParse('10.0.0.0/8')?.asString).equals('10.0.0.0/8');
     });
 

@@ -165,12 +165,12 @@ void main() {
       final max = Uuid.tryParse('ffffffff-ffff-ffff-ffff-ffffffffffff')!;
       final ordinary = Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')!;
 
-      check(nil.isNil).isTrue();
-      check(nil.isMax).isFalse();
-      check(max.isMax).isTrue();
-      check(max.isNil).isFalse();
-      check(ordinary.isNil).isFalse();
-      check(ordinary.isMax).isFalse();
+      check(nil.isNil).isTrue;
+      check(nil.isMax).isFalse;
+      check(max.isMax).isTrue;
+      check(max.isNil).isFalse;
+      check(ordinary.isNil).isFalse;
+      check(ordinary.isMax).isFalse;
     });
 
     scenario('equal UUIDs are equal, whichever spelling they are built from', () {
@@ -197,8 +197,8 @@ void main() {
     });
 
     scenario('fromBytes reports a failure unless there are exactly 16 bytes', () {
-      check(Uuid.fromBytes(Uint8List(15)).isFailure).isTrue();
-      check(Uuid.fromBytes(Uint8List(17)).isFailure).isTrue();
+      check(Uuid.fromBytes(Uint8List(15)).isFailure).isTrue;
+      check(Uuid.fromBytes(Uint8List(17)).isFailure).isTrue;
       check(Uuid.fromBytes(Uint8List(16)).getOrThrow())
           .equals(Uuid.tryParse('00000000-0000-0000-0000-000000000000')!);
     });
@@ -227,11 +227,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Uuid.parse('not-a-uuid')).equals(const ParseFailure(UuidMalformed()));
-      check(Uuid.parse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6').isSuccess).isTrue();
+      check(Uuid.parse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Uuid.tryParse('not-a-uuid')).isNull();
+      check(Uuid.tryParse('not-a-uuid')).isNull;
       check(Uuid.tryParse('f81d4fae-7dec-11d0-a765-00a0c91e6bf6')?.value)
           .equals('f81d4fae-7dec-11d0-a765-00a0c91e6bf6');
     });

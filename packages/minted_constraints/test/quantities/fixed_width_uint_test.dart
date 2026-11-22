@@ -46,8 +46,8 @@ void main() {
 
         check(example.valueFrom(0)).equals(0);
         check(example.valueFrom(example.max)).equals(example.max);
-        check(example.valueFrom(example.max + 1)).isNull();
-        check(example.valueFrom(-1)).isNull();
+        check(example.valueFrom(example.max + 1)).isNull;
+        check(example.valueFrom(-1)).isNull;
       },
     );
 

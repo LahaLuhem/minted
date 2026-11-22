@@ -25,7 +25,7 @@ void main() {
       final AsciiAlphanumeric letter = AsciiLetter.tryFrom('Q')!;
 
       check(letter.value).equals('Q');
-      check(AsciiLetter.tryFrom('7')).isNull();
+      check(AsciiLetter.tryFrom('7')).isNull;
       check(AsciiAlphanumeric.tryFrom('7')).isNotNull();
     });
   });

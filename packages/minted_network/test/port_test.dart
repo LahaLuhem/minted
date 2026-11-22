@@ -71,9 +71,9 @@ void main() {
 
     // Through the door rather than off the constant, since isWildcard is defined as equality to it.
     scenario('only port 0 is the wildcard', () {
-      check(Port.tryFrom(0)!.isWildcard).isTrue();
-      check(Port.tryFrom(1)!.isWildcard).isFalse();
-      check(Port.tryFrom(65535)!.isWildcard).isFalse();
+      check(Port.tryFrom(0)!.isWildcard).isTrue;
+      check(Port.tryFrom(1)!.isWildcard).isFalse;
+      check(Port.tryFrom(65535)!.isWildcard).isFalse;
     });
 
     // A Port is a Uint16, so it widens without a hop. The reverse is a compile error, which a runtime
@@ -90,7 +90,7 @@ void main() {
 
     scenario('equality is by value', () {
       check(Port.tryFrom(443)!).equals(Port.tryFrom(443)!);
-      check(Port.tryFrom(443)! == Port.tryFrom(80)!).isFalse();
+      check(Port.tryFrom(443)! == Port.tryFrom(80)!).isFalse;
     });
   });
 }

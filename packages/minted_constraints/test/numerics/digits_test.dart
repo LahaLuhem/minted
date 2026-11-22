@@ -24,7 +24,7 @@ void main() {
       final parsedDigits = Digits.tryFrom([7])!;
 
       check(parsedDigits.length).equals(1);
-      check(parsedDigits.isEmpty).isFalse();
+      check(parsedDigits.isEmpty).isFalse;
       check(parsedDigits[0]).equals(DigitConstants.d7);
     });
 
@@ -32,7 +32,7 @@ void main() {
       final parsedDigits = Digits.tryFrom([])!;
 
       check(parsedDigits.length).equals(0);
-      check(parsedDigits.isEmpty).isTrue();
+      check(parsedDigits.isEmpty).isTrue;
       check(parsedDigits.asString).equals('');
     });
 
@@ -57,7 +57,7 @@ void main() {
     });
 
     scenario('different sequences are not equal', () {
-      check(Digits.tryFrom([1, 2, 3]) == Digits.tryFrom([1, 2, 4])).isFalse();
+      check(Digits.tryFrom([1, 2, 3]) == Digits.tryFrom([1, 2, 4])).isFalse;
     });
 
     scenario('of builds a sequence from already-valid Digits', () {

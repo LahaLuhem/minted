@@ -64,8 +64,8 @@ void main() {
     });
 
     scenario('tryFrom rejects a day number outside 1-7', () {
-      check(Weekday.tryFrom(0)).isNull();
-      check(Weekday.tryFrom(8)).isNull();
+      check(Weekday.tryFrom(0)).isNull;
+      check(Weekday.tryFrom(8)).isNull;
     });
 
     scenario('next and previous wrap at the ends of the week', () {
@@ -85,12 +85,12 @@ void main() {
     });
 
     scenario('ordering follows the ISO week, Monday first', () {
-      check(Weekday.monday < Weekday.sunday).isTrue();
-      check(Weekday.sunday > Weekday.saturday).isTrue();
+      check(Weekday.monday < Weekday.sunday).isTrue;
+      check(Weekday.sunday > Weekday.saturday).isTrue;
       // Comparing a day with itself is the point: >= must hold on the boundary.
       // ignore: avoid-self-compare
-      check(Weekday.friday >= Weekday.friday).isTrue();
-      check(Weekday.friday <= Weekday.saturday).isTrue();
+      check(Weekday.friday >= Weekday.friday).isTrue;
+      check(Weekday.friday <= Weekday.saturday).isTrue;
       check(Weekday.monday.compareTo(Weekday.sunday)).isLessThan(0);
     });
 

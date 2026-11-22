@@ -121,14 +121,14 @@ void main() {
       // DateTime rolls an out-of-range month over into the next year. Date refuses it.
       check(DateTime(2026, 13).year).equals(2027);
 
-      check(Date.of(2026, 13).isFailure).isTrue();
-      check(Date.of(2026, 2, 29).isFailure).isTrue();
-      check(Date.of(2026, 4, 31).isFailure).isTrue();
+      check(Date.of(2026, 13).isFailure).isTrue;
+      check(Date.of(2026, 2, 29).isFailure).isTrue;
+      check(Date.of(2026, 4, 31).isFailure).isTrue;
     });
 
     scenario('the factory rejects a year outside 0000-9999', () {
-      check(Date.of(10000).isFailure).isTrue();
-      check(Date.of(-1).isFailure).isTrue();
+      check(Date.of(10000).isFailure).isTrue;
+      check(Date.of(-1).isFailure).isTrue;
     });
 
     // The narrow failure type is the point of Date.of: a caller assembling from parts has no shape arm
@@ -146,7 +146,7 @@ void main() {
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Date.tryParse('2026-13-01')).isNull();
+      check(Date.tryParse('2026-13-01')).isNull;
       check(Date.tryParse('2026-07-07')).equals(Date.of(2026, 7, 7).getOrThrow());
     });
 
@@ -202,7 +202,7 @@ void main() {
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => Date.of(2026, 13).getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.message, 'message')
+          .has('message', (error) => error.message)
           .equals('Invalid Date: month 13 is outside 1-12');
     });
 
@@ -214,20 +214,20 @@ void main() {
     });
 
     scenario('different dates are not equal', () {
-      check(Date.of(2026, 7, 7).getOrThrow() == Date.of(2026, 7, 8).getOrThrow()).isFalse();
+      check(Date.of(2026, 7, 7).getOrThrow() == Date.of(2026, 7, 8).getOrThrow()).isFalse;
     });
 
     scenario('dates order chronologically', () {
-      check(Date.of(2026, 7, 7).getOrThrow().isBefore(Date.of(2026, 7, 8).getOrThrow())).isTrue();
-      check(Date.of(2026, 7, 7).getOrThrow().isAfter(Date.of(2026, 7, 6).getOrThrow())).isTrue();
-      check(Date.of(2025, 12, 31).getOrThrow() < Date.of(2026).getOrThrow()).isTrue();
+      check(Date.of(2026, 7, 7).getOrThrow().isBefore(Date.of(2026, 7, 8).getOrThrow())).isTrue;
+      check(Date.of(2026, 7, 7).getOrThrow().isAfter(Date.of(2026, 7, 6).getOrThrow())).isTrue;
+      check(Date.of(2025, 12, 31).getOrThrow() < Date.of(2026).getOrThrow()).isTrue;
       // `<=` has to hold on equal dates, so comparing one with itself is the point.
       // ignore: avoid-self-compare
-      check(Date.of(2026, 7, 7).getOrThrow() <= Date.of(2026, 7, 7).getOrThrow()).isTrue();
+      check(Date.of(2026, 7, 7).getOrThrow() <= Date.of(2026, 7, 7).getOrThrow()).isTrue;
       // Same for `>=`.
       // ignore: avoid-self-compare
-      check(Date.of(2026, 7, 7).getOrThrow() >= Date.of(2026, 7, 7).getOrThrow()).isTrue();
-      check(Date.of(2026, 7, 8).getOrThrow() > Date.of(2026, 7, 7).getOrThrow()).isTrue();
+      check(Date.of(2026, 7, 7).getOrThrow() >= Date.of(2026, 7, 7).getOrThrow()).isTrue;
+      check(Date.of(2026, 7, 8).getOrThrow() > Date.of(2026, 7, 7).getOrThrow()).isTrue;
     });
 
     scenario('sorting orders by year, then month, then day', () {
@@ -268,14 +268,14 @@ void main() {
     });
 
     scenario('day arithmetic yields null when it walks off either end of 0000-9999', () {
-      check(Date.of(9999, 12, 31).getOrThrow().tryAddDays(1)).isNull();
-      check(Date.of(0).getOrThrow().trySubtractDays(1)).isNull();
+      check(Date.of(9999, 12, 31).getOrThrow().tryAddDays(1)).isNull;
+      check(Date.of(0).getOrThrow().trySubtractDays(1)).isNull;
     });
 
     scenario('the try variants return null at the bound instead of throwing', () {
-      check(Date.of(9999, 12, 31).getOrThrow().tryAddDays(1)).isNull();
-      check(Date.of(2026, 8, 4).getOrThrow().tryAddDays(3000000)).isNull();
-      check(Date.of(0).getOrThrow().trySubtractDays(1)).isNull();
+      check(Date.of(9999, 12, 31).getOrThrow().tryAddDays(1)).isNull;
+      check(Date.of(2026, 8, 4).getOrThrow().tryAddDays(3000000)).isNull;
+      check(Date.of(0).getOrThrow().trySubtractDays(1)).isNull;
     });
 
     scenario('the try variants agree with the throwing ones inside the bound', () {
@@ -312,8 +312,8 @@ void main() {
       final today = Date.now();
       final after = Date.fromDateTime(DateTime.now()).getOrThrow();
 
-      check(today >= before).isTrue();
-      check(today <= after).isTrue();
+      check(today >= before).isTrue;
+      check(today <= after).isTrue;
     });
 
     scenario('toDateTime returns local midnight', () {
@@ -321,7 +321,7 @@ void main() {
 
       check(dateTime).equals(DateTime(2026, 7, 7));
       check(dateTime.hour).equals(0);
-      check(dateTime.isUtc).isFalse();
+      check(dateTime.isUtc).isFalse;
     });
 
     scenario('toString wraps the canonical form and pads short years', () {
@@ -353,9 +353,9 @@ void main() {
     });
 
     scenario('no date exists on either side of the bounds', () {
-      check(DateConstants.min.trySubtractDays(1)).isNull();
-      check(DateConstants.max.tryAddDays(1)).isNull();
-      check(DateConstants.min.isBefore(DateConstants.max)).isTrue();
+      check(DateConstants.min.trySubtractDays(1)).isNull;
+      check(DateConstants.max.tryAddDays(1)).isNull;
+      check(DateConstants.min.isBefore(DateConstants.max)).isTrue;
     });
   });
 }

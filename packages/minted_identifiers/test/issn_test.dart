@@ -113,17 +113,17 @@ void main() {
       },
       outline: (example) {
         check(Issn.tryParse(example.valid)?.value).equals(example.valid);
-        check(Issn.tryParse(example.transposed)).isNull();
+        check(Issn.tryParse(example.transposed)).isNull;
       },
     );
 
     scenario('parse reports the failure rather than throwing', () {
       check(Issn.parse('0317-8470')).equals(const ParseFailure(IssnChecksumFailed()));
-      check(Issn.parse('0317-8471').isSuccess).isTrue();
+      check(Issn.parse('0317-8471').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Issn.tryParse('0317-8470')).isNull();
+      check(Issn.tryParse('0317-8470')).isNull;
       check(Issn.tryParse('03178471')?.value).equals('0317-8471');
     });
 
@@ -158,7 +158,7 @@ void main() {
     scenario('a caller who asserts the body gets the throw back through getOrThrow', () {
       check(() => Issn.fromBody(Digits.tryFrom([0, 3, 1, 7, 8])!).getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const IssnWrongLength(6));
     });
 

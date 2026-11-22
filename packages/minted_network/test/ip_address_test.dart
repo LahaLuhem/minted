@@ -113,7 +113,7 @@ void main() {
 
       check(v4.version).equals(IpVersion.v4);
       check(v6.version).equals(IpVersion.v6);
-      check(v4 == v6).isFalse();
+      check(v4 == v6).isFalse;
       // A mapped address is v6, whatever its tail looks like.
       check(IpAddress.tryParse('::ffff:192.0.2.1')!.version).equals(IpVersion.v6);
     });
@@ -136,15 +136,15 @@ void main() {
 
       check(mapped.octets.length).equals(16);
       check(mapped.octets.skip(12)).deepEquals([192, 0, 2, 1]);
-      check(mapped.isPrivate).isFalse();
+      check(mapped.isPrivate).isFalse;
       check(mapped.compareTo(plainV6)).isLessThan(0);
       check(plainV6.compareTo(mapped)).isGreaterThan(0);
       check(IpAddress.fromOctets(mapped.octets).getOrThrow()).equals(mapped);
     });
 
     scenario('fromOctets reports a failure unless there are 4 or 16 octets', () {
-      check(IpAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
-      check(IpAddress.fromOctets(Uint8List(15)).isFailure).isTrue();
+      check(IpAddress.fromOctets(Uint8List(5)).isFailure).isTrue;
+      check(IpAddress.fromOctets(Uint8List(15)).isFailure).isTrue;
       check(IpAddress.fromOctets(Uint8List(4)).getOrThrow().value).equals('0.0.0.0');
       check(IpAddress.fromOctets(Uint8List(16)).getOrThrow().value).equals('::');
     });
@@ -159,25 +159,25 @@ void main() {
     });
 
     scenario('isLoopback covers 127.0.0.0/8 and ::1, and nothing else', () {
-      check(IpAddressConstants.loopbackV4.isLoopback).isTrue();
-      check(IpAddress.tryParse('127.255.255.254')!.isLoopback).isTrue();
-      check(IpAddressConstants.loopbackV6.isLoopback).isTrue();
-      check(IpAddress.tryParse('128.0.0.1')!.isLoopback).isFalse();
-      check(IpAddress.tryParse('2001:db8::1')!.isLoopback).isFalse();
+      check(IpAddressConstants.loopbackV4.isLoopback).isTrue;
+      check(IpAddress.tryParse('127.255.255.254')!.isLoopback).isTrue;
+      check(IpAddressConstants.loopbackV6.isLoopback).isTrue;
+      check(IpAddress.tryParse('128.0.0.1')!.isLoopback).isFalse;
+      check(IpAddress.tryParse('2001:db8::1')!.isLoopback).isFalse;
     });
 
     scenario('isPrivate covers the RFC 1918 blocks and RFC 4193 unique local addresses', () {
-      check(IpAddress.tryParse('10.0.0.1')!.isPrivate).isTrue();
-      check(IpAddress.tryParse('172.16.0.1')!.isPrivate).isTrue();
-      check(IpAddress.tryParse('172.31.255.254')!.isPrivate).isTrue();
-      check(IpAddress.tryParse('192.168.1.1')!.isPrivate).isTrue();
-      check(IpAddress.tryParse('fc00::1')!.isPrivate).isTrue();
-      check(IpAddress.tryParse('fd00::1')!.isPrivate).isTrue();
+      check(IpAddress.tryParse('10.0.0.1')!.isPrivate).isTrue;
+      check(IpAddress.tryParse('172.16.0.1')!.isPrivate).isTrue;
+      check(IpAddress.tryParse('172.31.255.254')!.isPrivate).isTrue;
+      check(IpAddress.tryParse('192.168.1.1')!.isPrivate).isTrue;
+      check(IpAddress.tryParse('fc00::1')!.isPrivate).isTrue;
+      check(IpAddress.tryParse('fd00::1')!.isPrivate).isTrue;
       // The blocks' edges: 172.15 and 172.32 are public, and fe00:: is outside fc00::/7.
-      check(IpAddress.tryParse('172.15.0.1')!.isPrivate).isFalse();
-      check(IpAddress.tryParse('172.32.0.1')!.isPrivate).isFalse();
-      check(IpAddress.tryParse('fe00::1')!.isPrivate).isFalse();
-      check(IpAddress.tryParse('192.0.2.1')!.isPrivate).isFalse();
+      check(IpAddress.tryParse('172.15.0.1')!.isPrivate).isFalse;
+      check(IpAddress.tryParse('172.32.0.1')!.isPrivate).isFalse;
+      check(IpAddress.tryParse('fe00::1')!.isPrivate).isFalse;
+      check(IpAddress.tryParse('192.0.2.1')!.isPrivate).isFalse;
     });
 
     scenario('compareTo orders numerically within a family, and v4 before v6', () {
@@ -205,11 +205,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(IpAddress.parse('not-an-address')).equals(const ParseFailure(IpAddressMalformed()));
-      check(IpAddress.parse('192.0.2.1').isSuccess).isTrue();
+      check(IpAddress.parse('192.0.2.1').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(IpAddress.tryParse('not-an-address')).isNull();
+      check(IpAddress.tryParse('not-an-address')).isNull;
       check(IpAddress.tryParse('192.0.2.1')?.value).equals('192.0.2.1');
     });
 

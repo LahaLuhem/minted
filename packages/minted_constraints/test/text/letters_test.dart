@@ -35,7 +35,7 @@ void main() {
 
     scenario('a Letters is not one Letter, so it is not passable as one', () {
       check(Letters.tryFrom('ab')).isNotNull();
-      check(Letter.tryFrom('ab')).isNull();
+      check(Letter.tryFrom('ab')).isNull;
     });
   });
 }

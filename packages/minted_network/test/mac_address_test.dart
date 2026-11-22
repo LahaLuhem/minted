@@ -177,12 +177,12 @@ void main() {
       final isoEndSystem = MacAddress.tryParse('09:00:2b:00:00:04')!;
       final ipv6Multicast = MacAddress.tryParse('33:33:00:00:00:01')!;
 
-      check(isoEndSystem.isMulticast).isTrue();
-      check(isoEndSystem.isLocallyAdministered).isFalse();
-      check(ipv6Multicast.isMulticast).isTrue();
-      check(ipv6Multicast.isLocallyAdministered).isTrue();
-      check(MacAddressConstants.stpBridgeGroup.isMulticast).isTrue();
-      check(MacAddressConstants.stpBridgeGroup.isLocallyAdministered).isFalse();
+      check(isoEndSystem.isMulticast).isTrue;
+      check(isoEndSystem.isLocallyAdministered).isFalse;
+      check(ipv6Multicast.isMulticast).isTrue;
+      check(ipv6Multicast.isLocallyAdministered).isTrue;
+      check(MacAddressConstants.stpBridgeGroup.isMulticast).isTrue;
+      check(MacAddressConstants.stpBridgeGroup.isLocallyAdministered).isFalse;
     });
 
     scenario('every named constant parses back to itself, unchanged', () {
@@ -196,11 +196,11 @@ void main() {
 
     // Through the door rather than off the constant, since isBroadcast is defined as equality to it.
     scenario('only the 48-bit all-ones address is the broadcast address', () {
-      check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff')!.isBroadcast).isTrue();
+      check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff')!.isBroadcast).isTrue;
       // Nominally local multicast, like the broadcast address, but a different destination.
-      check(MacAddress.tryParse('33:33:00:00:00:01')!.isBroadcast).isFalse();
-      check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff:ff:ff')!.isBroadcast).isFalse();
-      check(MacAddressConstants.ianaDocumentation.isBroadcast).isFalse();
+      check(MacAddress.tryParse('33:33:00:00:00:01')!.isBroadcast).isFalse;
+      check(MacAddress.tryParse('ff:ff:ff:ff:ff:ff:ff:ff')!.isBroadcast).isFalse;
+      check(MacAddressConstants.ianaDocumentation.isBroadcast).isFalse;
     });
 
     scenario('equal addresses are equal, whichever notation they are built from', () {
@@ -217,7 +217,7 @@ void main() {
         const fortyEightBit = MacAddressConstants.ianaDocumentation;
         final sixtyFourBit = MacAddress.tryParse('00:00:5e:10:00:00:00:00')!;
 
-        check(fortyEightBit == sixtyFourBit).isFalse();
+        check(fortyEightBit == sixtyFourBit).isFalse;
         check(fortyEightBit.octetCount).equals(6);
         check(sixtyFourBit.octetCount).equals(8);
       },
@@ -231,8 +231,8 @@ void main() {
     });
 
     scenario('fromOctets reports a failure unless there are six or eight octets', () {
-      check(MacAddress.fromOctets(Uint8List(5)).isFailure).isTrue();
-      check(MacAddress.fromOctets(Uint8List(7)).isFailure).isTrue();
+      check(MacAddress.fromOctets(Uint8List(5)).isFailure).isTrue;
+      check(MacAddress.fromOctets(Uint8List(7)).isFailure).isTrue;
       check(MacAddress.fromOctets(Uint8List(6)).getOrThrow()).equals(MacAddressConstants.allZeros);
       check(MacAddress.fromOctets(Uint8List(8)).getOrThrow().octetCount).equals(8);
     });
@@ -270,11 +270,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(MacAddress.parse('not-a-mac')).equals(const ParseFailure(MacAddressMalformed()));
-      check(MacAddress.parse('00:00:5e:00:53:00').isSuccess).isTrue();
+      check(MacAddress.parse('00:00:5e:00:53:00').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(MacAddress.tryParse('not-a-mac')).isNull();
+      check(MacAddress.tryParse('not-a-mac')).isNull;
       check(MacAddress.tryParse('00:00:5e:00:53:00')?.value).equals('00:00:5e:00:53:00');
     });
 
