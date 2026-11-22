@@ -14,7 +14,7 @@ topics:
   - standards
 
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.14.0
 
 # Resolved as part of the workspace rooted two levels up.
 resolution: workspace

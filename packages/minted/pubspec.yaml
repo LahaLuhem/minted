@@ -19,7 +19,7 @@ topics:
 
 
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.14.0
 
 # Resolved as part of the workspace rooted two levels up: deps come from the root lockfile, and a
 # sibling dependency would resolve to the local copy rather than the published one.
