@@ -1,3 +1,7 @@
+## [Unreleased]
+### Changed
+- Require Dart 3.14
+
 ## [3.1.1] - 2026-09-21
 ### Added
 - Constants move to per-type namespaces, and Date gets modelled parts
