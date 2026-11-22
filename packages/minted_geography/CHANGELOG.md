@@ -2,6 +2,9 @@
 ### Added
 - Plus Codes as 2 types, since a short one names nowhere
 
+### Changed
+- Require Dart 3.14
+
 ## [1.2.0] - 2026-09-21
 ### Added
 - Constants move to per-type namespaces, and Date gets modelled parts
