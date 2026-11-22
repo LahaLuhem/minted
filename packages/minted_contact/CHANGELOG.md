@@ -1,4 +1,7 @@
 ## [Unreleased]
+### Changed
+- Require Dart 3.14
+
 ### Fixed
 - Digit-less phone input is invalid
 
