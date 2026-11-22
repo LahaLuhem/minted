@@ -23,11 +23,10 @@ dev_dependencies:
       url: https://github.com/LahaLuhem/dartender.git
       path: lints
       ref: main
-  dependency_validator: ^5.1.0
-  melos: ^8.8.0
+  melos: ^8.10.1
   # test/support/digits.dart builds Digits fixtures for the sibling suites.
   minted_constraints: ^1.2.0
-  test: ^1.32.0
+  test: ^1.33.0
 
 # Script runner only. The release run owns versioning and publishing, so `melos version` and
 # `melos publish` stay unused. Workspaces do the linking, so `melos bootstrap` does too.

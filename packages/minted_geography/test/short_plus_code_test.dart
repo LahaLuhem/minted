@@ -39,7 +39,7 @@ void main() {
     scenario('a caller who asserts the string gets the throw back through getOrThrow', () {
       check(() => ShortPlusCode.parse('8FVC9G8F+6W').getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const PlusCodeNotShort('8FVC9G8F+6W'));
     });
 
@@ -51,7 +51,7 @@ void main() {
 
       check(short.recoverNear(zurich).value).equals('8FVC9G8F+6W');
       check(short.recoverNear(sydney).value).equals('4RRH9G8F+6W');
-      check(short.recoverNear(zurich)).not((it) => it.equals(short.recoverNear(sydney)));
+      check(short.recoverNear(zurich)).not(.it()..equals(short.recoverNear(sydney)));
     });
 
     // Rows from the standard's shortCodeTests.csv.
@@ -79,7 +79,7 @@ void main() {
       final full = PlusCode.tryParse('8FVC9G8F+6W')!;
       final sydney = GeoCoordinate.tryFrom(latitude: -33.9, longitude: 151.2)!;
 
-      check(full.shortenNear(sydney)).isNull();
+      check(full.shortenNear(sydney)).isNull;
     });
 
     // The standard forbids it outright, so isPadded is the answer rather than a far reference.
@@ -87,8 +87,8 @@ void main() {
       final padded = PlusCode.tryParse('8FVC0000+')!;
       final inside = padded.centre;
 
-      check(padded.isPadded).isTrue();
-      check(padded.shortenNear(inside)).isNull();
+      check(padded.isPadded).isTrue;
+      check(padded.shortenNear(inside)).isNull;
     });
 
     scenarioOutline<({double latitude, double longitude})>(

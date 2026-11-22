@@ -80,7 +80,7 @@ void main() {
       check(duration.minutes).equals(30);
       check(duration.seconds).equals(5);
       check(duration.weeks).equals(0);
-      check(duration.fraction).isNull();
+      check(duration.fraction).isNull;
     });
 
     scenario('the fraction names the component carrying it', () {
@@ -154,7 +154,7 @@ void main() {
 
       check(parsed).equals(twin);
       check(parsed.hashCode).equals(twin.hashCode);
-      check(parsed == Iso8601Duration.tryParse('P1Y2M4D')!).isFalse();
+      check(parsed == Iso8601Duration.tryParse('P1Y2M4D')!).isFalse;
     });
 
     scenario('toString wraps the canonical form', () {

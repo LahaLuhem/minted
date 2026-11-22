@@ -29,7 +29,7 @@ void main() {
 
     scenario('equality is by value', () {
       check(Uint.tryFrom(7)!).equals(Uint.tryFrom(7)!);
-      check(Uint.tryFrom(7)! == Uint.tryFrom(8)!).isFalse();
+      check(Uint.tryFrom(7)! == Uint.tryFrom(8)!).isFalse;
     });
   });
 }

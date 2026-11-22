@@ -24,11 +24,11 @@ void main() {
     );
 
     scenario('the two ends are reported rather than refused', () {
-      check(Probability.tryFrom(0)!.isImpossible).isTrue();
-      check(Probability.tryFrom(0)!.isCertain).isFalse();
-      check(Probability.tryFrom(1)!.isCertain).isTrue();
-      check(Probability.tryFrom(0.5)!.isImpossible).isFalse();
-      check(Probability.tryFrom(0.5)!.isCertain).isFalse();
+      check(Probability.tryFrom(0)!.isImpossible).isTrue;
+      check(Probability.tryFrom(0)!.isCertain).isFalse;
+      check(Probability.tryFrom(1)!.isCertain).isTrue;
+      check(Probability.tryFrom(0.5)!.isImpossible).isFalse;
+      check(Probability.tryFrom(0.5)!.isCertain).isFalse;
     });
 
     scenarioOutline<({num input, double complement})>(
@@ -47,8 +47,8 @@ void main() {
     // The guarantee is the range, not involution: a 3rd of ordinary values fail to round-trip, because
     // 1 - (1 - x) is not x in IEEE. Asserted rather than hidden.
     scenario('complement stays in range, and only round-trips where doubles allow it', () {
-      check(ProbabilityConstants.certain.complement.isImpossible).isTrue();
-      check(ProbabilityConstants.impossible.complement.isCertain).isTrue();
+      check(ProbabilityConstants.certain.complement.isImpossible).isTrue;
+      check(ProbabilityConstants.impossible.complement.isCertain).isTrue;
       check(Probability.tryFrom(0.25)!.complement.complement).equals(Probability.tryFrom(0.25)!);
       check(Probability.tryFrom(0.3)!.complement.complement.value).equals(0.30000000000000004);
     });
@@ -85,7 +85,7 @@ void main() {
     // -0.0 passes `>= 0`, so it reaches the representation and only the rendered form needs it.
     scenario('a negative zero renders as a plain zero', () {
       check(Probability.tryFrom(-0.0)!.value.toString()).equals('0.0');
-      check(Probability.tryFrom(-0.0)!.isImpossible).isTrue();
+      check(Probability.tryFrom(-0.0)!.isImpossible).isTrue;
     });
 
     scenario('a Probability renders as its bare number', () {
@@ -95,7 +95,7 @@ void main() {
     scenario('equality is by value', () {
       check(Probability.tryFrom(0.15)!)
           .equals(Probability.tryFromPercentage(Percentage.tryFrom(15)!)!);
-      check(Probability.tryFrom(0.15)! == Probability.tryFrom(0.16)!).isFalse();
+      check(Probability.tryFrom(0.15)! == Probability.tryFrom(0.16)!).isFalse;
     });
   });
 }

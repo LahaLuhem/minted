@@ -61,9 +61,9 @@ void main() {
       check(Month.tryFrom(7)?.value).equals(7);
       check(Month.tryFrom(1)?.value).equals(1);
       check(Month.tryFrom(12)?.value).equals(12);
-      check(Month.tryFrom(0)).isNull();
-      check(Month.tryFrom(13)).isNull();
-      check(Month.tryFrom(-1)).isNull();
+      check(Month.tryFrom(0)).isNull;
+      check(Month.tryFrom(13)).isNull;
+      check(Month.tryFrom(-1)).isNull;
     });
 
     scenario('the named constants carry their month number', () {
@@ -75,7 +75,7 @@ void main() {
     scenario('equal months are equal, whichever way they are built', () {
       check(Month.tryFrom(7)).equals(MonthConstants.july);
       check(Month.tryParse('07')).equals(MonthConstants.july);
-      check(MonthConstants.july == MonthConstants.august).isFalse();
+      check(MonthConstants.july == MonthConstants.august).isFalse;
     });
 
     scenario('parse reports the failure rather than throwing', () {
@@ -84,13 +84,13 @@ void main() {
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Month.tryParse('13')).isNull();
+      check(Month.tryParse('13')).isNull;
       check(Month.tryParse('7')).equals(MonthConstants.july);
     });
 
     scenario('tryFrom rejects an out-of-range number', () {
-      check(Month.tryFrom(0)).isNull();
-      check(Month.tryFrom(13)).isNull();
+      check(Month.tryFrom(0)).isNull;
+      check(Month.tryFrom(13)).isNull;
     });
   });
 }

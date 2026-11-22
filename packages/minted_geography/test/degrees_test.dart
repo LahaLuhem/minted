@@ -51,23 +51,23 @@ void main() {
       check(latitude + 1).equals(46);
       check(latitude.toStringAsFixed(2)).equals('45.00');
       check(<double>[latitude].first).equals(45);
-      check(latitude < 50).isTrue();
+      check(latitude < 50).isTrue;
     });
 
     scenario('a negative zero takes the sign the standard gives the origin', () {
-      check(Latitude.tryFrom(-0.0)!.value.isNegative).isFalse();
-      check(Longitude.tryFrom(-0.0)!.value.isNegative).isFalse();
+      check(Latitude.tryFrom(-0.0)!.value.isNegative).isFalse;
+      check(Longitude.tryFrom(-0.0)!.value.isNegative).isFalse;
     });
     scenario('the named bounds are the last degrees that parse', () {
       check(Latitude.tryFrom(LatitudeConstants.min)).isNotNull();
       check(Latitude.tryFrom(LatitudeConstants.max)).isNotNull();
-      check(Latitude.tryFrom(LatitudeConstants.min - 1)).isNull();
-      check(Latitude.tryFrom(LatitudeConstants.max + 1)).isNull();
+      check(Latitude.tryFrom(LatitudeConstants.min - 1)).isNull;
+      check(Latitude.tryFrom(LatitudeConstants.max + 1)).isNull;
 
       check(Longitude.tryFrom(LongitudeConstants.min)).isNotNull();
       check(Longitude.tryFrom(LongitudeConstants.max)).isNotNull();
-      check(Longitude.tryFrom(LongitudeConstants.min - 1)).isNull();
-      check(Longitude.tryFrom(LongitudeConstants.max + 1)).isNull();
+      check(Longitude.tryFrom(LongitudeConstants.min - 1)).isNull;
+      check(Longitude.tryFrom(LongitudeConstants.max + 1)).isNull;
     });
   });
 }

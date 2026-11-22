@@ -29,7 +29,8 @@ feature: identical method names and the same failure model across every type.
   rewrites. Every job takes its Dart from Flutter stable.
 - **`dependency_validator`** guards each package's dependency set, per package, and is what caught
   core still declaring engines after their types moved out. `dart_dependency_validator.yaml` scopes
-  it to the published surface and skips the example.
+  it to the published surface and skips the example. dartender's CI activates it globally, so no
+  pubspec lists it.
 - **Container-based linters** (`actionlint` for workflows, `rumdl` for Markdown, `ryl` for YAML)
   run from the [`linterpol`](https://github.com/LahaLuhem/linterpol) Docker image, not local
   installs, so Docker is the only requirement. The check set and image tag live in one manifest,

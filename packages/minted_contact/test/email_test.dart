@@ -68,7 +68,7 @@ void main() {
     });
 
     scenario('addresses are not equal when their local-parts differ by case', () {
-      check(Email.tryParse('A@b.com')! == Email.tryParse('a@b.com')!).isFalse();
+      check(Email.tryParse('A@b.com')! == Email.tryParse('a@b.com')!).isFalse;
     });
 
     scenario('an email exposes its local-part and domain', () {
@@ -91,11 +91,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Email.parse('nope')).equals(const ParseFailure(EmailFailure.malformed));
-      check(Email.parse('jane@example.com').isSuccess).isTrue();
+      check(Email.parse('jane@example.com').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Email.tryParse('nope')).isNull();
+      check(Email.tryParse('nope')).isNull;
       check(Email.tryParse('jane@Example.COM')?.value).equals('jane@example.com');
     });
 
@@ -105,13 +105,13 @@ void main() {
     });
 
     scenario('fromComponents reports a failure on invalid parts, and never throws', () {
-      check(Email.fromComponents(localPart: 'a b', domain: 'example.com').isFailure).isTrue();
+      check(Email.fromComponents(localPart: 'a b', domain: 'example.com').isFailure).isTrue;
     });
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
       check(() => Email.fromComponents(localPart: 'a b', domain: 'example.com').getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(EmailFailure.malformed);
     });
 

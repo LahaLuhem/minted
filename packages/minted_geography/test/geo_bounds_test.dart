@@ -227,27 +227,27 @@ void main() {
       ).getOrThrow();
 
       check(box.bbox).equals('-10.0,-45.0,10.0,-35.0');
-      check(box.contains(southWest)).isTrue();
+      check(box.contains(southWest)).isTrue;
     });
 
     scenario('tryFrom takes raw numbers and returns null when they are not a box', () {
       check(GeoBounds.tryFrom(west: -10, south: -45, east: 10, north: -35)!.bbox)
           .equals('-10.0,-45.0,10.0,-35.0');
       check(GeoBounds.tryFrom(west: 170, south: -45, east: -170, north: -35)).isNotNull();
-      check(GeoBounds.tryFrom(west: 0, south: 50, east: 10, north: 10)).isNull();
-      check(GeoBounds.tryFrom(west: 181, south: 0, east: 10, north: 10)).isNull();
+      check(GeoBounds.tryFrom(west: 0, south: 50, east: 10, north: 10)).isNull;
+      check(GeoBounds.tryFrom(west: 181, south: 0, east: 10, north: 10)).isNull;
     });
 
     scenario('a caller who asserts the edges gets the throw back through getOrThrow', () {
       check(() => GeoBounds.parse('0,50,10,10').getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const GeoBoundsSouthAboveNorth(south: 50, north: 10));
     });
 
     scenario('a NaN or an infinity is out of range on the corner that carries it', () {
-      check(GeoBounds.tryFrom(west: double.nan, south: 0, east: 10, north: 10)).isNull();
-      check(GeoBounds.tryFrom(west: 0, south: double.infinity, east: 10, north: 10)).isNull();
+      check(GeoBounds.tryFrom(west: double.nan, south: 0, east: 10, north: 10)).isNull;
+      check(GeoBounds.tryFrom(west: 0, south: double.infinity, east: 10, north: 10)).isNull;
     });
 
     scenario('the canonical form round-trips through parse', () {
@@ -267,7 +267,7 @@ void main() {
 
     scenario('a box and its transposition are different boxes', () {
       check(GeoBounds.tryParse('170,-45,-170,-35') == GeoBounds.tryParse('-170,-45,170,-35'))
-          .isFalse();
+          .isFalse;
     });
 
     scenario('toString names every edge, so a transposition is visible', () {
@@ -308,7 +308,7 @@ void main() {
           longitude: example.longitude,
         )!;
 
-        check(GeoBoundsConstants.wholeWorld.contains(corner), because: '$corner').isTrue();
+        check(GeoBoundsConstants.wholeWorld.contains(corner), because: '$corner').isTrue;
       },
     );
   });

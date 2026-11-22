@@ -38,7 +38,7 @@ void main() {
 
     scenario('equal digits are equal, and differing ones are not', () {
       check(Digit.tryFrom(7)).equals(Digit.tryFrom(7));
-      check(Digit.tryFrom(7) == Digit.tryFrom(8)).isFalse();
+      check(Digit.tryFrom(7) == Digit.tryFrom(8)).isFalse;
     });
 
     scenario('the named constants carry their digit, whichever way one is built', () {

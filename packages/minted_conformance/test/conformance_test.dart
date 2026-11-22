@@ -44,7 +44,7 @@ void main() {
       .toList();
 
   test('there are value-type sources to check', () {
-    check(typeFiles).isNotEmpty();
+    check(typeFiles).isNotEmpty;
   });
 
   for (final file in typeFiles) {
@@ -60,7 +60,7 @@ void main() {
                 '${type.name} throws something that is not an Error. A fallible door reports its '
                 'failure instead: return a ParseOutcome, or a nullable for a plain range check. '
                 'ParseOutcome.getOrThrow is where a caller opts into a throw.',
-          ).isEmpty();
+          ).isEmpty;
         });
 
         if (type.isEnum) {
@@ -71,7 +71,7 @@ void main() {
                   '${type.name} is an enum, so it is derived from something that already parsed. '
                   'Build it with tryFrom; a parse door would read as a value type while escaping '
                   'every check here.',
-            ).isEmpty();
+            ).isEmpty;
           });
         }
 
@@ -82,7 +82,7 @@ void main() {
               because:
                   '${type.name} is an extension type; its representation must be named `value` so '
                   'the canonical form is `.value` everywhere.',
-            ).isTrue();
+            ).isTrue;
           });
         }
       }

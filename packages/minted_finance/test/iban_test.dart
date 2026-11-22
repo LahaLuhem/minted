@@ -93,7 +93,7 @@ void main() {
     // A BBAN outside `[A-Z0-9]` cannot be built, so the check-digit generator never sees one: its charset
     // guard is an assert now, not a runtime branch.
     scenario('a BBAN outside A-Z and 0-9 cannot be built at all', () {
-      check(AsciiAlphanumerics.tryFrom('NWBK-6016133192681')).isNull();
+      check(AsciiAlphanumerics.tryFrom('NWBK-6016133192681')).isNull;
       check(Iban.parse('GB29NWBK-016133192681').reasonOrNull).equals(const IbanInvalidCharacters());
     });
 
@@ -113,11 +113,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Iban.parse('GB29NWBK60161331926818')).equals(const ParseFailure(IbanChecksumFailed()));
-      check(Iban.parse('GB29NWBK60161331926819').isSuccess).isTrue();
+      check(Iban.parse('GB29NWBK60161331926819').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Iban.tryParse('GB29NWBK60161331926818')).isNull();
+      check(Iban.tryParse('GB29NWBK60161331926818')).isNull;
       check(Iban.tryParse('gb29 nwbk 6016 1331 9268 19')?.value).equals('GB29NWBK60161331926819');
     });
 
@@ -136,7 +136,7 @@ void main() {
           countryCode: _letters('GB'),
           bban: _alphanumerics('TOOSHORT'),
         ).isFailure,
-      ).isTrue();
+      ).isTrue;
     });
 
     // fromComponents runs our own mod-97-10 generator (check_digits.dart), so check it reproduces the
@@ -178,7 +178,7 @@ void main() {
           bban: _alphanumerics('nwbk60161331926819'),
         ).getOrThrow().value,
       ).equals('GB29NWBK60161331926819');
-      check(AsciiAlphanumerics.tryFrom('nwbk 6016 1331 9268 19')).isNull();
+      check(AsciiAlphanumerics.tryFrom('nwbk 6016 1331 9268 19')).isNull;
     });
 
     scenario('a caller who asserts the parts gets the throw back through getOrThrow', () {
@@ -189,7 +189,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const IbanInvalidLength(expected: 22, actual: 12));
     });
 

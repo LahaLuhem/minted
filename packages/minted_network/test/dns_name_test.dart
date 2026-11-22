@@ -95,8 +95,8 @@ void main() {
       final host = Hostname.tryParse('www.example.com')!;
       check(DnsName.fromHostname(host).value).equals('www.example.com');
       check(DnsName.tryParse('www.example.com')!.tryToHostname()).equals(host);
-      check(DnsName.tryParse('_dmarc.example.com')!.tryToHostname()).isNull();
-      check(DnsName.tryParse('192.168.1.1')!.tryToHostname()).isNull();
+      check(DnsName.tryParse('_dmarc.example.com')!.tryToHostname()).isNull;
+      check(DnsName.tryParse('192.168.1.1')!.tryToHostname()).isNull;
       // Reverse DNS narrows fine: `arpa` is alphabetic, so the numeric-TLD rule never fires.
       check(DnsName.tryParse('4.3.2.1.in-addr.arpa')!.tryToHostname()).isNotNull();
     });

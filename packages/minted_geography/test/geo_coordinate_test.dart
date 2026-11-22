@@ -115,7 +115,7 @@ void main() {
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(GeoCoordinate.tryParse('+91+000/')).isNull();
+      check(GeoCoordinate.tryParse('+91+000/')).isNull;
       check(GeoCoordinate.tryParse('+48.8577+002.295/'))
           .equals(GeoCoordinate.tryFrom(latitude: 48.8577, longitude: 2.295));
     });
@@ -128,15 +128,15 @@ void main() {
         ).iso6709,
       ).equals('+48.8577+002.295/');
       check(GeoCoordinate.tryFrom(latitude: 90, longitude: -180)).isNotNull();
-      check(GeoCoordinate.tryFrom(latitude: 90.1, longitude: 0)).isNull();
-      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180.1)).isNull();
+      check(GeoCoordinate.tryFrom(latitude: 90.1, longitude: 0)).isNull;
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: -180.1)).isNull;
     });
 
     // The range moved into the degree types, so the assembly doors prevent it rather than report it.
     // The diagnosis survives on parse, the one door that meets text nobody has checked.
     scenario('the degree types refuse what is out of range, and parse is what names it', () {
-      check(Latitude.tryFrom(91)).isNull();
-      check(Longitude.tryFrom(181)).isNull();
+      check(Latitude.tryFrom(91)).isNull;
+      check(Longitude.tryFrom(181)).isNull;
       check(GeoCoordinate.parse('+91+000/').reasonOrNull)
           .equals(const GeoCoordinateLatitudeOutOfRange(91));
       check(GeoCoordinate.parse('+00+181/').reasonOrNull?.message)
@@ -146,21 +146,21 @@ void main() {
     scenario('a caller who asserts the text gets the throw back through getOrThrow', () {
       check(() => GeoCoordinate.parse('+91+000/').getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const GeoCoordinateLatitudeOutOfRange(91));
     });
 
     // Latitude's narrower range catches the swaps outright, and named parameters catch the rest.
     scenario('a swapped pair whose longitude exceeds 90 is refused', () {
-      check(GeoCoordinate.tryFrom(latitude: 174.7762, longitude: -36.8509)).isNull();
+      check(GeoCoordinate.tryFrom(latitude: 174.7762, longitude: -36.8509)).isNull;
       check(GeoCoordinate.tryFrom(latitude: -36.8509, longitude: 174.7762)).isNotNull();
     });
 
     scenario('a NaN or an infinity is out of range', () {
-      check(GeoCoordinate.tryFrom(latitude: double.nan, longitude: 0)).isNull();
-      check(GeoCoordinate.tryFrom(latitude: 0, longitude: double.nan)).isNull();
-      check(GeoCoordinate.tryFrom(latitude: double.infinity, longitude: 0)).isNull();
-      check(GeoCoordinate.tryFrom(latitude: 0, longitude: double.negativeInfinity)).isNull();
+      check(GeoCoordinate.tryFrom(latitude: double.nan, longitude: 0)).isNull;
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: double.nan)).isNull;
+      check(GeoCoordinate.tryFrom(latitude: double.infinity, longitude: 0)).isNull;
+      check(GeoCoordinate.tryFrom(latitude: 0, longitude: double.negativeInfinity)).isNull;
     });
 
     scenario('the antimeridian is one value with two spellings', () {
@@ -189,7 +189,7 @@ void main() {
       check(
         GeoCoordinate.tryFrom(latitude: 40, longitude: 2)! ==
             GeoCoordinate.tryFrom(latitude: 2, longitude: 40)!,
-      ).isFalse();
+      ).isFalse;
     });
 
     scenario('the canonical form round-trips through parse, sexagesimal input included', () {

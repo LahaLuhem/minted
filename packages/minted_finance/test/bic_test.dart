@@ -77,12 +77,12 @@ void main() {
       check(parsedBic.locationCode.value).equals('FF');
       check(parsedBic.branchCode.value).equals('500');
       check(parsedBic.bic8.value).equals('DEUTDEFF');
-      check(parsedBic.isPrimaryOffice).isFalse();
+      check(parsedBic.isPrimaryOffice).isFalse;
     });
 
     scenario('a folded BIC reports the branch it was given', () {
       check(Bic.tryParse('DEUTDEFF')!.branchCode.value).equals('XXX');
-      check(Bic.tryParse('DEUTDEFF')!.isPrimaryOffice).isTrue();
+      check(Bic.tryParse('DEUTDEFF')!.isPrimaryOffice).isTrue;
     });
 
     // Kosovo has no ISO 3166-1 code of its own, so SWIFT registers its banks under the user-assigned
@@ -140,14 +140,14 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Bic.parse('DEUTZZFF')).equals(const ParseFailure(BicUnknownCountry('ZZ')));
-      check(Bic.parse('DEUTDEFF').isSuccess).isTrue();
+      check(Bic.parse('DEUTDEFF').isSuccess).isTrue;
     });
 
     // The 2 edges a numbering-plan list gets wrong in opposite directions: AQ is ISO-assigned but
     // has no phone numbers, AC is only reserved, never assigned.
     scenario('the country check reads the ISO registry, not a numbering-plan list', () {
       check(Bic.tryParse('DEUTAQFF')?.value).equals('DEUTAQFFXXX');
-      check(Bic.tryParse('DEUTACFF')).isNull();
+      check(Bic.tryParse('DEUTACFF')).isNull;
     });
 
     scenarioOutline<
@@ -219,7 +219,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const BicUnknownCountry('ZZ'));
     });
 

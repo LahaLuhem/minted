@@ -37,8 +37,8 @@ void main() {
     scenario('the bounds are the last years that parse, not merely years that do', () {
       check(Year.tryFrom(YearConstants.min.value)).isNotNull();
       check(Year.tryFrom(YearConstants.max.value)).isNotNull();
-      check(Year.tryFrom(YearConstants.min.value - 1)).isNull();
-      check(Year.tryFrom(YearConstants.max.value + 1)).isNull();
+      check(Year.tryFrom(YearConstants.min.value - 1)).isNull;
+      check(Year.tryFrom(YearConstants.max.value + 1)).isNull;
     });
 
     scenario('a Year widens to Uint without a hop, and int comes through under it', () {

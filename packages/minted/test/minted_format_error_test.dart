@@ -33,12 +33,12 @@ void main() {
       check(MintedFormatError.from(TestFailure.malformed)).isA<Error>();
       // For failing loudly when `on FormatException` catches this again.
       // ignore: avoid-unrelated-type-assertions
-      check(MintedFormatError.from(TestFailure.malformed) is Exception).isFalse();
+      check(MintedFormatError.from(TestFailure.malformed) is Exception).isFalse;
     });
 
     scenario('getOrThrow is the only door that raises it', () {
       // Every fallible door reports instead. This is the caller opting in.
-      check(failed.isFailure).isTrue();
+      check(failed.isFailure).isTrue;
       check(failed.getOrThrow).throws<MintedFormatError>();
     });
   });

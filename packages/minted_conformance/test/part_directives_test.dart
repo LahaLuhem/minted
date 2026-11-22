@@ -33,8 +33,8 @@ void main() {
   };
 
   test('the sweep found sources, and parts among them', () {
-    check(sources).isNotEmpty();
-    check(parts).isNotEmpty();
+    check(sources).isNotEmpty;
+    check(parts).isNotEmpty;
   });
 
   test('no directive points at a part file', () {
@@ -45,7 +45,7 @@ void main() {
             '${source.path}: ${match.group(0)}',
     ];
 
-    check(offenders, because: 'point at the file that declares the part instead').isEmpty();
+    check(offenders, because: 'point at the file that declares the part instead').isEmpty;
   });
 }
 

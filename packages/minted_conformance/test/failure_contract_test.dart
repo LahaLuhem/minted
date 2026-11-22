@@ -1076,7 +1076,7 @@ void main() {
       outline: (example) {
         check(example.failure).equals(example.twin);
         check(example.failure.hashCode).equals(example.twin.hashCode);
-        check(example.failure == example.other).isFalse();
+        check(example.failure == example.other).isFalse;
       },
     );
 
@@ -1091,7 +1091,7 @@ void main() {
       check(
         unnamed,
         because: 'each needs rows in the tables above, one per variant it declares',
-      ).isEmpty();
+      ).isEmpty;
     });
   });
 }

@@ -89,14 +89,14 @@ void main() {
 
     scenario('a coarser geohash is a prefix of a finer one for the same point', () {
       check(_geohash(coordinate: eiffelTower, precision: 5).value).equals('u09tu');
-      check(_geohash(coordinate: eiffelTower, precision: 9).value.startsWith('u09tu')).isTrue();
+      check(_geohash(coordinate: eiffelTower, precision: 9).value.startsWith('u09tu')).isTrue;
     });
 
     // The headline claim: a geohash is a cell, so the round trip through one point is not identity.
     scenario('the centre is a point in the cell, not the point encoded', () {
       final cell = _geohash(coordinate: eiffelTower, precision: 5);
 
-      check(cell.centre == eiffelTower).isFalse();
+      check(cell.centre == eiffelTower).isFalse;
       check(cell.centre.iso6709).equals('+48.84521484375+002.30712890625/');
       check(_geohash(coordinate: cell.centre, precision: 5)).equals(cell);
     });
@@ -106,9 +106,9 @@ void main() {
     scenario('bounds holds both the encoded point and the centre', () {
       final cell = _geohash(coordinate: eiffelTower, precision: 5);
 
-      check(cell.bounds.contains(eiffelTower)).isTrue();
-      check(cell.bounds.contains(cell.centre)).isTrue();
-      check(cell.bounds.crossesAntimeridian).isFalse();
+      check(cell.bounds.contains(eiffelTower)).isTrue;
+      check(cell.bounds.contains(cell.centre)).isTrue;
+      check(cell.bounds.crossesAntimeridian).isFalse;
     });
 
     // The property every prefix query rests on: a shorter geohash encloses a longer one.
@@ -116,15 +116,15 @@ void main() {
       final coarse = _geohash(coordinate: eiffelTower, precision: 3).bounds;
       final fine = _geohash(coordinate: eiffelTower, precision: 7).bounds;
 
-      check(coarse.contains(eiffelTower)).isTrue();
-      check(coarse.north >= fine.north && coarse.south <= fine.south).isTrue();
-      check(coarse.east >= fine.east && coarse.west <= fine.west).isTrue();
+      check(coarse.contains(eiffelTower)).isTrue;
+      check(coarse.north >= fine.north && coarse.south <= fine.south).isTrue;
+      check(coarse.east >= fine.east && coarse.west <= fine.west).isTrue;
     });
 
     scenario('one character names a thirty-second of the planet, and it still parses back', () {
       final cell = _geohash(coordinate: eiffelTower, precision: 1);
 
-      check(cell.bounds.contains(eiffelTower)).isTrue();
+      check(cell.bounds.contains(eiffelTower)).isTrue;
       check(GeoBounds.tryParse(cell.bounds.bbox)).equals(cell.bounds);
     });
 
@@ -165,7 +165,7 @@ void main() {
     scenario('a caller who asserts the string gets the throw back through getOrThrow', () {
       check(() => Geohash.parse('ezsa2').getOrThrow())
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const GeohashInvalidCharacter('a'));
     });
     scenario('every named constant parses back to itself, unchanged', () {

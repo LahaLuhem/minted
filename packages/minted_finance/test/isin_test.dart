@@ -137,11 +137,11 @@ void main() {
 
     scenario('parse reports the failure rather than throwing', () {
       check(Isin.parse('US0378331006')).equals(const ParseFailure(IsinChecksumFailed()));
-      check(Isin.parse('US0378331005').isSuccess).isTrue();
+      check(Isin.parse('US0378331005').isSuccess).isTrue;
     });
 
     scenario('tryParse still yields a plain null, unchanged by the outcome underneath', () {
-      check(Isin.tryParse('US0378331006')).isNull();
+      check(Isin.tryParse('US0378331006')).isNull;
       check(Isin.tryParse('us0378331005')?.value).equals('US0378331005');
     });
 
@@ -182,7 +182,7 @@ void main() {
           nsin: _alphanumerics('0000xvgza'),
         ).getOrThrow().value,
       ).equals('AU0000XVGZA3');
-      check(AsciiAlphanumerics.tryFrom('0000 XVGZA')).isNull();
+      check(AsciiAlphanumerics.tryFrom('0000 XVGZA')).isNull;
     });
 
     scenarioOutline<({AsciiLetters prefix, AsciiAlphanumerics nsin, IsinFailure failure})>(
@@ -203,8 +203,8 @@ void main() {
     // Typing the parts moved 2 checks off the door and onto the boundary: an out-of-charset NSIN and
     // a prefix carrying a digit cannot be built at all. `parse` still reports both.
     scenario('the parts refuse what fromComponents used to report', () {
-      check(AsciiAlphanumerics.tryFrom('0378331@0')).isNull();
-      check(AsciiLetters.tryFrom('1S')).isNull();
+      check(AsciiAlphanumerics.tryFrom('0378331@0')).isNull;
+      check(AsciiLetters.tryFrom('1S')).isNull;
       check(Isin.parse('US0378331@05').reasonOrNull).equals(const IsinInvalidCharacters());
       check(Isin.parse('1S0378331005').reasonOrNull).equals(const IsinInvalidPrefix('1S'));
     });
@@ -217,7 +217,7 @@ void main() {
             ).getOrThrow(),
           )
           .throws<MintedFormatError>()
-          .has((error) => error.failure, 'failure')
+          .has('failure', (error) => error.failure)
           .equals(const IsinWrongLength(11));
     });
 
