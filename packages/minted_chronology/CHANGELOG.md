@@ -1,3 +1,7 @@
+## [Unreleased]
+### Changed
+- Require Dart 3.14
+
 ## [1.1.0] - 2026-09-21
 ### Added
 - Constants move to per-type namespaces, and Date gets modelled parts
@@ -18,6 +22,7 @@
 ### Added
 - \[#60\] First release, split out of `minted` 2.x: Date, Month, Weekday and Iso8601Duration
 
+[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted_chronology-1.1.0...minted_chronology-HEAD
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/minted_chronology-1.0.2...minted_chronology-1.1.0
 [1.0.2]: https://github.com/LahaLuhem/minted/compare/minted_chronology-1.0.1...minted_chronology-1.0.2
 [1.0.1]: https://github.com/LahaLuhem/minted/compare/minted_chronology-1.0.0...minted_chronology-1.0.1
