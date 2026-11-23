@@ -60,6 +60,16 @@ A release starts from the Actions tab: **Release**, then the package and the bum
 and raises the other packages' bounds on the one going out.
 [dartender's Releasing](https://github.com/LahaLuhem/dartender#releasing) has the rest.
 
+Releasing several in one round:
+
+- **One at a time.** The release push is atomic, so two overlapping runs mean one of them loses
+  and needs starting again.
+- **Dependencies before dependents**, which
+  `dart run melos exec --order-dependents --no-private --concurrency=1 -- true` lists for you.
+  It only bites when a package's new code needs a sibling's new API, since releasing that sibling
+  is what raises the bound. Any other order publishes fine too, because a bound only moves when
+  the package it points at goes out.
+
 <details>
 <summary>A new package's first version</summary>
 
