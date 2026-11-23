@@ -15,7 +15,7 @@ resolution: workspace
 dev_dependencies:
   analyzer: ^14.7.0
   checks: ^0.4.0
-  minted: ^3.1.1
+  minted: ^3.2.0
   minted_chronology: ^1.1.0
   minted_contact: ^1.1.0
   minted_finance: ^1.1.0

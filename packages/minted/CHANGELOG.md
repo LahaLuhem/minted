@@ -1,4 +1,4 @@
-## [Unreleased]
+## [3.2.0] - 2026-11-23
 ### Changed
 - Require Dart 3.14
 
@@ -84,7 +84,7 @@
 - Digit
 - Digits
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted-3.1.1...minted-HEAD
+[3.2.0]: https://github.com/LahaLuhem/minted/compare/minted-3.1.1...minted-3.2.0
 [3.1.1]: https://github.com/LahaLuhem/minted/compare/minted-3.1.0...minted-3.1.1
 [3.1.0]: https://github.com/LahaLuhem/minted/compare/minted-3.0.1...minted-3.1.0
 [3.0.1]: https://github.com/LahaLuhem/minted/compare/minted-3.0.0...minted-3.0.1
