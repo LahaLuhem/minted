@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.2.0] - 2026-11-23
 ### Changed
 - Require Dart 3.14
 
@@ -25,7 +25,7 @@
 ### Added
 - \[#60\] First release, split out of `minted` 2.x: Email and PhoneNumber
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted_contact-1.1.0...minted_contact-HEAD
+[1.2.0]: https://github.com/LahaLuhem/minted/compare/minted_contact-1.1.0...minted_contact-1.2.0
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/minted_contact-1.0.2...minted_contact-1.1.0
 [1.0.2]: https://github.com/LahaLuhem/minted/compare/minted_contact-1.0.1...minted_contact-1.0.2
 [1.0.1]: https://github.com/LahaLuhem/minted/compare/minted_contact-1.0.0...minted_contact-1.0.1
