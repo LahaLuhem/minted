@@ -18,7 +18,7 @@ dev_dependencies:
   minted: ^3.2.0
   minted_chronology: ^1.2.0
   minted_contact: ^1.2.0
-  minted_finance: ^1.1.0
+  minted_finance: ^1.2.0
   minted_geography: ^1.2.0
   minted_identifiers: ^1.2.0
   minted_network: ^1.3.0
