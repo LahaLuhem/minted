@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.3.0] - 2026-11-23
 ### Added
 - Plus Codes as 2 types, since a short one names nowhere
 
@@ -30,7 +30,7 @@
 ### Added
 - \[#60\] First release, split out of `minted` 2.x: GeoCoordinate
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.2.0...minted_geography-HEAD
+[1.3.0]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.2.0...minted_geography-1.3.0
 [1.2.0]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.1.1...minted_geography-1.2.0
 [1.1.1]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.1.0...minted_geography-1.1.1
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/minted_geography-1.0.1...minted_geography-1.1.0
