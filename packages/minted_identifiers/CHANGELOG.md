@@ -1,4 +1,4 @@
-## [Unreleased]
+## [1.3.0] - 2026-11-23
 ### Changed
 - Require Dart 3.14
 
@@ -22,7 +22,7 @@
 ### Added
 - \[#60\] First release, split out of `minted` 2.x: Uuid, Isbn, Issn, Isni, Imei and Gtin
 
-[Unreleased]: https://github.com/LahaLuhem/minted/compare/minted_identifiers-1.2.0...minted_identifiers-HEAD
+[1.3.0]: https://github.com/LahaLuhem/minted/compare/minted_identifiers-1.2.0...minted_identifiers-1.3.0
 [1.2.0]: https://github.com/LahaLuhem/minted/compare/minted_identifiers-1.1.0...minted_identifiers-1.2.0
 [1.1.0]: https://github.com/LahaLuhem/minted/compare/minted_identifiers-1.0.1...minted_identifiers-1.1.0
 [1.0.1]: https://github.com/LahaLuhem/minted/compare/minted_identifiers-1.0.0...minted_identifiers-1.0.1
